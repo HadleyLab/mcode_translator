@@ -121,6 +121,14 @@
             
             let html = '';
             
+            // Display original criteria if available
+            if (mcodeData.original_criteria) {
+                html += `<div class="mcode-group">
+                    <h5>Original Eligibility Criteria</h5>
+                    <pre>${mcodeData.original_criteria}</pre>
+                </div>`;
+            }
+            
             // Display extracted codes
             if (mcodeData.extracted_codes?.length > 0) {
                 html += `<div class="mcode-group">

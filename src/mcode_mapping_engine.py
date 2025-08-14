@@ -35,6 +35,14 @@ class MCODEMappingEngine:
             'MedicationStatement': {
                 'required': ['medicationCodeableConcept'],
                 'optional': ['effectiveDateTime', 'status']
+            },
+            'GenomicVariant': {
+                'required': ['geneStudied', 'dnaChange'],
+                'optional': ['aminoAcidChange', 'variantAlleleFrequency']
+            },
+            'Biomarker': {
+                'required': ['code', 'value'],
+                'optional': ['interpretation', 'method']
             }
         }
         
@@ -72,6 +80,20 @@ class MCODEMappingEngine:
                 'mapped_codes': {
                     'SNOMEDCT': '254837009',
                     'LOINC': 'LP12345-6'
+                },
+                'biomarkers': {
+                    'ER': {'system': 'LOINC', 'code': '16112-5'},
+                    'PR': {'system': 'LOINC', 'code': '16113-3'},
+                    'HER2': {'system': 'LOINC', 'code': '48676-1'},
+                    'BRCA1': {'system': 'HGNC', 'code': '1100'},
+                    'BRCA2': {'system': 'HGNC', 'code': '1101'},
+                    'PD-L1': {'system': 'LOINC', 'code': '82397-3'},
+                    'Ki-67': {'system': 'LOINC', 'code': '85337-4'}
+                },
+                'genomic_variants': {
+                    'PIK3CA': {'system': 'HGNC', 'code': '8985'},
+                    'TP53': {'system': 'HGNC', 'code': '11998'},
+                    'ESR1': {'system': 'HGNC', 'code': '3467'}
                 }
             },
             'lung cancer': {
@@ -112,6 +134,13 @@ class MCODEMappingEngine:
                 'mcode_element': 'Procedure',
                 'primary_code': {'system': 'CPT', 'code': '67890'},
                 'mapped_codes': {}
+            },
+            'genomic testing': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'CPT', 'code': '81479'},
+                'mapped_codes': {
+                    'LOINC': '48018-6'
+                }
             }
         }
         

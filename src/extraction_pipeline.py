@@ -38,7 +38,8 @@ class ExtractionPipeline:
         
         return {
             'extracted_codes': extracted_codes,
-            'mcode_mappings': mapping_result
+            'mcode_mappings': mapping_result,
+            'original_criteria': criteria_text  # Include original text
         }
         
     def process_search_results(self, search_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -71,7 +72,10 @@ class ExtractionPipeline:
                 processed = self.process_criteria(str(criteria))
                 
                 # Add to enriched result
-                trial_data['mcode_data'] = processed
+                trial_data['mcode_data'] = {
+                    **processed,
+                    'original_criteria': criteria  # Include original criteria
+                }
                 enriched_results.append(trial_data)
                 
             except Exception as e:

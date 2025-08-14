@@ -399,6 +399,9 @@ class CodeExtractionModule:
     
     def extract_codes_from_entities(self, entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
+        Extract codes from recognized medical entities including biomarkers and genomic variants
+        """
+        """
         Extract codes from recognized medical entities
         
         Args:
@@ -407,8 +410,20 @@ class CodeExtractionModule:
         Returns:
             List of extracted codes
         """
-        # Enhanced term to code mapping with more medical terms
+        # Enhanced term to code mapping with medical terms and biomarkers
         term_to_code_map = {
+            # Biomarkers
+            'ER positive': {'LOINC': '16112-5'},
+            'PR positive': {'LOINC': '16113-3'},
+            'HER2 positive': {'LOINC': '48676-1'},
+            'BRCA mutation': {'HGNC': '1100'},
+            'PD-L1 positive': {'LOINC': '82397-3'},
+            'Ki-67 high': {'LOINC': '85337-4'},
+            
+            # Genomic variants
+            'PIK3CA mutation': {'HGNC': '8985'},
+            'TP53 mutation': {'HGNC': '11998'},
+            'ESR1 mutation': {'HGNC': '3467'},
             # Cancers
             'breast cancer': {
                 'ICD10CM': 'C50.911',
@@ -538,66 +553,103 @@ class CodeExtractionModule:
     
     def process_criteria_for_codes(self, criteria_text, entities: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Process eligibility criteria text and extract codes
+        Process eligibility criteria text and extract codes with enhanced error handling
         
         Args:
-            criteria_text: Eligibility criteria text to process
-            entities: Optional list of pre-identified entities
+            criteria_text: Text containing eligibility criteria
+            entities: Optional pre-identified entities
             
         Returns:
-            Dictionary containing extracted codes and metadata
+            Dictionary containing extracted codes and metadata, or error information
         """
-        # Handle list inputs
-        if isinstance(criteria_text, list):
-            criteria_text = ' '.join(str(item) for item in criteria_text)
-        elif not isinstance(criteria_text, str):
-            criteria_text = str(criteria_text)
-            
-        # Identify all codes in text
-        identified_codes = self.identify_all_codes(criteria_text)
-        
-        # Validate codes
-        validated_codes = {}
-        for system, codes in identified_codes.items():
-            validated_codes[system] = []
-            for code in codes:
-                # Add validation information
-                code['validation'] = {
-                    'format_valid': self.validate_code_format(code['code'], system.replace('-', '')),
-                    'exists': self.validate_code_existence(code['code'], system.replace('-', '')),
-                    'mcode_compliant': self.validate_mcode_compliance(code['code'], system.replace('-', ''))
-                }
-                
-                # Add mapped codes
-                code['mapped_codes'] = {}
-                for target_system in ['SNOMEDCT', 'LOINC']:
-                    mapped_code = self.map_between_systems(
-                        code['code'], 
-                        system.replace('-', ''), 
-                        target_system
-                    )
-                    if mapped_code:
-                        code['mapped_codes'][target_system] = mapped_code
-                
-                # Add confidence score
-                code['confidence'] = self.calculate_code_confidence(code)
-                
-                validated_codes[system].append(code)
-        
-        # Extract codes from entities if provided
-        mapped_entities = []
-        if entities:
-            mapped_entities = self.extract_codes_from_entities(entities)
-        
-        # Create result structure
         result = {
-            'extracted_codes': validated_codes,
-            'mapped_entities': mapped_entities,
+            'extracted_codes': {},
+            'mapped_entities': [],
             'metadata': {
-                'total_codes': sum(len(codes) for codes in validated_codes.values()),
-                'systems_found': list(validated_codes.keys())
+                'errors': False
             }
         }
+        
+        try:
+            # Handle list inputs
+            if isinstance(criteria_text, list):
+                criteria_text = ' '.join(str(item) for item in criteria_text)
+            elif not isinstance(criteria_text, str):
+                criteria_text = str(criteria_text)
+            
+            # Identify all codes in text with error context
+            try:
+                identified_codes = self.identify_all_codes(criteria_text)
+            except Exception as e:
+                self.logger.error(f"Code identification failed: {str(e)}")
+                identified_codes = {}
+        
+            # Validate codes with error handling
+            validated_codes = {}
+            for system, codes in identified_codes.items():
+                validated_codes[system] = []
+                for code in codes:
+                    try:
+                        # Add validation information
+                        code['validation'] = {
+                            'format_valid': self.validate_code_format(code['code'], system.replace('-', '')),
+                            'exists': self.validate_code_existence(code['code'], system.replace('-', '')),
+                            'mcode_compliant': self.validate_mcode_compliance(code['code'], system.replace('-', ''))
+                        }
+                    except Exception as e:
+                        self.logger.error(f"Validation failed for code {code['code']}: {str(e)}")
+                        code['validation'] = {
+                            'error': str(e),
+                            'valid': False
+                        }
+                    
+                    # Add mapped codes
+                    code['mapped_codes'] = {}
+                    for target_system in ['SNOMEDCT', 'LOINC']:
+                        mapped_code = self.map_between_systems(
+                            code['code'],
+                            system.replace('-', ''),
+                            target_system
+                        )
+                        if mapped_code:
+                            code['mapped_codes'][target_system] = mapped_code
+                    
+                    # Add confidence score
+                    code['confidence'] = self.calculate_code_confidence(code)
+                    
+                    validated_codes[system].append(code)
+            
+            # Extract codes from entities if provided
+            mapped_entities = []
+            if entities:
+                try:
+                    mapped_entities = self.extract_codes_from_entities(entities)
+                except Exception as e:
+                    self.logger.error(f"Entity code extraction failed: {str(e)}")
+                    mapped_entities = []
+            
+            # Create successful result structure
+            result = {
+                'extracted_codes': validated_codes,
+                'mapped_entities': mapped_entities,
+                'metadata': {
+                    'total_codes': sum(len(codes) for codes in validated_codes.values()),
+                    'systems_found': list(validated_codes.keys()),
+                    'errors': False
+                }
+            }
+
+        except Exception as e:
+            self.logger.error(f"Criteria processing failed: {str(e)}")
+            result = {
+                'error': str(e),
+                'metadata': {
+                    'errors': True,
+                    'error_details': str(e)
+                }
+            }
+            
+        return result
         
         return result
 
