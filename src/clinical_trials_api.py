@@ -4,8 +4,8 @@ import json
 import os
 import hashlib
 from typing import Dict, List, Optional
-from .config import Config
-from .cache import CacheManager
+from config import Config
+from cache import CacheManager
 
 
 class ClinicalTrialsAPIError(Exception):

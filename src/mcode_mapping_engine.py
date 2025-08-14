@@ -635,14 +635,23 @@ class MCODEMappingEngine:
         Process NLP engine output and generate mCODE mappings
         
         Args:
-            nlp_output: Output from the NLP engine
+            nlp_output: Output from the NLP engine or LLM interface
             
         Returns:
             Dictionary with mCODE mappings and validation results
         """
-        # Extract entities and codes from NLP output
+        # Extract entities, codes and genomic features from input
         entities = nlp_output.get('entities', [])
         codes = nlp_output.get('codes', {}).get('extracted_codes', {})
+        
+        # Handle LLM genomic features if present
+        if 'genomic_features' in nlp_output:
+            for feature in nlp_output['genomic_features']:
+                entities.append({
+                    'text': f"{feature['gene']} {feature['variant']}",
+                    'confidence': 0.9,
+                    'type': 'genomic_variant'
+                })
         
         # Map entities to mCODE elements
         mapped_entities = self.map_entities_to_mcode(entities)

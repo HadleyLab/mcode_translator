@@ -44,7 +44,7 @@
 <body>
     <h1>Clinical Trials Search</h1>
     <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search for clinical trials...">
+        <input type="text" id="searchInput" placeholder="Search for clinical trials..." value="breast cancer">
         <button onclick="searchTrials()">Search</button>
     </div>
     <div id="results"></div>
@@ -65,8 +65,18 @@
                     limit: 10
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Raw API response:', response);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Parsed API data:', data);
+                if (data.status !== 'success') {
+                    throw new Error(data.message || 'API request failed');
+                }
                 displayResults(data);
             })
             .catch(error => {
@@ -85,10 +95,17 @@
             //   count: N
             // }
             let studies = [];
-            if (response?.status === 'success' && Array.isArray(response.results)) {
-                studies = response.results;
+            if (response?.status === 'success') {
+                if (Array.isArray(response.results)) {
+                    studies = response.results;
+                } else if (response.results && typeof response.results === 'object') {
+                    // Handle case where results might be an object
+                    studies = Object.values(response.results);
+                }
+                console.log('Processed studies data:', studies);
             } else {
-                console.error('Unexpected response format:', response);
+                console.error('API Error:', response?.message || 'Unknown error');
+                console.error('Full response:', response);
             }
 
             if (studies.length === 0) {
@@ -101,9 +118,18 @@
                 const protocol = study.protocolSection || {};
                 const identification = protocol.identificationModule || {};
                 
+                // Verify all required data exists before rendering
+                const hasTitle = identification?.briefTitle;
+                const hasNctId = identification?.nctId;
+                const hasMcodeData = study.mcode_data;
+                
+                if (!hasTitle || !hasNctId) {
+                    console.warn('Incomplete trial data:', study);
+                }
+                
                 html += `<div class="trial">
-                    <h3>${identification.briefTitle || 'No title'}</h3>
-                    <p>NCT ID: ${identification.nctId || 'Unknown'}</p>
+                    <h3>${hasTitle || 'No title available'}</h3>
+                    <p>NCT ID: ${hasNctId || 'Not provided'}</p>
                     
                     <div class="mcode-section">
                         <h4>mCODE Data</h4>
@@ -129,6 +155,36 @@
                 </div>`;
             }
             
+            // Display genomic features if available
+            if (mcodeData.mcode_mappings?.mapped_elements) {
+                const genomicVariants = mcodeData.mcode_mappings.mapped_elements
+                    .filter(e => e.mcode_element === 'GenomicVariant');
+                
+                if (genomicVariants.length > 0) {
+                    html += `<div class="mcode-group">
+                        <h5>Genomic Variants</h5>
+                        <ul>${genomicVariants.map(variant =>
+                            `<li>${variant.geneStudied}: ${variant.dnaChange || 'variant'}</li>`
+                        ).join('')}</ul>
+                    </div>`;
+                }
+            }
+            
+            // Display biomarkers if available
+            if (mcodeData.mcode_mappings?.mapped_elements) {
+                const biomarkers = mcodeData.mcode_mappings.mapped_elements
+                    .filter(e => e.mcode_element === 'Biomarker');
+                
+                if (biomarkers.length > 0) {
+                    html += `<div class="mcode-group">
+                        <h5>Biomarkers</h5>
+                        <ul>${biomarkers.map(biomarker =>
+                            `<li>${biomarker.code}: ${biomarker.value || 'status'}</li>`
+                        ).join('')}</ul>
+                    </div>`;
+                }
+            }
+            
             // Display extracted codes
             if (mcodeData.extracted_codes?.length > 0) {
                 html += `<div class="mcode-group">
@@ -139,10 +195,10 @@
                 </div>`;
             }
             
-            // Display mCODE mappings
+            // Display full mCODE mappings for debugging
             if (mcodeData.mcode_mappings) {
                 html += `<div class="mcode-group">
-                    <h5>mCODE Mappings</h5>
+                    <h5>Full mCODE Structure</h5>
                     <pre>${JSON.stringify(mcodeData.mcode_mappings, null, 2)}</pre>
                 </div>`;
             }

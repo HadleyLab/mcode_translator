@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Any, List
-from .code_extraction import CodeExtractionModule
-from .mcode_mapping_engine import MCODEMappingEngine
+from src.code_extraction import CodeExtractionModule
+from src.mcode_mapping_engine import MCODEMappingEngine
 
 class ExtractionPipeline:
     """
@@ -9,13 +9,20 @@ class ExtractionPipeline:
     Orchestrates code extraction and mCODE mapping from clinical trial eligibility criteria
     """
     
-    def __init__(self):
+    def __init__(self, use_llm: bool = True):
         """
         Initialize the extraction pipeline with required components
+        
+        Args:
+            use_llm: Whether to enable LLM-based feature extraction
         """
         self.logger = logging.getLogger(__name__)
         self.code_extractor = CodeExtractionModule()
         self.mcode_mapper = MCODEMappingEngine()
+        self.use_llm = use_llm
+        if use_llm:
+            from src.llm_interface import LLMInterface
+            self.llm_extractor = LLMInterface()
         
     def process_criteria(self, criteria_text: str) -> Dict[str, Any]:
         """
@@ -30,10 +37,16 @@ class ExtractionPipeline:
         # Step 1: Extract codes from text
         extracted_codes = self.code_extractor.process_criteria_for_codes(criteria_text)
         
-        # Step 2: Map to mCODE elements
+        # Step 2: Extract genomic features if LLM enabled
+        genomic_features = []
+        if self.use_llm:
+            genomic_features = self.llm_extractor.extract_genomic_features(criteria_text)
+        
+        # Step 3: Map to mCODE elements
         mapping_result = self.mcode_mapper.process_nlp_output({
             'codes': extracted_codes,
-            'entities': []
+            'entities': [],
+            'genomic_features': genomic_features.get('genomic_variants', [])
         })
         
         return {
@@ -62,7 +75,13 @@ class ExtractionPipeline:
                     trial_data = {'raw': trial}
                 else:
                     # Extract eligibility criteria from nested structure
-                    criteria = trial.get('protocolSection', {}).get('eligibilityModule', {}).get('eligibilityCriteria', '')
+                    protocol_section = trial.get('protocolSection', {})
+                    eligibility_module = protocol_section.get('eligibilityModule', {})
+                    criteria = eligibility_module.get('eligibilityCriteria', '')
+                    
+                    self.logger.info(f"Processing trial {trial.get('protocolSection', {}).get('identificationModule', {}).get('nctId', 'unknown')}")
+                    self.logger.debug(f"Criteria found: {bool(criteria)}")
+                    
                     trial_data = trial.copy()
                 
                 if not criteria:

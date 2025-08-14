@@ -2,7 +2,7 @@ import os
 import json
 import time
 from typing import Any, Optional
-from .config import Config
+from config import Config
 
 
 class CacheManager:
