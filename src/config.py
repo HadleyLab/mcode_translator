@@ -9,7 +9,7 @@ class Config:
     
     def __init__(self):
         # API Configuration
-        self.api_base_url = os.getenv("CLINICALTRIALS_API_BASE_URL", "https://clinicaltrials.gov/api/v2")
+        self.api_base_url = "https://clinicaltrials.gov/api/v2"
         self.api_key = os.getenv("CLINICALTRIALS_API_KEY", None)
         
         # Cache Configuration

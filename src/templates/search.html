@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clinical Trials Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .trial {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clinical Trials Search</h1>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search for clinical trials...">
+        <button onclick="searchTrials()">Search</button>
+    </div>
+    <div id="results"></div>
+
+    <script>
+        function searchTrials() {
+            const query = document.getElementById('searchInput').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Searching...</p>';
+
+            fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    limit: 10
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    displayResults(data.results);
+                } else {
+                    resultsDiv.innerHTML = `<p class="error">Error: ${data.message}</p>`;
+                }
+            })
+            .catch(error => {
+                resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            });
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (!results.studies || results.studies.length === 0) {
+                resultsDiv.innerHTML = '<p>No trials found</p>';
+                return;
+            }
+
+            let html = '';
+            results.studies.forEach(study => {
+                const protocol = study.protocolSection || {};
+                const identification = protocol.identificationModule || {};
+                
+                html += `<div class="trial">
+                    <h3>${identification.briefTitle || 'No title'}</h3>
+                    <p>NCT ID: ${identification.nctId || 'Unknown'}</p>
+                </div>`;
+            });
+
+            resultsDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
