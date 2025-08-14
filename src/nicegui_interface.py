@@ -1,101 +1,136 @@
 from nicegui import ui
-from clinical_trials_api import ClinicalTrialsAPI
-from extraction_pipeline import ExtractionPipeline
-from config import Config
-import json
+import sys
+import os
+import asyncio
 
-def init_nicegui_interface():
-    # Search input and controls
-    with ui.header().classes('bg-blue-100 p-4'):
-        ui.label('Clinical Trials Search').classes('text-2xl font-bold')
-        search_input = ui.input('Search terms', placeholder='breast cancer').classes('w-96')
-        search_button = ui.button('Search', icon='search')
-        limit_slider = ui.slider(min=1, max=20, value=5, step=1).props('label-always')
-        ui.label().bind_text_from(limit_slider, 'value', lambda v: f'Results limit: {v}')
+# Add src directory to Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-    # Results display area
-    results_container = ui.column().classes('w-full p-4 gap-4')
+from src.clinical_trials_api import ClinicalTrialsAPI
+from src.extraction_pipeline import ExtractionPipeline
+import time
 
-    async def perform_search():
-        search_term = search_input.value or 'breast cancer'
-        limit = int(limit_slider.value)
+# Initialize API client
+api_client = ClinicalTrialsAPI()
+
+# Initialize extraction pipeline with caching
+extraction_cache = {}
+pipeline = ExtractionPipeline(use_llm=True, model="deepseek-coder")
+
+# Basic search interface
+with ui.column().classes('w-full items-center'):
+    ui.label('mCODE Clinical Trials Search').classes('text-2xl')
+    
+    # Search controls
+    with ui.row().classes('w-full justify-center items-center'):
+        search_input = ui.input('Search term', value='breast cancer').classes('w-64')
         
-        results_container.clear()
-        with results_container:
-            ui.spinner('dots', size='lg', color='primary')
-            ui.label('Searching...')
+        # Results limit control
+        with ui.column().classes('w-64'):
+            ui.label('Results limit').classes('text-sm')
+            limit_slider = ui.slider(min=1, max=20, value=5).classes('w-full')
+        
+        # Extraction controls
+        with ui.column().classes('w-64'):
+            ui.label('Extraction').classes('text-sm')
+            llm_toggle = ui.toggle([True, False], value=True).props('left-label').bind_value(pipeline, 'use_llm')
+            ui.label('Enable LLM extraction')
+        
+        search_button = ui.button('Search', icon='search').classes('w-32')
 
+    # Results display
+    trials_container = ui.column().classes('w-full p-4')
+
+# Define search handler
+async def on_search():
+    trials_container.clear()
+    with trials_container:
+        # Show loading state
+        loading = ui.spinner('dots', size='lg', color='primary')
+        status_label = ui.label('Searching clinical trials...')
+        
         try:
-            # Call backend API
-            api = ClinicalTrialsAPI(Config())
-            pipeline = ExtractionPipeline()
+            # Perform async search
+            def search_task():
+                return api_client.search_trials(search_input.value, max_results=int(limit_slider.value))
             
-            raw_results = api.search_trials(search_term, max_results=limit)
-            processed_results = pipeline.process_search_results(raw_results['studies'])
+            results = await asyncio.get_event_loop().run_in_executor(None, search_task)
             
-            results_container.clear()
-            with results_container:
-                if not processed_results:
-                    ui.label('No matching trials found').classes('text-lg')
-                    return
+            if not results:
+                status_label.set_text('No results found')
+                return
+            
+            # Update status
+            status_label.set_text(f"Found {len(results.get('studies', []))} trials")
+            loading.set_visibility(False)
+            
+            for study in results.get('studies', []):
+                protocol_section = study.get('protocolSection', {})
+                eligibility_module = protocol_section.get('eligibilityModule', {})
+                criteria = eligibility_module.get('eligibilityCriteria', '')
                 
-                ui.label(f'Found {len(processed_results)} trials').classes('text-lg font-bold')
+                # Show processing status
+                processing_label = ui.label(f"Processing trial {protocol_section.get('identificationModule', {}).get('nctId')}...")
                 
-                for trial in processed_results:
-                    with ui.card().classes('w-full p-4 gap-2'):
-                        # Basic trial info
-                        protocol = trial.get('protocolSection', {})
-                        ident = protocol.get('identificationModule', {})
-                        ui.label(ident.get('briefTitle', 'No title')).classes('text-xl font-bold')
-                        ui.label(f"NCT ID: {ident.get('nctId', 'Unknown')}")
+                try:
+                    # Check cache before processing
+                    extraction_result = None
+                    if criteria in extraction_cache:
+                        extraction_result = extraction_cache[criteria]
+                    elif criteria:
+                        extraction_status = ui.label('Extracting genomic features...')
                         
-                        # mCODE data display
-                        mcode_data = trial.get('mcode_data', {})
-                        if mcode_data:
-                            with ui.expansion('View mCODE Data').classes('w-full'):
-                                display_mcode_data(mcode_data)
-                        else:
-                            ui.label('No mCODE data extracted').classes('text-sm italic')
-
+                        # Run extraction in executor to prevent blocking
+                        def extraction_task():
+                            return pipeline.process_criteria(criteria)
+                            
+                        extraction_result = await asyncio.get_event_loop().run_in_executor(None, extraction_task)
+                        extraction_cache[criteria] = extraction_result
+                        
+                        extraction_status.set_text('Extraction complete')
+                        ui.notify('Genomic features extracted successfully', type='positive')
+                    
+                    # Display results in main thread
+                    # Run display in main thread with explicit container context
+                    def display_task():
+                        with trials_container:
+                            display_trial_results(protocol_section, extraction_result)
+                    
+                    await asyncio.get_event_loop().run_in_executor(None, display_task)
+                except Exception as e:
+                    ui.notify(f"Error processing trial: {str(e)}", type='negative')
+                    processing_label.set_text(f"Error: {str(e)}")
+                    continue
+                    
         except Exception as e:
-            results_container.clear()
-            with results_container:
-                ui.notify(f"Error: {str(e)}", type='negative')
-                ui.label(f"Error occurred: {str(e)}").classes('text-red')
+            status_label.set_text(f"Search failed: {str(e)}")
+            ui.notify(f"Search error: {str(e)}", type='negative')
+        finally:
+            loading.set_visibility(False)
 
-    def display_mcode_data(mcode_data):
-        """Display mCODE data in a structured format"""
-        # Genomic Variants
-        if mcode_data.get('mcode_mappings', {}).get('mapped_elements'):
-            variants = [e for e in mcode_data['mcode_mappings']['mapped_elements'] 
-                      if e.get('mcode_element') == 'GenomicVariant']
-            if variants:
-                with ui.card().classes('bg-blue-50 p-2'):
-                    ui.label('Genomic Variants').classes('font-bold')
-                    for var in variants:
-                        ui.label(f"{var.get('geneStudied')}: {var.get('dnaChange')}")
+def display_trial_results(protocol_section, extraction_result):
+    with ui.card().classes('w-full'):
+        # Basic trial info
+        ui.label(protocol_section.get('identificationModule', {}).get('officialTitle')).classes('text-lg')
+        ui.label(f"NCT ID: {protocol_section.get('identificationModule', {}).get('nctId')}")
+        
+        # Show genomic features if available
+        if extraction_result and extraction_result.get('genomic_features'):
+            with ui.row().classes('w-full'):
+                ui.label("Genomic Features:").classes('font-bold')
+                with ui.column():
+                    if extraction_result['genomic_features'].get('genomic_variants'):
+                        ui.label(f"Variants: {len(extraction_result['genomic_features']['genomic_variants'])}")
+                        for variant in extraction_result['genomic_features']['genomic_variants']:
+                            ui.label(f"- {variant.get('gene', variant)} {variant.get('variant', '')}")
+                    
+                    if extraction_result['genomic_features'].get('biomarkers'):
+                        ui.label(f"Biomarkers: {len(extraction_result['genomic_features']['biomarkers'])}")
+                        for biomarker in extraction_result['genomic_features']['biomarkers']:
+                            ui.label(f"- {biomarker.get('name', biomarker)}: {biomarker.get('status', '')}")
+        
 
-        # Biomarkers
-        if mcode_data.get('mcode_mappings', {}).get('mapped_elements'):
-            biomarkers = [e for e in mcode_data['mcode_mappings']['mapped_elements']
-                        if e.get('mcode_element') == 'Biomarker']
-            if biomarkers:
-                with ui.card().classes('bg-green-50 p-2'):
-                    ui.label('Biomarkers').classes('font-bold')
-                    for bio in biomarkers:
-                        ui.label(f"{bio.get('code')}: {bio.get('value')}")
+# Bind handler to button click
+search_button.on('click', on_search)
 
-        # Full mCODE structure (collapsed by default)
-        with ui.expansion('View Full mCODE Structure'):
-            ui.json_editor({'content': {'json': mcode_data.get('mcode_mappings', {})}}, 
-                         language='json', expanded=False)
-
-    # Wire up search button
-    search_button.on_click(perform_search)
-
-    # Initialize with default search
-    ui.timer(0.1, perform_search, once=True)
-
-if __name__ in {"__main__", "__mp_main__"}:
-    ui.run(reload=False,
-           title="mCODE Clinical Trials Search")
+ui.run(title='mCODE Clinical Trials Search')

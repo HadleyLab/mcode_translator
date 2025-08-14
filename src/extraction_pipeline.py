@@ -9,20 +9,23 @@ class ExtractionPipeline:
     Orchestrates code extraction and mCODE mapping from clinical trial eligibility criteria
     """
     
-    def __init__(self, use_llm: bool = True):
+    def __init__(self, use_llm: bool = True, model: str = "deepseek-coder"):
         """
         Initialize the extraction pipeline with required components
         
         Args:
             use_llm: Whether to enable LLM-based feature extraction
+            model: LLM model to use for extraction
         """
         self.logger = logging.getLogger(__name__)
         self.code_extractor = CodeExtractionModule()
         self.mcode_mapper = MCODEMappingEngine()
         self.use_llm = use_llm
+        self.model = model
         if use_llm:
             from src.llm_interface import LLMInterface
             self.llm_extractor = LLMInterface()
+            self.llm_extractor.model = model
         
     def process_criteria(self, criteria_text: str) -> Dict[str, Any]:
         """
@@ -43,16 +46,31 @@ class ExtractionPipeline:
             genomic_features = self.llm_extractor.extract_genomic_features(criteria_text)
         
         # Step 3: Map to mCODE elements
+        # DEBUG: Log genomic_features type and content
+        self.logger.debug(f"genomic_features type: {type(genomic_features)}")
+        self.logger.debug(f"genomic_features value: {genomic_features}")
+        
         mapping_result = self.mcode_mapper.process_nlp_output({
             'codes': extracted_codes,
             'entities': [],
-            'genomic_features': genomic_features.get('genomic_variants', [])
+            'genomic_features': genomic_features.get('genomic_variants', []) if isinstance(genomic_features, dict) else genomic_features
         })
         
+        # Add genomic feature counts to metadata
+        if isinstance(genomic_features, dict):
+            variant_count = len(genomic_features.get('genomic_variants', []))
+            biomarker_count = len(genomic_features.get('biomarkers', []))
+            mapping_result['metadata'].update({
+                'genomic_variants_count': variant_count,
+                'biomarkers_count': biomarker_count
+            })
+
         return {
             'extracted_codes': extracted_codes,
             'mcode_mappings': mapping_result,
-            'original_criteria': criteria_text  # Include original text
+            'genomic_features': genomic_features,  # Include raw features
+            'original_criteria': criteria_text,
+            'model_used': self.model if self.use_llm else None
         }
         
     def process_search_results(self, search_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

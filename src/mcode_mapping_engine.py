@@ -647,8 +647,14 @@ class MCODEMappingEngine:
         # Handle LLM genomic features if present
         if 'genomic_features' in nlp_output:
             for feature in nlp_output['genomic_features']:
+                # Handle both string and dict formats
+                if isinstance(feature, dict):
+                    text = f"{feature['gene']} {feature['variant']}"
+                else:
+                    text = str(feature)
+                
                 entities.append({
-                    'text': f"{feature['gene']} {feature['variant']}",
+                    'text': text,
                     'confidence': 0.9,
                     'type': 'genomic_variant'
                 })
