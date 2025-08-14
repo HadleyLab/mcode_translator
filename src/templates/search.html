@@ -9,6 +9,24 @@
             margin: 0 auto;
             padding: 20px;
         }
+        .mcode-section {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        .mcode-group {
+            margin-bottom: 10px;
+        }
+        .mcode-group h5 {
+            margin: 5px 0;
+        }
+        .mcode-group pre {
+            background-color: white;
+            padding: 8px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
         .search-container {
             margin-bottom: 20px;
         }
@@ -49,37 +67,79 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success') {
-                    displayResults(data.results);
-                } else {
-                    resultsDiv.innerHTML = `<p class="error">Error: ${data.message}</p>`;
-                }
+                displayResults(data);
             })
             .catch(error => {
                 resultsDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
             });
         }
 
-        function displayResults(results) {
+        function displayResults(response) {
             const resultsDiv = document.getElementById('results');
+            console.log('API Response:', response); // Debug log
             
-            if (!results.studies || results.studies.length === 0) {
+            // The backend returns:
+            // {
+            //   status: 'success',
+            //   results: [...], // array of studies
+            //   count: N
+            // }
+            let studies = [];
+            if (response?.status === 'success' && Array.isArray(response.results)) {
+                studies = response.results;
+            } else {
+                console.error('Unexpected response format:', response);
+            }
+
+            if (studies.length === 0) {
                 resultsDiv.innerHTML = '<p>No trials found</p>';
                 return;
             }
 
             let html = '';
-            results.studies.forEach(study => {
+            studies.forEach(study => {
                 const protocol = study.protocolSection || {};
                 const identification = protocol.identificationModule || {};
                 
                 html += `<div class="trial">
                     <h3>${identification.briefTitle || 'No title'}</h3>
                     <p>NCT ID: ${identification.nctId || 'Unknown'}</p>
+                    
+                    <div class="mcode-section">
+                        <h4>mCODE Data</h4>
+                        <div class="mcode-data">
+                            ${formatMcodeData(study.mcode_data)}
+                        </div>
+                    </div>
                 </div>`;
             });
 
             resultsDiv.innerHTML = html;
+        }
+        function formatMcodeData(mcodeData) {
+            if (!mcodeData) return '<p>No mCODE data available</p>';
+            
+            let html = '';
+            
+            // Display extracted codes
+            if (mcodeData.extracted_codes?.length > 0) {
+                html += `<div class="mcode-group">
+                    <h5>Extracted Codes</h5>
+                    <ul>${mcodeData.extracted_codes.map(code =>
+                        `<li>${code.system}: ${code.code} - ${code.display}</li>`
+                    ).join('')}</ul>
+                </div>`;
+            }
+            
+            // Display mCODE mappings
+            if (mcodeData.mcode_mappings) {
+                html += `<div class="mcode-group">
+                    <h5>mCODE Mappings</h5>
+                    <pre>${JSON.stringify(mcodeData.mcode_mappings, null, 2)}</pre>
+                </div>`;
+            }
+            
+            return html || '<p>No mCODE data available</p>';
         }
     </script>
 </body>
