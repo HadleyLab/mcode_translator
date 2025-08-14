@@ -1,0 +1,8 @@
+{
+  "api_base_url": "https://clinicaltrials.gov/api/query",
+  "cache_enabled": true,
+  "cache_dir": "./cache",
+  "cache_ttl": 3600,
+  "rate_limit_delay": 1.0,
+  "request_timeout": 30
+}
