@@ -385,6 +385,274 @@ class TestStructuredDataGenerator(unittest.TestCase):
         self.assertIn("<Bundle", result)
         self.assertIn("xmlns", result)
         self.assertIn("<gender value=\"female\" />", result)
+    
+    def test_generate_allergy_intolerance_resource(self):
+        """
+        Test generating AllergyIntolerance resource
+        """
+        allergy_data = {
+            "mcode_element": "AllergyIntolerance",
+            "primary_code": {"system": "SNOMEDCT", "code": "77386006"},
+            "mapped_codes": {"ICD10CM": "Z88.0"}
+        }
+        
+        result = self.generator.generate_allergy_intolerance_resource(allergy_data)
+        
+        # Check basic structure
+        self.assertEqual(result["resourceType"], "AllergyIntolerance")
+        self.assertIn("id", result)
+        self.assertIn("meta", result)
+        self.assertIn("profile", result["meta"])
+        self.assertIn(self.generator.mcode_profiles["AllergyIntolerance"], result["meta"]["profile"])
+        
+        # Check code
+        self.assertIn("code", result)
+        self.assertIn("coding", result["code"])
+        self.assertEqual(len(result["code"]["coding"]), 2)
+        self.assertEqual(result["code"]["coding"][0]["system"],
+                         self.generator.system_uris["SNOMEDCT"])
+        self.assertEqual(result["code"]["coding"][0]["code"], "77386006")
+        self.assertEqual(result["code"]["coding"][1]["system"],
+                         self.generator.system_uris["ICD10CM"])
+        self.assertEqual(result["code"]["coding"][1]["code"], "Z88.0")
+        
+        # Check patient reference
+        self.assertIn("patient", result)
+        self.assertEqual(result["patient"]["reference"], "Patient/")
+    
+    def test_generate_specimen_resource(self):
+        """
+        Test generating Specimen resource
+        """
+        specimen_data = {
+            "mcode_element": "Specimen",
+            "primary_code": {"system": "SNOMEDCT", "code": "119376003"},
+            "mapped_codes": {}
+        }
+        
+        result = self.generator.generate_specimen_resource(specimen_data)
+        
+        # Check basic structure
+        self.assertEqual(result["resourceType"], "Specimen")
+        self.assertIn("id", result)
+        self.assertIn("meta", result)
+        self.assertIn("profile", result["meta"])
+        self.assertIn(self.generator.mcode_profiles["Specimen"], result["meta"]["profile"])
+        
+        # Check type
+        self.assertIn("type", result)
+        self.assertIn("coding", result["type"])
+        self.assertEqual(len(result["type"]["coding"]), 1)
+        self.assertEqual(result["type"]["coding"][0]["system"],
+                         self.generator.system_uris["SNOMEDCT"])
+        self.assertEqual(result["type"]["coding"][0]["code"], "119376003")
+    
+    def test_generate_diagnostic_report_resource(self):
+        """
+        Test generating DiagnosticReport resource
+        """
+        report_data = {
+            "mcode_element": "DiagnosticReport",
+            "primary_code": {"system": "LOINC", "code": "24357-6"},
+            "mapped_codes": {}
+        }
+        
+        result = self.generator.generate_diagnostic_report_resource(report_data)
+        
+        # Check basic structure
+        self.assertEqual(result["resourceType"], "DiagnosticReport")
+        self.assertIn("id", result)
+        self.assertIn("meta", result)
+        self.assertIn("profile", result["meta"])
+        self.assertIn(self.generator.mcode_profiles["DiagnosticReport"], result["meta"]["profile"])
+        
+        # Check code
+        self.assertIn("code", result)
+        self.assertIn("coding", result["code"])
+        self.assertEqual(len(result["code"]["coding"]), 1)
+        self.assertEqual(result["code"]["coding"][0]["system"],
+                         self.generator.system_uris["LOINC"])
+        self.assertEqual(result["code"]["coding"][0]["code"], "24357-6")
+        
+        # Check subject reference
+        self.assertIn("subject", result)
+        self.assertEqual(result["subject"]["reference"], "Patient/")
+    
+    def test_generate_family_member_history_resource(self):
+        """
+        Test generating FamilyMemberHistory resource
+        """
+        family_history_data = {
+            "mcode_element": "FamilyMemberHistory",
+            "primary_code": {"system": "SNOMEDCT", "code": "410534003"},
+            "mapped_codes": {}
+        }
+        
+        result = self.generator.generate_family_member_history_resource(family_history_data)
+        
+        # Check basic structure
+        self.assertEqual(result["resourceType"], "FamilyMemberHistory")
+        self.assertIn("id", result)
+        self.assertIn("meta", result)
+        self.assertIn("profile", result["meta"])
+        self.assertIn(self.generator.mcode_profiles["FamilyMemberHistory"], result["meta"]["profile"])
+        
+        # Check patient reference
+        self.assertIn("patient", result)
+        self.assertEqual(result["patient"]["reference"], "Patient/")
+        
+        # Check relationship
+        self.assertIn("relationship", result)
+        self.assertIn("coding", result["relationship"])
+        self.assertEqual(len(result["relationship"]["coding"]), 1)
+        self.assertEqual(result["relationship"]["coding"][0]["system"],
+                         self.generator.system_uris["SNOMEDCT"])
+        self.assertEqual(result["relationship"]["coding"][0]["code"], "410534003")
+    
+    def test_validate_allergy_intolerance_resource(self):
+        """
+        Test validating AllergyIntolerance resource
+        """
+        # Valid AllergyIntolerance resource
+        allergy = {
+            "resourceType": "AllergyIntolerance",
+            "code": {
+                "coding": [
+                    {"system": "http://snomed.info/sct", "code": "77386006"}
+                ]
+            },
+            "patient": {
+                "reference": "Patient/example"
+            }
+        }
+        
+        result = self.generator.validate_resource(allergy)
+        
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["resource_type"], "AllergyIntolerance")
+        self.assertEqual(len(result["errors"]), 0)
+        
+        # Invalid AllergyIntolerance resource (missing patient)
+        allergy_invalid = {
+            "resourceType": "AllergyIntolerance",
+            "code": {
+                "coding": [
+                    {"system": "http://snomed.info/sct", "code": "77386006"}
+                ]
+            }
+        }
+        
+        result = self.generator.validate_resource(allergy_invalid)
+        
+        self.assertFalse(result["valid"])
+        self.assertIn("AllergyIntolerance must have patient reference", result["errors"])
+    
+    def test_validate_specimen_resource(self):
+        """
+        Test validating Specimen resource
+        """
+        # Valid Specimen resource
+        specimen = {
+            "resourceType": "Specimen",
+            "type": {
+                "coding": [
+                    {"system": "http://snomed.info/sct", "code": "119376003"}
+                ]
+            }
+        }
+        
+        result = self.generator.validate_resource(specimen)
+        
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["resource_type"], "Specimen")
+        self.assertEqual(len(result["errors"]), 0)
+        
+        # Invalid Specimen resource (missing type)
+        specimen_invalid = {
+            "resourceType": "Specimen"
+        }
+        
+        result = self.generator.validate_resource(specimen_invalid)
+        
+        self.assertFalse(result["valid"])
+        # The error will be "Missing required element: type" because that's checked first
+        self.assertIn("Missing required element: type", result["errors"])
+    
+    def test_validate_diagnostic_report_resource(self):
+        """
+        Test validating DiagnosticReport resource
+        """
+        # Valid DiagnosticReport resource
+        report = {
+            "resourceType": "DiagnosticReport",
+            "code": {
+                "coding": [
+                    {"system": "http://loinc.org", "code": "24357-6"}
+                ]
+            },
+            "subject": {
+                "reference": "Patient/example"
+            }
+        }
+        
+        result = self.generator.validate_resource(report)
+        
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["resource_type"], "DiagnosticReport")
+        self.assertEqual(len(result["errors"]), 0)
+        
+        # Invalid DiagnosticReport resource (missing subject)
+        report_invalid = {
+            "resourceType": "DiagnosticReport",
+            "code": {
+                "coding": [
+                    {"system": "http://loinc.org", "code": "24357-6"}
+                ]
+            }
+        }
+        
+        result = self.generator.validate_resource(report_invalid)
+        
+        self.assertFalse(result["valid"])
+        self.assertIn("DiagnosticReport must have subject reference", result["errors"])
+    
+    def test_validate_family_member_history_resource(self):
+        """
+        Test validating FamilyMemberHistory resource
+        """
+        # Valid FamilyMemberHistory resource
+        family_history = {
+            "resourceType": "FamilyMemberHistory",
+            "patient": {
+                "reference": "Patient/example"
+            },
+            "relationship": {
+                "coding": [
+                    {"system": "http://snomed.info/sct", "code": "410534003"}
+                ]
+            }
+        }
+        
+        result = self.generator.validate_resource(family_history)
+        
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["resource_type"], "FamilyMemberHistory")
+        self.assertEqual(len(result["errors"]), 0)
+        
+        # Invalid FamilyMemberHistory resource (missing patient)
+        family_history_invalid = {
+            "resourceType": "FamilyMemberHistory",
+            "relationship": {
+                "coding": [
+                    {"system": "http://snomed.info/sct", "code": "410534003"}
+                ]
+            }
+        }
+        
+        result = self.generator.validate_resource(family_history_invalid)
+        
+        self.assertFalse(result["valid"])
+        self.assertIn("FamilyMemberHistory must have patient reference", result["errors"])
 
 
 if __name__ == '__main__':

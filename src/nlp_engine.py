@@ -87,7 +87,7 @@ class NLPEngine:
         self.exclusion_phrases = [self.nlp.make_doc(text) for text in exclusion_patterns]
         self.matcher.add("EXCLUSION_INDICATOR", self.exclusion_phrases)
     
-    def clean_text(self, text: str) -> str:
+    def clean_text(self, text) -> str:
         """
         Clean and normalize text
         
@@ -97,6 +97,12 @@ class NLPEngine:
         Returns:
             Cleaned text
         """
+        # Handle list inputs
+        if isinstance(text, list):
+            text = ' '.join(str(item) for item in text)
+        elif not isinstance(text, str):
+            text = str(text)
+            
         if not text:
             return ""
             
@@ -179,7 +185,7 @@ class NLPEngine:
             
         return sections
     
-    def extract_medical_entities(self, text: str) -> List[Dict[str, Any]]:
+    def extract_medical_entities(self, text) -> List[Dict[str, Any]]:
         """
         Extract medical entities from text using NLP
         
@@ -189,6 +195,12 @@ class NLPEngine:
         Returns:
             List of extracted entities
         """
+        # Handle list inputs
+        if isinstance(text, list):
+            text = ' '.join(str(item) for item in text)
+        elif not isinstance(text, str):
+            text = str(text)
+            
         if not text:
             return []
             
@@ -221,7 +233,7 @@ class NLPEngine:
         
         return entities
     
-    def classify_criteria(self, criteria_text: str) -> str:
+    def classify_criteria(self, criteria_text) -> str:
         """
         Classify criteria as inclusion or exclusion
         
@@ -231,6 +243,12 @@ class NLPEngine:
         Returns:
             Classification: 'inclusion', 'exclusion', or 'unclear'
         """
+        # Handle list inputs
+        if isinstance(criteria_text, list):
+            criteria_text = ' '.join(str(item) for item in criteria_text)
+        elif not isinstance(criteria_text, str):
+            criteria_text = str(criteria_text)
+            
         inclusion_indicators = [
             'must have', 'required', 'diagnosed with', 'history of',
             'able to', 'capable of', 'willing to'
@@ -399,7 +417,7 @@ class NLPEngine:
         
         return procedures
     
-    def calculate_confidence(self, entity: Dict[str, Any], context: str = "") -> float:
+    def calculate_confidence(self, entity: Dict[str, Any], context = "") -> float:
         """
         Calculate confidence score for an entity
         
@@ -410,19 +428,33 @@ class NLPEngine:
         Returns:
             Confidence score between 0.0 and 1.0
         """
+        # Handle list inputs for context
+        if isinstance(context, list):
+            context = ' '.join(str(item) for item in context)
+        elif not isinstance(context, str):
+            context = str(context)
+            
         confidence = 0.5  # Base confidence
         
         # Increase confidence for longer entities
-        if len(entity.get('text', '')) > 10:
+        entity_text = entity.get('text', '')
+        # Handle list inputs for entity text
+        if isinstance(entity_text, list):
+            entity_text = ' '.join(str(item) for item in entity_text)
+        elif not isinstance(entity_text, str):
+            entity_text = str(entity_text)
+            
+        if len(entity_text) > 10:
             confidence += 0.1
         
         # Increase confidence for context matches
-        if context and entity.get('text') and entity['text'].lower() in context.lower():
-            confidence += 0.2
+        if context and entity_text and isinstance(entity_text, str) and isinstance(context, str):
+            if entity_text.lower() in context.lower():
+                confidence += 0.2
         
         # Decrease confidence for potentially ambiguous terms
         ambiguous_terms = ['patient', 'subject', 'participant', 'individual']
-        if entity.get('text', '').lower() in ambiguous_terms:
+        if isinstance(entity_text, str) and entity_text.lower() in ambiguous_terms:
             confidence -= 0.3
         
         return max(0.0, min(1.0, confidence))  # Clamp between 0 and 1
@@ -439,6 +471,12 @@ class NLPEngine:
         """
         if not criteria_text:
             return {}
+        
+        # Ensure criteria_text is a string
+        if isinstance(criteria_text, list):
+            criteria_text = ' '.join(str(item) for item in criteria_text)
+        elif not isinstance(criteria_text, str):
+            criteria_text = str(criteria_text)
         
         # Clean the text
         cleaned_text = self.clean_text(criteria_text)
@@ -487,17 +525,55 @@ class NLPEngine:
         
         # Generate structured mCODE FHIR resources
         mapped_elements = result['mcode_mappings'].get('mapped_elements', [])
-        demographics = result.get('demographics', {})
+        # Format demographics data for structured data generator
+        original_demographics = result.get('demographics', {})
+        formatted_demographics = {}
+        
+        # Extract gender from gender criteria
+        if 'gender' in original_demographics:
+            gender_criteria = original_demographics['gender']
+            if isinstance(gender_criteria, list) and gender_criteria:
+                # Extract gender from the first gender criterion
+                first_criterion = gender_criteria[0]
+                if isinstance(first_criterion, dict) and 'gender' in first_criterion:
+                    formatted_demographics['gender'] = first_criterion['gender']
+                # If we have text, try to extract gender from it
+                elif isinstance(first_criterion, dict) and 'text' in first_criterion:
+                    text = first_criterion['text'].lower()
+                    if 'male' in text or 'men' in text:
+                        formatted_demographics['gender'] = 'male'
+                    elif 'female' in text or 'women' in text:
+                        formatted_demographics['gender'] = 'female'
+            elif isinstance(gender_criteria, str):
+                # Direct gender string
+                formatted_demographics['gender'] = gender_criteria.lower()
+        
+        # Extract age from age criteria
+        if 'age' in original_demographics:
+            age_criteria = original_demographics['age']
+            if isinstance(age_criteria, list) and age_criteria:
+                # Extract age from the first age criterion
+                first_criterion = age_criteria[0]
+                if isinstance(first_criterion, dict) and 'min_age' in first_criterion:
+                    formatted_demographics['age'] = first_criterion['min_age']
+                elif isinstance(first_criterion, dict) and 'text' in first_criterion:
+                    # Try to extract age from text
+                    import re
+                    text = first_criterion['text']
+                    age_match = re.search(r'(\d+)\s*(?:years?\s*)?(?:or\s+(older|younger|greater|less))?', text, re.IGNORECASE)
+                    if age_match:
+                        formatted_demographics['age'] = age_match.group(1)
+        
         result['structured_data'] = self.structured_data_generator.generate_mcode_resources(
             mapped_elements,
-            demographics
+            formatted_demographics
         )
         
         # Add metadata
         result['metadata'] = {
             'text_length': len(cleaned_text),
             'entity_count': len(result['entities']),
-            'code_count': result['codes']['metadata']['total_codes'],
+            'code_count': result['codes']['metadata']['total_codes'] if 'metadata' in result['codes'] and 'total_codes' in result['codes']['metadata'] else 0,
             'confidence_average': sum(e.get('confidence', 0) for e in result['entities']) / len(result['entities']) if result['entities'] else 0
         }
         

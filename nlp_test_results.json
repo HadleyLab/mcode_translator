@@ -1,0 +1,772 @@
+{
+  "entities": [
+    {
+      "text": "Inclusion Criteria",
+      "label": "ENTITY",
+      "start": 0,
+      "end": 18,
+      "confidence": 0.8
+    },
+    {
+      "text": "Male",
+      "label": "ENTITY",
+      "start": 22,
+      "end": 26,
+      "confidence": 0.7
+    },
+    {
+      "text": "female",
+      "label": "ENTITY",
+      "start": 30,
+      "end": 36,
+      "confidence": 0.7
+    },
+    {
+      "text": "patients",
+      "label": "ENTITY",
+      "start": 37,
+      "end": 45,
+      "confidence": 0.7
+    },
+    {
+      "text": "years",
+      "label": "ENTITY",
+      "start": 54,
+      "end": 59,
+      "confidence": 0.7
+    },
+    {
+      "text": "older",
+      "label": "ENTITY",
+      "start": 63,
+      "end": 68,
+      "confidence": 0.7
+    },
+    {
+      "text": "Histologically",
+      "label": "ENTITY",
+      "start": 71,
+      "end": 85,
+      "confidence": 0.8
+    },
+    {
+      "text": "diagnosis",
+      "label": "ENTITY",
+      "start": 96,
+      "end": 105,
+      "confidence": 0.7
+    },
+    {
+      "text": "breast cancer",
+      "label": "ENTITY",
+      "start": 109,
+      "end": 122,
+      "confidence": 0.8
+    },
+    {
+      "text": "chemotherapy",
+      "label": "ENTITY",
+      "start": 150,
+      "end": 162,
+      "confidence": 0.8
+    },
+    {
+      "text": "treatment",
+      "label": "ENTITY",
+      "start": 163,
+      "end": 172,
+      "confidence": 0.7
+    },
+    {
+      "text": "radiation therapy",
+      "label": "ENTITY",
+      "start": 195,
+      "end": 212,
+      "confidence": 0.8
+    },
+    {
+      "text": "Laboratory values",
+      "label": "ENTITY",
+      "start": 215,
+      "end": 232,
+      "confidence": 0.8
+    },
+    {
+      "text": "Exclusion Criteria",
+      "label": "ENTITY",
+      "start": 254,
+      "end": 272,
+      "confidence": 0.8
+    },
+    {
+      "text": "Pregnant",
+      "label": "ENTITY",
+      "start": 276,
+      "end": 284,
+      "confidence": 0.7
+    },
+    {
+      "text": "nursing women",
+      "label": "ENTITY",
+      "start": 288,
+      "end": 301,
+      "confidence": 0.8
+    },
+    {
+      "text": "History",
+      "label": "ENTITY",
+      "start": 304,
+      "end": 311,
+      "confidence": 0.7
+    },
+    {
+      "text": "malignancies",
+      "label": "ENTITY",
+      "start": 321,
+      "end": 333,
+      "confidence": 0.8
+    },
+    {
+      "text": "years",
+      "label": "ENTITY",
+      "start": 352,
+      "end": 357,
+      "confidence": 0.7
+    },
+    {
+      "text": "Allergy",
+      "label": "ENTITY",
+      "start": 360,
+      "end": 367,
+      "confidence": 0.7
+    },
+    {
+      "text": "contrast agents",
+      "label": "ENTITY",
+      "start": 371,
+      "end": 386,
+      "confidence": 0.8
+    },
+    {
+      "text": "Unable",
+      "label": "ENTITY",
+      "start": 389,
+      "end": 395,
+      "confidence": 0.7
+    },
+    {
+      "text": "MRI scanning",
+      "label": "ENTITY",
+      "start": 407,
+      "end": 419,
+      "confidence": 0.8
+    },
+    {
+      "text": "Male",
+      "label": "GENDER_REFERENCE",
+      "start": 22,
+      "end": 26,
+      "confidence": 0.7
+    },
+    {
+      "text": "female",
+      "label": "GENDER_REFERENCE",
+      "start": 30,
+      "end": 36,
+      "confidence": 0.7
+    },
+    {
+      "text": "aged",
+      "label": "AGE_EXPRESSION",
+      "start": 46,
+      "end": 50,
+      "confidence": 0.7
+    },
+    {
+      "text": "older",
+      "label": "AGE_EXPRESSION",
+      "start": 63,
+      "end": 68,
+      "confidence": 0.7
+    },
+    {
+      "text": "Must have",
+      "label": "INCLUSION_INDICATOR",
+      "start": 125,
+      "end": 134,
+      "confidence": 0.7
+    },
+    {
+      "text": "Pregnant",
+      "label": "GENDER_REFERENCE",
+      "start": 276,
+      "end": 284,
+      "confidence": 0.7
+    },
+    {
+      "text": "nursing",
+      "label": "GENDER_REFERENCE",
+      "start": 288,
+      "end": 295,
+      "confidence": 0.7
+    },
+    {
+      "text": "women",
+      "label": "GENDER_REFERENCE",
+      "start": 296,
+      "end": 301,
+      "confidence": 0.7
+    },
+    {
+      "text": "History of",
+      "label": "INCLUSION_INDICATOR",
+      "start": 304,
+      "end": 314,
+      "confidence": 0.7
+    },
+    {
+      "text": "Allergy to",
+      "label": "EXCLUSION_INDICATOR",
+      "start": 360,
+      "end": 370,
+      "confidence": 0.7
+    },
+    {
+      "text": "Unable to",
+      "label": "EXCLUSION_INDICATOR",
+      "start": 389,
+      "end": 398,
+      "confidence": 0.7
+    }
+  ],
+  "demographics": {
+    "age": [
+      {
+        "text": "aged 18 years or older",
+        "min_age": "aged",
+        "max_age": "18",
+        "unit": "years"
+      }
+    ],
+    "gender": [
+      {
+        "text": "Male",
+        "gender": "male",
+        "start": 22,
+        "end": 26
+      },
+      {
+        "text": "female",
+        "gender": "female",
+        "start": 30,
+        "end": 36
+      },
+      {
+        "text": "women",
+        "gender": "female",
+        "start": 296,
+        "end": 301
+      },
+      {
+        "text": "Pregnant",
+        "gender": "pregnant",
+        "start": 276,
+        "end": 284
+      },
+      {
+        "text": "nursing",
+        "gender": "pregnant",
+        "start": 288,
+        "end": 295
+      }
+    ]
+  },
+  "temporal_expressions": [
+    {
+      "text": "Currently ",
+      "start": 175,
+      "end": 185,
+      "type": "temporal"
+    },
+    {
+      "text": "past ",
+      "start": 345,
+      "end": 350,
+      "type": "temporal"
+    },
+    {
+      "text": "within the past 5 year",
+      "start": 334,
+      "end": 356,
+      "type": "temporal"
+    }
+  ],
+  "conditions": [
+    {
+      "text": "diagnosis of breast cancer - Must have received prior chemotherapy treatment - Currently receiving radiation therapy - Laboratory values within normal limits Exclusion Criteria: - Pregnant or nursing women - History of other malignancies within the past 5 years - Allergy to contrast agents - Unable to undergo MRI scanning",
+      "condition": "breast cancer - Must have received prior chemotherapy treatment - Currently receiving radiation therapy - Laboratory values within normal limits Exclusion Criteria: - Pregnant or nursing women - History of other malignancies within the past 5 years - Allergy to contrast agents - Unable to undergo MRI scanning",
+      "confidence": 0.8
+    },
+    {
+      "text": "Inclusion Criteria: - Male or female patients aged 18 years or older - Histologically confirmed diagnosis of breast cancer",
+      "condition": "Inclusion Criteria: - Male or female patients aged 18 years or older - Histologically confirmed diagnosis of breast",
+      "confidence": 0.8
+    }
+  ],
+  "procedures": [
+    {
+      "text": "received prior chemotherapy treatment - Currently receiving radiation therapy",
+      "procedure": "prior chemotherapy treatment - Currently receiving radiation therapy",
+      "type": "procedure"
+    },
+    {
+      "text": "radiation therapy",
+      "procedure": "radiation",
+      "type": "procedure"
+    },
+    {
+      "text": "MRI scan",
+      "procedure": "MRI",
+      "type": "procedure"
+    }
+  ],
+  "sections": {
+    "inclusion": "Inclusion Criteria: - Male or female patients aged 18 years or older - Histologically confirmed diagnosis of breast cancer - Must have received prior chemotherapy treatment - Currently receiving radiation therapy - Laboratory values within normal limits",
+    "exclusion": "Exclusion Criteria: - Pregnant or nursing women - History of other malignancies within the past 5 years - Allergy to contrast agents - Unable to undergo MRI scanning"
+  },
+  "codes": {
+    "extracted_codes": {
+      "ICD10CM": [],
+      "CPT": [],
+      "LOINC": [],
+      "RxNorm": []
+    },
+    "mapped_entities": [
+      {
+        "entity": {
+          "text": "breast cancer",
+          "label": "ENTITY",
+          "start": 109,
+          "end": 122,
+          "confidence": 0.8
+        },
+        "codes": {
+          "ICD10CM": "C50.911",
+          "SNOMEDCT": "254837009"
+        },
+        "confidence": 0.8
+      },
+      {
+        "entity": {
+          "text": "chemotherapy",
+          "label": "ENTITY",
+          "start": 150,
+          "end": 162,
+          "confidence": 0.8
+        },
+        "codes": {
+          "CPT": "12345",
+          "SNOMEDCT": "367336001"
+        },
+        "confidence": 0.8
+      },
+      {
+        "entity": {
+          "text": "radiation therapy",
+          "label": "ENTITY",
+          "start": 195,
+          "end": 212,
+          "confidence": 0.8
+        },
+        "codes": {
+          "CPT": "67890",
+          "SNOMEDCT": "128934006"
+        },
+        "confidence": 0.8
+      },
+      {
+        "entity": {
+          "text": "MRI scanning",
+          "label": "ENTITY",
+          "start": 407,
+          "end": 419,
+          "confidence": 0.8
+        },
+        "codes": {
+          "CPT": "70551",
+          "LOINC": "39658-9"
+        },
+        "confidence": 0.8
+      }
+    ],
+    "metadata": {
+      "total_codes": 0,
+      "systems_found": [
+        "ICD10CM",
+        "CPT",
+        "LOINC",
+        "RxNorm"
+      ]
+    }
+  },
+  "mcode_mappings": {
+    "mapped_elements": [
+      {
+        "mcode_element": "Condition",
+        "primary_code": {
+          "system": "ICD10CM",
+          "code": "C50.911"
+        },
+        "mapped_codes": {
+          "SNOMEDCT": "254837009",
+          "LOINC": "LP12345-6"
+        },
+        "confidence": 0.8,
+        "mapped_from": "breast cancer"
+      },
+      {
+        "mcode_element": "Procedure",
+        "primary_code": {
+          "system": "CPT",
+          "code": "12345"
+        },
+        "mapped_codes": {},
+        "confidence": 0.8,
+        "mapped_from": "chemotherapy"
+      },
+      {
+        "mcode_element": "Procedure",
+        "primary_code": {
+          "system": "CPT",
+          "code": "67890"
+        },
+        "mapped_codes": {},
+        "confidence": 0.8,
+        "mapped_from": "radiation therapy"
+      }
+    ],
+    "mcode_structure": {
+      "resourceType": "Bundle",
+      "type": "collection",
+      "entry": [
+        {
+          "resource": {
+            "resourceType": "Patient",
+            "gender": "male",
+            "birthDate": "1975-01-01"
+          }
+        },
+        {
+          "resource": {
+            "resourceType": "Condition",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/sid/icd-10-cm",
+                  "code": "C50.911",
+                  "display": "Malignant neoplasm of breast"
+                }
+              ]
+            },
+            "bodySite": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "254837009",
+                  "display": "Breast"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "resource": {
+            "resourceType": "Procedure",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://www.ama-assn.org/go/cpt",
+                  "code": "12345",
+                  "display": "Chemotherapy procedure"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "resource": {
+            "resourceType": "Procedure",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://www.ama-assn.org/go/cpt",
+                  "code": "67890",
+                  "display": "Radiation therapy procedure"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "compliance_score": 0.0
+    },
+    "metadata": {
+      "mapped_entities_count": 3,
+      "mapped_codes_count": 0,
+      "total_mapped_elements": 3
+    }
+  },
+  "structured_data": {
+    "bundle": {
+      "resourceType": "Bundle",
+      "id": "bundle-4202bd5f-2810-4b33-ac51-3c3c84dc76ec",
+      "type": "collection",
+      "entry": [
+        {
+          "resource": {
+            "resourceType": "Patient",
+            "id": "patient-db950039-dd58-4a7c-b97f-c778e4d2fa70",
+            "meta": {
+              "profile": [
+                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-patient"
+              ]
+            },
+            "gender": "male"
+          }
+        },
+        {
+          "resource": {
+            "resourceType": "Condition",
+            "id": "condition-a2e455c0-96fe-480f-b677-c802b2a44b8e",
+            "meta": {
+              "profile": [
+                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition"
+              ]
+            },
+            "code": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/sid/icd-10-cm",
+                  "code": "C50.911",
+                  "display": "Malignant neoplasm of breast"
+                },
+                {
+                  "system": "http://loinc.org",
+                  "code": "LP12345-6",
+                  "display": "LP12345-6"
+                }
+              ]
+            },
+            "bodySite": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "254837009",
+                  "display": "Breast"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "resource": {
+            "resourceType": "Procedure",
+            "id": "procedure-d64c2a1f-f1d3-4516-9cbf-7f73bb86090b",
+            "meta": {
+              "profile": [
+                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-surgical-procedure"
+              ]
+            },
+            "status": "completed",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://www.ama-assn.org/go/cpt",
+                  "code": "12345",
+                  "display": "Chemotherapy procedure"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "resource": {
+            "resourceType": "Procedure",
+            "id": "procedure-f78d8acd-9f44-4fd5-b1b6-4c3ea84817b3",
+            "meta": {
+              "profile": [
+                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-surgical-procedure"
+              ]
+            },
+            "status": "completed",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://www.ama-assn.org/go/cpt",
+                  "code": "67890",
+                  "display": "Radiation therapy procedure"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "resources": [
+      {
+        "resourceType": "Patient",
+        "id": "patient-db950039-dd58-4a7c-b97f-c778e4d2fa70",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-patient"
+          ]
+        },
+        "gender": "male"
+      },
+      {
+        "resourceType": "Condition",
+        "id": "condition-a2e455c0-96fe-480f-b677-c802b2a44b8e",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition"
+          ]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/icd-10-cm",
+              "code": "C50.911",
+              "display": "Malignant neoplasm of breast"
+            },
+            {
+              "system": "http://loinc.org",
+              "code": "LP12345-6",
+              "display": "LP12345-6"
+            }
+          ]
+        },
+        "bodySite": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "254837009",
+              "display": "Breast"
+            }
+          ]
+        }
+      },
+      {
+        "resourceType": "Procedure",
+        "id": "procedure-d64c2a1f-f1d3-4516-9cbf-7f73bb86090b",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-surgical-procedure"
+          ]
+        },
+        "status": "completed",
+        "code": {
+          "coding": [
+            {
+              "system": "http://www.ama-assn.org/go/cpt",
+              "code": "12345",
+              "display": "Chemotherapy procedure"
+            }
+          ]
+        }
+      },
+      {
+        "resourceType": "Procedure",
+        "id": "procedure-f78d8acd-9f44-4fd5-b1b6-4c3ea84817b3",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-surgical-procedure"
+          ]
+        },
+        "status": "completed",
+        "code": {
+          "coding": [
+            {
+              "system": "http://www.ama-assn.org/go/cpt",
+              "code": "67890",
+              "display": "Radiation therapy procedure"
+            }
+          ]
+        }
+      }
+    ],
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "resource_validations": [
+        {
+          "valid": true,
+          "errors": [],
+          "warnings": [],
+          "resource_type": "Patient",
+          "quality_metrics": {
+            "completeness": 1.0,
+            "accuracy": 1.0,
+            "consistency": 1.0
+          }
+        },
+        {
+          "valid": true,
+          "errors": [],
+          "warnings": [],
+          "resource_type": "Condition",
+          "quality_metrics": {
+            "completeness": 1.0,
+            "accuracy": 1.0,
+            "consistency": 1.0
+          }
+        },
+        {
+          "valid": true,
+          "errors": [],
+          "warnings": [],
+          "resource_type": "Procedure",
+          "quality_metrics": {
+            "completeness": 1.0,
+            "accuracy": 1.0,
+            "consistency": 1.0
+          }
+        },
+        {
+          "valid": true,
+          "errors": [],
+          "warnings": [],
+          "resource_type": "Procedure",
+          "quality_metrics": {
+            "completeness": 1.0,
+            "accuracy": 1.0,
+            "consistency": 1.0
+          }
+        }
+      ],
+      "quality_metrics": {
+        "completeness": 1.0,
+        "accuracy": 1.0,
+        "consistency": 1.0,
+        "resource_coverage": 0.3333333333333333
+      },
+      "compliance_score": 1.0,
+      "resource_type_summary": {
+        "Patient": 1,
+        "Condition": 1,
+        "Procedure": 2
+      }
+    }
+  },
+  "metadata": {
+    "text_length": 419,
+    "entity_count": 34,
+    "code_count": 0,
+    "confidence_average": 0.7323529411764704
+  }
+}

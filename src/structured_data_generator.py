@@ -29,7 +29,11 @@ class StructuredDataGenerator:
             'Condition': 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition',
             'Procedure': 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-surgical-procedure',
             'MedicationStatement': 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-medication-statement',
-            'Observation': 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tumor-marker'
+            'Observation': 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tumor-marker',
+            'AllergyIntolerance': 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-related-allergy-intolerance',
+            'Specimen': 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-specimen',
+            'DiagnosticReport': 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-diagnostic-report',
+            'FamilyMemberHistory': 'http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-family-member-history'
         }
         
         # Define system URIs
@@ -40,7 +44,9 @@ class StructuredDataGenerator:
             'RxNorm': 'http://www.nlm.nih.gov/research/umls/rxnorm',
             'SNOMEDCT': 'http://snomed.info/sct',
             'mcode-ethnicity': 'http://hl7.org/fhir/us/mcode/CodeSystem/mcode-ethnicity',
-            'mcode-race': 'http://hl7.org/fhir/us/mcode/CodeSystem/mcode-race'
+            'mcode-race': 'http://hl7.org/fhir/us/mcode/CodeSystem/mcode-race',
+            'NCIT': 'http://ncimeta.nci.nih.gov',
+            'UCUM': 'http://unitsofmeasure.org'
         }
         
         # Define display text for common codes
@@ -54,7 +60,15 @@ class StructuredDataGenerator:
             '789012': 'Doxorubicin',
             '254837009': 'Breast',
             '254838004': 'Lung',
-            '363346000': 'Colon'
+            '363346000': 'Colon',
+            '789012009': 'Liver',
+            '363417006': 'Pancreas',
+            '77386006': 'Pregnant',
+            '2667000': 'Absent',
+            '410534003': 'Family history of cancer',
+            '419099009': 'Dead',
+            '419620001': 'Family history of heart disease',
+            '418715001': 'Family history of diabetes mellitus'
         }
         
         # Define mCODE required elements
@@ -63,7 +77,11 @@ class StructuredDataGenerator:
             'Condition': ['code', 'bodySite'],
             'Procedure': ['code'],
             'MedicationStatement': ['medicationCodeableConcept'],
-            'Observation': ['code', 'value']
+            'Observation': ['code', 'value'],
+            'AllergyIntolerance': ['code', 'patient'],
+            'Specimen': ['type'],
+            'DiagnosticReport': ['code', 'subject'],
+            'FamilyMemberHistory': ['patient', 'relationship']
         }
         
         # Define value sets for validation
@@ -118,9 +136,29 @@ class StructuredDataGenerator:
         
         # Add gender if provided
         if "gender" in demographics:
-            gender = demographics["gender"].lower()
-            if gender in self.mcode_value_sets['gender']:
-                patient["gender"] = gender
+            gender = demographics["gender"]
+            # Handle case where gender might be a list
+            if isinstance(gender, list):
+                if gender:
+                    gender = gender[0]  # Use the first element
+                else:
+                    gender = "unknown"
+            elif isinstance(gender, dict):
+                # If it's a dict, try to get a string value
+                if "gender" in gender:
+                    gender = gender["gender"]
+                else:
+                    gender = "unknown"
+            elif not isinstance(gender, str):
+                gender = str(gender)
+                
+            # Ensure gender is a string before calling lower()
+            if isinstance(gender, str):
+                gender = gender.lower()
+                if gender in self.mcode_value_sets['gender']:
+                    patient["gender"] = gender
+                else:
+                    patient["gender"] = "unknown"
             else:
                 patient["gender"] = "unknown"
         
@@ -128,7 +166,17 @@ class StructuredDataGenerator:
         extensions = []
         
         if "ethnicity" in demographics:
-            ethnicity = demographics["ethnicity"].lower()
+            ethnicity = demographics["ethnicity"]
+            # Handle case where ethnicity might be a list
+            if isinstance(ethnicity, list):
+                if ethnicity:
+                    ethnicity = ethnicity[0]  # Use the first element
+                else:
+                    ethnicity = "unknown"
+            elif not isinstance(ethnicity, str):
+                ethnicity = str(ethnicity)
+                
+            ethnicity = ethnicity.lower()
             if ethnicity in self.mcode_value_sets['ethnicity']:
                 extensions.append({
                     "url": "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-ethnicity",
@@ -142,7 +190,17 @@ class StructuredDataGenerator:
                 })
         
         if "race" in demographics:
-            race = demographics["race"].lower()
+            race = demographics["race"]
+            # Handle case where race might be a list
+            if isinstance(race, list):
+                if race:
+                    race = race[0]  # Use the first element
+                else:
+                    race = "unknown"
+            elif not isinstance(race, str):
+                race = str(race)
+                
+            race = race.lower()
             if race in self.mcode_value_sets['race']:
                 extensions.append({
                     "url": "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-race",
@@ -178,6 +236,18 @@ class StructuredDataGenerator:
                     patient["birthDate"] = f"{birth_year}-01-01"
                 except (ValueError, TypeError):
                     pass
+            elif isinstance(age, list):
+                # Handle age as a list (age range)
+                # For now, we'll use the minimum age if available
+                if age and isinstance(age[0], dict) and "min_age" in age[0]:
+                    min_age = age[0]["min_age"]
+                    if isinstance(min_age, str) and min_age.isdigit():
+                        try:
+                            age_int = int(min_age)
+                            birth_year = 2025 - age_int
+                            patient["birthDate"] = f"{birth_year}-01-01"
+                        except (ValueError, TypeError):
+                            pass
         
         return patient
     
@@ -327,6 +397,194 @@ class StructuredDataGenerator:
         
         return medication_statement
     
+    def generate_allergy_intolerance_resource(self, allergy_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate an AllergyIntolerance resource from allergy data
+        
+        Args:
+            allergy_data: Allergy data with code information
+            
+        Returns:
+            AllergyIntolerance resource dictionary
+        """
+        allergy_intolerance = {
+            "resourceType": "AllergyIntolerance",
+            "id": self._generate_id("allergy"),
+            "meta": {
+                "profile": [self.mcode_profiles['AllergyIntolerance']]
+            },
+            "clinicalStatus": "active",  # Default status
+            "verificationStatus": "unconfirmed",  # Default verification
+            "code": {
+                "coding": []
+            },
+            "patient": {
+                "reference": "Patient/"  # Placeholder - would be filled with actual patient ID
+            }
+        }
+        
+        # Add primary code
+        primary_code = allergy_data.get("primary_code", {})
+        if primary_code:
+            system = primary_code.get("system", "")
+            code = primary_code.get("code", "")
+            if system and code:
+                allergy_intolerance["code"]["coding"].append({
+                    "system": self._get_system_uri(system),
+                    "code": code,
+                    "display": self._get_code_display(code)
+                })
+        
+        # Add mapped codes
+        mapped_codes = allergy_data.get("mapped_codes", {})
+        for system, code in mapped_codes.items():
+            allergy_intolerance["code"]["coding"].append({
+                "system": self._get_system_uri(system),
+                "code": code,
+                "display": self._get_code_display(code)
+            })
+        
+        return allergy_intolerance
+    
+    def generate_specimen_resource(self, specimen_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate a Specimen resource from specimen data
+        
+        Args:
+            specimen_data: Specimen data with type information
+            
+        Returns:
+            Specimen resource dictionary
+        """
+        specimen = {
+            "resourceType": "Specimen",
+            "id": self._generate_id("specimen"),
+            "meta": {
+                "profile": [self.mcode_profiles['Specimen']]
+            },
+            "type": {
+                "coding": []
+            }
+        }
+        
+        # Add primary code for specimen type
+        primary_code = specimen_data.get("primary_code", {})
+        if primary_code:
+            system = primary_code.get("system", "")
+            code = primary_code.get("code", "")
+            if system and code:
+                specimen["type"]["coding"].append({
+                    "system": self._get_system_uri(system),
+                    "code": code,
+                    "display": self._get_code_display(code)
+                })
+        
+        # Add mapped codes
+        mapped_codes = specimen_data.get("mapped_codes", {})
+        for system, code in mapped_codes.items():
+            specimen["type"]["coding"].append({
+                "system": self._get_system_uri(system),
+                "code": code,
+                "display": self._get_code_display(code)
+            })
+        
+        return specimen
+    
+    def generate_diagnostic_report_resource(self, report_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate a DiagnosticReport resource from report data
+        
+        Args:
+            report_data: Diagnostic report data with code and results information
+            
+        Returns:
+            DiagnosticReport resource dictionary
+        """
+        report = {
+            "resourceType": "DiagnosticReport",
+            "id": self._generate_id("report"),
+            "meta": {
+                "profile": [self.mcode_profiles['DiagnosticReport']]
+            },
+            "status": "final",  # Default status
+            "code": {
+                "coding": []
+            },
+            "subject": {
+                "reference": "Patient/"  # Placeholder - would be filled with actual patient ID
+            }
+        }
+        
+        # Add primary code
+        primary_code = report_data.get("primary_code", {})
+        if primary_code:
+            system = primary_code.get("system", "")
+            code = primary_code.get("code", "")
+            if system and code:
+                report["code"]["coding"].append({
+                    "system": self._get_system_uri(system),
+                    "code": code,
+                    "display": self._get_code_display(code)
+                })
+        
+        # Add mapped codes
+        mapped_codes = report_data.get("mapped_codes", {})
+        for system, code in mapped_codes.items():
+            report["code"]["coding"].append({
+                "system": self._get_system_uri(system),
+                "code": code,
+                "display": self._get_code_display(code)
+            })
+        
+        return report
+    
+    def generate_family_member_history_resource(self, family_history_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate a FamilyMemberHistory resource from family history data
+        
+        Args:
+            family_history_data: Family history data with relationship and condition information
+            
+        Returns:
+            FamilyMemberHistory resource dictionary
+        """
+        family_history = {
+            "resourceType": "FamilyMemberHistory",
+            "id": self._generate_id("family-history"),
+            "meta": {
+                "profile": [self.mcode_profiles['FamilyMemberHistory']]
+            },
+            "patient": {
+                "reference": "Patient/"  # Placeholder - would be filled with actual patient ID
+            },
+            "relationship": {
+                "coding": []
+            }
+        }
+        
+        # Add primary code for relationship
+        primary_code = family_history_data.get("primary_code", {})
+        if primary_code:
+            system = primary_code.get("system", "")
+            code = primary_code.get("code", "")
+            if system and code:
+                family_history["relationship"]["coding"].append({
+                    "system": self._get_system_uri(system),
+                    "code": code,
+                    "display": self._get_code_display(code)
+                })
+        
+        # Add mapped codes
+        mapped_codes = family_history_data.get("mapped_codes", {})
+        for system, code in mapped_codes.items():
+            family_history["relationship"]["coding"].append({
+                "system": self._get_system_uri(system),
+                "code": code,
+                "display": self._get_code_display(code)
+            })
+        
+        return family_history
+    
     def generate_observation_resource(self, observation_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Generate an Observation resource from observation data
@@ -433,7 +691,12 @@ class StructuredDataGenerator:
             "valid": True,
             "errors": [],
             "warnings": [],
-            "resource_type": resource.get("resourceType", "Unknown")
+            "resource_type": resource.get("resourceType", "Unknown"),
+            "quality_metrics": {
+                "completeness": 0.0,
+                "accuracy": 0.0,
+                "consistency": 0.0
+            }
         }
         
         resource_type = resource.get("resourceType")
@@ -442,42 +705,184 @@ class StructuredDataGenerator:
             validation_results["errors"].append("Missing resourceType")
             return validation_results
         
+        # Initialize quality metrics counters
+        total_checks = 0
+        passed_checks = 0
+        
         # Check required elements
         if resource_type in self.mcode_required_elements:
             for required_element in self.mcode_required_elements[resource_type]:
+                total_checks += 1
                 if required_element not in resource:
                     validation_results["valid"] = False
                     validation_results["errors"].append(f"Missing required element: {required_element}")
                 elif not resource[required_element]:
                     validation_results["valid"] = False
                     validation_results["errors"].append(f"Required element '{required_element}' is empty")
+                else:
+                    passed_checks += 1
         
         # Special validation for Patient
         if resource_type == "Patient":
+            total_checks += 2
             if "gender" not in resource:
                 validation_results["valid"] = False
                 validation_results["errors"].append("Patient resource must have gender")
-            elif resource["gender"] not in self.mcode_value_sets["gender"]:
-                validation_results["warnings"].append(f"Patient gender '{resource['gender']}' not in standard value set")
+            elif not resource["gender"]:
+                validation_results["valid"] = False
+                validation_results["errors"].append("Patient gender is empty")
+            else:
+                passed_checks += 1
+                
+                if resource["gender"] not in self.mcode_value_sets["gender"]:
+                    validation_results["warnings"].append(f"Patient gender '{resource['gender']}' not in standard value set")
+                else:
+                    passed_checks += 1
         
         # Special validation for Condition
         elif resource_type == "Condition":
+            total_checks += 2
             if "code" in resource and "coding" in resource["code"]:
                 if not resource["code"]["coding"]:
                     validation_results["valid"] = False
                     validation_results["errors"].append("Condition code must have at least one coding")
+                else:
+                    passed_checks += 1
+            else:
+                validation_results["valid"] = False
+                validation_results["errors"].append("Condition must have code with coding")
             
             if "bodySite" in resource and "coding" in resource["bodySite"]:
                 if not resource["bodySite"]["coding"]:
                     validation_results["valid"] = False
                     validation_results["errors"].append("Condition bodySite must have at least one coding")
+                else:
+                    passed_checks += 1
+            else:
+                # bodySite is not required for all conditions, so this is just a warning
+                if "bodySite" in resource:
+                    validation_results["warnings"].append("Condition bodySite should have coding if present")
         
         # Special validation for MedicationStatement
         elif resource_type == "MedicationStatement":
+            total_checks += 1
             if "medicationCodeableConcept" in resource and "coding" in resource["medicationCodeableConcept"]:
                 if not resource["medicationCodeableConcept"]["coding"]:
                     validation_results["valid"] = False
                     validation_results["errors"].append("MedicationStatement medicationCodeableConcept must have at least one coding")
+                else:
+                    passed_checks += 1
+            else:
+                validation_results["valid"] = False
+                validation_results["errors"].append("MedicationStatement must have medicationCodeableConcept with coding")
+        
+        # Special validation for Observation
+        elif resource_type == "Observation":
+            total_checks += 2
+            if "code" in resource and "coding" in resource["code"]:
+                if not resource["code"]["coding"]:
+                    validation_results["valid"] = False
+                    validation_results["errors"].append("Observation code must have at least one coding")
+                else:
+                    passed_checks += 1
+            else:
+                validation_results["valid"] = False
+                validation_results["errors"].append("Observation must have code with coding")
+            
+            # Check for value
+            if "valueQuantity" in resource or "valueString" in resource or "valueCodeableConcept" in resource:
+                passed_checks += 1
+            else:
+                validation_results["warnings"].append("Observation should have a value")
+        
+        # Special validation for AllergyIntolerance
+        elif resource_type == "AllergyIntolerance":
+            total_checks += 2
+            if "code" in resource and "coding" in resource["code"]:
+                if not resource["code"]["coding"]:
+                    validation_results["valid"] = False
+                    validation_results["errors"].append("AllergyIntolerance code must have at least one coding")
+                else:
+                    passed_checks += 1
+            else:
+                validation_results["valid"] = False
+                validation_results["errors"].append("AllergyIntolerance must have code with coding")
+            
+            if "patient" not in resource:
+                validation_results["valid"] = False
+                validation_results["errors"].append("AllergyIntolerance must have patient reference")
+            else:
+                passed_checks += 1
+        
+        # Special validation for Specimen
+        elif resource_type == "Specimen":
+            total_checks += 1
+            if "type" in resource and "coding" in resource["type"]:
+                if not resource["type"]["coding"]:
+                    validation_results["valid"] = False
+                    validation_results["errors"].append("Specimen type must have at least one coding")
+                else:
+                    passed_checks += 1
+            else:
+                validation_results["valid"] = False
+                validation_results["errors"].append("Specimen must have type with coding")
+        
+        # Special validation for DiagnosticReport
+        elif resource_type == "DiagnosticReport":
+            total_checks += 2
+            if "code" in resource and "coding" in resource["code"]:
+                if not resource["code"]["coding"]:
+                    validation_results["valid"] = False
+                    validation_results["errors"].append("DiagnosticReport code must have at least one coding")
+                else:
+                    passed_checks += 1
+            else:
+                validation_results["valid"] = False
+                validation_results["errors"].append("DiagnosticReport must have code with coding")
+            
+            if "subject" not in resource:
+                validation_results["valid"] = False
+                validation_results["errors"].append("DiagnosticReport must have subject reference")
+            else:
+                passed_checks += 1
+        
+        # Special validation for FamilyMemberHistory
+        elif resource_type == "FamilyMemberHistory":
+            total_checks += 2
+            if "patient" not in resource:
+                validation_results["valid"] = False
+                validation_results["errors"].append("FamilyMemberHistory must have patient reference")
+            else:
+                passed_checks += 1
+            
+            if "relationship" in resource and "coding" in resource["relationship"]:
+                if not resource["relationship"]["coding"]:
+                    validation_results["valid"] = False
+                    validation_results["errors"].append("FamilyMemberHistory relationship must have at least one coding")
+                else:
+                    passed_checks += 1
+            else:
+                validation_results["valid"] = False
+                validation_results["errors"].append("FamilyMemberHistory must have relationship with coding")
+        
+        # Special validation for Procedure
+        elif resource_type == "Procedure":
+            total_checks += 1
+            if "code" in resource and "coding" in resource["code"]:
+                if not resource["code"]["coding"]:
+                    validation_results["valid"] = False
+                    validation_results["errors"].append("Procedure code must have at least one coding")
+                else:
+                    passed_checks += 1
+            else:
+                validation_results["valid"] = False
+                validation_results["errors"].append("Procedure must have code with coding")
+        
+        # Calculate quality metrics
+        if total_checks > 0:
+            validation_results["quality_metrics"]["completeness"] = passed_checks / total_checks
+            validation_results["quality_metrics"]["accuracy"] = 1.0 if validation_results["valid"] else 0.0
+            validation_results["quality_metrics"]["consistency"] = 1.0 - (len(validation_results["warnings"]) / max(total_checks, 1))
         
         return validation_results
     
@@ -495,7 +900,13 @@ class StructuredDataGenerator:
             "valid": True,
             "errors": [],
             "warnings": [],
-            "resource_validations": []
+            "resource_validations": [],
+            "quality_metrics": {
+                "completeness": 0.0,
+                "accuracy": 0.0,
+                "consistency": 0.0,
+                "resource_coverage": 0.0
+            }
         }
         
         if "entry" not in bundle:
@@ -505,10 +916,19 @@ class StructuredDataGenerator:
         
         valid_resources = 0
         total_resources = len(bundle["entry"])
+        total_completeness = 0.0
+        total_consistency = 0.0
+        
+        # Count different resource types for coverage metric
+        resource_types = {}
         
         for entry in bundle["entry"]:
             if "resource" in entry:
-                resource_validation = self.validate_resource(entry["resource"])
+                resource = entry["resource"]
+                resource_type = resource.get("resourceType", "Unknown")
+                resource_types[resource_type] = resource_types.get(resource_type, 0) + 1
+                
+                resource_validation = self.validate_resource(resource)
                 validation_results["resource_validations"].append(resource_validation)
                 
                 if resource_validation["valid"]:
@@ -517,8 +937,26 @@ class StructuredDataGenerator:
                     validation_results["valid"] = False
                     validation_results["errors"].extend(resource_validation["errors"])
                     validation_results["warnings"].extend(resource_validation["warnings"])
+                
+                # Aggregate quality metrics
+                total_completeness += resource_validation["quality_metrics"]["completeness"]
+                total_consistency += resource_validation["quality_metrics"]["consistency"]
         
         validation_results["compliance_score"] = valid_resources / total_resources if total_resources > 0 else 0
+        
+        # Calculate bundle-level quality metrics
+        if total_resources > 0:
+            validation_results["quality_metrics"]["completeness"] = total_completeness / total_resources
+            validation_results["quality_metrics"]["accuracy"] = validation_results["compliance_score"]
+            validation_results["quality_metrics"]["consistency"] = total_consistency / total_resources
+        
+        # Calculate resource coverage (diversity of resource types)
+        expected_resource_types = set(self.mcode_required_elements.keys())
+        found_resource_types = set(resource_types.keys())
+        validation_results["quality_metrics"]["resource_coverage"] = len(found_resource_types & expected_resource_types) / len(expected_resource_types) if expected_resource_types else 0.0
+        
+        # Add resource type summary
+        validation_results["resource_type_summary"] = resource_types
         
         return validation_results
     
@@ -556,6 +994,18 @@ class StructuredDataGenerator:
                 resources.append(resource)
             elif element_type == "Observation":
                 resource = self.generate_observation_resource(element)
+                resources.append(resource)
+            elif element_type == "AllergyIntolerance":
+                resource = self.generate_allergy_intolerance_resource(element)
+                resources.append(resource)
+            elif element_type == "Specimen":
+                resource = self.generate_specimen_resource(element)
+                resources.append(resource)
+            elif element_type == "DiagnosticReport":
+                resource = self.generate_diagnostic_report_resource(element)
+                resources.append(resource)
+            elif element_type == "FamilyMemberHistory":
+                resource = self.generate_family_member_history_resource(element)
                 resources.append(resource)
         
         # Create bundle

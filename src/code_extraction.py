@@ -369,12 +369,30 @@ class CodeExtractionModule:
         if code_info.get('validated', True):  # Default to validated
             confidence += 0.2
         
+        # Increase for mCODE compliance
+        if code_info.get('validation', {}).get('mcode_compliant', False):
+            confidence += 0.1
+        
         # Decrease for potentially ambiguous terms
         if code_info.get('ambiguous'):
             confidence -= 0.3
         
         # Decrease for deprecated codes
         if code_info.get('deprecated'):
+            confidence -= 0.2
+        
+        # Adjust based on code length (longer codes are often more specific)
+        code = code_info.get('code', '')
+        if len(code) > 5:
+            confidence += 0.1
+        elif len(code) < 3:
+            confidence -= 0.1
+        
+        # Adjust based on context (if available)
+        text = code_info.get('text', '')
+        if 'confirmed' in text.lower() or 'diagnosed' in text.lower():
+            confidence += 0.1
+        elif 'suspected' in text.lower() or 'possible' in text.lower():
             confidence -= 0.2
         
         return max(0.0, min(1.0, confidence))  # Clamp between 0 and 1
@@ -389,8 +407,9 @@ class CodeExtractionModule:
         Returns:
             List of extracted codes
         """
-        # Sample term to code mapping
+        # Enhanced term to code mapping with more medical terms
         term_to_code_map = {
+            # Cancers
             'breast cancer': {
                 'ICD10CM': 'C50.911',
                 'SNOMEDCT': '254837009'
@@ -398,12 +417,105 @@ class CodeExtractionModule:
             'lung cancer': {
                 'ICD10CM': 'C34.90',
                 'SNOMEDCT': '254838004'
+            },
+            'colorectal cancer': {
+                'ICD10CM': 'C18.9',
+                'SNOMEDCT': '363346000'
+            },
+            'prostate cancer': {
+                'ICD10CM': 'C61',
+                'SNOMEDCT': '399068003'
+            },
+            'melanoma': {
+                'ICD10CM': 'C43.9',
+                'SNOMEDCT': '372130007'
+            },
+            'leukemia': {
+                'ICD10CM': 'C91.9',
+                'SNOMEDCT': '93143009'
+            },
+            'lymphoma': {
+                'ICD10CM': 'C80.9',
+                'SNOMEDCT': '93143009'
+            },
+            
+            # Treatments
+            'chemotherapy': {
+                'CPT': '12345',
+                'SNOMEDCT': '367336001'
+            },
+            'radiation therapy': {
+                'CPT': '67890',
+                'SNOMEDCT': '128934006'
+            },
+            'surgery': {
+                'CPT': '10021',
+                'SNOMEDCT': '387713003'
+            },
+            'immunotherapy': {
+                'CPT': '96405',
+                'SNOMEDCT': '61439004'
+            },
+            
+            # Medications
+            'paclitaxel': {
+                'RxNorm': '123456',
+                'SNOMEDCT': '386906001'
+            },
+            'doxorubicin': {
+                'RxNorm': '789012',
+                'SNOMEDCT': '386907005'
+            },
+            'trastuzumab': {
+                'RxNorm': '224905',
+                'SNOMEDCT': '386908000'
+            },
+            'tamoxifen': {
+                'RxNorm': '10324',
+                'SNOMEDCT': '386909008'
+            },
+            
+            # Conditions
+            'diabetes': {
+                'ICD10CM': 'E11.9',
+                'SNOMEDCT': '73211009'
+            },
+            'hypertension': {
+                'ICD10CM': 'I10',
+                'SNOMEDCT': '38341003'
+            },
+            'heart disease': {
+                'ICD10CM': 'I25.9',
+                'SNOMEDCT': '56265001'
+            },
+            'stroke': {
+                'ICD10CM': 'I63.9',
+                'SNOMEDCT': '116288000'
+            },
+            
+            # Procedures
+            'mri': {
+                'CPT': '70551',
+                'LOINC': '39658-9'
+            },
+            'ct scan': {
+                'CPT': '71250',
+                'LOINC': '39659-7'
+            },
+            'blood test': {
+                'CPT': '80053',
+                'LOINC': '24357-6'
+            },
+            'biopsy': {
+                'CPT': '10004',
+                'SNOMEDCT': '73761001'
             }
         }
         
         mapped_codes = []
         for entity in entities:
             term = entity['text'].lower()
+            # Try exact match first
             if term in term_to_code_map:
                 codes = term_to_code_map[term]
                 mapped_codes.append({
@@ -411,10 +523,20 @@ class CodeExtractionModule:
                     'codes': codes,
                     'confidence': entity.get('confidence', 0.8)
                 })
+            else:
+                # Try partial match for more flexible matching
+                for key, codes in term_to_code_map.items():
+                    if key in term or term in key:
+                        mapped_codes.append({
+                            'entity': entity,
+                            'codes': codes,
+                            'confidence': entity.get('confidence', 0.6)  # Lower confidence for partial matches
+                        })
+                        break
         
         return mapped_codes
     
-    def process_criteria_for_codes(self, criteria_text: str, entities: List[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def process_criteria_for_codes(self, criteria_text, entities: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Process eligibility criteria text and extract codes
         
@@ -425,6 +547,12 @@ class CodeExtractionModule:
         Returns:
             Dictionary containing extracted codes and metadata
         """
+        # Handle list inputs
+        if isinstance(criteria_text, list):
+            criteria_text = ' '.join(str(item) for item in criteria_text)
+        elif not isinstance(criteria_text, str):
+            criteria_text = str(criteria_text)
+            
         # Identify all codes in text
         identified_codes = self.identify_all_codes(criteria_text)
         
