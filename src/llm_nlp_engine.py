@@ -163,7 +163,7 @@ class LLMNLPEngine:
             self.logger.debug(f"Raw LLM response: {response.choices[0].message.content}")
             
             content = response.choices[0].message.content
-            self.logger.info(f"Full LLM response structure: {response}")
+            self.logger.debug(f"Full LLM response structure: {response}")
             self.logger.debug(f"LLM response content: {content}")
             
             try:

@@ -79,9 +79,9 @@ logger.critical("Critical test message - should be bold red")
 # Initialize extraction pipelines with caching
 extraction_cache = {}
 engines = {
-    'Regex': ExtractionPipeline(RegexNLPEngine()),
-    'SpaCy': ExtractionPipeline(SpacyNLPEngine()),
-    'LLM': ExtractionPipeline(LLMNLPEngine())
+    'Regex': ExtractionPipeline(engine_type='Regex'),
+    'SpaCy': ExtractionPipeline(engine_type='SpaCy'),
+    'LLM': ExtractionPipeline(engine_type='LLM')
 }
 
 # Patient profile section with full mCODE fields
@@ -232,22 +232,25 @@ def update_patient_profile():
 
 # Patient profile UI with expansion sections
 with ui.expansion('PATIENT PROFILE', icon='person', value=False).classes('w-full'):
-    with ui.card().classes('w-full p-4 sm:p-6 mb-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow'):
+    with ui.card().classes('w-full p-4'):
         with ui.column().classes('w-full gap-6'):
             # Patient Information Section
             with ui.expansion('PATIENT INFORMATION', icon='person').classes('w-full'):
-                with ui.card().classes('w-full p-6 bg-white shadow-sm gap-4'):
+                with ui.card().classes('w-full p-4'):
                     with ui.grid(columns=1).classes('w-full gap-4').props('sm:columns=2'):
                     # Basic Demographics
                         with ui.column().classes('gap-4'):
-                            ui.label('Basic Information').classes('text-lg font-medium')
+                            ui.label('BASIC INFORMATION').classes('text-lg font-bold')
+                            ui.label('Age*')
                             age_input = ui.number(
-                                label='Age*',
                                 value=patient_profile['age'],
                                 min=18,
                                 max=100,
                                 validation={'Please enter age between 18-100': lambda value: 18 <= value <= 100}
-                            ).props('tooltip="Patient age in years (18-100)" required')
+                            ).props('''
+                                tooltip="Patient age in years (18-100)"
+                                required
+                            ''')
                             gender_select = ui.select(
                                 ['female', 'male', 'other', 'unknown'],
                                 value=patient_profile['gender'],
@@ -432,56 +435,79 @@ with ui.expansion('PATIENT PROFILE', icon='person', value=False).classes('w-full
             
 # Basic search interface
 with ui.column().classes('w-full items-center'):
-    ui.label('mCODE CLINICAL TRIALS SEARCH').classes('text-2xl font-bold mb-6 text-primary')
+    ui.label('CLINICAL TRIALS SEARCH').classes('text-2xl font-bold mb-6')
     
-    # Search controls in a card with better organization
-    with ui.card().classes('w-full p-4 sm:p-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow'):
+    # Search controls
+    with ui.card().classes('w-full p-4'):
         with ui.row().classes('w-full flex-col sm:flex-row items-center gap-4'):
-            # Search input with clear label
+            # Search input
             search_input = ui.input(
-                label='Search Clinical Trials',
                 placeholder='Enter cancer type or keywords',
                 value=patient_profile['cancer_type']
-            ).props('clearable').classes('flex-grow')
+            ).props('''
+                clearable
+                tooltip="Search clinical trials by cancer type, biomarkers, or other criteria"
+            ''').classes('flex-grow')
             
             # Search actions
             with ui.row().classes('items-center gap-2 mt-4 sm:mt-0'):
                 search_button = ui.button('Search', icon='search') \
-                    .props('color=primary') \
-                    .classes('min-w-[120px]')
+                    .props('''
+                        color=primary
+                        tooltip="Find matching clinical trials"
+                    ''').classes('min-w-[120px]')
                 reset_button = ui.button('Reset', icon='refresh') \
-                    .props('outline') \
-                    .classes('min-w-[120px]')
+                    .props('''
+                        outline
+                        tooltip="Clear search results"
+                    ''').classes('min-w-[120px]')
         
         # Advanced options in expansion
-        with ui.expansion('Advanced Options', icon='tune').classes('w-full mt-2'):
+        with ui.expansion('ADVANCED OPTIONS', icon='tune').classes('w-full mt-4'):
             with ui.grid(columns=1).classes('w-full gap-4').props('sm:columns=2 lg:columns=3'):
                 # Results limit
-                with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
-                    ui.label('Results Limit').classes('font-medium')
+                with ui.card().classes('p-4'):
+                    ui.label('Results Limit').classes('text-lg font-bold')
                     limit_slider = ui.slider(min=1, max=20, value=5) \
-                        .props('label-always') \
+                        .props('label-always tooltip="Maximum number of clinical trials to return"') \
                         .classes('w-full')
                 
                 # NLP Engine selection
-                with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
-                    ui.label('NLP Engine').classes('font-medium')
+                with ui.card().classes('p-4'):
+                    ui.label('NLP Engine').classes('text-lg font-bold')
                     engine_select = ui.radio(
                         ['Regex', 'SpaCy', 'LLM'],
-                        value='LLM'
-                    ).props('inline')
+                        value='Regex'
+                    ).props('''
+                        inline
+                        tooltip="Regex: Fast pattern matching|SpaCy: Balanced accuracy|LLM: Most accurate (OpenAI)"
+                    ''')
                 
-                # Matching options
-                with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
-                    ui.label('Matching Options').classes('font-medium')
-                    with ui.row().classes('items-center gap-2'):
-                        matching_toggle = ui.toggle([True, False], value=True) \
-                            .props('left-label color=primary')
-                        ui.label('Patient Matching')
-                    with ui.row().classes('items-center gap-2'):
-                        benchmark_toggle = ui.toggle([True, False], value=False) \
-                            .props('left-label color=secondary')
-                        ui.label('Benchmark Mode')
+                # Matching Options
+                with ui.card().classes('p-4'):
+                    ui.label('mCODE OPTIONS').classes('text-lg font-bold')
+                    
+                    # Patient Matching
+                    with ui.row().classes('items-center w-full'):
+                        ui.label('Patient Matching:').classes('font-medium')
+                        matching_toggle = ui.switch(
+                            'Patient Matching',
+                            value=True
+                        ).props(
+                            'color=secondary '
+                            'tooltip="Enable to match trials based on:\\n- Cancer type\\n- Biomarkers\\n- Genomic variants\\n- Stage/grade"'
+                        ).classes('ml-2')
+                    
+                    # Benchmark Mode
+                    with ui.row().classes('items-center w-full mt-3'):
+                        ui.label('Benchmark Mode:').classes('font-medium')
+                        benchmark_toggle = ui.switch(
+                            'Benchmark Mode',
+                            value=False
+                        ).props(
+                            'color=secondary '
+                            'tooltip="Compare all NLP engines:\\n- Tests accuracy\\n- Measures speed\\n- Shows differences"'
+                        ).classes('ml-2')
 
     # Results display
     trials_container = ui.column().classes('w-full p-4')
@@ -534,13 +560,19 @@ async def on_search():
                     elif criteria:
                         extraction_status = ui.label('Extracting mCODE features...')
                         ui.notify('Starting mCODE feature extraction...', type='info')
-                        logger.info(f"Starting feature extraction for trial {protocol_section.get('identificationModule', {}).get('nctId')}")
+                        selected_engine = engine_select.value
+                        logger.info(f"Starting feature extraction for trial {protocol_section.get('identificationModule', {}).get('nctId')} using {selected_engine} engine")
+                        logger.debug(f"Engine selection state - UI: {engine_select.value}, Benchmark: {benchmark_toggle.value}")
                         
                         # Run extraction in executor to prevent blocking
                         def extraction_task():
                             try:
                                 logger.info(f"Starting extraction for criteria: {criteria[:100]}...")
                                 selected_engine = engine_select.value
+                                logger.debug(f"Executing extraction with engine: {selected_engine}")
+                                logger.info(f"Engine selection - UI: {engine_select.value}, Benchmark: {benchmark_toggle.value}")
+                                logger.debug(f"Engines available: {list(engines.keys())}")
+                                logger.debug(f"Current engine state - UI: {engine_select.value}, Actual: {selected_engine}")
                                 
                                 if benchmark_toggle.value:
                                     # Benchmark all engines
@@ -554,10 +586,13 @@ async def on_search():
                                     return {'benchmark': results}
                                 else:
                                     # Use selected engine
+                                    logger.debug(f"Processing with {selected_engine} engine")
+                                    result = engines[selected_engine].process_criteria(criteria)
+                                    logger.debug(f"Engine {selected_engine} returned result")
                                     return {
                                         'single': {
                                             'engine': selected_engine,
-                                            'result': engines[selected_engine].process_criteria(criteria)
+                                            'result': result
                                         }
                                     }
                             except Exception as e:
@@ -578,20 +613,19 @@ async def on_search():
                                 # Show benchmark comparison
                                 with ui.expansion('Engine Performance Comparison').classes('w-full'):
                                     # Performance metrics table
-                                    with ui.table().classes('w-full'):
-                                        columns = [
-                                            {'name': 'engine', 'label': 'Engine', 'field': 'engine'},
-                                            {'name': 'time', 'label': 'Time (ms)', 'field': 'time'},
-                                            {'name': 'entities', 'label': 'Entities Found', 'field': 'entities'}
-                                        ]
-                                        rows = []
-                                        for engine, data in extraction_result['benchmark'].items():
-                                            rows.append({
-                                                'engine': engine,
-                                                'time': round(data['time']*1000, 2),
-                                                'entities': len(data['result'].get('entities', []))
-                                            })
-                                        ui.table(columns=columns, rows=rows)
+                                    columns = [
+                                        {'name': 'engine', 'label': 'Engine', 'field': 'engine'},
+                                        {'name': 'time', 'label': 'Time (ms)', 'field': 'time'},
+                                        {'name': 'entities', 'label': 'Entities Found', 'field': 'entities'}
+                                    ]
+                                    rows = []
+                                    for engine, data in extraction_result['benchmark'].items():
+                                        rows.append({
+                                            'engine': engine,
+                                            'time': round(data['time']*1000, 2),
+                                            'entities': len(data['result'].get('entities', []))
+                                        })
+                                    ui.table(columns=columns, rows=rows).classes('w-full')
                                 
                                 # Show results from primary engine (LLM by default)
                                 display_data = {
@@ -650,7 +684,13 @@ def display_trial_results(protocol_section, extraction_result):
                 trial_features = {
                     'cancer_type': patient_profile['cancer_type'],
                     'biomarkers': {b['name']: b['status'] for b in biomarkers},
-                    'genomic_variants': [v['gene'] if isinstance(v, dict) else v for v in variants]
+                    'genomic_variants': [v['gene'] if isinstance(v, dict) else v for v in variants],
+                    'cancer_characteristics': {
+                        'stage': features.get('stage', ''),
+                        'histology': features.get('histology', ''),
+                        'grade': features.get('grade', ''),
+                        'tnm_staging': features.get('tnm_staging', {'t': '', 'n': '', 'm': ''})
+                    }
                 }
                 # Build patient data for matching with fallbacks for missing fields
                 patient_data = {
@@ -672,13 +712,53 @@ def display_trial_results(protocol_section, extraction_result):
                 if 'cancer_characteristics' not in trial_features:
                     trial_features['cancer_characteristics'] = {}
                 
-                match_score = matcher.calculate_match_score(patient_data, trial_features)
+                match_score, match_details = matcher.calculate_match_score(patient_data, trial_features, return_details=True)
                 match_desc = matcher.get_match_description(match_score)
                 
                 with ui.column().classes('items-center'):
                     ui.linear_progress(match_score/100).classes('w-16 h-2')
                     ui.label(f"{match_score}%").classes('text-xs')
                     ui.label(match_desc).classes('text-xs font-bold')
+                    
+                    # Show matching details expansion
+                    with ui.expansion('Matching Details').classes('w-full mt-2'):
+                        with ui.card().classes('w-full p-4 bg-gray-50'):
+                            ui.label('mCODE Elements Matched').classes('font-bold mb-2')
+                            
+                            # Cancer Type
+                            with ui.row().classes('items-center'):
+                                ui.icon('check_circle' if match_details['cancer_type'] else 'cancel').classes('text-green-500' if match_details['cancer_type'] else 'text-red-500')
+                                with ui.column().classes('ml-2'):
+                                    ui.label('Cancer Type').classes('font-medium')
+                                    ui.label(f"Patient: {patient_data['cancer_type']}").classes('text-xs text-gray-600')
+                                    ui.label(f"Trial: {trial_features['cancer_type']}").classes('text-xs text-gray-600')
+                            
+                            # Biomarkers
+                            with ui.row().classes('items-center'):
+                                ui.icon('check_circle' if match_details['biomarkers'] else 'cancel').classes('text-green-500' if match_details['biomarkers'] else 'text-red-500')
+                                with ui.column().classes('ml-2'):
+                                    ui.label('Biomarkers').classes('font-medium')
+                                    if match_details['biomarkers']:
+                                        matched = [b for b in patient_data['biomarkers'] if b in trial_features['biomarkers']]
+                                        ui.label(f"Matched: {', '.join(matched)}").classes('text-xs text-gray-600')
+                            
+                            # Genomic Variants
+                            with ui.row().classes('items-center'):
+                                ui.icon('check_circle' if match_details['genomic_variants'] else 'cancel').classes('text-green-500' if match_details['genomic_variants'] else 'text-red-500')
+                                with ui.column().classes('ml-2'):
+                                    ui.label('Genomic Variants').classes('font-medium')
+                                    if match_details['genomic_variants']:
+                                        matched = [v for v in patient_data['genomic_variants'] if v in trial_features['genomic_variants']]
+                                        ui.label(f"Matched: {', '.join(matched)}").classes('text-xs text-gray-600')
+                            
+                            # Stage/Grade
+                            with ui.row().classes('items-center'):
+                                ui.icon('check_circle' if match_details['stage_grade'] else 'cancel').classes('text-green-500' if match_details['stage_grade'] else 'text-red-500')
+                                with ui.column().classes('ml-2'):
+                                    ui.label('Stage/Grade').classes('font-medium')
+                                    if match_details['stage_grade']:
+                                        ui.label(f"Patient Stage: {patient_data['cancer_characteristics']['stage']}").classes('text-xs text-gray-600')
+                                        ui.label(f"Trial Minimum: {trial_features['cancer_characteristics']['stage']}").classes('text-xs text-gray-600')
             
             # Trial info
             with ui.column().classes('flex-grow'):

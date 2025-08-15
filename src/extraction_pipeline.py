@@ -11,22 +11,22 @@ class ExtractionPipeline:
     Orchestrates code extraction and mCODE mapping from clinical trial eligibility criteria
     """
     
-    def __init__(self, use_llm: bool = True, model: str = "deepseek-coder"):
+    def __init__(self, engine_type: str = "Regex", model: str = "deepseek-coder"):
         """
         Initialize the extraction pipeline with required components
         
         Args:
-            use_llm: Whether to enable LLM-based feature extraction
-            model: LLM model to use for extraction
+            engine_type: Type of NLP engine to use (Regex, SpaCy, LLM)
+            model: LLM model to use for extraction (if engine_type is LLM)
         """
         self.logger = logging.getLogger(__name__)
         self.code_extractor = CodeExtractionModule()
         self.mcode_mapper = MCODEMappingEngine()
         self.breast_cancer_profile = BreastCancerProfile()
         self.matching_engine = MatchingEngine()
-        self.use_llm = use_llm
+        self.engine_type = engine_type
         self.model = model
-        if use_llm:
+        if engine_type == "LLM":
             from src.llm_nlp_engine import LLMNLPEngine
             self.llm_extractor = LLMNLPEngine()
             self.llm_extractor.model = model
@@ -40,15 +40,24 @@ class ExtractionPipeline:
             
         Returns:
             Dictionary with extracted codes and mCODE mappings
+            
+        Raises:
+            ValueError: If invalid engine configuration is detected
         """
+        self.logger.debug(f"Processing criteria with engine config - engine_type: {self.engine_type}, model: {self.model}")
         # Step 1: Extract codes from text
         extracted_codes = self.code_extractor.process_criteria_for_codes(criteria_text)
         
         # Step 2: Extract genomic features if LLM enabled
-        # Step 2: Extract mCODE features if LLM enabled
+        # Step 2: Extract mCODE features with validation
         mcode_features = {}
-        if self.use_llm:
+        if self.engine_type == "LLM":
+            if not hasattr(self, 'llm_extractor'):
+                raise ValueError("LLM engine requested but not initialized")
+            self.logger.debug(f"Using LLM engine: {self.llm_extractor.model}")
             mcode_features = self.llm_extractor.extract_mcode_features(criteria_text)
+        else:
+            self.logger.debug("Using non-LLM extraction")
         
         # Step 3: Map to mCODE elements
         # DEBUG: Log mcode_features type and content
@@ -105,7 +114,7 @@ class ExtractionPipeline:
             'mcode_mappings': mapping_result,
             'features': features_output,  # Use the more complete features dictionary
             'original_criteria': criteria_text,
-            'model_used': self.model if self.use_llm else None
+            'model_used': self.model if self.engine_type == "LLM" else None
         }
         
     def process_search_results(self, search_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
