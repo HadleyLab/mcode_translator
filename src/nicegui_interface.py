@@ -1,10 +1,31 @@
 import json
-from nicegui import ui
 import sys
 import os
 import asyncio
 import logging
 import traceback
+import colorlog
+
+# Configure colored logging FIRST
+logger = colorlog.getLogger()
+logger.setLevel(logging.INFO)
+logger.handlers = []
+
+handler = colorlog.StreamHandler(sys.stdout)
+handler.setFormatter(colorlog.ColoredFormatter(
+    '%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(name)s:%(lineno)d%(reset)s %(message)s',
+    log_colors={
+        'DEBUG': 'cyan',
+        'INFO': 'green',
+        'WARNING': 'yellow',
+        'ERROR': 'red',
+        'CRITICAL': 'red,bg_white',
+    }
+))
+logger.addHandler(handler)
+
+# Now import NiceGUI after logging is configured
+from nicegui import ui
 
 # Add src directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -19,9 +40,41 @@ import time
 # Initialize API client
 api_client = ClinicalTrialsAPI()
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-logger = logging.getLogger(__name__)
+# Configure colored logging
+print("Initializing colored logging...")  # Debug
+logger = colorlog.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# Remove any existing handlers
+logger.handlers = []
+
+# Create new handler with color formatting
+handler = colorlog.StreamHandler()
+formatter = colorlog.ColoredFormatter(
+    '%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(name)s:%(lineno)d%(reset)s %(message)s',
+    log_colors={
+        'DEBUG': 'cyan',
+        'INFO': 'green',
+        'WARNING': 'yellow',
+        'ERROR': 'red',
+        'CRITICAL': 'red,bg_white',
+    },
+    secondary_log_colors={},
+    style='%'
+)
+print(f"Formatter created: {formatter}")  # Debug
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+# Prevent propagation to root logger
+logger.propagate = False
+
+# Test logging
+logger.debug("Debug test message - should be cyan")
+logger.info("Info test message - should be green")
+logger.warning("Warning test message - should be yellow")
+logger.error("Error test message - should be red")
+logger.critical("Critical test message - should be bold red")
 
 # Initialize extraction pipelines with caching
 extraction_cache = {}
