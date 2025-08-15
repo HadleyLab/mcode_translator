@@ -1,23 +1,47 @@
 # mCODE Translator
 
-A system that processes clinical trial criteria from clinicaltrials.gov and translates them into mCODE standard format.
+[![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![CI Status](https://github.com/yourusername/mcode-translator/actions/workflows/python-app.yml/badge.svg)](https://github.com/yourusername/mcode-translator/actions)
 
-## Components
+A clinical trial matching system that translates eligibility criteria into structured mCODE (Minimal Common Oncology Data Elements) format using multiple NLP approaches.
 
-1. Data Fetcher - Fetches clinical trial data from clinicaltrials.gov API
-2. Criteria Parser - Extracts eligibility criteria text from clinical trial records
-3. NLP Engine - Processes unstructured text using medical NLP techniques
-4. mCODE Mapper - Maps extracted concepts to mCODE data elements
-5. Structured Data Generator - Creates structured mCODE representations
-6. Output Formatter - Formats output in various standards (JSON, XML, FHIR)
+## Features
 
-## Installation
+- **Multi-engine NLP processing**:
+  - LLM-based (DeepSeek API)
+  - spaCy medical NLP
+  - Regex pattern matching
+- **Breast cancer specialization** with genomic feature extraction
+- **Structured output** in mCODE FHIR format
+- **Modular architecture** for easy extension
+
+## Quick Start
 
 ```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Run the interface
+python src/nicegui_interface.py
 ```
 
-## Usage
+## Documentation
 
-```bash
-python fetcher.py --condition "breast cancer" --limit 10
+- [System Overview](system_documentation.md)
+- [Architecture Design](mcode_translator_architecture.md) 
+- [NLP Engine Details](nlp_criteria_parsing_design.md)
+- [Contribution Guide](CONTRIBUTING.md)
+
+## Examples
+
+```python
+from src.llm_nlp_engine import LLMNLPEngine
+
+engine = LLMNLPEngine()
+result = engine.extract_mcode_features("ER+ breast cancer, HER2-negative")
+```
+
+## License
+
+MIT License - See [LICENSE](LICENSE) for details.
