@@ -792,9 +792,11 @@ def display_trial_results(protocol_section, extraction_result):
                                 ui.label('DEMOGRAPHIC DETAILS').classes('text-xl font-bold mb-4 text-primary')
                                 with ui.grid(columns=2).classes('w-full gap-4'):
                                     for key, value in demographics.items():
-                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                        extracted = bool(value) and value != 'Not specified'
+                                        with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
+                                                             f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
                                             ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
-                                            ui.label(str(value) if value else 'Not specified')
+                                            ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
                         else:
                             ui.label('No demographic data available').classes('text-gray-500')
                     
@@ -806,13 +808,15 @@ def display_trial_results(protocol_section, extraction_result):
                                 ui.label('CANCER CHARACTERISTICS').classes('text-xl font-bold mb-4 text-primary')
                                 with ui.grid(columns=2).classes('w-full gap-4'):
                                     for key, value in cancer_data.items():
-                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                        extracted = bool(value) and value != 'Not specified'
+                                        with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
+                                                             f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
                                             ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
                                             if isinstance(value, dict):
                                                 for k, v in value.items():
-                                                    ui.label(f"{k}: {v}").classes('text-xs')
+                                                    ui.label(f"{k}: {v}").classes('text-xs' + ('' if extracted else ' opacity-70'))
                                             else:
-                                                ui.label(str(value) if value else 'Not specified')
+                                                ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
                         else:
                             ui.label('No cancer characteristics data').classes('text-gray-500')
                     
@@ -840,7 +844,9 @@ def display_trial_results(protocol_section, extraction_result):
                                 ui.label('BIOMARKERS').classes('text-xl font-bold mb-4 text-primary')
                                 with ui.grid(columns=2).classes('w-full gap-4'):
                                     for biomarker in biomarkers:
-                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                        extracted = bool(biomarker.get('status')) or bool(biomarker.get('value'))
+                                        with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
+                                                             f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
                                             with ui.column().classes('gap-1'):
                                                 ui.label(biomarker.get('name', 'Unknown')).classes('font-bold')
                                                 with ui.row().classes('items-center gap-2'):
