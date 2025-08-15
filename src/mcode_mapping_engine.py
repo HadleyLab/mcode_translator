@@ -93,7 +93,20 @@ class MCODEMappingEngine:
                 'genomic_variants': {
                     'PIK3CA': {'system': 'HGNC', 'code': '8985'},
                     'TP53': {'system': 'HGNC', 'code': '11998'},
-                    'ESR1': {'system': 'HGNC', 'code': '3467'}
+                    'ESR1': {'system': 'HGNC', 'code': '3467'},
+                    'AKT1': {'system': 'HGNC', 'code': '391'},
+                    'PTEN': {'system': 'HGNC', 'code': '9588'}
+                },
+                'treatment_history': {
+                    'endocrine_therapy': {'system': 'SNOMEDCT', 'code': '108499006'},
+                    'cdk4_6_inhibitor': {'system': 'RxNorm', 'code': '213188'}
+                },
+                'cancer_stages': {
+                    'stage_0': {'system': 'SNOMEDCT', 'code': '399537006'},
+                    'stage_I': {'system': 'SNOMEDCT', 'code': '399539009'},
+                    'stage_II': {'system': 'SNOMEDCT', 'code': '399544005'},
+                    'stage_III': {'system': 'SNOMEDCT', 'code': '399552009'},
+                    'stage_IV': {'system': 'SNOMEDCT', 'code': '399555006'}
                 }
             },
             'lung cancer': {
@@ -141,6 +154,35 @@ class MCODEMappingEngine:
                 'mapped_codes': {
                     'LOINC': '48018-6'
                 }
+            },
+            # Breast cancer-specific biomarkers
+            'her2-positive': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': '48676-1'},
+                'value': 'Positive'
+            },
+            'her2-negative': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': '48676-1'},
+                'value': 'Negative'
+            },
+            'hr-positive': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': '16112-5'},
+                'component': [
+                    {'code': 'ER', 'value': 'Positive'},
+                    {'code': 'PR', 'value': 'Positive'}
+                ]
+            },
+            'triple-negative': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP284113-1'},
+                'value': 'Negative',
+                'component': [
+                    {'code': 'ER', 'value': 'Negative'},
+                    {'code': 'PR', 'value': 'Negative'},
+                    {'code': 'HER2', 'value': 'Negative'}
+                ]
             }
         }
         
@@ -501,9 +543,34 @@ class MCODEMappingEngine:
             else:
                 patient['birthDate'] = "1975-01-01"  # Default
         
-        # Add ethnicity extension if provided
-        # Note: Ethnicity extraction is not implemented in the current NLP engine
-        # This would need to be added in a future version
+        # Add race/ethnicity extensions if provided
+        if 'race' in demographics and demographics['race']:
+            patient['extension'] = patient.get('extension', [])
+            patient['extension'].append({
+                'url': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
+                'extension': [{
+                    'url': 'ombCategory',
+                    'valueCoding': {
+                        'system': 'urn:oid:2.16.840.1.113883.6.238',
+                        'code': self._get_race_code(demographics['race'][0]),
+                        'display': demographics['race'][0]
+                    }
+                }]
+            })
+
+        if 'ethnicity' in demographics and demographics['ethnicity']:
+            patient['extension'] = patient.get('extension', [])
+            patient['extension'].append({
+                'url': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
+                'extension': [{
+                    'url': 'ombCategory',
+                    'valueCoding': {
+                        'system': 'urn:oid:2.16.840.1.113883.6.238',
+                        'code': self._get_ethnicity_code(demographics['ethnicity'][0]),
+                        'display': demographics['ethnicity'][0]
+                    }
+                }]
+            })
         
         return patient
     
@@ -610,6 +677,28 @@ class MCODEMappingEngine:
         
         return code_displays.get(code, code)
     
+    def _get_race_code(self, race: str) -> str:
+        """Get OMB race category code"""
+        race_codes = {
+            'american-indian-or-alaska-native': '1002-5',
+            'asian': '2028-9',
+            'black-or-african-american': '2054-5',
+            'native-hawaiian-or-other-pacific-islander': '2076-8',
+            'white': '2106-3',
+            'other': '2131-1',
+            'unknown': 'UNK'
+        }
+        return race_codes.get(race.lower(), 'UNK')
+
+    def _get_ethnicity_code(self, ethnicity: str) -> str:
+        """Get OMB ethnicity category code"""
+        ethnicity_codes = {
+            'hispanic-or-latino': '2135-2',
+            'not-hispanic-or-latino': '2186-5',
+            'unknown': 'UNK'
+        }
+        return ethnicity_codes.get(ethnicity.lower(), 'UNK')
+
     def _get_body_site_display(self, snomed_code: str) -> str:
         """
         Get display text for a body site SNOMED code

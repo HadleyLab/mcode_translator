@@ -2,6 +2,8 @@ import logging
 from typing import Dict, Any, List
 from src.code_extraction import CodeExtractionModule
 from src.mcode_mapping_engine import MCODEMappingEngine
+from src.breast_cancer_profile import BreastCancerProfile
+from src.matching_engine import MatchingEngine
 
 class ExtractionPipeline:
     """
@@ -20,6 +22,8 @@ class ExtractionPipeline:
         self.logger = logging.getLogger(__name__)
         self.code_extractor = CodeExtractionModule()
         self.mcode_mapper = MCODEMappingEngine()
+        self.breast_cancer_profile = BreastCancerProfile()
+        self.matching_engine = MatchingEngine()
         self.use_llm = use_llm
         self.model = model
         if use_llm:
@@ -41,34 +45,65 @@ class ExtractionPipeline:
         extracted_codes = self.code_extractor.process_criteria_for_codes(criteria_text)
         
         # Step 2: Extract genomic features if LLM enabled
-        genomic_features = []
+        # Step 2: Extract mCODE features if LLM enabled
+        mcode_features = {}
         if self.use_llm:
-            genomic_features = self.llm_extractor.extract_genomic_features(criteria_text)
+            mcode_features = self.llm_extractor.extract_mcode_features(criteria_text)
         
         # Step 3: Map to mCODE elements
-        # DEBUG: Log genomic_features type and content
-        self.logger.debug(f"genomic_features type: {type(genomic_features)}")
-        self.logger.debug(f"genomic_features value: {genomic_features}")
+        # DEBUG: Log mcode_features type and content
+        self.logger.debug(f"mcode_features type: {type(mcode_features)}")
+        self.logger.debug(f"mcode_features value: {mcode_features}")
         
-        mapping_result = self.mcode_mapper.process_nlp_output({
+        # Prepare full feature set for mapping with validation
+        features = {
             'codes': extracted_codes,
             'entities': [],
-            'genomic_features': genomic_features.get('genomic_variants', []) if isinstance(genomic_features, dict) else genomic_features
-        })
+            'genomic_features': mcode_features.get('genomic_variants', []),
+            'biomarkers': mcode_features.get('biomarkers', []),
+            'cancer_characteristics': mcode_features.get('cancer_characteristics', {}),
+            'treatment_history': mcode_features.get('treatment_history', {}),
+            'performance_status': mcode_features.get('performance_status', {}),
+            'demographics': mcode_features.get('demographics', {})
+        }
+        
+        # Validate and process breast cancer-specific features
+        try:
+            validated_result = self.breast_cancer_profile.validate_features(features)
+            features = validated_result['validated_features']
+        except ValueError as e:
+            self.logger.warning(f"Breast cancer validation failed: {str(e)}")
+        except Exception as e:
+            self.logger.error(f"Error validating breast cancer profile: {str(e)}")
+            # Add detailed debug info
+            self.logger.debug(f"Features structure: {features.keys()}")
+            self.logger.debug(f"Features content: {features}")
+        
+        mapping_result = self.mcode_mapper.process_nlp_output(features)
         
         # Add genomic feature counts to metadata
-        if isinstance(genomic_features, dict):
-            variant_count = len(genomic_features.get('genomic_variants', []))
-            biomarker_count = len(genomic_features.get('biomarkers', []))
+        if isinstance(mcode_features, dict):
+            variant_count = len(mcode_features.get('genomic_variants', []))
+            biomarker_count = len(mcode_features.get('biomarkers', []))
             mapping_result['metadata'].update({
                 'genomic_variants_count': variant_count,
                 'biomarkers_count': biomarker_count
             })
 
+        # Create a more complete features dictionary for output
+        features_output = {
+            'genomic_variants': mcode_features.get('genomic_variants', []),
+            'biomarkers': mcode_features.get('biomarkers', []),
+            'cancer_characteristics': mcode_features.get('cancer_characteristics', {}),
+            'treatment_history': mcode_features.get('treatment_history', {}),
+            'performance_status': mcode_features.get('performance_status', {}),
+            'demographics': mcode_features.get('demographics', {})
+        }
+        
         return {
             'extracted_codes': extracted_codes,
             'mcode_mappings': mapping_result,
-            'genomic_features': genomic_features,  # Include raw features
+            'features': features_output,  # Use the more complete features dictionary
             'original_criteria': criteria_text,
             'model_used': self.model if self.use_llm else None
         }
@@ -97,16 +132,42 @@ class ExtractionPipeline:
                     eligibility_module = protocol_section.get('eligibilityModule', {})
                     criteria = eligibility_module.get('eligibilityCriteria', '')
                     
-                    self.logger.info(f"Processing trial {trial.get('protocolSection', {}).get('identificationModule', {}).get('nctId', 'unknown')}")
+                    trial_id = trial.get('protocolSection', {}).get('identificationModule', {}).get('nctId', 'unknown')
+                    self.logger.info(f"Processing trial {trial_id}")
                     self.logger.debug(f"Criteria found: {bool(criteria)}")
                     
                     trial_data = trial.copy()
+                    
+                    # Validate genomic features structure if present
+                    if 'genomic_features' in trial_data:
+                        if not isinstance(trial_data['genomic_features'], (list, dict)):
+                            self.logger.error(f"Invalid genomic_features type in trial {trial_id}\n"
+                                            f"Expected list or dict, got: {type(trial_data['genomic_features'])}\n"
+                                            f"Raw value: {str(trial_data['genomic_features'])[:200]}")
+                            trial_data['genomic_features'] = []
                 
                 if not criteria:
                     continue
                     
-                # Process criteria through pipeline
-                processed = self.process_criteria(str(criteria))
+                try:
+                    # Process criteria through pipeline with additional validation
+                    criteria_text = str(criteria)
+                    if not criteria_text.strip():
+                        continue
+                        
+                    processed = self.process_criteria(criteria_text)
+                    
+                    # Validate genomic variants structure
+                    if 'genomic_features' in processed:
+                        if not isinstance(processed['genomic_features'], (list, dict)):
+                            self.logger.error(f"Invalid genomic_features in processed result for trial {trial_id}\n"
+                                            f"Input criteria: {criteria_text[:200]}...\n"
+                                            f"Genomic features: {str(processed.get('genomic_features'))[:500]}")
+                            processed['genomic_features'] = []
+                            
+                except Exception as e:
+                    self.logger.error(f"Error processing criteria for trial {trial_id}: {str(e)}")
+                    continue
                 
                 # Add to enriched result
                 trial_data['mcode_data'] = {
@@ -119,6 +180,26 @@ class ExtractionPipeline:
                 self.logger.error(f"Error processing trial {trial.get('id')}: {str(e)}")
                 
         return enriched_results
+        
+    def match_patient_to_trials(self, patient_profile: Dict, trials: List[Dict]) -> List[Dict]:
+        """
+        Match a patient profile to enriched clinical trials
+        
+        Args:
+            patient_profile: Dictionary with patient's mCODE features
+            trials: List of trials enriched with mCODE data
+            
+        Returns:
+            List of matching trials with scores and reasons
+        """
+        try:
+            # Validate patient profile before matching
+            validated_result = self.breast_cancer_profile.validate_features(patient_profile.copy())
+            validated_profile = validated_result['validated_features']
+            return self.matching_engine.match_trials(validated_profile, trials)
+        except Exception as e:
+            self.logger.error(f"Patient-trial matching failed: {str(e)}")
+            return []
 
 # Example usage
 if __name__ == "__main__":

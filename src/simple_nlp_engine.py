@@ -13,10 +13,128 @@ class SimpleNLPEngine:
     
     def __init__(self):
         """
-        Initialize the simple NLP engine
+        Initialize the simple NLP engine with mCODE extraction patterns
         """
         logger.info("Simple NLP engine initialized")
+        
+        # Biomarker patterns
+        self.biomarker_patterns = {
+            'ER': re.compile(r'ER\s*(?:status)?\s*[:=]?\s*(positive|negative)', re.IGNORECASE),
+            'PR': re.compile(r'PR\s*(?:status)?\s*[:=]?\s*(positive|negative)', re.IGNORECASE),
+            'HER2': re.compile(r'HER2\s*(?:status)?\s*[:=]?\s*(positive|negative)', re.IGNORECASE),
+            'PD-L1': re.compile(r'PD-?L1\s*(?:status)?\s*[:=]?\s*(positive|negative)', re.IGNORECASE),
+            'Ki-67': re.compile(r'Ki-?67\s*(?:status)?\s*[:=]?\s*(positive|negative)', re.IGNORECASE)
+        }
+        
+        # Genomic variant patterns
+        self.gene_pattern = re.compile(r'\b(BRCA1|BRCA2|TP53|PIK3CA|PTEN|AKT1|ERBB2|HER2)\b', re.IGNORECASE)
+        
+        # Cancer condition patterns
+        self.stage_pattern = re.compile(r'stage\s+(I{1,3}V?|IV)', re.IGNORECASE)
+        self.cancer_type_pattern = re.compile(r'\b(breast|lung|colorectal)\s+cancer\b', re.IGNORECASE)
+        
+        # Treatment patterns
+        self.medication_pattern = re.compile(r'\b(trastuzumab|inetetamab|pembrolizumab|doxorubicin)\b', re.IGNORECASE)
+        
+        # Performance status patterns
+        self.ecog_pattern = re.compile(r'ECOG\s+status?\s*[:=]?\s*([0-4])', re.IGNORECASE)
+        
+        # Demographic patterns
+        self.gender_pattern = re.compile(r'\b(male|female)\b', re.IGNORECASE)
+        self.age_pattern = re.compile(r'age\s+([0-9]+)\s+to\s+([0-9]+)', re.IGNORECASE)
     
+    def extract_mcode_features(self, criteria_text: str) -> Dict:
+        """
+        Extract mCODE features from eligibility criteria text
+        
+        Args:
+            criteria_text: Text containing eligibility criteria
+            
+        Returns:
+            Dictionary with mCODE features across categories
+        """
+        return {
+            'demographics': self._extract_demographics(criteria_text),
+            'cancer_condition': self._extract_cancer_condition(criteria_text),
+            'genomics': {
+                'genomic_variants': self._extract_genomic_variants(criteria_text)
+            },
+            'biomarkers': self._extract_biomarkers(criteria_text),
+            'treatment': self._extract_treatment(criteria_text),
+            'performance_status': self._extract_performance_status(criteria_text)
+        }
+
+    def _extract_demographics(self, text: str) -> Dict:
+        demographics = {}
+        
+        # Extract gender
+        gender_match = self.gender_pattern.search(text)
+        if gender_match:
+            demographics['gender'] = gender_match.group(1).capitalize()
+            
+        # Extract age range
+        age_match = self.age_pattern.search(text)
+        if age_match:
+            demographics['age_range'] = f"{age_match.group(1)}-{age_match.group(2)}"
+            
+        return demographics
+
+    def _extract_cancer_condition(self, text: str) -> Dict:
+        condition = {}
+        
+        # Extract cancer type
+        cancer_match = self.cancer_type_pattern.search(text)
+        if cancer_match:
+            condition['cancer_type'] = cancer_match.group(1).capitalize() + " cancer"
+            
+        # Extract stage
+        stage_match = self.stage_pattern.search(text)
+        if stage_match:
+            condition['stage'] = stage_match.group(1).upper()
+            
+        return condition
+
+    def _extract_biomarkers(self, text: str) -> List[Dict]:
+        biomarkers = []
+        for name, pattern in self.biomarker_patterns.items():
+            match = pattern.search(text)
+            if match:
+                status = match.group(1).capitalize()
+                biomarkers.append({
+                    'name': name,
+                    'status': status
+                })
+        return biomarkers
+
+    def _extract_genomic_variants(self, text: str) -> List[Dict]:
+        variants = []
+        for match in self.gene_pattern.finditer(text):
+            variants.append({
+                'gene': match.group(1).upper(),
+                'variant': ''
+            })
+        return variants
+
+    def _extract_treatment(self, text: str) -> Dict:
+        treatment = {'medications': []}
+        
+        # Extract medications
+        for match in self.medication_pattern.finditer(text):
+            treatment['medications'].append(match.group(1).capitalize())
+            
+        return treatment
+
+    def _extract_performance_status(self, text: str) -> Dict:
+        status = {}
+        
+        # Extract ECOG score
+        ecog_match = self.ecog_pattern.search(text)
+        if ecog_match:
+            status['ecog_score'] = ecog_match.group(1)
+            
+        return status
+
+    # Keep existing methods for backward compatibility
     def clean_text(self, text: str) -> str:
         """
         Clean and normalize text
