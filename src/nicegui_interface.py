@@ -90,7 +90,27 @@ patient_profile = {
 }
 
 # Update patient profile function
+def validate_form():
+    """Validate all form fields before submission"""
+    valid = True
+    if not age_input.validate():
+        ui.notify('Please enter a valid age (18-100)', type='negative')
+        valid = False
+    if not cancer_type_select.validate():
+        ui.notify('Please select a cancer type', type='negative')
+        valid = False
+    if not histology_input.validate():
+        ui.notify('Histology is required', type='negative')
+        valid = False
+    if not grade_select.validate():
+        ui.notify('Please select a grade', type='negative')
+        valid = False
+    return valid
+
 def update_patient_profile():
+    """Update patient profile after validation"""
+    if not validate_form():
+        return
     # Convert UI inputs to structured format
     new_biomarkers = [
         {'name': 'ER', 'status': er_select.value, 'value': er_value_input.value},
@@ -158,68 +178,91 @@ def update_patient_profile():
     ui.notify('Patient profile updated!')
 
 # Patient profile UI with expansion sections
-with ui.card().classes('w-full mb-4'):
-    ui.label('PATIENT PROFILE').classes('text-xl font-bold mb-4')
-    with ui.column().classes('w-full gap-4'):
-        # Demographics Section
-        with ui.expansion('DEMOGRAPHICS', icon='person').classes('w-full'):
-            with ui.card().classes('w-full p-4 bg-white shadow-sm'):
-                cancer_type_select = ui.select(
-                ['breast cancer', 'lung cancer', 'colorectal cancer', 'prostate cancer'],
-                value=patient_profile['cancer_type'],
-                label='Cancer Type'
-            ).classes('mb-4')
-            age_input = ui.number(
-                label='Age',
-                value=patient_profile['age'],
-                min=18,
-                max=100
-            )
-            gender_select = ui.select(
-                ['female', 'male', 'other', 'unknown'],
-                value=patient_profile['gender'],
-                label='Gender'
-            )
-            ui.label('Birth Date')
-            birth_date_input = ui.input(
-                value=patient_profile['birth_date']
-            ).props('type=date')
+with ui.expansion('PATIENT PROFILE', icon='person', value=False).classes('w-full'):
+    with ui.card().classes('w-full p-4 sm:p-6 mb-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow'):
+        with ui.column().classes('w-full gap-6'):
+            # Patient Information Section
+            with ui.expansion('PATIENT INFORMATION', icon='person').classes('w-full'):
+                with ui.card().classes('w-full p-6 bg-white shadow-sm gap-4'):
+                    with ui.grid(columns=1).classes('w-full gap-4').props('sm:columns=2'):
+                    # Basic Demographics
+                        with ui.column().classes('gap-4'):
+                            ui.label('Basic Information').classes('text-lg font-medium')
+                            age_input = ui.number(
+                                label='Age*',
+                                value=patient_profile['age'],
+                                min=18,
+                                max=100,
+                                validation={'Please enter age between 18-100': lambda value: 18 <= value <= 100}
+                            ).props('tooltip="Patient age in years (18-100)" required')
+                            gender_select = ui.select(
+                                ['female', 'male', 'other', 'unknown'],
+                                value=patient_profile['gender'],
+                                label='Sex'
+                            ).props('tooltip="Patient\'s biological sex"')
+                            ui.label('Date of Birth')
+                            birth_date_input = ui.input(
+                                value=patient_profile['birth_date']
+                            ).props('type=date tooltip="Patient\'s date of birth (YYYY-MM-DD)"')
+                    
+                    # Cancer Diagnosis
+                    with ui.column().classes('gap-4'):
+                        ui.label('Cancer Diagnosis').classes('text-lg font-medium')
+                        cancer_type_select = ui.select(
+                            ['breast cancer', 'lung cancer', 'colorectal cancer', 'prostate cancer'],
+                            value=patient_profile['cancer_type'],
+                            label='Primary Cancer Type*',
+                            validation={'Please select a cancer type': lambda value: value in ['breast cancer', 'lung cancer', 'colorectal cancer', 'prostate cancer']}
+                        ).props('tooltip="Select the patient\'s primary cancer diagnosis" required')
         
-        # Cancer Condition Section
-        with ui.expansion('CANCER DETAILS', icon='medical_services').classes('w-full'):
-            with ui.card().classes('w-full p-4 bg-white shadow-sm'):
-                with ui.column().classes('gap-2'):
-                    stage_select = ui.select(
-                        ['I', 'II', 'III', 'IV'],
-                        value=patient_profile['stage'],
-                        label='Stage'
-                    ).classes('w-full')
-            histology_input = ui.input(
-                label='Histology',
-                value=patient_profile['histology']
-            )
-            grade_select = ui.select(
-                ['1', '2', '3', '4'],
-                value=patient_profile['grade'],
-                label='Grade'
-            )
-            with ui.row():
-                t_stage_select = ui.select(['1', '2', '3', '4'], value=patient_profile['tnm_staging']['t'], label='T')
-                n_stage_select = ui.select(['0', '1', '2', '3'], value=patient_profile['tnm_staging']['n'], label='N')
-                m_stage_select = ui.select(['0', '1'], value=patient_profile['tnm_staging']['m'], label='M')
-            primary_site_input = ui.input(
-                label='Primary Site',
-                value=patient_profile['primary_site']
-            )
-            laterality_select = ui.select(
-                ['Left', 'Right', 'Bilateral', 'Midline'],
-                value=patient_profile['laterality'],
-                label='Laterality'
-            )
+        # Tumor Characteristics Section
+        with ui.expansion('TUMOR CHARACTERISTICS', icon='medical_services', value=False).classes('w-full'):
+            with ui.card().classes('w-full p-6 bg-gray-50 shadow-sm rounded-lg gap-4 hover:bg-white transition-colors'):
+                with ui.grid(columns=1).classes('w-full gap-4').props('sm:columns=2'):
+                    # Pathology Details
+                    with ui.column().classes('gap-4'):
+                        ui.label('Pathology').classes('text-lg font-medium')
+                        histology_input = ui.input(
+                            label='Histology*',
+                            value=patient_profile['histology'],
+                            validation={'Histology is required': lambda value: bool(value.strip())}
+                        ).props('tooltip="Cancer histology/morphology type" required')
+                        grade_select = ui.select(
+                            ['1', '2', '3', '4'],
+                            value=patient_profile['grade'],
+                            label='Grade*',
+                            validation={'Please select a grade': lambda value: value in ['1', '2', '3', '4']}
+                        ).props('tooltip="Cancer differentiation grade (1-4)" required')
+                        stage_select = ui.select(
+                            ['I', 'II', 'III', 'IV'],
+                            value=patient_profile['stage'],
+                            label='Clinical Stage'
+                        ).props('tooltip="Overall cancer stage"')
+                    
+                    # Tumor Location & Staging
+                    with ui.column().classes('gap-4'):
+                        ui.label('Location & Staging').classes('text-lg font-medium')
+                        primary_site_input = ui.input(
+                            label='Primary Site',
+                            value=patient_profile['primary_site']
+                        ).props('tooltip="Anatomical location of primary tumor"')
+                        laterality_select = ui.select(
+                            ['Left', 'Right', 'Bilateral', 'Midline'],
+                            value=patient_profile['laterality'],
+                            label='Laterality'
+                        ).props('tooltip="Side of body where tumor is located"')
+                        ui.label('TNM Staging').classes('font-medium')
+                        with ui.row().classes('items-center gap-4'):
+                            t_stage_select = ui.select(['1', '2', '3', '4'], value=patient_profile['tnm_staging']['t'], label='T') \
+                                .props('tooltip="Primary tumor size/extent"')
+                            n_stage_select = ui.select(['0', '1', '2', '3'], value=patient_profile['tnm_staging']['n'], label='N') \
+                                .props('tooltip="Lymph node involvement"')
+                            m_stage_select = ui.select(['0', '1'], value=patient_profile['tnm_staging']['m'], label='M') \
+                                .props('tooltip="Distant metastasis presence"')
         
         # Biomarkers Section
-        with ui.expansion('BIOMARKERS', icon='science').classes('w-full'):
-            with ui.card().classes('w-full p-4 bg-white shadow-sm'):
+        with ui.expansion('BIOMARKERS', icon='science', value=False).classes('w-full'):
+            with ui.card().classes('w-full p-6 bg-gray-50 shadow-sm rounded-lg gap-4 hover:bg-white transition-colors'):
                 with ui.column().classes('gap-2'):
                     # ER Biomarker
                     with ui.row().classes('items-center gap-2'):
@@ -267,104 +310,125 @@ with ui.card().classes('w-full mb-4'):
         
             # Clinical Data Section
         # Clinical Data Section
-        with ui.expansion('CLINICAL DATA', icon='clinical_notes').classes('w-full'):
-            with ui.card().classes('w-full p-4 bg-white shadow-sm'):
-                # Genomic Variants
-                with ui.column().classes('gap-2 mb-4'):
-                    ui.label('Genomic Variants').classes('font-medium')
-                    variant_text = []
-                    for v in patient_profile['genomic_variants']:
-                        variant_text.append(f"{v['gene']}, {v.get('variant', '')}, {v.get('significance', '')}")
-                    variants_input = ui.textarea(
-                        value='; '.join(variant_text),
-                        placeholder='gene,variant,significance (one per line)'
-                    ).classes('w-full text-xs')
-            
-            # Treatment History
-            ui.label('Treatment').classes('text-md font-bold mt-4')
-            treatment_type_select = ui.select(
-                ['Chemotherapy', 'Radiation', 'Surgery', 'Hormonal', 'Immunotherapy'],
-                value=patient_profile['treatments'][0]['type'] if patient_profile['treatments'] else '',
-                label='Type'
-            )
-            treatment_name_input = ui.input(
-                label='Regimen/Name',
-                value=patient_profile['treatments'][0]['name'] if patient_profile['treatments'] else ''
-            )
-            with ui.row():
-                ui.label('Start')
-                treatment_start_input = ui.input(
-                    value=patient_profile['treatments'][0]['start_date'] if patient_profile['treatments'] else ''
+        with ui.expansion('CLINICAL DATA', icon='medical_services', value=False).classes('w-full z-10'):
+                with ui.card().classes('w-full p-4 sm:p-6 bg-gray-50 shadow-sm rounded-lg gap-4 hover:bg-white transition-colors relative'):
+                    # Genomic Variants
+                    with ui.column().classes('gap-2 mb-4'):
+                        ui.label('Genomic Variants').classes('font-medium')
+                        variant_text = []
+                        for v in patient_profile['genomic_variants']:
+                            variant_text.append(f"{v['gene']}, {v.get('variant', '')}, {v.get('significance', '')}")
+                        variants_input = ui.textarea(
+                            value='; '.join(variant_text),
+                            placeholder='gene,variant,significance (one per line)'
+                        ).classes('w-full text-xs')
+                
+                # Treatment History
+                ui.label('Treatment').classes('text-md font-bold mt-4')
+                treatment_type_select = ui.select(
+                    ['Chemotherapy', 'Radiation', 'Surgery', 'Hormonal', 'Immunotherapy'],
+                    value=patient_profile['treatments'][0]['type'] if patient_profile['treatments'] else '',
+                    label='Type'
+                )
+                treatment_name_input = ui.input(
+                    label='Regimen/Name',
+                    value=patient_profile['treatments'][0]['name'] if patient_profile['treatments'] else ''
+                )
+                with ui.row():
+                    ui.label('Start')
+                    treatment_start_input = ui.input(
+                        value=patient_profile['treatments'][0]['start_date'] if patient_profile['treatments'] else ''
+                    ).props('type=date')
+                    ui.label('End')
+                    treatment_end_input = ui.input(
+                        value=patient_profile['treatments'][0]['end_date'] if patient_profile['treatments'] else ''
+                    ).props('type=date')
+                
+                # Performance Status
+                ui.label('Performance Status').classes('text-md font-bold mt-4')
+                performance_system_select = ui.select(
+                    ['ECOG', 'Karnofsky'],
+                    value=patient_profile['performance_status']['system'],
+                    label='System'
+                )
+                performance_score_select = ui.select(
+                    ['0', '1', '2', '3', '4'],
+                    value=patient_profile['performance_status']['score'],
+                    label='Score'
+                )
+                ui.label('Date')
+                performance_date_input = ui.input(
+                    value=patient_profile['performance_status']['date']
                 ).props('type=date')
-                ui.label('End')
-                treatment_end_input = ui.input(
-                    value=patient_profile['treatments'][0]['end_date'] if patient_profile['treatments'] else ''
-                ).props('type=date')
-            
-            # Performance Status
-            ui.label('Performance Status').classes('text-md font-bold mt-4')
-            performance_system_select = ui.select(
-                ['ECOG', 'Karnofsky'],
-                value=patient_profile['performance_status']['system'],
-                label='System'
-            )
-            performance_score_select = ui.select(
-                ['0', '1', '2', '3', '4'],
-                value=patient_profile['performance_status']['score'],
-                label='Score'
-            )
-            ui.label('Date')
-            performance_date_input = ui.input(
-                value=patient_profile['performance_status']['date']
-            ).props('type=date')
-            
-            # Comorbidities
-            ui.label('Comorbidities').classes('text-md font-bold mt-4')
-            comorbidity_input = ui.input(
-                label='Condition',
-                value=patient_profile['comorbidities'][0]['condition'] if patient_profile['comorbidities'] else ''
-            )
-            comorbidity_severity_select = ui.select(
-                ['Mild', 'Moderate', 'Severe'],
-                value=patient_profile['comorbidities'][0]['severity'] if patient_profile['comorbidities'] else '',
-                label='Severity'
+                
+                # Comorbidities
+                ui.label('Comorbidities').classes('text-md font-bold mt-4')
+                comorbidity_input = ui.input(
+                    label='Condition',
+                    value=patient_profile['comorbidities'][0]['condition'] if patient_profile['comorbidities'] else ''
+                )
+                comorbidity_severity_select = ui.select(
+                    ['Mild', 'Moderate', 'Severe'],
+                    value=patient_profile['comorbidities'][0]['severity'] if patient_profile['comorbidities'] else '',
+                    label='Severity'
             )
             
-        # Update Button (outside accordion)
-        ui.button('UPDATE PROFILE', icon='save', on_click=update_patient_profile) \
-            .classes('mt-4 w-full bg-primary text-white hover:bg-primary-dark')
+    # Update Button (outside accordion)
+    ui.button('UPDATE PROFILE', icon='save', on_click=update_patient_profile) \
+        .classes('mt-6 w-full py-3 sm:py-2 bg-primary text-white hover:bg-primary-dark text-base sm:text-sm')
             
 # Basic search interface
 with ui.column().classes('w-full items-center'):
-    ui.label('mCODE Clinical Trials Search').classes('text-2xl')
+    ui.label('mCODE CLINICAL TRIALS SEARCH').classes('text-2xl font-bold mb-6 text-primary')
     
-    # Search controls
-    with ui.row().classes('w-full justify-center items-center'):
-        search_input = ui.input('Search term', value=patient_profile['cancer_type']).classes('w-64')
+    # Search controls in a card with better organization
+    with ui.card().classes('w-full p-4 sm:p-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow'):
+        with ui.row().classes('w-full flex-col sm:flex-row items-center gap-4'):
+            # Search input with clear label
+            search_input = ui.input(
+                label='Search Clinical Trials',
+                placeholder='Enter cancer type or keywords',
+                value=patient_profile['cancer_type']
+            ).props('clearable').classes('flex-grow')
+            
+            # Search actions
+            with ui.row().classes('items-center gap-2 mt-4 sm:mt-0'):
+                search_button = ui.button('Search', icon='search') \
+                    .props('color=primary') \
+                    .classes('min-w-[120px]')
+                reset_button = ui.button('Reset', icon='refresh') \
+                    .props('outline') \
+                    .classes('min-w-[120px]')
         
-        # Results limit control
-        with ui.column().classes('w-64'):
-            ui.label('Results limit').classes('text-sm')
-            limit_slider = ui.slider(min=1, max=20, value=5).classes('w-full')
-        
-        # Engine selection
-        with ui.column().classes('w-64'):
-            ui.label('NLP Engine').classes('text-sm')
-            engine_select = ui.radio(
-                ['Regex', 'SpaCy', 'LLM'],
-                value='LLM'
-            ).props('inline')
-            ui.label('Benchmark Mode')
-            benchmark_toggle = ui.toggle([True, False], value=False)
-        
-        # Matching toggle
-        with ui.column().classes('w-64'):
-            ui.label('Patient Matching').classes('text-sm')
-            matching_toggle = ui.toggle([True, False], value=True).props('left-label')
-            ui.label('Enable patient matching')
-        
-        search_button = ui.button('Search', icon='search').classes('w-32')
-        reset_button = ui.button('Reset', icon='refresh').classes('w-32').props('outline')
+        # Advanced options in expansion
+        with ui.expansion('Advanced Options', icon='tune').classes('w-full mt-2'):
+            with ui.grid(columns=1).classes('w-full gap-4').props('sm:columns=2 lg:columns=3'):
+                # Results limit
+                with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                    ui.label('Results Limit').classes('font-medium')
+                    limit_slider = ui.slider(min=1, max=20, value=5) \
+                        .props('label-always') \
+                        .classes('w-full')
+                
+                # NLP Engine selection
+                with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                    ui.label('NLP Engine').classes('font-medium')
+                    engine_select = ui.radio(
+                        ['Regex', 'SpaCy', 'LLM'],
+                        value='LLM'
+                    ).props('inline')
+                
+                # Matching options
+                with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                    ui.label('Matching Options').classes('font-medium')
+                    with ui.row().classes('items-center gap-2'):
+                        matching_toggle = ui.toggle([True, False], value=True) \
+                            .props('left-label color=primary')
+                        ui.label('Patient Matching')
+                    with ui.row().classes('items-center gap-2'):
+                        benchmark_toggle = ui.toggle([True, False], value=False) \
+                            .props('left-label color=secondary')
+                        ui.label('Benchmark Mode')
 
     # Results display
     trials_container = ui.column().classes('w-full p-4')
@@ -591,59 +655,97 @@ def display_trial_results(protocol_section, extraction_result):
                     with ui.tab_panel(demographics_tab):
                         demographics = features.get('demographics', {})
                         if demographics:
-                            ui.code(json.dumps(demographics, indent=2)).classes('w-full')
+                            with ui.card().classes('w-full p-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow'):
+                                ui.label('DEMOGRAPHIC DETAILS').classes('text-xl font-bold mb-4 text-primary')
+                                with ui.grid(columns=2).classes('w-full gap-4'):
+                                    for key, value in demographics.items():
+                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                            ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                            ui.label(str(value) if value else 'Not specified')
                         else:
-                            ui.label('No demographics data')
+                            ui.label('No demographic data available').classes('text-gray-500')
                     
                     # Cancer Condition
                     with ui.tab_panel(cancer_tab):
                         cancer_data = features.get('cancer_characteristics', {})
                         if cancer_data:
-                            ui.code(json.dumps(cancer_data, indent=2)).classes('w-full')
+                            with ui.card().classes('w-full p-4'):
+                                ui.label('CANCER CHARACTERISTICS').classes('text-xl font-bold mb-4 text-primary')
+                                with ui.grid(columns=2).classes('w-full gap-4'):
+                                    for key, value in cancer_data.items():
+                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                            ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                            if isinstance(value, dict):
+                                                for k, v in value.items():
+                                                    ui.label(f"{k}: {v}").classes('text-xs')
+                                            else:
+                                                ui.label(str(value) if value else 'Not specified')
                         else:
-                            ui.label('No cancer characteristics data')
+                            ui.label('No cancer characteristics data').classes('text-gray-500')
                     
                     # Genomic Variants
                     with ui.tab_panel(genomics_tab):
                         variants = features.get('genomic_variants', [])
                         if variants:
-                            with ui.grid(columns=2).classes('w-full'):
-                                for variant in variants:
-                                    with ui.card().classes('p-2'):
-                                        ui.label(f"Gene: {variant.get('gene', 'Unknown')}").classes('font-bold')
-                                        ui.label(f"Variant: {variant.get('variant', '')}")
-                                        ui.label(f"Significance: {variant.get('significance', '')}")
+                            with ui.card().classes('w-full p-4'):
+                                ui.label('GENOMIC VARIANTS').classes('text-xl font-bold mb-4 text-primary')
+                                with ui.grid(columns=2).classes('w-full gap-4'):
+                                    for variant in variants:
+                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                            with ui.column().classes('gap-1'):
+                                                ui.label(f"Gene: {variant.get('gene', 'Unknown')}").classes('font-bold')
+                                                ui.label(f"Variant: {variant.get('variant', 'N/A')}").classes('text-sm')
+                                                ui.label(f"Significance: {variant.get('significance', 'N/A')}").classes('text-sm text-blue-600')
                         else:
-                            ui.label('No genomic variants found')
+                            ui.label('No genomic variants found').classes('text-gray-500')
                     
                     # Biomarkers
                     with ui.tab_panel(biomarkers_tab):
                         biomarkers = features.get('biomarkers', [])
                         if biomarkers:
-                            with ui.grid(columns=2).classes('w-full'):
-                                for biomarker in biomarkers:
-                                    with ui.card().classes('p-2'):
-                                        ui.label(f"Name: {biomarker.get('name', 'Unknown')}").classes('font-bold')
-                                        ui.label(f"Status: {biomarker.get('status', '')}")
-                                        ui.label(f"Value: {biomarker.get('value', '')}")
+                            with ui.card().classes('w-full p-4'):
+                                ui.label('BIOMARKERS').classes('text-xl font-bold mb-4 text-primary')
+                                with ui.grid(columns=2).classes('w-full gap-4'):
+                                    for biomarker in biomarkers:
+                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                            with ui.column().classes('gap-1'):
+                                                ui.label(biomarker.get('name', 'Unknown')).classes('font-bold')
+                                                with ui.row().classes('items-center gap-2'):
+                                                    ui.label('Status:').classes('text-sm font-medium')
+                                                    ui.label(biomarker.get('status', 'N/A')).classes('text-sm')
+                                                with ui.row().classes('items-center gap-2'):
+                                                    ui.label('Value:').classes('text-sm font-medium')
+                                                    ui.label(biomarker.get('value', 'N/A')).classes('text-sm')
                         else:
-                            ui.label('No biomarkers found')
+                            ui.label('No biomarkers found').classes('text-gray-500')
                     
                     # Treatment History
                     with ui.tab_panel(treatment_tab):
                         treatment = features.get('treatment_history', {})
                         if treatment:
-                            ui.code(json.dumps(treatment, indent=2)).classes('w-full')
+                            with ui.card().classes('w-full p-4'):
+                                ui.label('TREATMENT HISTORY').classes('text-xl font-bold mb-4 text-primary')
+                                with ui.grid(columns=2).classes('w-full gap-4'):
+                                    for key, value in treatment.items():
+                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                            ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                            ui.label(str(value) if value else 'Not specified')
                         else:
-                            ui.label('No treatment history data')
+                            ui.label('No treatment history data').classes('text-gray-500')
                     
                     # Performance Status
                     with ui.tab_panel(performance_tab):
                         performance = features.get('performance_status', {})
                         if performance:
-                            ui.code(json.dumps(performance, indent=2)).classes('w-full')
+                            with ui.card().classes('w-full p-4'):
+                                ui.label('PERFORMANCE STATUS').classes('text-xl font-bold mb-4 text-primary')
+                                with ui.grid(columns=2).classes('w-full gap-4'):
+                                    for key, value in performance.items():
+                                        with ui.card().classes('p-2 bg-gray-50'):
+                                            ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                            ui.label(str(value) if value else 'Not specified')
                         else:
-                            ui.label('No performance status data')
+                            ui.label('No performance status data').classes('text-gray-500')
 # Reset function
 def on_reset():
     trials_container.clear()
