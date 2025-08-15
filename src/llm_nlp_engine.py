@@ -169,32 +169,11 @@ class LLMNLPEngine:
             try:
                 # First try parsing normally
                 parsed = self._parse_response(content, prompt)
-                
-                # If parsing succeeded but no BRCA1 found, add test data
-                if not any(v.get('gene') == 'BRCA1' for v in parsed.get('genomic_variants', [])):
-                    self.logger.info("Adding test BRCA1 variant")
-                    parsed.setdefault('genomic_variants', []).append({
-                        'gene': 'BRCA1',
-                        'variant': 'c.68_69delAG',
-                        'significance': 'pathogenic'
-                    })
-                
                 return parsed
             except Exception as e:
                 self.logger.error(f"Parsing failed: {str(e)}\nContent: {content[:200]}")
                 # Return test data if parsing fails
-                return {
-                    'genomic_variants': [{
-                        'gene': 'BRCA1',
-                        'variant': 'c.68_69delAG',
-                        'significance': 'pathogenic'
-                    }],
-                    'biomarkers': [{
-                        'name': 'ER',
-                        'status': 'positive'
-                    }],
-                    **self._get_empty_response()
-                }
+                return self._get_empty_response()
         except Exception as e:
             self.logger.error(f"LLM extraction failed: {str(e)}")
             return self._get_empty_response()

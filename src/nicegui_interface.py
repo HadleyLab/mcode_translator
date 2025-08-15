@@ -1,4 +1,4 @@
-import json  # Must be at very top for global scope
+import json
 from nicegui import ui
 import sys
 import os
@@ -11,6 +11,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.clinical_trials_api import ClinicalTrialsAPI
 from src.extraction_pipeline import ExtractionPipeline
+from src.regex_nlp_engine import RegexNLPEngine
+from src.spacy_nlp_engine import SpacyNLPEngine
+from src.llm_nlp_engine import LLMNLPEngine
 import time
 
 # Initialize API client
@@ -20,9 +23,13 @@ api_client = ClinicalTrialsAPI()
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
-# Initialize extraction pipeline with caching
+# Initialize extraction pipelines with caching
 extraction_cache = {}
-pipeline = ExtractionPipeline(use_llm=True, model="deepseek-coder")
+engines = {
+    'Regex': ExtractionPipeline(RegexNLPEngine()),
+    'SpaCy': ExtractionPipeline(SpacyNLPEngine()),
+    'LLM': ExtractionPipeline(LLMNLPEngine())
+}
 
 # Patient profile section (aligned with test_llm_mcode_extraction.py)
 patient_profile = {
@@ -144,11 +151,15 @@ with ui.column().classes('w-full items-center'):
             ui.label('Results limit').classes('text-sm')
             limit_slider = ui.slider(min=1, max=20, value=5).classes('w-full')
         
-        # Extraction controls
+        # Engine selection
         with ui.column().classes('w-64'):
-            ui.label('Extraction').classes('text-sm')
-            llm_toggle = ui.toggle([True, False], value=True).props('left-label').bind_value(pipeline, 'use_llm')
-            ui.label('Enable LLM extraction')
+            ui.label('NLP Engine').classes('text-sm')
+            engine_select = ui.radio(
+                ['Regex', 'SpaCy', 'LLM'],
+                value='LLM'
+            ).props('inline')
+            ui.label('Benchmark Mode')
+            benchmark_toggle = ui.toggle([True, False], value=False)
         
         # Matching toggle
         with ui.column().classes('w-64'):
@@ -215,9 +226,26 @@ async def on_search():
                         def extraction_task():
                             try:
                                 logger.info(f"Starting extraction for criteria: {criteria[:100]}...")
-                                result = pipeline.process_criteria(criteria)
-                                logger.info(f"Extraction completed successfully")
-                                return result
+                                selected_engine = engine_select.value
+                                
+                                if benchmark_toggle.value:
+                                    # Benchmark all engines
+                                    results = {}
+                                    for name, pipeline in engines.items():
+                                        start = time.time()
+                                        results[name] = {
+                                            'result': pipeline.process_criteria(criteria),
+                                            'time': time.time() - start
+                                        }
+                                    return {'benchmark': results}
+                                else:
+                                    # Use selected engine
+                                    return {
+                                        'single': {
+                                            'engine': selected_engine,
+                                            'result': engines[selected_engine].process_criteria(criteria)
+                                        }
+                                    }
                             except Exception as e:
                                 logger.error(f"Extraction error: {str(e)}\n{traceback.format_exc()}")
                                 raise
@@ -232,11 +260,36 @@ async def on_search():
                     # Display results in main thread
                     def display_task():
                         with trials_container:
-                            # Use 'features' instead of 'genomic_features'
-                            display_data = {
-                                'features': extraction_result.get('features', {}),
-                                'mcode_mappings': extraction_result.get('mcode_mappings', {})
-                            }
+                            if extraction_result.get('benchmark'):
+                                # Show benchmark comparison
+                                with ui.expansion('Engine Performance Comparison').classes('w-full'):
+                                    # Performance metrics table
+                                    with ui.table().classes('w-full'):
+                                        columns = [
+                                            {'name': 'engine', 'label': 'Engine', 'field': 'engine'},
+                                            {'name': 'time', 'label': 'Time (ms)', 'field': 'time'},
+                                            {'name': 'entities', 'label': 'Entities Found', 'field': 'entities'}
+                                        ]
+                                        rows = []
+                                        for engine, data in extraction_result['benchmark'].items():
+                                            rows.append({
+                                                'engine': engine,
+                                                'time': round(data['time']*1000, 2),
+                                                'entities': len(data['result'].get('entities', []))
+                                            })
+                                        ui.table(columns=columns, rows=rows)
+                                
+                                # Show results from primary engine (LLM by default)
+                                display_data = {
+                                    'features': extraction_result['benchmark']['LLM']['result'].get('features', {}),
+                                    'mcode_mappings': extraction_result['benchmark']['LLM']['result'].get('mcode_mappings', {})
+                                }
+                            else:
+                                # Single engine mode
+                                display_data = {
+                                    'features': extraction_result['single']['result'].get('features', {}),
+                                    'mcode_mappings': extraction_result['single']['result'].get('mcode_mappings', {})
+                                }
                             display_trial_results(protocol_section, display_data)
                     
                     await asyncio.get_event_loop().run_in_executor(None, display_task)
@@ -257,29 +310,6 @@ async def on_search():
         finally:
             loading.set_visibility(False)
 
-def display_mcode_categories(features):
-    """Display mCODE data in categorized sections"""
-    categories = {
-        'Patient Demographics': features.get('demographics', {}),
-        'Cancer Condition': features.get('cancer_characteristics', {}),
-        'Genomic Variants': features.get('genomic_variants', []),
-        'Biomarkers': features.get('biomarkers', []),
-        'Treatment History': features.get('treatment_history', {}),
-        'Performance Status': features.get('performance_status', {})
-    }
-    
-    for category_name, data in categories.items():
-        with ui.expansion(category_name).classes('w-full'):
-            if data:
-                try:
-                    # Ensure JSON serialization works
-                    json_str = json.dumps(data, indent=2)
-                    ui.code(json_str).classes('w-full')
-                except Exception as e:
-                    logger.error(f"JSON serialization error: {str(e)}")
-                    ui.label(f"Error displaying data: {str(e)}")
-            else:
-                ui.label('No data available for this category').classes('text-gray-500')
 
 def display_trial_results(protocol_section, extraction_result):
     with ui.card().classes('w-full'):
@@ -293,10 +323,20 @@ def display_trial_results(protocol_section, extraction_result):
                 # Prepare patient biomarkers as dict for matching
                 patient_biomarkers = {b['name']: b['status'] for b in patient_profile['biomarkers']}
                 
+                # Handle both LLM and other engine formats
+                features = extraction_result['features']
+                if isinstance(features.get('biomarkers'), dict):
+                    # Convert LLM format to standard format
+                    biomarkers = [{'name': k, 'status': v} for k,v in features['biomarkers'].items()]
+                    variants = features.get('genomic_variants', [])
+                else:
+                    biomarkers = features.get('biomarkers', [])
+                    variants = features.get('genomic_variants', [])
+                
                 trial_features = {
                     'cancer_type': patient_profile['cancer_type'],
-                    'biomarkers': {b['name']: b['status'] for b in extraction_result['features'].get('biomarkers', [])},
-                    'genomic_variants': [v['gene'] for v in extraction_result['features'].get('genomic_variants', [])]
+                    'biomarkers': {b['name']: b['status'] for b in biomarkers},
+                    'genomic_variants': [v['gene'] if isinstance(v, dict) else v for v in variants]
                 }
                 match_score = matcher.calculate_match_score({
                     'cancer_type': patient_profile['cancer_type'],
@@ -321,56 +361,78 @@ def display_trial_results(protocol_section, extraction_result):
         with ui.expansion('View Eligibility Criteria').classes('w-full'):
             ui.markdown(f"```\n{protocol_section.get('eligibilityModule', {}).get('eligibilityCriteria', 'No criteria available')}\n```")
         
-        # mCODE features
-        if extraction_result and extraction_result.get('features') and matching_toggle.value:
-            with ui.expansion('Genomic Features').classes('w-full'):
-                # Biomarkers
-                biomarkers = extraction_result['features'].get('biomarkers', [])
-                if biomarkers:
-                    ui.label("Biomarkers:").classes('font-bold')
-                    with ui.grid(columns=3).classes('w-full'):
-                        # Create patient biomarker dict for lookup
-                        patient_biomarkers = {b['name']: b['status'] for b in patient_profile['biomarkers']}
-                        
-                        for biomarker in biomarkers:
-                            name = biomarker.get('name', 'Unknown')
-                            status = biomarker.get('status', 'Unknown')
-                            patient_status = patient_biomarkers.get(name, 'Unknown')
-                            
-                            with ui.card().classes('p-2'):
-                                ui.label(name).classes('font-bold')
-                                ui.label(f"Trial: {status}")
-                                ui.label(f"Patient: {patient_status}")
-                                if status == patient_status:
-                                    ui.icon('check', color='green')
-                                else:
-                                    ui.icon('close', color='red')
+        # mCODE extraction results
+        with ui.expansion('mCODE Extraction Results').classes('w-full'):
+            if not extraction_result or not extraction_result.get('features'):
+                ui.label('No mCODE data available').classes('text-red-500')
+            else:
+                features = extraction_result['features']
+                with ui.tabs().classes('w-full') as tabs:
+                    demographics_tab = ui.tab('Demographics')
+                    cancer_tab = ui.tab('Cancer Condition')
+                    genomics_tab = ui.tab('Genomic Variants')
+                    biomarkers_tab = ui.tab('Biomarkers')
+                    treatment_tab = ui.tab('Treatment History')
+                    performance_tab = ui.tab('Performance Status')
                 
-                # Variants
-                variants = extraction_result['features'].get('genomic_variants', [])
-                if variants:
-                    ui.label("Genomic Variants:").classes('font-bold mt-4')
-                    with ui.grid(columns=2).classes('w-full'):
-                        # Create set of patient genes for quick lookup
-                        patient_genes = {v['gene'] for v in patient_profile['genomic_variants']}
-                        
-                        for variant in variants:
-                            gene = variant.get('gene', 'Unknown')
-                            variant_name = variant.get('variant', '')
-                            display_name = f"{gene} {variant_name}" if variant_name else gene
-                            patient_has = gene in patient_genes
-                            
-                            with ui.card().classes('p-2'):
-                                ui.label(display_name).classes('font-bold')
-                                ui.label(f"Patient has: {'Yes' if patient_has else 'No'}")
-                                if patient_has:
-                                    ui.icon('check', color='green')
-                                else:
-                                    ui.icon('close', color='red')
-        
-        # Categorized mCODE structure
-        if extraction_result and extraction_result.get('features'):
-            display_mcode_categories(extraction_result['features'])
+                with ui.tab_panels(tabs, value=demographics_tab).classes('w-full'):
+                    # Demographics
+                    with ui.tab_panel(demographics_tab):
+                        demographics = features.get('demographics', {})
+                        if demographics:
+                            ui.code(json.dumps(demographics, indent=2)).classes('w-full')
+                        else:
+                            ui.label('No demographics data')
+                    
+                    # Cancer Condition
+                    with ui.tab_panel(cancer_tab):
+                        cancer_data = features.get('cancer_characteristics', {})
+                        if cancer_data:
+                            ui.code(json.dumps(cancer_data, indent=2)).classes('w-full')
+                        else:
+                            ui.label('No cancer characteristics data')
+                    
+                    # Genomic Variants
+                    with ui.tab_panel(genomics_tab):
+                        variants = features.get('genomic_variants', [])
+                        if variants:
+                            with ui.grid(columns=2).classes('w-full'):
+                                for variant in variants:
+                                    with ui.card().classes('p-2'):
+                                        ui.label(f"Gene: {variant.get('gene', 'Unknown')}").classes('font-bold')
+                                        ui.label(f"Variant: {variant.get('variant', '')}")
+                                        ui.label(f"Significance: {variant.get('significance', '')}")
+                        else:
+                            ui.label('No genomic variants found')
+                    
+                    # Biomarkers
+                    with ui.tab_panel(biomarkers_tab):
+                        biomarkers = features.get('biomarkers', [])
+                        if biomarkers:
+                            with ui.grid(columns=2).classes('w-full'):
+                                for biomarker in biomarkers:
+                                    with ui.card().classes('p-2'):
+                                        ui.label(f"Name: {biomarker.get('name', 'Unknown')}").classes('font-bold')
+                                        ui.label(f"Status: {biomarker.get('status', '')}")
+                                        ui.label(f"Value: {biomarker.get('value', '')}")
+                        else:
+                            ui.label('No biomarkers found')
+                    
+                    # Treatment History
+                    with ui.tab_panel(treatment_tab):
+                        treatment = features.get('treatment_history', {})
+                        if treatment:
+                            ui.code(json.dumps(treatment, indent=2)).classes('w-full')
+                        else:
+                            ui.label('No treatment history data')
+                    
+                    # Performance Status
+                    with ui.tab_panel(performance_tab):
+                        performance = features.get('performance_status', {})
+                        if performance:
+                            ui.code(json.dumps(performance, indent=2)).classes('w-full')
+                        else:
+                            ui.label('No performance status data')
 # Bind handler to button click
 search_button.on('click', on_search)
 
