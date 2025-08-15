@@ -6,7 +6,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class SimpleNLPEngine:
+class RegexNLPEngine:
     """
     A simplified NLP engine for parsing clinical trial eligibility criteria
     """
@@ -331,17 +331,35 @@ class SimpleNLPEngine:
         condition_patterns = [
             r'(diagnosis|history|presence)\s+of\s+([^,;.]+)',
             r'(?:diagnosed|suffering|afflicted)\s+(?:with|from)\s+([^,;.]+)',
-            r'([^,;.]+)\s+(?:cancer|tumor|carcinoma|malignancy|disease|disorder)'
+            r'([^,;.]+)\s+(?:cancer|tumor|carcinoma|malignancy|disease|disorder)',
+            r'(?:with|having)\s+([^,;.]+?)(?:\s+disease|\s+disorder|[,;.]|$)',
+            r'(?:exclusion|inclusion)\s+criteria\s*:\s*-?\s*([^,;.]+)',
+            r'-?\s*([^,;.]+?)(?:\s*\([^)]+\))?(?=[,;.]|$)'
         ]
         
         conditions = []
+        seen_conditions = set()
+        
         for pattern in condition_patterns:
             matches = re.finditer(pattern, text, re.IGNORECASE)
             for match in matches:
+                condition_text = match.group(2) if len(match.groups()) >= 2 else match.group(1)
+                condition_text = condition_text.strip()
+                
+                # Skip empty or very short conditions
+                if len(condition_text) < 3:
+                    continue
+                    
+                # Skip duplicates
+                if condition_text.lower() in seen_conditions:
+                    continue
+                    
+                seen_conditions.add(condition_text.lower())
+                
                 conditions.append({
                     'text': match.group(),
-                    'condition': match.group(2) if len(match.groups()) >= 2 else match.group(1),
-                    'confidence': 0.8  # Placeholder confidence score
+                    'condition': condition_text,
+                    'confidence': 0.9 if 'cancer' in condition_text.lower() else 0.8
                 })
         
         return conditions
@@ -427,7 +445,7 @@ class SimpleNLPEngine:
 # Example usage
 if __name__ == "__main__":
     # This is just for testing purposes
-    nlp_engine = SimpleNLPEngine()
+    nlp_engine = RegexNLPEngine()
     
     # Sample criteria text
     sample_text = """

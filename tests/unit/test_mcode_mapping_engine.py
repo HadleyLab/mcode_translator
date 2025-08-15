@@ -117,10 +117,10 @@ class TestMCODEMappingEngine(unittest.TestCase):
         result = self.mapper._validate_code_compliance(code_info)
         self.assertTrue(result)
         
-        # Test non-mCODE required code (should still be compliant by default)
+        # Test non-mCODE required code (should be non-compliant)
         code_info = {'code': 'E11.9', 'system': 'ICD10CM'}
         result = self.mapper._validate_code_compliance(code_info)
-        self.assertTrue(result)  # Non-required codes are compliant by default
+        self.assertFalse(result)  # Non-required codes are not compliant
     
     def test_map_entities_to_mcode(self):
         """

@@ -27,8 +27,8 @@ class ExtractionPipeline:
         self.use_llm = use_llm
         self.model = model
         if use_llm:
-            from src.llm_interface import LLMInterface
-            self.llm_extractor = LLMInterface()
+            from src.llm_nlp_engine import LLMNLPEngine
+            self.llm_extractor = LLMNLPEngine()
             self.llm_extractor.model = model
         
     def process_criteria(self, criteria_text: str) -> Dict[str, Any]:

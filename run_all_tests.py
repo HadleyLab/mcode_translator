@@ -10,96 +10,93 @@ import unittest
 import subprocess
 
 def run_tests():
-    """Run all tests and provide a comprehensive report"""
+    """Run all tests using unittest discovery"""
     print("Running Comprehensive Test Suite for mCODE Translator")
     print("=" * 60)
     
-    # Test directories
-    test_dirs = [
-        "tests",
-    ]
+    # Add src directory to PYTHONPATH
+    sys.path.insert(0, os.path.abspath('src'))
     
-    # Test files to run
-    test_files = [
-        "tests/test_code_extraction.py",
-        "tests/test_mcode_mapping_engine.py",
-        "tests/test_structured_data_generator.py",
-        "tests/test_output_formatter.py"
-    ]
+    # Use unittest discovery to find all tests in tests/ directory and subdirectories
+    test_loader = unittest.TestLoader()
+    test_suite = test_loader.discover('tests', pattern='test_*.py')
     
-    # Run each test file individually and capture results
-    results = []
+    # Create test runner with detailed output
+    test_runner = unittest.TextTestRunner(verbosity=2)
+    result = test_runner.run(test_suite)
     
-    for test_file in test_files:
-        print(f"\nRunning tests in {test_file}...")
-        print("-" * 40)
-        
-        try:
-            # Run the test file
-            result = subprocess.run([
-                sys.executable, "-m", "unittest", test_file
-            ], capture_output=True, text=True, cwd=os.path.dirname(__file__))
-            
-            # Parse the output to extract test results
-            output_lines = result.stdout.strip().split('\n')
-            test_summary = None
-            for line in output_lines:
-                if "Ran" in line and ("tests" in line or "test" in line):
-                    test_summary = line
-                    break
-            
-            if test_summary is None:
-                test_summary = "No test summary found"
-            
-            results.append({
-                "file": test_file,
-                "passed": result.returncode == 0,
-                "summary": test_summary,
-                "stdout": result.stdout,
-                "stderr": result.stderr
-            })
-            
-            if result.returncode == 0:
-                print(f"  Status: PASSED")
-                print(f"  Summary: {test_summary}")
-            else:
-                print(f"  Status: FAILED")
-                print(f"  Summary: {test_summary}")
-                if result.stderr:
-                    print(f"  Errors: {result.stderr}")
-        except Exception as e:
-            print(f"  Status: ERROR - {str(e)}")
-            results.append({
-                "file": test_file,
-                "passed": False,
-                "summary": f"Error running tests: {str(e)}",
-                "stdout": "",
-                "stderr": str(e)
-            })
+    # Collect engine performance metrics
+    import time
+    from src.llm_nlp_engine import LLMNLPEngine
+    from src.regex_nlp_engine import RegexNLPEngine
+    from src.spacy_nlp_engine import SpacyNLPEngine
+    
+    # Test text sample
+    test_text = "Patient with BRCA1 mutation, ER+ HER2- breast cancer, stage IIA"
+    num_runs = 5  # Number of runs for averaging
+    
+    def benchmark(engine, method_name):
+        method = getattr(engine, method_name)
+        start = time.time()
+        for _ in range(num_runs):
+            method(test_text)
+        return (time.time() - start) / num_runs
+    
+    # Benchmark engines
+    print("\nBenchmarking NLP Engines...")
+    
+    # Test Regex Engine
+    regex_engine = RegexNLPEngine()
+    regex_result = regex_engine.process_criteria(test_text)
+    regex_time = benchmark(regex_engine, 'process_criteria')
+    print("\nRegex NLP Engine Performance:")
+    print(f"- Processing time: {regex_time:.4f} seconds")
+    print(f"- Text length: {len(test_text)} characters")
+    print(f"- Conditions found: {len(regex_result.get('conditions', []))}")
+    print(f"- Procedures found: {len(regex_result.get('procedures', []))}")
+    
+    # Test SpaCy Engine
+    spacy_engine = SpacyNLPEngine()
+    spacy_result = spacy_engine.process_criteria(test_text)
+    spacy_time = benchmark(spacy_engine, 'process_criteria')
+    print("\nSpaCy NLP Engine Performance:")
+    print(f"- Processing time: {spacy_time:.4f} seconds")
+    print(f"- Text length: {len(test_text)} characters")
+    print(f"- Entities found: {len(spacy_result.get('entities', []))}")
+    print(f"- Average confidence: {sum(e.get('confidence', 0) for e in spacy_result.get('entities', [0]))/len(spacy_result.get('entities', [1])):.2f}")
+    
+    # Test LLM Engine
+    llm_engine = LLMNLPEngine()
+    llm_result = llm_engine.extract_mcode_features(test_text)
+    llm_time = benchmark(llm_engine, 'extract_mcode_features')
+    print("\nLLM NLP Engine Performance:")
+    print(f"- Processing time: {llm_time:.4f} seconds")
+    print(f"- Text length: {len(test_text)} characters")
+    print(f"- Genomic variants found: {len(llm_result.get('genomic_variants', []))}")
+    print(f"- Biomarkers found: {len(llm_result.get('biomarkers', []))}")
+    
+    # Print comparative metrics
+    print("\nComparative Performance Metrics (avg over 5 runs):")
+    print("-" * 60)
+    print(f"Regex NLP Engine: {regex_time*1000:.2f}ms")
+    print(f"SpaCy NLP Engine: {spacy_time*1000:.2f}ms")
+    print(f"LLM NLP Engine: {llm_time*1000:.2f}ms")
     
     # Print overall summary
     print("\n" + "=" * 60)
     print("TEST SUITE SUMMARY")
     print("=" * 60)
     
-    total_tests = len(results)
-    passed_tests = sum(1 for r in results if r["passed"])
-    failed_tests = total_tests - passed_tests
+    print(f"Total tests run: {result.testsRun}")
+    print(f"Failures: {len(result.failures)}")
+    print(f"Errors: {len(result.errors)}")
     
-    print(f"Total test files: {total_tests}")
-    print(f"Passed: {passed_tests}")
-    print(f"Failed: {failed_tests}")
-    print(f"Success rate: {passed_tests/total_tests*100:.1f}%" if total_tests > 0 else "Success rate: 0%")
-    
-    if failed_tests > 0:
-        print("\nFailed test files:")
-        for result in results:
-            if not result["passed"]:
-                print(f"  - {result['file']}: {result['summary']}")
-        return False
-    else:
+    if result.wasSuccessful():
         print("\nAll tests passed!")
         return True
+    else:
+        print("\nTest failures/errors detected")
+        return False
 
 def main():
     """Main function"""

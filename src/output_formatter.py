@@ -297,6 +297,56 @@ class OutputFormatter:
         return "\n".join(summary)
 
 
+    def format_test_summary(self, test_results: Dict[str, Any]) -> str:
+        """
+        Format test results into a comprehensive summary with engine performance metrics
+        
+        Args:
+            test_results: Dictionary containing test results and engine metrics
+            
+        Returns:
+            Formatted test summary string
+        """
+        summary = []
+        summary.append("============================================================")
+        summary.append("TEST SUITE SUMMARY")
+        summary.append("============================================================")
+        
+        # Engine Performance Section
+        summary.append("\nEngine Performance Metrics:")
+        summary.append("---------------------------")
+        
+        if 'llm_engine' in test_results:
+            llm = test_results['llm_engine']
+            summary.append(f"LLM NLP Engine:")
+            summary.append(f"- Processing time: {llm.get('processing_time', 0):.4f} seconds")
+            summary.append(f"- API response time: {llm.get('api_response_time', 0):.4f} seconds")
+            summary.append(f"- Entities extracted: {len(llm.get('entities', []))}")
+            summary.append(f"- Average confidence: {llm.get('avg_confidence', 0):.2f}")
+        
+        if 'regex_engine' in test_results:
+            regex = test_results['regex_engine']
+            summary.append(f"\nRegex NLP Engine:")
+            summary.append(f"- Processing time: {regex.get('processing_time', 0):.4f} seconds")
+            summary.append(f"- Conditions found: {regex.get('conditions_found', 0)}")
+            summary.append(f"- Procedures found: {regex.get('procedures_found', 0)}")
+        
+        if 'spacy_engine' in test_results:
+            spacy = test_results['spacy_engine']
+            summary.append(f"\nSpaCy NLP Engine:")
+            summary.append(f"- Processing time: {spacy.get('processing_time', 0):.4f} seconds")
+            summary.append(f"- Entities found: {spacy.get('entities_found', 0)}")
+            summary.append(f"- Average confidence: {spacy.get('avg_confidence', 0):.2f}")
+
+        # Test Summary Section
+        summary.append("\n============================================================")
+        summary.append(f"Total tests run: {test_results.get('total', 0)}")
+        summary.append(f"Failures: {test_results.get('failures', 0)}")
+        summary.append(f"Errors: {test_results.get('errors', 0)}")
+        summary.append("\nAll tests passed!" if test_results.get('failures', 1) == 0 else "\nTests failed!")
+        return "\n".join(summary)
+
+
 # Example usage
 if __name__ == "__main__":
     # This is just for testing purposes

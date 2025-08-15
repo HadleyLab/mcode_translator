@@ -3,6 +3,19 @@
 ## Overview
 This document outlines the testing strategy for the mCODE translator, including selection of sample clinical trials, test scenarios, validation criteria, and evaluation metrics.
 
+## Test Organization
+We have a unified test structure with:
+- `tests/unit/`: Unit tests for individual components
+- `tests/integration/`: Integration tests between components
+- `tests/e2e/`: End-to-end pipeline tests
+
+## Breast Cancer mCODE Testing
+We have implemented specialized tests for breast cancer mCODE profiles in [`tests/unit/test_breast_cancer_mcode.py`](tests/unit/test_breast_cancer_mcode.py) that:
+- Validate biomarker extraction (ER, PR, HER2)
+- Test matching to clinical trial criteria
+- Verify FHIR resource generation
+- Cover all breast cancer subtypes (ER+, HER2+, TNBC)
+
 ## Test Objectives
 
 ### Functional Testing
@@ -176,6 +189,14 @@ This document outlines the testing strategy for the mCODE translator, including 
   ]
 }
 ```
+
+## Test Execution
+Run tests using the unified test runner:
+```bash
+python run_all_tests.py
+```
+
+The test runner uses unittest discovery to automatically find and run all tests matching `test_*.py` in the `tests/` directory.
 
 ## Test Execution Plan
 

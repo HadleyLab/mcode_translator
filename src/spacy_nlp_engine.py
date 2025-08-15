@@ -16,7 +16,7 @@ from structured_data_generator import StructuredDataGenerator
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class NLPEngine:
+class SpacyNLPEngine:
     """
     Natural Language Processing Engine for parsing clinical trial eligibility criteria
     """
@@ -583,7 +583,7 @@ class NLPEngine:
 # Example usage
 if __name__ == "__main__":
     # This is just for testing purposes
-    nlp_engine = NLPEngine()
+    nlp_engine = SpacyNLPEngine()
     
     # Sample criteria text
     sample_text = """

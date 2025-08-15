@@ -8,7 +8,7 @@ import os
 import json
 
 # Add the src directory to the path so we can import our modules
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from src.clinical_trials_api import ClinicalTrialsAPI
 from src.config import Config

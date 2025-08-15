@@ -115,3 +115,51 @@ class BreastCancerProfile:
             "type": "collection",
             "entry": []
         }
+        
+    def matches_er_positive(self, mcode_bundle: Dict) -> bool:
+        """Check if patient matches ER+ criteria"""
+        # Look for ER positive biomarker
+        for entry in mcode_bundle.get('entry', []):
+            resource = entry.get('resource', {})
+            if resource.get('resourceType') == 'Observation':
+                code = resource.get('code', {}).get('coding', [{}])[0].get('code')
+                value = resource.get('valueCodeableConcept', {}).get('coding', [{}])[0].get('code')
+                if code == 'LP417347-6' and value == 'LA6576-8':  # ER positive
+                    return True
+        return False
+        
+    def matches_her2_positive(self, mcode_bundle: Dict) -> bool:
+        """Check if patient matches HER2+ criteria"""
+        # Look for HER2 positive biomarker
+        for entry in mcode_bundle.get('entry', []):
+            resource = entry.get('resource', {})
+            if resource.get('resourceType') == 'Observation':
+                code = resource.get('code', {}).get('coding', [{}])[0].get('code')
+                value = resource.get('valueCodeableConcept', {}).get('coding', [{}])[0].get('code')
+                if code == 'LP417351-8' and value == 'LA6576-8':  # HER2 positive
+                    return True
+        return False
+        
+    def matches_triple_negative(self, mcode_bundle: Dict) -> bool:
+        """Check if patient matches triple-negative criteria"""
+        er_neg = True
+        pr_neg = True
+        her2_neg = True
+        
+        for entry in mcode_bundle.get('entry', []):
+            resource = entry.get('resource', {})
+            if resource.get('resourceType') == 'Observation':
+                code = resource.get('code', {}).get('coding', [{}])[0].get('code')
+                value = resource.get('valueCodeableConcept', {}).get('coding', [{}])[0].get('code')
+                
+                if code == 'LP417347-6':  # ER
+                    if value == 'LA6576-8':  # Positive
+                        er_neg = False
+                elif code == 'LP417348-4':  # PR
+                    if value == 'LA6576-8':  # Positive
+                        pr_neg = False
+                elif code == 'LP417351-8':  # HER2
+                    if value == 'LA6576-8':  # Positive
+                        her2_neg = False
+        
+        return er_neg and pr_neg and her2_neg
