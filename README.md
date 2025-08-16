@@ -4,7 +4,13 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![CI Status](https://github.com/yourusername/mcode-translator/actions/workflows/python-app.yml/badge.svg)](https://github.com/yourusername/mcode-translator/actions)
 
-A clinical trial matching system that translates eligibility criteria into structured mCODE (Minimal Common Oncology Data Elements) format using multiple NLP approaches.
+A clinical trial matching system that translates eligibility criteria into structured mCODE (Minimal Common Oncology Data Elements) format using multiple NLP approaches with benchmark capabilities.
+
+Key Updates:
+- Enhanced engine selection (Regex/SpaCy/LLM)
+- Benchmark mode for comparing NLP engines
+- Improved UI with visual extraction feedback
+- Optimized extraction pipeline
 
 ## Features
 
@@ -19,11 +25,15 @@ A clinical trial matching system that translates eligibility criteria into struc
 ## Quick Start
 
 ```bash
-# Install dependencies
+# Install dependencies (Python 3.10+ recommended)
 pip install -r requirements.txt
+python -m spacy download en_core_web_sm
 
-# Run the interface
+# Run the web interface
 python src/nicegui_interface.py
+
+# Or use the CLI version
+python main.py --input "ER+ breast cancer" --engine regex
 ```
 
 ## Documentation

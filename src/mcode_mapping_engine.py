@@ -330,10 +330,27 @@ class MCODEMappingEngine:
                         else:
                             satisfied_required += 1  # Default to satisfied for other types
         elif 'entities' in mcode_data or 'codes' in mcode_data:
-            # Process legacy structure
+            # Convert old structure to new format
+            features = {
+                'genomic_variants': [],
+                'biomarkers': [],
+                'cancer_characteristics': {},
+                'treatment_history': {},
+                'performance_status': {},
+                'demographics': {}
+            }
+            # Map legacy fields to new structure
             for element_type, element_info in self.mcode_elements.items():
-                # Only check elements that are actually present in the data
                 if element_type in mcode_data:
+                    if element_info['category'] == 'variant':
+                        features['genomic_variants'].extend(mcode_data[element_type])
+                    elif element_info['category'] == 'biomarker':
+                        features['biomarkers'].extend(mcode_data[element_type])
+                    else:
+                        features[element_info['category']].update(mcode_data[element_type])
+            return features
+                # Only check elements that are actually present in the data
+            if element_type in mcode_data:
                     total_required += len(element_info['required'])
                     for required_field in element_info['required']:
                         if required_field in mcode_data[element_type]:

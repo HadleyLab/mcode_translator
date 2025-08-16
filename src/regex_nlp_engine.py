@@ -18,16 +18,31 @@ class RegexNLPEngine:
         logger.info("Simple NLP engine initialized")
         
         # Biomarker patterns
+        # Enhanced biomarker patterns with quantitative values
         self.biomarker_patterns = {
-            'ER': re.compile(r'ER\s*(?:status)?\s*[:=]?\s*(positive|negative)', re.IGNORECASE),
-            'PR': re.compile(r'PR\s*(?:status)?\s*[:=]?\s*(positive|negative)', re.IGNORECASE),
-            'HER2': re.compile(r'HER2\s*(?:status)?\s*[:=]?\s*(positive|negative)', re.IGNORECASE),
-            'PD-L1': re.compile(r'PD-?L1\s*(?:status)?\s*[:=]?\s*(positive|negative)', re.IGNORECASE),
-            'Ki-67': re.compile(r'Ki-?67\s*(?:status)?\s*[:=]?\s*(positive|negative)', re.IGNORECASE)
+            'ER': re.compile(r'ER\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%)', re.IGNORECASE),
+            'PR': re.compile(r'PR\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%)', re.IGNORECASE),
+            'HER2': re.compile(r'HER2\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\+?)', re.IGNORECASE),
+            'PD-L1': re.compile(r'PD-?L1\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%)', re.IGNORECASE),
+            'Ki-67': re.compile(r'Ki-?67\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%)', re.IGNORECASE),
+            'MSI': re.compile(r'MSI\s*(?:status)?\s*[:=]?\s*(high|low|stable)', re.IGNORECASE),
+            'TMB': re.compile(r'TMB\s*(?:status)?\s*[:=]?\s*(high|low|\d+\s*mut/Mb)', re.IGNORECASE)
         }
         
         # Genomic variant patterns
-        self.gene_pattern = re.compile(r'\b(BRCA1|BRCA2|TP53|PIK3CA|PTEN|AKT1|ERBB2|HER2)\b', re.IGNORECASE)
+        # Enhanced gene variant patterns
+        self.gene_pattern = re.compile(
+            r'\b(BRCA[12]|TP53|PIK3CA|PTEN|AKT1|ERBB2|HER2|EGFR|ALK|ROS1|KRAS|NRAS|BRAF|MEK[12]?|NTRK[123])\b',
+            re.IGNORECASE
+        )
+        self.variant_pattern = re.compile(
+            r'\b([A-Z0-9]+)\s*(?:mutation|variant|alteration|amplification|fusion|rearrangement|deletion|insertion)\b',
+            re.IGNORECASE
+        )
+        self.complex_variant_pattern = re.compile(
+            r'\b([A-Z0-9]+)\s*(?:p\.)?([A-Z][a-z]{2}[0-9]+(?:[A-Za-z]|\*)?)\b',
+            re.IGNORECASE
+        )
         
         # Cancer condition patterns
         self.stage_pattern = re.compile(r'stage\s+(I{1,3}V?|IV)', re.IGNORECASE)
@@ -97,23 +112,81 @@ class RegexNLPEngine:
     def _extract_biomarkers(self, text: str) -> List[Dict]:
         biomarkers = []
         for name, pattern in self.biomarker_patterns.items():
-            match = pattern.search(text)
-            if match:
-                status = match.group(1).capitalize()
+            for match in pattern.finditer(text):
+                value = match.group(1)
+                
+                # Standardize status values
+                if value.lower() in ['positive', 'pos', '+']:
+                    status = 'Positive'
+                elif value.lower() in ['negative', 'neg', '-']:
+                    status = 'Negative'
+                elif '%' in value:
+                    status = f"{value.strip()} expression"
+                elif '+' in value:
+                    status = f"{value.strip()} IHC"
+                elif 'mut/Mb' in value:
+                    status = f"{value.strip()} TMB"
+                else:
+                    status = value.capitalize()
+                
                 biomarkers.append({
                     'name': name,
-                    'status': status
+                    'status': status,
+                    'source_text': match.group(),
+                    'confidence': 0.9 if '%' in value or '+' in value else 0.8
                 })
-        return biomarkers
+                
+        # Deduplicate biomarkers
+        unique_biomarkers = []
+        seen = set()
+        for bio in biomarkers:
+            key = (bio['name'], bio['status'])
+            if key not in seen:
+                seen.add(key)
+                unique_biomarkers.append(bio)
+                
+        return unique_biomarkers
 
     def _extract_genomic_variants(self, text: str) -> List[Dict]:
         variants = []
+        
+        # Extract simple gene mentions
         for match in self.gene_pattern.finditer(text):
             variants.append({
                 'gene': match.group(1).upper(),
-                'variant': ''
+                'variant_type': 'gene_mention',
+                'variant': '',
+                'source_text': match.group()
             })
-        return variants
+            
+        # Extract variant descriptions
+        for match in self.variant_pattern.finditer(text):
+            variants.append({
+                'gene': match.group(1).upper(),
+                'variant_type': match.group(2).lower(),
+                'variant': '',
+                'source_text': match.group()
+            })
+            
+        # Extract protein-level variants (e.g., p.Val600Glu)
+        for match in self.complex_variant_pattern.finditer(text):
+            variants.append({
+                'gene': match.group(1).upper(),
+                'variant_type': 'protein_change',
+                'variant': match.group(2),
+                'source_text': match.group()
+            })
+            
+        # Deduplicate variants
+        unique_variants = []
+        seen = set()
+        for var in variants:
+            key = (var['gene'], var['variant_type'], var['variant'])
+            if key not in seen:
+                seen.add(key)
+                unique_variants.append(var)
+                
+        return unique_variants
 
     def _extract_treatment(self, text: str) -> Dict:
         treatment = {'medications': []}

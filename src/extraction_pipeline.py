@@ -11,7 +11,7 @@ class ExtractionPipeline:
     Orchestrates code extraction and mCODE mapping from clinical trial eligibility criteria
     """
     
-    def __init__(self, engine_type: str = "Regex", model: str = "deepseek-coder"):
+    def __init__(self, engine_type: str = "LLM", model: str = "deepseek-coder"):
         """
         Initialize the extraction pipeline with required components
         
@@ -21,6 +21,8 @@ class ExtractionPipeline:
         """
         self.logger = logging.getLogger(__name__)
         self.code_extractor = CodeExtractionModule()
+        if hasattr(self, 'cache_manager'):
+            self.code_extractor.cache_manager = self.cache_manager
         self.mcode_mapper = MCODEMappingEngine()
         self.breast_cancer_profile = BreastCancerProfile()
         self.matching_engine = MatchingEngine()
@@ -44,23 +46,43 @@ class ExtractionPipeline:
         Raises:
             ValueError: If invalid engine configuration is detected
         """
-        self.logger.debug(f"Processing criteria with engine config - engine_type: {self.engine_type}, model: {self.model}")
-        # Step 1: Extract codes from text
-        extracted_codes = self.code_extractor.process_criteria_for_codes(criteria_text)
+        self.logger.info(f"Starting criteria processing with engine: {self.engine_type}/{self.model}")
+        self.logger.debug(f"Input criteria text: {criteria_text[:200]}...")
+        # Step 1: Extract codes from text (with engine-specific caching)
+        cache_key = f"{self.engine_type}_{hash(criteria_text)}"
+        self.logger.debug(f"Using cache key: {cache_key}")
+        extracted_codes = self.code_extractor.process_criteria_for_codes(criteria_text, cache_key=cache_key)
+        self.logger.info(f"Extracted {len(extracted_codes)} codes")
         
-        # Step 2: Extract genomic features if LLM enabled
-        # Step 2: Extract mCODE features with validation
+        # Step 2: Extract mCODE features using configured engine
+        # - LLM: Uses DeepSeek API for comprehensive extraction
+        # - Regex/SpaCy: Uses pattern matching and medical NLP
         mcode_features = {}
         if self.engine_type == "LLM":
             if not hasattr(self, 'llm_extractor'):
                 raise ValueError("LLM engine requested but not initialized")
-            self.logger.debug(f"Using LLM engine: {self.llm_extractor.model}")
-            mcode_features = self.llm_extractor.extract_mcode_features(criteria_text)
+            self.logger.info(f"Using LLM engine: {self.llm_extractor.model}")
+            try:
+                mcode_features = self.llm_extractor.extract_mcode_features(criteria_text)
+                self.logger.info(f"Extracted {len(mcode_features.get('genomic_variants', []))} genomic variants")
+                self.logger.info(f"Extracted {len(mcode_features.get('biomarkers', []))} biomarkers")
+            except Exception as e:
+                self.logger.exception(f"LLM extraction failed: {str(e)}")
+                # Return minimal structure to prevent pipeline failure
+                mcode_features = {
+                    'genomic_variants': [{"gene": "EXTRACTION_ERROR", "variant": str(e), "significance": ""}],
+                    'biomarkers': [{"name": "EXTRACTION_ERROR", "status": str(e), "value": ""}],
+                    'cancer_characteristics': {},
+                    'treatment_history': {},
+                    'performance_status': {},
+                    'demographics': {}
+                }
         else:
-            self.logger.debug("Using non-LLM extraction")
+            self.logger.info("Using non-LLM extraction")
         
-        # Step 3: Map to mCODE elements
-        # DEBUG: Log mcode_features type and content
+        # Step 3: Map extracted features to mCODE elements
+        # - Validates breast cancer specific features
+        # - Converts to standardized mCODE format
         self.logger.debug(f"mcode_features type: {type(mcode_features)}")
         self.logger.debug(f"mcode_features value: {mcode_features}")
         
@@ -94,12 +116,14 @@ class ExtractionPipeline:
         if isinstance(mcode_features, dict):
             variant_count = len(mcode_features.get('genomic_variants', []))
             biomarker_count = len(mcode_features.get('biomarkers', []))
-            mapping_result['metadata'].update({
-                'genomic_variants_count': variant_count,
-                'biomarkers_count': biomarker_count
-            })
+            mapping_result['metadata']['genomic_variants_count'] = variant_count
+            mapping_result['metadata']['biomarkers_count'] = biomarker_count
 
-        # Create a more complete features dictionary for output
+        # Prepare final output structure with:
+        # - Extracted codes
+        # - Mapped mCODE elements
+        # - Original criteria for reference
+        # - Engine metadata
         features_output = {
             'genomic_variants': mcode_features.get('genomic_variants', []),
             'biomarkers': mcode_features.get('biomarkers', []),
@@ -112,7 +136,11 @@ class ExtractionPipeline:
         return {
             'extracted_codes': extracted_codes,
             'mcode_mappings': mapping_result,
-            'features': features_output,  # Use the more complete features dictionary
+            'features': features_output,
+            'metadata': {
+                'genomic_variants_count': variant_count if self.engine_type == "LLM" else mapping_result['metadata'].get('genomic_variants_count', 0),
+                'biomarkers_count': biomarker_count if self.engine_type == "LLM" else mapping_result['metadata'].get('biomarkers_count', 0)
+            },
             'original_criteria': criteria_text,
             'model_used': self.model if self.engine_type == "LLM" else None
         }

@@ -377,9 +377,9 @@ class CodeExtractionModule:
         if code_info.get('ambiguous'):
             confidence -= 0.3
         
-        # Decrease for deprecated codes
-        if code_info.get('deprecated'):
-            confidence -= 0.2
+        # Handle invalid or retired codes
+        if code_info.get('status') == 'retired':
+            confidence = 0  # Don't use retired codes
         
         # Adjust based on code length (longer codes are often more specific)
         code = code_info.get('code', '')
@@ -551,7 +551,7 @@ class CodeExtractionModule:
         
         return mapped_codes
     
-    def process_criteria_for_codes(self, criteria_text, entities: List[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def process_criteria_for_codes(self, criteria_text, entities: List[Dict[str, Any]] = None, cache_key: Optional[str] = None) -> Dict[str, Any]:
         """
         Process eligibility criteria text and extract codes with enhanced error handling
         
@@ -578,11 +578,21 @@ class CodeExtractionModule:
                 criteria_text = str(criteria_text)
             
             # Identify all codes in text with error context
-            try:
-                identified_codes = self.identify_all_codes(criteria_text)
-            except Exception as e:
-                self.logger.error(f"Code identification failed: {str(e)}")
-                identified_codes = {}
+            # Try to get from cache if key provided
+            cached_result = None
+            if cache_key and hasattr(self, 'cache_manager'):
+                cached_result = self.cache_manager.get(cache_key)
+            
+            if cached_result:
+                identified_codes = cached_result
+            else:
+                try:
+                    identified_codes = self.identify_all_codes(criteria_text)
+                    if cache_key and hasattr(self, 'cache_manager'):
+                        self.cache_manager.set(cache_key, identified_codes)
+                except Exception as e:
+                    self.logger.error(f"Code identification failed: {str(e)}")
+                    identified_codes = {}
         
             # Validate codes with error handling
             validated_codes = {}

@@ -14,11 +14,20 @@ class LLMNLPEngine:
     """
     
     BREAST_CANCER_PROMPT_TEMPLATE = """
-    **FOCUS: BREAST CANCER PATIENTS**
-    Extract mCODE elements specific to breast cancer from clinical trial eligibility criteria.
-    Pay special attention to:
+    **FOCUS: BREAST CANCER PATIENTS - EXTRACT ALL MENTIONED FEATURES**
+    Extract ALL mCODE elements from clinical trial eligibility criteria text.
+    REQUIRED OUTPUT FORMAT: Pure JSON with EXACTLY these fields:
+    - genomic_variants (array)
+    - biomarkers (array)
+    - cancer_characteristics (object)
+    - treatment_history (object)
+    - performance_status (object)
+    - demographics (object)
+
+    For breast cancer, ALWAYS extract:
     - Biomarkers: ER, PR, HER2 (status: positive/negative/equivocal), PD-L1
     - Genomic variants: BRCA1, BRCA2, PIK3CA, TP53, HER2 amplification
+    - Treatment history: chemotherapy drugs, radiation, surgery types
     - Cancer characteristics:
         - Stage (TNM staging preferred)
         - Tumor location (left/right breast, quadrant)
@@ -31,24 +40,27 @@ class LLMNLPEngine:
     - Performance status (ECOG 0-4, Karnofsky %)
     - Demographic criteria
     
-    **OUTPUT REQUIREMENTS:**
-    - Return PURE JSON ONLY - no additional text or markdown
-    - Use the exact JSON structure below
-    - For biomarkers, use standardized names: 'ER', 'PR', 'HER2', 'PD-L1'
-    - For genomic variants, use HGNC gene symbols
-    - Extract ALL mentioned features regardless of cancer type
+    **CRITICAL INSTRUCTIONS:**
+    1. NEVER return empty arrays/objects - if no values found, use:
+       - For biomarkers/genomic variants: include with status "not mentioned"
+       - For other fields: include empty strings/arrays but document why
+    2. For treatment history: Extract ANY mentioned treatments
+    3. For cancer characteristics: Extract stage, size, grade if mentioned
+    4. If no values found in text, return:
+       "genomic_variants": [{{"gene": "NOT_FOUND", "variant": "", "significance": ""}}]
+       "biomarkers": [{{"name": "NOT_FOUND", "status": "", "value": ""}}]
     
     **EXAMPLE RESPONSES:**
     
     Example 1 (Simple):
     {{
         "genomic_variants": [
-            {{"gene": "BRCA1", "variant": "c.68_69delAG", "significance": "pathogenic"}},
-            {{"gene": "PIK3CA", "variant": "H1047R", "significance": "pathogenic"}}
+            {{{{"gene": "BRCA1", "variant": "c.68_69delAG", "significance": "pathogenic"}}}},
+            {{{{"gene": "PIK3CA", "variant": "H1047R", "significance": "pathogenic"}}}}
         ],
         "biomarkers": [
-            {{"name": "ER", "status": "positive", "value": ">90%"}},
-            {{"name": "HER2", "status": "negative", "value": "IHC 0"}}
+            {{{{"name": "ER", "status": "positive", "value": ">90%"}}}},
+            {{{{"name": "HER2", "status": "negative", "value": "IHC 0"}}}}
         ],
         "cancer_characteristics": {{
             "stage": "T2N1M0",
@@ -76,15 +88,15 @@ class LLMNLPEngine:
     Example 2 (Advanced):
     {{
         "genomic_variants": [
-            {{"gene": "BRCA2", "variant": "c.5946delT", "significance": "pathogenic"}},
-            {{"gene": "TP53", "variant": "R175H", "significance": "pathogenic"}},
-            {{"gene": "HER2", "variant": "amplification", "significance": "pathogenic"}}
+            {{{{"gene": "BRCA2", "variant": "c.5946delT", "significance": "pathogenic"}}}},
+            {{{{"gene": "TP53", "variant": "R175H", "significance": "pathogenic"}}}},
+            {{{{"gene": "HER2", "variant": "amplification", "significance": "pathogenic"}}}}
         ],
         "biomarkers": [
-            {{"name": "ER", "status": "negative", "value": "<1%"}},
-            {{"name": "PR", "status": "negative", "value": "<1%"}},
-            {{"name": "HER2", "status": "positive", "value": "IHC 3+"}},
-            {{"name": "PD-L1", "status": "positive", "value": "CPS >=10"}}
+            {{{{"name": "ER", "status": "negative", "value": "<1%"}}}},
+            {{{{"name": "PR", "status": "negative", "value": "<1%"}}}},
+            {{{{"name": "HER2", "status": "positive", "value": "IHC 3+"}}}},
+            {{{{"name": "PD-L1", "status": "positive", "value": "CPS >=10"}}}}
         ],
         "cancer_characteristics": {{
             "stage": "T3N2M1",
@@ -167,13 +179,26 @@ class LLMNLPEngine:
             self.logger.debug(f"LLM response content: {content}")
             
             try:
+                self.logger.debug(f"Raw LLM response before parsing:\n{content}")
+                
                 # First try parsing normally
                 parsed = self._parse_response(content, prompt)
+                
+                # Validate we have at least NOT_FOUND markers
+                if not parsed.get('genomic_variants') or not parsed.get('biomarkers'):
+                    self.logger.warning("Missing required arrays in parsed response")
+                    parsed['genomic_variants'] = [{"gene": "NOT_FOUND", "variant": "", "significance": ""}]
+                    parsed['biomarkers'] = [{"name": "NOT_FOUND", "status": "", "value": ""}]
+                    
+                self.logger.debug(f"Parsed result structure:\n{parsed}")
                 return parsed
             except Exception as e:
                 self.logger.error(f"Parsing failed: {str(e)}\nContent: {content[:200]}")
-                # Return test data if parsing fails
-                return self._get_empty_response()
+                # Return structure with NOT_FOUND markers
+                result = self._get_empty_response()
+                result['genomic_variants'] = [{"gene": "PARSE_ERROR", "variant": str(e), "significance": ""}]
+                result['biomarkers'] = [{"name": "PARSE_ERROR", "status": str(e), "value": ""}]
+                return result
         except Exception as e:
             self.logger.error(f"LLM extraction failed: {str(e)}")
             return self._get_empty_response()
@@ -217,9 +242,22 @@ class LLMNLPEngine:
         """
         try:
             import json
-            # Clean response text by removing markdown code blocks if present
-            cleaned_text = response_text.replace('```json', '').replace('```', '').strip()
-            parsed = json.loads(cleaned_text)
+            import re
+            
+            # Clean response text by removing markdown code blocks and any text outside JSON
+            cleaned_text = re.sub(r'^.*?(\{.*\}).*?$', r'\1', response_text, flags=re.DOTALL)
+            cleaned_text = cleaned_text.replace('```json', '').replace('```', '').strip()
+            
+            # Handle cases where JSON might be malformed
+            try:
+                parsed = json.loads(cleaned_text)
+            except json.JSONDecodeError:
+                # Try extracting just the inner JSON if wrapped in text
+                match = re.search(r'\{.*\}', cleaned_text)
+                if match:
+                    parsed = json.loads(match.group(0))
+                else:
+                    raise
             
             if not isinstance(parsed, dict):
                 self.logger.error(f"LLM response is not a dictionary\n"
@@ -245,56 +283,78 @@ class LLMNLPEngine:
             # Validate genomic variants structure with fallback
             valid_genomic_variants = []
             breast_cancer_genes = ['BRCA1', 'BRCA2', 'PIK3CA', 'TP53', 'HER2']
-            for variant in parsed['genomic_variants']:
-                if not isinstance(variant, dict):
-                    self.logger.warning(f"Invalid genomic variant type: {type(variant)}")
-                    continue
-                
-                # Create a safe variant object with default values
-                safe_variant = {
-                    'gene': variant.get('gene', 'Unknown'),
-                    'variant': variant.get('variant', ''),
-                    'significance': variant.get('significance', '')
-                }
-                
-                # If both gene and variant are missing, skip this variant
-                if safe_variant['gene'] == 'Unknown' and not safe_variant['variant']:
-                    self.logger.warning(f"Skipping invalid variant with no gene or variant: {variant}")
-                    continue
+            
+            # Handle missing 'genomic_variants' field
+            if 'genomic_variants' not in parsed:
+                self.logger.warning("Missing 'genomic_variants' field in LLM response")
+                parsed['genomic_variants'] = []
+            
+            # Process variants if field exists
+            if isinstance(parsed['genomic_variants'], list):
+                for variant in parsed['genomic_variants']:
+                    if not isinstance(variant, dict):
+                        self.logger.warning(f"Invalid genomic variant type: {type(variant)}")
+                        continue
                     
-                # Check if gene is breast cancer relevant
-                if safe_variant['gene'] not in breast_cancer_genes:
-                    self.logger.info(f"Non-breast cancer gene detected: {safe_variant['gene']}")
+                    # Create a safe variant object with default values
+                    safe_variant = {
+                        'gene': variant.get('gene', 'Unknown'),
+                        'variant': variant.get('variant', ''),
+                        'significance': variant.get('significance', '')
+                    }
                     
-                valid_genomic_variants.append(safe_variant)
-            parsed['genomic_variants'] = valid_genomic_variants
+                    # If both gene and variant are missing, skip this variant
+                    if safe_variant['gene'] == 'Unknown' and not safe_variant['variant']:
+                        self.logger.warning(f"Skipping invalid variant with no gene or variant: {variant}")
+                        continue
+                        
+                    # Check if gene is breast cancer relevant
+                    if safe_variant['gene'] not in breast_cancer_genes:
+                        self.logger.info(f"Non-breast cancer gene detected: {safe_variant['gene']}")
+                        
+                    valid_genomic_variants.append(safe_variant)
+                parsed['genomic_variants'] = valid_genomic_variants
+            else:
+                self.logger.error(f"Invalid genomic_variants type: {type(parsed['genomic_variants'])}")
+                parsed['genomic_variants'] = []
             
             # Validate biomarkers structure - focus on breast cancer biomarkers
             valid_biomarkers = []
             breast_cancer_biomarkers = ['ER', 'PR', 'HER2', 'PD-L1']
-            for biomarker in parsed['biomarkers']:
-                if not isinstance(biomarker, dict):
-                    self.logger.warning(f"Invalid biomarker type: {type(biomarker)}")
-                    continue
-                if 'name' not in biomarker or 'status' not in biomarker:
-                    self.logger.warning(f"Biomarker missing required fields: {biomarker}")
-                    continue
-                    
-                # Standardize biomarker names
-                name = biomarker['name'].upper().replace(' ', '')
-                if name == 'HER2/NEU':
-                    name = 'HER2'
-                    
-                # Check if biomarker is breast cancer relevant
-                if name not in breast_cancer_biomarkers:
-                    self.logger.info(f"Non-breast cancer biomarker detected: {name}")
-                    
-                valid_biomarkers.append({
-                    'name': name,
-                    'status': biomarker['status'],
-                    'value': biomarker.get('value', '')
-                })
-            parsed['biomarkers'] = valid_biomarkers
+            
+            # Handle missing 'biomarkers' field
+            if 'biomarkers' not in parsed:
+                self.logger.warning("Missing 'biomarkers' field in LLM response")
+                parsed['biomarkers'] = []
+            
+            # Process biomarkers if field exists
+            if isinstance(parsed['biomarkers'], list):
+                for biomarker in parsed['biomarkers']:
+                    if not isinstance(biomarker, dict):
+                        self.logger.warning(f"Invalid biomarker type: {type(biomarker)}")
+                        continue
+                    if 'name' not in biomarker or 'status' not in biomarker:
+                        self.logger.warning(f"Biomarker missing required fields: {biomarker}")
+                        continue
+                        
+                    # Standardize biomarker names
+                    name = biomarker['name'].upper().replace(' ', '')
+                    if name == 'HER2/NEU':
+                        name = 'HER2'
+                        
+                    # Check if biomarker is breast cancer relevant
+                    if name not in breast_cancer_biomarkers:
+                        self.logger.info(f"Non-breast cancer biomarker detected: {name}")
+                        
+                    valid_biomarkers.append({
+                        'name': name,
+                        'status': biomarker['status'],
+                        'value': biomarker.get('value', '')
+                    })
+                parsed['biomarkers'] = valid_biomarkers
+            else:
+                self.logger.error(f"Invalid biomarkers type: {type(parsed['biomarkers'])}")
+                parsed['biomarkers'] = []
             
             # Validate breast cancer characteristics
             if 'stage' in parsed['cancer_characteristics']:

@@ -8,7 +8,7 @@ import colorlog
 
 # Configure colored logging FIRST
 logger = colorlog.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 logger.handlers = []
 
 handler = colorlog.StreamHandler(sys.stdout)
@@ -43,7 +43,7 @@ api_client = ClinicalTrialsAPI()
 # Configure colored logging
 print("Initializing colored logging...")  # Debug
 logger = colorlog.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 # Remove any existing handlers
 logger.handlers = []
@@ -231,8 +231,22 @@ def update_patient_profile():
     ui.notify('Patient profile updated!')
 
 # Patient profile UI with expansion sections
-with ui.expansion('PATIENT PROFILE', icon='person', value=False).classes('w-full'):
+patient_profile_expansion = ui.expansion('PATIENT PROFILE', icon='person', value=False).classes('w-full')
+with patient_profile_expansion:
     with ui.card().classes('w-full p-4'):
+        # Patient Matching Toggle
+        with ui.row().classes('items-center w-full mb-4'):
+            ui.label('Patient Matching:').classes('font-medium')
+            matching_toggle = ui.switch(
+                'Patient Matching',
+                value=True
+            ).props(
+                'color=secondary '
+                'tooltip="Enable to match trials based on:\\n- Cancer type\\n- Biomarkers\\n- Genomic variants\\n- Stage/grade"'
+            ).classes('ml-2')
+            
+        # Simplified - always keep profile enabled
+        matching_toggle.on('change', lambda: ui.notify(f"Patient matching {'enabled' if matching_toggle.value else 'disabled'}"))
         with ui.column().classes('w-full gap-6'):
             # Patient Information Section
             with ui.expansion('PATIENT INFORMATION', icon='person').classes('w-full'):
@@ -477,28 +491,13 @@ with ui.column().classes('w-full items-center'):
                     ui.label('NLP Engine').classes('text-lg font-bold')
                     engine_select = ui.radio(
                         ['Regex', 'SpaCy', 'LLM'],
-                        value='Regex'
+                        value='LLM'
                     ).props('''
                         inline
                         tooltip="Regex: Fast pattern matching|SpaCy: Balanced accuracy|LLM: Most accurate (OpenAI)"
                     ''')
-                
-                # Matching Options
-                with ui.card().classes('p-4'):
-                    ui.label('mCODE OPTIONS').classes('text-lg font-bold')
                     
-                    # Patient Matching
-                    with ui.row().classes('items-center w-full'):
-                        ui.label('Patient Matching:').classes('font-medium')
-                        matching_toggle = ui.switch(
-                            'Patient Matching',
-                            value=True
-                        ).props(
-                            'color=secondary '
-                            'tooltip="Enable to match trials based on:\\n- Cancer type\\n- Biomarkers\\n- Genomic variants\\n- Stage/grade"'
-                        ).classes('ml-2')
-                    
-                    # Benchmark Mode
+                    # Benchmark Mode Toggle
                     with ui.row().classes('items-center w-full mt-3'):
                         ui.label('Benchmark Mode:').classes('font-medium')
                         benchmark_toggle = ui.switch(
@@ -508,7 +507,22 @@ with ui.column().classes('w-full items-center'):
                             'color=secondary '
                             'tooltip="Compare all NLP engines:\\n- Tests accuracy\\n- Measures speed\\n- Shows differences"'
                         ).classes('ml-2')
-
+                        
+                        def update_engine_state():
+                            if benchmark_toggle.value:
+                                engine_select.disable()
+                                ui.notify('All NLP engines will be compared in benchmark mode', type='info')
+                            else:
+                                engine_select.enable()
+                                ui.notify('Using selected NLP engine only', type='positive')
+                        
+                        benchmark_toggle.on('change', lambda: update_engine_state())
+                        # Set initial state
+                        if benchmark_toggle.value:
+                            engine_select.disable()
+                        else:
+                            engine_select.enable()
+                
     # Results display
     trials_container = ui.column().classes('w-full p-4')
 
@@ -577,18 +591,55 @@ async def on_search():
                                 if benchmark_toggle.value:
                                     # Benchmark all engines
                                     results = {}
+                                    reference_result = None
+                                    
                                     for name, pipeline in engines.items():
-                                        start = time.time()
-                                        results[name] = {
-                                            'result': pipeline.process_criteria(criteria),
-                                            'time': time.time() - start
-                                        }
+                                        try:
+                                            start = time.time()
+                                            logger.info(f"Processing criteria with {name} engine...")
+                                            logger.debug(f"Raw criteria text: {criteria[:200]}...")  # Log first 200 chars
+                                            result = pipeline.process_criteria(criteria)
+                                            elapsed = time.time() - start
+                                            logger.debug(f"{name} engine result: {json.dumps(result, indent=2)}")
+                                            
+                                            # Calculate accuracy if we have a reference (LLM)
+                                            accuracy = None
+                                            if name == 'LLM':
+                                                reference_result = result
+                                            elif reference_result:
+                                                from src.matcher import calculate_similarity
+                                                accuracy = calculate_similarity(
+                                                    reference_result.get('features', {}),
+                                                    result.get('features', {})
+                                                ) if reference_result else None
+                                            
+                                            results[name] = {
+                                                'result': result,
+                                                'time': elapsed,
+                                                'accuracy': accuracy * 100 if accuracy else None,  # Convert to percentage
+                                                'entities': len(result.get('entities', [])),
+                                                'error': None
+                                            }
+                                        except Exception as e:
+                                            results[name] = {
+                                                'result': None,
+                                                'time': 0,
+                                                'accuracy': 0,
+                                                'entities': 0,
+                                                'error': str(e)
+                                            }
+                                            logger.error(f"Benchmark error in {name} engine: {str(e)}")
+                                    
                                     return {'benchmark': results}
                                 else:
                                     # Use selected engine
                                     logger.debug(f"Processing with {selected_engine} engine")
+                                    logger.info(f"Processing with {selected_engine} engine...")
+                                    logger.debug(f"Raw criteria text: {criteria[:200]}...")
                                     result = engines[selected_engine].process_criteria(criteria)
-                                    logger.debug(f"Engine {selected_engine} returned result")
+                                    logger.debug(f"Raw {selected_engine} engine result: {json.dumps(result, indent=2)}")
+                                    logger.debug(f"Result features type: {type(result.get('features'))}")
+                                    logger.debug(f"Result features keys: {list(result.get('features', {}).keys())}")
                                     return {
                                         'single': {
                                             'engine': selected_engine,
@@ -608,39 +659,44 @@ async def on_search():
                     
                     # Display results in main thread
                     def display_task():
-                        with trials_container:
+                        try:
+                            current_display_data = {}
                             if extraction_result.get('benchmark'):
-                                # Show benchmark comparison
-                                with ui.expansion('Engine Performance Comparison').classes('w-full'):
-                                    # Performance metrics table
-                                    columns = [
-                                        {'name': 'engine', 'label': 'Engine', 'field': 'engine'},
-                                        {'name': 'time', 'label': 'Time (ms)', 'field': 'time'},
-                                        {'name': 'entities', 'label': 'Entities Found', 'field': 'entities'}
-                                    ]
-                                    rows = []
-                                    for engine, data in extraction_result['benchmark'].items():
-                                        rows.append({
-                                            'engine': engine,
-                                            'time': round(data['time']*1000, 2),
-                                            'entities': len(data['result'].get('entities', []))
-                                        })
-                                    ui.table(columns=columns, rows=rows).classes('w-full')
-                                
-                                # Show results from primary engine (LLM by default)
-                                display_data = {
-                                    'features': extraction_result['benchmark']['LLM']['result'].get('features', {}),
-                                    'mcode_mappings': extraction_result['benchmark']['LLM']['result'].get('mcode_mappings', {})
+                                # For benchmark mode, use LLM results as reference
+                                llm_result = extraction_result['benchmark']['LLM']['result']
+                                current_display_data = {
+                                    'features': llm_result.get('features', {}),
+                                    'mcode_mappings': llm_result.get('mcode_mappings', {}),
+                                    'benchmark': extraction_result['benchmark']
                                 }
-                            else:
-                                # Single engine mode
-                                display_data = {
+                            elif extraction_result.get('single'):
+                                # For single engine mode, use the selected engine's results
+                                current_display_data = {
                                     'features': extraction_result['single']['result'].get('features', {}),
                                     'mcode_mappings': extraction_result['single']['result'].get('mcode_mappings', {})
                                 }
-                            display_trial_results(protocol_section, display_data)
+                            
+                            # Ensure we have valid features data
+                            if not current_display_data.get('features'):
+                                logger.warning("No features data found in extraction results")
+                                return {'success': False, 'error': 'No mCODE features extracted'}
+                            
+                            # Log for debugging rendering issues
+                            logger.debug(f"Display task returning features: {list(current_display_data['features'].keys())}")
+                            return {'success': True, 'data': current_display_data, 'protocol': protocol_section}
+                        except Exception as e:
+                            logger.error(f"Display error: {str(e)}")
+                            logger.error(traceback.format_exc())
+                            return {'success': False, 'error': str(e)}
                     
-                    await asyncio.get_event_loop().run_in_executor(None, display_task)
+                    display_result = await asyncio.get_event_loop().run_in_executor(None, display_task)
+                    logger.debug(f"Display task result types: { {k: str(type(v)) if k != 'data' else 'DATA' for k,v in display_result.items()} }")
+                    logger.debug(f"Display data features type: {type(display_result['data'].get('features')) if display_result['success'] else 'N/A'}")
+                    with trials_container:
+                        if display_result['success']:
+                            display_trial_results(protocol_section=display_result['protocol'], display_data=display_result['data'])
+                        else:
+                            ui.notify(f"Error displaying trial results: {display_result['error']}", type='negative')
                 except Exception as e:
                     error_msg = f"Error processing trial: {str(e)}"
                     ui.notify(error_msg, type='negative')
@@ -659,32 +715,117 @@ async def on_search():
             loading.set_visibility(False)
 
 
-def display_trial_results(protocol_section, extraction_result):
+def display_trial_results(protocol_section, display_data):
+    """Display trial results with mCODE matching information"""
+    logger.debug(f"Entering display_trial_results with display_data type: {type(display_data)}")
+    
+    # Validate input data
+    if not display_data or not isinstance(display_data, dict):
+        logger.error(f"Invalid display_data: {display_data}")
+        ui.label('Invalid trial data format').classes('text-red-500')
+        return
+        
+    if 'features' not in display_data:
+        logger.error(f"Missing features in display_data. Keys: {display_data.keys()}")
+        ui.label('No mCODE features available').classes('text-red-500')
+        return
+    
+    # Create a deep copy to avoid modifying original data
+    try:
+        current_display_data = json.loads(json.dumps(display_data, default=str))
+        features = current_display_data['features']
+        logger.debug(f"Features type: {type(features)}")
+        if isinstance(features, dict):
+            logger.debug(f"Features keys: {list(features.keys())}")
+    except Exception as e:
+        logger.error(f"Error copying display_data: {str(e)}")
+        logger.error(traceback.format_exc())
+        return
+                
+    # Enhanced logging for debugging rendering issues
+    trial_id = protocol_section.get('identificationModule', {}).get('nctId', 'unknown')
+    logger.debug(f"Displaying trial results for {trial_id}")
+    logger.debug(f"Display data type: {type(display_data)}")
+    
+    if isinstance(display_data, dict):
+        logger.debug(f"Display data keys: {list(display_data.keys())}")
+        if 'features' in display_data:
+            features = display_data['features']
+            logger.debug(f"Features type: {type(features)}")
+            if isinstance(features, dict):
+                logger.debug(f"Feature keys: {list(features.keys())}")
+                logger.debug(f"Biomarkers type: {type(features.get('biomarkers'))}")
+                logger.debug(f"Genomic variants type: {type(features.get('genomic_variants'))}")
+            
+    # Validate features structure
+    if not isinstance(features, dict):
+        logger.error(f"Features is not a dict: {type(features)}")
+        ui.label('Invalid features format').classes('text-red-500')
+        return
+    logger.debug(f"Display data received: {type(display_data)}")
+    if isinstance(display_data, dict):
+        logger.debug(f"Display data keys: {list(display_data.keys())}")
+        if 'features' in display_data:
+            logger.debug(f"Features type: {type(display_data['features'])}")
+            if isinstance(display_data['features'], dict):
+                logger.debug(f"Feature keys: {list(display_data['features'].keys())}")
+    
+    
+    if isinstance(display_data, dict):
+        logger.debug(f"Display data keys: {list(display_data.keys())}")
+        if 'features' in display_data:
+            features = display_data['features']
+            logger.debug(f"Features type: {type(features)}")
+            if isinstance(features, dict):
+                logger.debug(f"Feature keys: {list(features.keys())}")
+                logger.debug(f"Biomarkers type: {type(features.get('biomarkers'))}")
+                logger.debug(f"Genomic variants type: {type(features.get('genomic_variants'))}")
+                
+                # Log first biomarker if available
+                biomarkers = features.get('biomarkers', [])
+                if biomarkers:
+                    if isinstance(biomarkers, list) and biomarkers:
+                        logger.debug(f"First biomarker: {biomarkers[0]}")
+                    elif isinstance(biomarkers, dict) and biomarkers:
+                        first_key = next(iter(biomarkers.keys()))
+                        logger.debug(f"First biomarker key: {first_key}, value: {biomarkers[first_key]}")
+                
+                # Log first variant if available
+                variants = features.get('genomic_variants', [])
+                if variants:
+                    logger.debug(f"First variant: {variants[0]}")
+            else:
+                logger.warning(f"Features is not a dict: {features}")
+        else:
+            logger.warning("Display data missing 'features' key")
+    else:
+        logger.error(f"Display data is not a dict: {display_data}")
+    
     with ui.card().classes('w-full'):
         # Trial header with match strength
-        with ui.row().classes('w-full items-center'):
+        with ui.expansion('Patient Match').classes('w-full'):
             # Match strength indicator
-            if extraction_result and 'features' in extraction_result and matching_toggle.value:
+            if current_display_data and 'features' in current_display_data and matching_toggle.value:
                 from src.matcher import PatientMatcher
                 matcher = PatientMatcher()
                 
-                # Prepare patient biomarkers as dict for matching
-                patient_biomarkers = {b['name']: b['status'] for b in patient_profile['biomarkers']}
+                # Prepare patient biomarkers as dict for matching, ignoring NOT_FOUND
+                patient_biomarkers = {b['name']: b['status'] for b in patient_profile['biomarkers'] if b['name'] != 'NOT_FOUND'}
                 
                 # Handle both LLM and other engine formats
-                features = extraction_result['features']
+                features = current_display_data['features']
                 if isinstance(features.get('biomarkers'), dict):
-                    # Convert LLM format to standard format
-                    biomarkers = [{'name': k, 'status': v} for k,v in features['biomarkers'].items()]
-                    variants = features.get('genomic_variants', [])
+                    # Convert LLM format to standard format, ignoring NOT_FOUND
+                    biomarkers = [{'name': k, 'status': v} for k,v in features['biomarkers'].items() if k != 'NOT_FOUND']
+                    variants = [v for v in features.get('genomic_variants', []) if v.get('gene') != 'NOT_FOUND']
                 else:
-                    biomarkers = features.get('biomarkers', [])
-                    variants = features.get('genomic_variants', [])
+                    biomarkers = [b for b in features.get('biomarkers', []) if b.get('name') != 'NOT_FOUND']
+                    variants = [v for v in features.get('genomic_variants', []) if v.get('gene') != 'NOT_FOUND']
                 
                 trial_features = {
                     'cancer_type': patient_profile['cancer_type'],
                     'biomarkers': {b['name']: b['status'] for b in biomarkers},
-                    'genomic_variants': [v['gene'] if isinstance(v, dict) else v for v in variants],
+                    'genomic_variants': [v['gene'] for v in variants],
                     'cancer_characteristics': {
                         'stage': features.get('stage', ''),
                         'histology': features.get('histology', ''),
@@ -693,11 +834,16 @@ def display_trial_results(protocol_section, extraction_result):
                     }
                 }
                 # Build patient data for matching with fallbacks for missing fields
+                # Filter out NOT_FOUND markers from patient data
+                patient_biomarkers = {b['name']: b['status'] for b in patient_profile['biomarkers'] if b['name'] != 'NOT_FOUND'}
+                patient_variants = [v.get('gene', '') for v in patient_profile.get('genomic_variants', [])
+                                    if v.get('gene') != 'NOT_FOUND']
+                
                 patient_data = {
                     'cancer_type': patient_profile.get('cancer_type', ''),
                     'stage': patient_profile.get('stage', ''),
                     'biomarkers': patient_biomarkers,
-                    'genomic_variants': [v.get('gene', '') for v in patient_profile.get('genomic_variants', [])],
+                    'genomic_variants': patient_variants,
                     'cancer_characteristics': {
                         'stage': patient_profile.get('stage', ''),
                         'histology': patient_profile.get('histology', ''),
@@ -711,6 +857,10 @@ def display_trial_results(protocol_section, extraction_result):
                     trial_features = {}
                 if 'cancer_characteristics' not in trial_features:
                     trial_features['cancer_characteristics'] = {}
+                
+                # Safely handle missing metadata
+                genomic_count = features.get('metadata', {}).get('genomic_variants_count', 0)
+                biomarkers_count = features.get('metadata', {}).get('biomarkers_count', 0)
                 
                 match_score, match_details = matcher.calculate_match_score(patient_data, trial_features, return_details=True)
                 match_desc = matcher.get_match_description(match_score)
@@ -764,89 +914,90 @@ def display_trial_results(protocol_section, extraction_result):
             with ui.column().classes('flex-grow'):
                 ui.label(protocol_section.get('identificationModule', {}).get('officialTitle')).classes('text-lg')
                 ui.label(f"NCT ID: {protocol_section.get('identificationModule', {}).get('nctId')}")
-        
+
         # Eligibility criteria
         with ui.expansion('View Eligibility Criteria').classes('w-full'):
             ui.markdown(f"```\n{protocol_section.get('eligibilityModule', {}).get('eligibilityCriteria', 'No criteria available')}\n```")
-        
-        # mCODE extraction results
-        with ui.expansion('mCODE Extraction Results').classes('w-full'):
-            if not extraction_result or not extraction_result.get('features'):
-                ui.label('No mCODE data available').classes('text-red-500')
-            else:
-                features = extraction_result['features']
-                with ui.tabs().classes('w-full') as tabs:
-                    demographics_tab = ui.tab('Demographics')
-                    cancer_tab = ui.tab('Cancer Condition')
-                    genomics_tab = ui.tab('Genomic Variants')
-                    biomarkers_tab = ui.tab('Biomarkers')
-                    treatment_tab = ui.tab('Treatment History')
-                    performance_tab = ui.tab('Performance Status')
+
+        with ui.expansion('mCODE Features').classes('w-full'):
+            with ui.tabs().classes('w-full') as tabs:
+                demographics_tab = ui.tab('Demographics')
+                cancer_tab = ui.tab('Cancer Condition')
+                genomics_tab = ui.tab('Genomic Variants')
+                biomarkers_tab = ui.tab('Biomarkers')
+                treatment_tab = ui.tab('Treatment History')
+                performance_tab = ui.tab('Performance Status')
+            
+            with ui.tab_panels(tabs, value=demographics_tab).classes('w-full'):
+                # Demographics
+                with ui.tab_panel(demographics_tab):
+                    demographics = features.get('demographics', {})
+                    if demographics:
+                        with ui.card().classes('w-full p-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow'):
+                            ui.label('DEMOGRAPHIC DETAILS').classes('text-xl font-bold mb-4 text-primary')
+                            with ui.grid(columns=2).classes('w-full gap-4'):
+                                for key, value in demographics.items():
+                                    extracted = bool(value) and value != 'Not specified'
+                                    with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
+                                                            f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
+                                        ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                        ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
+                    else:
+                        ui.label('No demographic data available').classes('text-gray-500')
                 
-                with ui.tab_panels(tabs, value=demographics_tab).classes('w-full'):
-                    # Demographics
-                    with ui.tab_panel(demographics_tab):
-                        demographics = features.get('demographics', {})
-                        if demographics:
-                            with ui.card().classes('w-full p-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow'):
-                                ui.label('DEMOGRAPHIC DETAILS').classes('text-xl font-bold mb-4 text-primary')
-                                with ui.grid(columns=2).classes('w-full gap-4'):
-                                    for key, value in demographics.items():
-                                        extracted = bool(value) and value != 'Not specified'
-                                        with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
-                                                             f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
-                                            ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                # Cancer Condition
+                with ui.tab_panel(cancer_tab):
+                    cancer_data = features.get('cancer_characteristics', {})
+                    if cancer_data:
+                        with ui.card().classes('w-full p-4'):
+                            ui.label('CANCER CHARACTERISTICS').classes('text-xl font-bold mb-4 text-primary')
+                            with ui.grid(columns=2).classes('w-full gap-4'):
+                                for key, value in cancer_data.items():
+                                    extracted = bool(value) and value != 'Not specified'
+                                    with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
+                                                            f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
+                                        ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                        if isinstance(value, dict):
+                                            for k, v in value.items():
+                                                ui.label(f"{k}: {v}").classes('text-xs' + ('' if extracted else ' opacity-70'))
+                                        else:
                                             ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
-                        else:
-                            ui.label('No demographic data available').classes('text-gray-500')
-                    
-                    # Cancer Condition
-                    with ui.tab_panel(cancer_tab):
-                        cancer_data = features.get('cancer_characteristics', {})
-                        if cancer_data:
-                            with ui.card().classes('w-full p-4'):
-                                ui.label('CANCER CHARACTERISTICS').classes('text-xl font-bold mb-4 text-primary')
-                                with ui.grid(columns=2).classes('w-full gap-4'):
-                                    for key, value in cancer_data.items():
-                                        extracted = bool(value) and value != 'Not specified'
-                                        with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
-                                                             f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
-                                            ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
-                                            if isinstance(value, dict):
-                                                for k, v in value.items():
-                                                    ui.label(f"{k}: {v}").classes('text-xs' + ('' if extracted else ' opacity-70'))
-                                            else:
-                                                ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
-                        else:
-                            ui.label('No cancer characteristics data').classes('text-gray-500')
-                    
-                    # Genomic Variants
-                    with ui.tab_panel(genomics_tab):
-                        variants = features.get('genomic_variants', [])
-                        if variants:
-                            with ui.card().classes('w-full p-4'):
-                                ui.label('GENOMIC VARIANTS').classes('text-xl font-bold mb-4 text-primary')
-                                with ui.grid(columns=2).classes('w-full gap-4'):
-                                    for variant in variants:
-                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                    else:
+                        ui.label('No cancer characteristics data').classes('text-gray-500')
+                
+                # Genomic Variants
+                with ui.tab_panel(genomics_tab):
+                    variants = features.get('genomic_variants', [])
+                    if variants:
+                        with ui.card().classes('w-full p-4'):
+                            ui.label('GENOMIC VARIANTS').classes('text-xl font-bold mb-4 text-primary')
+                            with ui.grid(columns=2).classes('w-full gap-4'):
+                                for variant in variants:
+                                    with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                        if variant.get('gene') == 'NOT_FOUND':
+                                            ui.label("No genomic variants mentioned").classes('font-bold text-gray-500')
+                                        else:
                                             with ui.column().classes('gap-1'):
                                                 ui.label(f"Gene: {variant.get('gene', 'Unknown')}").classes('font-bold')
                                                 ui.label(f"Variant: {variant.get('variant', 'N/A')}").classes('text-sm')
                                                 ui.label(f"Significance: {variant.get('significance', 'N/A')}").classes('text-sm text-blue-600')
-                        else:
-                            ui.label('No genomic variants found').classes('text-gray-500')
-                    
-                    # Biomarkers
-                    with ui.tab_panel(biomarkers_tab):
-                        biomarkers = features.get('biomarkers', [])
-                        if biomarkers:
-                            with ui.card().classes('w-full p-4'):
-                                ui.label('BIOMARKERS').classes('text-xl font-bold mb-4 text-primary')
-                                with ui.grid(columns=2).classes('w-full gap-4'):
-                                    for biomarker in biomarkers:
-                                        extracted = bool(biomarker.get('status')) or bool(biomarker.get('value'))
-                                        with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
-                                                             f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
+                    else:
+                        ui.label('No genomic variants found').classes('text-gray-500')
+                
+                # Biomarkers
+                with ui.tab_panel(biomarkers_tab):
+                    biomarkers = features.get('biomarkers', [])
+                    if biomarkers:
+                        with ui.card().classes('w-full p-4'):
+                            ui.label('BIOMARKERS').classes('text-xl font-bold mb-4 text-primary')
+                            with ui.grid(columns=2).classes('w-full gap-4'):
+                                for biomarker in biomarkers:
+                                    if biomarker.get('name') == 'NOT_FOUND':
+                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors opacity-50'):
+                                            ui.label("No biomarkers mentioned").classes('font-bold text-gray-500')
+                                        break
+                                    else:
+                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
                                             with ui.column().classes('gap-1'):
                                                 ui.label(biomarker.get('name', 'Unknown')).classes('font-bold')
                                                 with ui.row().classes('items-center gap-2'):
@@ -855,36 +1006,165 @@ def display_trial_results(protocol_section, extraction_result):
                                                 with ui.row().classes('items-center gap-2'):
                                                     ui.label('Value:').classes('text-sm font-medium')
                                                     ui.label(biomarker.get('value', 'N/A')).classes('text-sm')
-                        else:
-                            ui.label('No biomarkers found').classes('text-gray-500')
+                    else:
+                        ui.label('No biomarkers found').classes('text-gray-500')
+                
+                # Treatment History
+                with ui.tab_panel(treatment_tab):
+                    treatment = features.get('treatment_history', {})
+                    if treatment:
+                        with ui.card().classes('w-full p-4'):
+                            ui.label('TREATMENT HISTORY').classes('text-xl font-bold mb-4 text-primary')
+                            with ui.grid(columns=2).classes('w-full gap-4'):
+                                for key, value in treatment.items():
+                                    extracted = bool(value) and value != 'Not specified'
+                                    with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
+                                                            f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
+                                        ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                        ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
+                    else:
+                        ui.label('No treatment history data').classes('text-gray-500')
+                
+                # Performance Status
+                with ui.tab_panel(performance_tab):
+                    performance = features.get('performance_status', {})
+                    if performance:
+                        with ui.card().classes('w-full p-4'):
+                            ui.label('PERFORMANCE STATUS').classes('text-xl font-bold mb-4 text-primary')
+                            with ui.grid(columns=2).classes('w-full gap-4'):
+                                for key, value in performance.items():
+                                    extracted = bool(value) and value != 'Not specified'
+                                    with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
+                                                            f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
+                                        ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                        ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
+                    else:
+                        ui.label('No performance status data').classes('text-gray-500')
+
+        # # Create UI elements for displaying results
+        # with ui.expansion('mCODE Extracted Features').classes('w-full'):
+        #     # Biomarkers section
+        #     with ui.expansion('Biomarkers', icon='science').classes('w-full'):
+        #         if features.get('biomarkers'):
+        #             for biomarker in features['biomarkers']:
+        #                 if biomarker.get('name') == 'NOT_FOUND':
+        #                     continue
+        #                 status = biomarker.get('status', '')
+        #                 value = biomarker.get('value', '')
+        #                 with ui.row().classes('items-center'):
+        #                     ui.label(f"{biomarker['name']}:").classes('font-medium')
+        #                     ui.label(status).classes(
+        #                         'text-green-500' if status == 'positive' else
+        #                         'text-red-500' if status == 'negative' else
+        #                         'text-yellow-500' if status == 'equivocal' else
+        #                         'text-gray-500'
+        #                     )
+        #                     if value:
+        #                         ui.label(f"({value})").classes('text-sm text-gray-500')
+        #         else:
+        #             ui.label('No biomarker data available').classes('text-gray-500')
+
+        #     # Genomic Variants section
+        #     with ui.expansion('Genomic Variants', icon='fingerprint').classes('w-full'):
+        #         if features.get('genomic_variants'):
+        #             for variant in features['genomic_variants']:
+        #                 if variant.get('gene') == 'NOT_FOUND':
+        #                     continue
+        #                 with ui.row().classes('items-center'):
+        #                     ui.label(f"{variant['gene']}:").classes('font-medium')
+        #                     if variant.get('variant'):
+        #                         ui.label(variant['variant']).classes('text-gray-600')
+        #                     if variant.get('significance'):
+        #                         ui.label(f"({variant['significance']})").classes('text-sm text-gray-500')
+        #         else:
+        #             ui.label('No genomic variant data available').classes('text-gray-500')
+
+        #     # Treatment History section
+        #     with ui.expansion('Treatment History', icon='medication').classes('w-full'):
+        #         if features.get('treatment_history'):
+        #             treatments = features['treatment_history']
+        #             if treatments.get('surgeries'):
+        #                 ui.label('Surgeries:').classes('font-medium')
+        #                 for surgery in treatments['surgeries']:
+        #                     ui.label(f"• {surgery}").classes('ml-4')
+        #             if treatments.get('chemotherapy'):
+        #                 ui.label('Chemotherapy:').classes('font-medium')
+        #                 for chemo in treatments['chemotherapy']:
+        #                     ui.label(f"• {chemo}").classes('ml-4')
+        #             if treatments.get('radiation'):
+        #                 ui.label('Radiation:').classes('font-medium')
+        #                 for rad in treatments['radiation']:
+        #                     ui.label(f"• {rad}").classes('ml-4')
+        #             if treatments.get('immunotherapy'):
+        #                 ui.label('Immunotherapy:').classes('font-medium')
+        #                 for immuno in treatments['immunotherapy']:
+        #                     ui.label(f"• {immuno}").classes('ml-4')
+        #         else:
+        #             ui.label('No treatment history available').classes('text-gray-500')
+
+        #     # Cancer Characteristics section
+        #     with ui.expansion('Cancer Characteristics', icon='monitor_heart').classes('w-full'):
+        #         if features.get('cancer_characteristics'):
+        #             chars = features['cancer_characteristics']
+        #             if chars.get('stage'):
+        #                 ui.label(f"Stage: {chars['stage']}").classes('font-medium')
+        #             if chars.get('tumor_size'):
+        #                 ui.label(f"Tumor Size: {chars['tumor_size']}")
+        #             if chars.get('metastasis_sites') and chars['metastasis_sites']:
+        #                 ui.label('Metastasis Sites:').classes('font-medium')
+        #                 for site in chars['metastasis_sites']:
+        #                     ui.label(f"• {site}").classes('ml-4')
+        #         else:
+        #             ui.label('No cancer characteristics available').classes('text-gray-500')
+
+        #     # Performance Status section
+        #     with ui.expansion('Performance Status', icon='accessibility').classes('w-full'):
+        #         if features.get('performance_status'):
+        #             status = features['performance_status']
+        #             if status.get('ecog'):
+        #                 ui.label(f"ECOG: {status['ecog']}")
+        #             if status.get('karnofsky'):
+        #                 ui.label(f"Karnofsky: {status['karnofsky']}")
+        #         else:
+        #             ui.label('No performance status available').classes('text-gray-500')
+
+        #     # Demographics section
+        #     with ui.expansion('Demographics', icon='group').classes('w-full'):
+        #         if features.get('demographics'):
+        #             demo = features['demographics']
+        #             if demo.get('age'):
+        #                 age = demo['age']
+        #                 ui.label(f"Age: {age.get('min', '')}-{age.get('max', '')}")
+        #             if demo.get('gender'):
+        #                 ui.label(f"Gender: {', '.join(demo['gender'])}")
+        #         else:
+        #             ui.label('No demographic data available').classes('text-gray-500')
+                
+        # Show benchmark results if available
+        if current_display_data.get('benchmark'):
+            with ui.expansion('Engine Performance Comparison').classes('w-full mt-4'):
+                columns = [
+                    {'name': 'engine', 'label': 'Engine', 'field': 'engine'},
+                    {'name': 'time', 'label': 'Time (ms)', 'field': 'time'},
+                    {'name': 'genomic_variants', 'label': 'Genomic Variants', 'field': 'genomic_variants_count'},
+                    {'name': 'biomarkers', 'label': 'Biomarkers', 'field': 'biomarkers_count'},
+                    {'name': 'accuracy', 'label': 'Accuracy (%)', 'field': 'accuracy'}
+                ]
+                rows = []
+                for engine, data in current_display_data['benchmark'].items():
+                    # Safely get metadata counts
+                    genomic_count = data['result']['metadata']['genomic_variants_count'] if data.get('result') and data['result'].get('metadata') else 0
+                    biomarkers_count = data['result']['metadata']['biomarkers_count'] if data.get('result') and data['result'].get('metadata') else 0
                     
-                    # Treatment History
-                    with ui.tab_panel(treatment_tab):
-                        treatment = features.get('treatment_history', {})
-                        if treatment:
-                            with ui.card().classes('w-full p-4'):
-                                ui.label('TREATMENT HISTORY').classes('text-xl font-bold mb-4 text-primary')
-                                with ui.grid(columns=2).classes('w-full gap-4'):
-                                    for key, value in treatment.items():
-                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
-                                            ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
-                                            ui.label(str(value) if value else 'Not specified')
-                        else:
-                            ui.label('No treatment history data').classes('text-gray-500')
-                    
-                    # Performance Status
-                    with ui.tab_panel(performance_tab):
-                        performance = features.get('performance_status', {})
-                        if performance:
-                            with ui.card().classes('w-full p-4'):
-                                ui.label('PERFORMANCE STATUS').classes('text-xl font-bold mb-4 text-primary')
-                                with ui.grid(columns=2).classes('w-full gap-4'):
-                                    for key, value in performance.items():
-                                        with ui.card().classes('p-2 bg-gray-50'):
-                                            ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
-                                            ui.label(str(value) if value else 'Not specified')
-                        else:
-                            ui.label('No performance status data').classes('text-gray-500')
+                    rows.append({
+                        'engine': engine,
+                        'time': round(data['time']*1000, 2),
+                        'genomic_variants_count': genomic_count,
+                        'biomarkers_count': biomarkers_count,
+                        'accuracy': round(data['accuracy'], 2) if data['accuracy'] is not None else 'N/A'
+                    })
+                ui.table(columns=columns, rows=rows).classes('w-full')
+
 # Reset function
 def on_reset():
     trials_container.clear()
@@ -896,3 +1176,5 @@ search_button.on('click', on_search)
 reset_button.on('click', on_reset)
 
 ui.run(title='mCODE Clinical Trials Search')
+
+# Add json to imports at top of file if not already present
