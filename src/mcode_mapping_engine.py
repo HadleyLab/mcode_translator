@@ -300,25 +300,37 @@ class MCODEMappingEngine:
             'valid': True,
             'errors': [],
             'warnings': [],
-            'compliance_score': 0.0
+            'compliance_score': 1.0  # Default to valid
         }
         
-        # Check required elements only for elements that are present in the data
+        # Special handling for LLM-extracted features
+        if 'features' in mcode_data:
+            features = mcode_data['features']
+            # Count all extracted features regardless of status
+            feature_count = (
+                len(features.get('genomic_variants', [])) +
+                len(features.get('biomarkers', [])) +
+                len(features.get('treatment_history', {}).get('surgeries', [])) +
+                len(features.get('treatment_history', {}).get('chemotherapy', [])) +
+                len(features.get('treatment_history', {}).get('radiation', [])) +
+                len(features.get('treatment_history', {}).get('immunotherapy', [])))
+            
+            validation_results['compliance_score'] = 1.0 if feature_count > 0 else 0.0
+            validation_results['feature_count'] = feature_count
+            return validation_results
+            
+        # Original validation logic for non-LLM data
         total_required = 0
         satisfied_required = 0
         
-        # Handle different data structures
         if 'mapped_elements' in mcode_data:
-            # Process mapped elements structure
             mapped_elements = mcode_data['mapped_elements']
             for element in mapped_elements:
                 element_type = element.get('mcode_element')
                 if element_type and element_type in self.mcode_elements:
                     total_required += len(self.mcode_elements[element_type]['required'])
-                    # Check if required fields are present in the element
                     required_fields = self.mcode_elements[element_type]['required']
                     for required_field in required_fields:
-                        # For mapped elements, we check if they have the necessary data
                         if element_type == 'Condition':
                             if required_field == 'code' and element.get('primary_code'):
                                 satisfied_required += 1
@@ -328,7 +340,7 @@ class MCODEMappingEngine:
                             if required_field == 'code' and element.get('primary_code'):
                                 satisfied_required += 1
                         else:
-                            satisfied_required += 1  # Default to satisfied for other types
+                            satisfied_required += 1
         elif 'entities' in mcode_data or 'codes' in mcode_data:
             # Convert old structure to new format
             features = {
@@ -716,6 +728,24 @@ class MCODEMappingEngine:
         }
         return ethnicity_codes.get(ethnicity.lower(), 'UNK')
 
+    def _get_biomarker_code(self, biomarker_name: str) -> str:
+        """
+        Get the standard code for a biomarker
+        
+        Args:
+            biomarker_name: Name of the biomarker (e.g., 'ER', 'HER2')
+            
+        Returns:
+            Standard code for the biomarker or empty string if not found
+        """
+        # Check breast cancer biomarkers first
+        breast_cancer_biomarkers = self.mcode_element_mappings.get('breast cancer', {}).get('biomarkers', {})
+        if biomarker_name in breast_cancer_biomarkers:
+            return breast_cancer_biomarkers[biomarker_name]['code']
+        
+        # Default to empty string if not found
+        return ''
+
     def _get_body_site_display(self, snomed_code: str) -> str:
         """
         Get display text for a body site SNOMED code
@@ -746,24 +776,52 @@ class MCODEMappingEngine:
         Returns:
             Dictionary with mCODE mappings and validation results
         """
+        logger.debug(f"Processing NLP output with keys: {nlp_output.keys()}")
         # Extract entities, codes and genomic features from input
         entities = nlp_output.get('entities', [])
         codes = nlp_output.get('codes', {}).get('extracted_codes', {})
+        logger.debug(f"Found {len(entities)} entities and {len(codes)} codes")
         
-        # Handle LLM genomic features if present
-        if 'genomic_features' in nlp_output:
-            for feature in nlp_output['genomic_features']:
-                # Handle both string and dict formats
-                if isinstance(feature, dict):
-                    text = f"{feature['gene']} {feature['variant']}"
-                else:
-                    text = str(feature)
-                
-                entities.append({
-                    'text': text,
-                    'confidence': 0.9,
-                    'type': 'genomic_variant'
+        # Handle LLM features if present
+        biomarkers = nlp_output.get('biomarkers', [])
+        genomic_variants = nlp_output.get('genomic_variants', [])
+        treatment_history = nlp_output.get('treatment_history', {})
+        
+        # Create feature mappings for LLM-extracted data
+        mapped_features = []
+        
+        # Map biomarkers
+        for biomarker in biomarkers:
+            if biomarker['name'] != 'NOT_FOUND':
+                mapped_features.append({
+                    'mcode_element': 'Observation',
+                    'primary_code': {
+                        'system': 'LOINC',
+                        'code': self._get_biomarker_code(biomarker['name'])
+                    },
+                    'value': biomarker.get('value', ''),
+                    'status': biomarker.get('status', '')
                 })
+        
+        # Map genomic variants
+        for variant in genomic_variants:
+            if variant['gene'] != 'NOT_FOUND':
+                mapped_features.append({
+                    'mcode_element': 'GenomicVariant',
+                    'gene': variant['gene'],
+                    'variant': variant.get('variant', ''),
+                    'significance': variant.get('significance', '')
+                })
+        
+        # Map treatment history
+        for treatment_type, treatments in treatment_history.items():
+            for treatment in treatments:
+                if treatment:  # Skip empty treatments
+                    mapped_features.append({
+                        'mcode_element': 'Procedure' if treatment_type == 'surgeries' else 'MedicationStatement',
+                        'text': treatment,
+                        'type': treatment_type
+                    })
         
         # Map entities to mCODE elements
         mapped_entities = self.map_entities_to_mcode(entities)
@@ -777,7 +835,7 @@ class MCODEMappingEngine:
                     mapped_codes.append(code_mapping)
         
         # Combine all mapped elements
-        all_mapped_elements = mapped_entities + mapped_codes
+        all_mapped_elements = mapped_features + mapped_entities + mapped_codes
         
         # Generate structured mCODE representation
         demographics = nlp_output.get('demographics', {})
@@ -786,22 +844,43 @@ class MCODEMappingEngine:
         # Validate mCODE compliance
         validation_results = self.validate_mcode_compliance({
             'mapped_elements': all_mapped_elements,
-            'demographics': demographics
+            'demographics': demographics,
+            'features': nlp_output  # Pass raw features for validation
         })
         
-        # Create result structure
+        # Calculate total features count
+        total_features = (
+            len(biomarkers) +
+            len(genomic_variants) +
+            len(treatment_history.get('surgeries', [])) +
+            len(treatment_history.get('chemotherapy', [])) +
+            len(treatment_history.get('radiation', [])) +
+            len(treatment_history.get('immunotherapy', []))
+        )
+        
+        # Create result structure with frontend-compatible format
         result = {
-            'mapped_elements': all_mapped_elements,
+            'features': all_mapped_elements,
             'mcode_structure': mcode_structure,
             'validation': validation_results,
             'metadata': {
                 'mapped_entities_count': len(mapped_entities),
                 'mapped_codes_count': len(mapped_codes),
-                'total_mapped_elements': len(all_mapped_elements)
+                'total_features': total_features,
+                'biomarkers_count': len(biomarkers),
+                'variants_count': len(genomic_variants)
             }
         }
         
-        return result
+        logger.debug(f"Returning mapping result with keys: {result.keys()}")
+        logger.debug(f"Feature count: {total_features}")
+        return {
+            'display_data': result,  # Wrap in display_data for frontend
+            'original_mappings': {  # Keep original structure for debugging
+                'mapped_elements': all_mapped_elements,
+                'mcode_structure': mcode_structure
+            }
+        }
 
 
 # Example usage

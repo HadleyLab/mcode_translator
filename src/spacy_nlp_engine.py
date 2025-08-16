@@ -4,6 +4,8 @@ from typing import List, Dict, Any, Optional
 import logging
 import sys
 import os
+from src.nlp_engine import NLPEngine, ProcessingResult
+import time
 
 # Add the src directory to the path so we can import the code extraction module
 sys.path.insert(0, os.path.dirname(__file__))
@@ -16,9 +18,19 @@ from structured_data_generator import StructuredDataGenerator
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class SpacyNLPEngine:
-    """
-    Natural Language Processing Engine for parsing clinical trial eligibility criteria
+class SpacyNLPEngine(NLPEngine):
+    """NLP Engine using spaCy for clinical text processing.
+    
+    Specialized for extracting mCODE features from clinical trial eligibility criteria
+    using medical NLP models and custom pattern matching.
+    
+    Attributes:
+        nlp (spacy.Language): Loaded medical NLP model
+        code_extractor (CodeExtractionModule): For extracting medical codes
+        mcode_mapper (MCODEMappingEngine): For mapping to mCODE standards
+        structured_data_generator (StructuredDataGenerator): For FHIR output
+        matcher (PhraseMatcher): Custom pattern matcher
+        logger (logging.Logger): Configured logger instance
     """
     
     def __init__(self):
@@ -459,7 +471,42 @@ class SpacyNLPEngine:
         
         return max(0.0, min(1.0, confidence))  # Clamp between 0 and 1
     
-    def process_criteria(self, criteria_text: str) -> Dict[str, Any]:
+    def process_text(self, text: str) -> ProcessingResult:
+        """Process clinical text and extract mCODE features.
+        
+        Args:
+            text (str): Input clinical text to process. Must be non-empty.
+            
+        Returns:
+            ProcessingResult: Contains:
+                - features (Dict): Extracted mCODE features in standardized format
+                - mcode_mappings (Dict): FHIR mappings for extracted features
+                - metadata (Dict): Processing metadata including counts
+                - entities (List): Raw extracted entities with confidence scores
+                - error (Optional[str]): None if successful, error message if failed
+            
+        Raises:
+            ValueError: If input text is empty or invalid type
+            
+        Example:
+            >>> engine = SpacyNLPEngine()
+            >>> result = engine.process_text("ER+ HER2- breast cancer")
+            >>> "cancer_type" in result.features["cancer_characteristics"]
+            True
+        """
+        if not text or not isinstance(text, str):
+            error_msg = "Input text must be a non-empty string"
+            self.logger.error(error_msg)
+            return self._create_error_result(error_msg)
+            
+        try:
+            return self.process_criteria(text)
+        except Exception as e:
+            error_msg = f"Error processing text: {str(e)}"
+            self.logger.error(error_msg, exc_info=True)
+            return self._create_error_result(error_msg)
+
+    def process_criteria(self, criteria_text: str) -> ProcessingResult:
         """
         Process eligibility criteria text and extract structured information
         
@@ -467,10 +514,17 @@ class SpacyNLPEngine:
             criteria_text: Eligibility criteria text to process
             
         Returns:
-            Dictionary containing extracted information
+            ProcessingResult containing extracted information
         """
+        start_time = time.time()
         if not criteria_text:
-            return {}
+            return ProcessingResult(
+                features={},
+                mcode_mappings={},
+                metadata={},
+                entities=[],
+                error="Empty criteria text"
+            )
         
         # Ensure criteria_text is a string
         if isinstance(criteria_text, list):
@@ -485,98 +539,93 @@ class SpacyNLPEngine:
         sections = self.identify_sections(cleaned_text)
         
         # Process each section
-        result = {
-            'entities': [],
+        features = {
             'demographics': {},
-            'temporal_expressions': [],
-            'conditions': [],
-            'procedures': [],
-            'sections': sections
+            'cancer_characteristics': {},
+            'biomarkers': [],
+            'genomic_variants': [],
+            'treatment_history': {},
+            'performance_status': {}
         }
         
         # Process all text for entities
-        all_entities = self.extract_medical_entities(cleaned_text)
-        result['entities'] = all_entities
+        entities = self.extract_medical_entities(cleaned_text)
         
         # Extract demographic information
-        result['demographics'] = {
-            'age': self.extract_age_criteria(cleaned_text),
-            'gender': self.extract_gender_criteria(cleaned_text)
+        age_criteria = self.extract_age_criteria(cleaned_text)
+        gender_criteria = self.extract_gender_criteria(cleaned_text)
+        
+        # Map to standardized features format
+        features['demographics'] = {
+            'age_range': age_criteria[0]['text'] if age_criteria else None,
+            'gender': gender_criteria[0]['gender'] if gender_criteria else None
         }
         
-        # Extract temporal expressions
-        result['temporal_expressions'] = self.extract_temporal_expressions(cleaned_text)
+        # Extract conditions and map to cancer characteristics
+        conditions = self.extract_conditions_with_umls(cleaned_text)
+        if conditions:
+            features['cancer_characteristics']['cancer_type'] = conditions[0]['condition']
         
-        # Extract conditions
-        result['conditions'] = self.extract_conditions_with_umls(cleaned_text)
-        
-        # Extract procedures
-        result['procedures'] = self.extract_procedures(cleaned_text)
+        # Extract procedures and map to treatment history
+        procedures = self.extract_procedures(cleaned_text)
+        if procedures:
+            features['treatment_history']['procedures'] = [p['procedure'] for p in procedures]
         
         # Add confidence scores to entities
-        for entity in result['entities']:
+        for entity in entities:
             entity['confidence'] = self.calculate_confidence(entity, cleaned_text)
         
         # Extract codes from the criteria text
-        result['codes'] = self.code_extractor.process_criteria_for_codes(cleaned_text, result['entities'])
+        codes = self.code_extractor.process_criteria_for_codes(cleaned_text, entities)
         
         # Process with mCODE mapping engine
-        result['mcode_mappings'] = self.mcode_mapper.process_nlp_output(result)
+        mcode_mappings = self.mcode_mapper.process_nlp_output({
+            'entities': entities,
+            'features': features,
+            'codes': codes
+        })
         
         # Generate structured mCODE FHIR resources
-        mapped_elements = result['mcode_mappings'].get('mapped_elements', [])
-        # Format demographics data for structured data generator
-        original_demographics = result.get('demographics', {})
-        formatted_demographics = {}
-        
-        # Extract gender from gender criteria
-        if 'gender' in original_demographics:
-            gender_criteria = original_demographics['gender']
-            if isinstance(gender_criteria, list) and gender_criteria:
-                # Extract gender from the first gender criterion
-                first_criterion = gender_criteria[0]
-                if isinstance(first_criterion, dict) and 'gender' in first_criterion:
-                    formatted_demographics['gender'] = first_criterion['gender']
-                # If we have text, try to extract gender from it
-                elif isinstance(first_criterion, dict) and 'text' in first_criterion:
-                    text = first_criterion['text'].lower()
-                    if 'male' in text or 'men' in text:
-                        formatted_demographics['gender'] = 'male'
-                    elif 'female' in text or 'women' in text:
-                        formatted_demographics['gender'] = 'female'
-            elif isinstance(gender_criteria, str):
-                # Direct gender string
-                formatted_demographics['gender'] = gender_criteria.lower()
-        
-        # Extract age from age criteria
-        if 'age' in original_demographics:
-            age_criteria = original_demographics['age']
-            if isinstance(age_criteria, list) and age_criteria:
-                # Extract age from the first age criterion
-                first_criterion = age_criteria[0]
-                if isinstance(first_criterion, dict) and 'min_age' in first_criterion:
-                    formatted_demographics['age'] = first_criterion['min_age']
-                elif isinstance(first_criterion, dict) and 'text' in first_criterion:
-                    # Try to extract age from text
-                    import re
-                    text = first_criterion['text']
-                    age_match = re.search(r'(\d+)\s*(?:years?\s*)?(?:or\s+(older|younger|greater|less))?', text, re.IGNORECASE)
-                    if age_match:
-                        formatted_demographics['age'] = age_match.group(1)
-        
-        result['structured_data'] = self.structured_data_generator.generate_mcode_resources(
+        mapped_elements = mcode_mappings.get('mapped_elements', [])
+        structured_data = self.structured_data_generator.generate_mcode_resources(
             mapped_elements,
-            formatted_demographics
+            features['demographics']
         )
         
-        # Add metadata
-        result['metadata'] = {
-            'text_length': len(cleaned_text),
-            'entity_count': len(result['entities']),
-            'code_count': result['codes']['metadata']['total_codes'] if 'metadata' in result['codes'] and 'total_codes' in result['codes']['metadata'] else 0,
-            'confidence_average': sum(e.get('confidence', 0) for e in result['entities']) / len(result['entities']) if result['entities'] else 0
+        # Ensure features structure matches ProcessingResult expectations
+        standardized_features = {
+            'demographics': {
+                'gender': features.get('demographics', {}).get('gender', '').capitalize() if features.get('demographics', {}).get('gender') else '',
+                'age': features.get('demographics', {}).get('age', {})
+            },
+            'cancer_characteristics': features.get('cancer_characteristics', {}),
+            'biomarkers': features.get('biomarkers', []),
+            'genomic_variants': features.get('genomic_variants', []),
+            'treatment_history': features.get('treatment_history', {}),
+            'performance_status': features.get('performance_status', {})
         }
         
+        # Prepare metadata with actual processing time
+        metadata = {
+            'processing_time': time.time() - start_time,  # Calculate elapsed time
+            'engine': 'spacy',
+            'biomarkers_count': len(standardized_features['biomarkers']),
+            'genomic_variants_count': len(standardized_features['genomic_variants'])
+        }
+        
+        # Explicitly create ProcessingResult instance
+        result = ProcessingResult(
+            features=standardized_features,
+            mcode_mappings=mcode_mappings,
+            metadata=metadata,
+            entities=entities,
+            error=None
+        )
+        
+        # Verify type before returning
+        if not isinstance(result, ProcessingResult):
+            raise TypeError(f"Expected ProcessingResult but got {type(result)}")
+            
         return result
 
 

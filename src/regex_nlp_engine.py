@@ -1,85 +1,163 @@
 import re
-from typing import List, Dict, Any
+from typing import Dict, List, Any
 import logging
+from .nlp_engine import NLPEngine, ProcessingResult
+from .utils.pattern_config import (
+    BIOMARKER_PATTERNS,
+    GENE_PATTERN,
+    VARIANT_PATTERN,
+    COMPLEX_VARIANT_PATTERN,
+    STAGE_PATTERN,
+    CANCER_TYPE_PATTERN,
+    ECOG_PATTERN,
+    GENDER_PATTERN,
+    AGE_PATTERN
+)
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-class RegexNLPEngine:
-    """
-    A simplified NLP engine for parsing clinical trial eligibility criteria
+class RegexNLPEngine(NLPEngine):
+    """Regex-based NLP engine for clinical text processing.
+    
+    Specialized for extracting mCODE features using regular expression patterns.
+    Handles common clinical trial eligibility criteria patterns.
+    
+    Inherits from:
+        NLPEngine (base class with common functionality)
+    
+    Attributes
+    ----------
+    biomarker_patterns : Dict[str, Pattern]
+        Centralized regex patterns for biomarkers (imported from pattern_config)
+    gene_pattern : Pattern
+        Centralized regex for gene mentions (imported from pattern_config)
+    variant_pattern : Pattern
+        Centralized regex for variant descriptions (imported from pattern_config)
+    complex_variant_pattern : Pattern
+        Centralized regex for protein-level variants (imported from pattern_config)
+    stage_pattern : Pattern
+        Centralized regex for cancer staging (imported from pattern_config)
+    cancer_type_pattern : Pattern
+        Centralized regex for cancer types (imported from pattern_config)
+    ecog_pattern : Pattern
+        Centralized regex for ECOG scores (imported from pattern_config)
+    gender_pattern : Pattern
+        Centralized regex for gender references (imported from pattern_config)
+    age_pattern : Pattern
+        Centralized regex for age ranges (imported from pattern_config)
+    logger : logging.Logger
+        Configured logger instance from base class
     """
     
     def __init__(self):
-        """
-        Initialize the simple NLP engine with mCODE extraction patterns
-        """
-        logger.info("Simple NLP engine initialized")
+        super().__init__()
+        self.logger = logging.getLogger(__name__)
         
-        # Biomarker patterns
-        # Enhanced biomarker patterns with quantitative values
-        self.biomarker_patterns = {
-            'ER': re.compile(r'ER\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%)', re.IGNORECASE),
-            'PR': re.compile(r'PR\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%)', re.IGNORECASE),
-            'HER2': re.compile(r'HER2\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\+?)', re.IGNORECASE),
-            'PD-L1': re.compile(r'PD-?L1\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%)', re.IGNORECASE),
-            'Ki-67': re.compile(r'Ki-?67\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%)', re.IGNORECASE),
-            'MSI': re.compile(r'MSI\s*(?:status)?\s*[:=]?\s*(high|low|stable)', re.IGNORECASE),
-            'TMB': re.compile(r'TMB\s*(?:status)?\s*[:=]?\s*(high|low|\d+\s*mut/Mb)', re.IGNORECASE)
-        }
-        
-        # Genomic variant patterns
-        # Enhanced gene variant patterns
-        self.gene_pattern = re.compile(
-            r'\b(BRCA[12]|TP53|PIK3CA|PTEN|AKT1|ERBB2|HER2|EGFR|ALK|ROS1|KRAS|NRAS|BRAF|MEK[12]?|NTRK[123])\b',
-            re.IGNORECASE
-        )
-        self.variant_pattern = re.compile(
-            r'\b([A-Z0-9]+)\s*(?:mutation|variant|alteration|amplification|fusion|rearrangement|deletion|insertion)\b',
-            re.IGNORECASE
-        )
-        self.complex_variant_pattern = re.compile(
-            r'\b([A-Z0-9]+)\s*(?:p\.)?([A-Z][a-z]{2}[0-9]+(?:[A-Za-z]|\*)?)\b',
-            re.IGNORECASE
-        )
-        
-        # Cancer condition patterns
-        self.stage_pattern = re.compile(r'stage\s+(I{1,3}V?|IV)', re.IGNORECASE)
-        self.cancer_type_pattern = re.compile(r'\b(breast|lung|colorectal)\s+cancer\b', re.IGNORECASE)
-        
-        # Treatment patterns
-        self.medication_pattern = re.compile(r'\b(trastuzumab|inetetamab|pembrolizumab|doxorubicin)\b', re.IGNORECASE)
-        
-        # Performance status patterns
-        self.ecog_pattern = re.compile(r'ECOG\s+status?\s*[:=]?\s*([0-4])', re.IGNORECASE)
-        
-        # Demographic patterns
-        self.gender_pattern = re.compile(r'\b(male|female)\b', re.IGNORECASE)
-        self.age_pattern = re.compile(r'age\s+([0-9]+)\s+to\s+([0-9]+)', re.IGNORECASE)
-    
-    def extract_mcode_features(self, criteria_text: str) -> Dict:
-        """
-        Extract mCODE features from eligibility criteria text
-        
-        Args:
-            criteria_text: Text containing eligibility criteria
-            
-        Returns:
-            Dictionary with mCODE features across categories
-        """
-        return {
-            'demographics': self._extract_demographics(criteria_text),
-            'cancer_condition': self._extract_cancer_condition(criteria_text),
-            'genomics': {
-                'genomic_variants': self._extract_genomic_variants(criteria_text)
-            },
-            'biomarkers': self._extract_biomarkers(criteria_text),
-            'treatment': self._extract_treatment(criteria_text),
-            'performance_status': self._extract_performance_status(criteria_text)
-        }
+        # Initialize patterns from centralized config
+        self.biomarker_patterns = BIOMARKER_PATTERNS
+        self.gene_pattern = GENE_PATTERN
+        self.variant_pattern = VARIANT_PATTERN
+        self.complex_variant_pattern = COMPLEX_VARIANT_PATTERN
+        self.stage_pattern = STAGE_PATTERN
+        self.cancer_type_pattern = CANCER_TYPE_PATTERN
+        self.ecog_pattern = ECOG_PATTERN
+        self.gender_pattern = GENDER_PATTERN
+        self.age_pattern = AGE_PATTERN
 
-    def _extract_demographics(self, text: str) -> Dict:
+    def process_text(self, text: str) -> ProcessingResult:
+        """Process clinical text and extract mCODE features using regex patterns.
+        
+        Parameters
+        ----------
+        text : str
+            Input clinical text to process. Must be non-empty.
+            
+        Returns
+        -------
+        ProcessingResult
+            Contains standardized extraction results with fields:
+            - features: Extracted mCODE features (standardized format)
+            - mcode_mappings: Placeholder for future FHIR mappings
+            - metadata: Processing metadata including counts
+            - entities: Raw extracted entities with source text
+            - error: None if successful, error message if failed
+            
+        Raises
+        ------
+        ValueError
+            If input text is empty or invalid type
+            
+        Notes
+        -----
+        Uses the following internal methods:
+        - _extract_demographics(): For age/gender extraction
+        - _extract_cancer_condition(): For cancer type/stage
+        - _extract_biomarkers(): For ER/PR/HER2 status
+        - _extract_genomic_variants(): For gene mutations
+        - _extract_performance_status(): For ECOG scores
+            
+        Examples
+        --------
+        >>> engine = RegexNLPEngine()
+        >>> result = engine.process_text("ER+ HER2- breast cancer")
+        >>> "ER" in [b['name'] for b in result.features['biomarkers']]
+        True
+        """
+        if not text or not isinstance(text, str):
+            error_msg = "Input text must be a non-empty string"
+            self.logger.error(error_msg)
+            return self._create_error_result(error_msg)
+            
+        try:
+            import time
+            start_time = time.time()
+            
+            features = {
+                'demographics': self._extract_demographics(text),
+                'cancer_characteristics': self._extract_cancer_condition(text),
+                'biomarkers': self._extract_biomarkers(text),
+                'genomic_variants': self._extract_genomic_variants(text),
+                'performance_status': self._extract_performance_status(text),
+                'treatment_history': {}  # Placeholder for future implementation
+            }
+            
+            processing_time = time.time() - start_time
+            
+            return ProcessingResult(
+                features=features,
+                mcode_mappings={},  # Placeholder for future FHIR mappings
+                metadata={
+                    'processing_time': processing_time,
+                    'engine': 'regex',
+                    'biomarkers_count': len(features['biomarkers']),
+                    'genomic_variants_count': len(features['genomic_variants'])
+                },
+                entities=self._collect_entities(features),
+                error=None
+            )
+        except Exception as e:
+            error_msg = f"Error processing text: {str(e)}"
+            self.logger.error(error_msg, exc_info=True)
+            return self._create_error_result(error_msg)
+
+    def _extract_demographics(self, text: str) -> Dict[str, Any]:
+        """Extract demographic information from text using regex patterns.
+        
+        Parameters
+        ----------
+        text : str
+            Input clinical text to process
+            
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary containing extracted demographics:
+            - gender: str or None (from gender_pattern)
+            - age_range: str or None (from age_pattern)
+            
+        See Also
+        --------
+        pattern_config.GENDER_PATTERN : Centralized regex for gender extraction
+        pattern_config.AGE_PATTERN : Centralized regex for age range extraction
+        """
         demographics = {}
         
         # Extract gender
@@ -94,7 +172,34 @@ class RegexNLPEngine:
             
         return demographics
 
-    def _extract_cancer_condition(self, text: str) -> Dict:
+    def _extract_cancer_condition(self, text: str) -> Dict[str, Any]:
+        """Extract cancer type and stage information using regex patterns.
+        
+        Parameters
+        ----------
+        text : str
+            Input clinical text to process
+            
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary containing extracted cancer characteristics:
+            - cancer_type: str or None (from cancer_type_pattern)
+            - stage: str or None (from stage_pattern)
+            
+        See Also
+        --------
+        pattern_config.CANCER_TYPE_PATTERN : Centralized regex for cancer types
+        pattern_config.STAGE_PATTERN : Centralized regex for cancer stages
+        
+        Notes
+        -----
+        Currently supports detection of:
+        - Breast cancer
+        - Lung cancer
+        - Colorectal cancer
+        Stages I-IV (including substages)
+        """
         condition = {}
         
         # Extract cancer type
@@ -109,7 +214,34 @@ class RegexNLPEngine:
             
         return condition
 
-    def _extract_biomarkers(self, text: str) -> List[Dict]:
+    def _extract_biomarkers(self, text: str) -> List[Dict[str, Any]]:
+        """Extract biomarker status information using predefined patterns.
+        
+        Parameters
+        ----------
+        text : str
+            Input clinical text to process
+            
+        Returns
+        -------
+        List[Dict[str, Any]]
+            List of standardized biomarker results with:
+            - name: str (biomarker name from biomarker_patterns keys)
+            - status: str (standardized positive/negative/expression)
+            - source_text: str (original matched text)
+            
+        See Also
+        --------
+        pattern_config.BIOMARKER_PATTERNS : Centralized dictionary of regex patterns
+        
+        Notes
+        -----
+        Handles status standardization for:
+        - Positive/Negative (multiple representations)
+        - Percentage expressions (e.g., '30%')
+        - IHC scores (e.g., '3+')
+        - TMB (mutations/megabase)
+        """
         biomarkers = []
         for name, pattern in self.biomarker_patterns.items():
             for match in pattern.finditer(text):
@@ -132,8 +264,7 @@ class RegexNLPEngine:
                 biomarkers.append({
                     'name': name,
                     'status': status,
-                    'source_text': match.group(),
-                    'confidence': 0.9 if '%' in value or '+' in value else 0.8
+                    'source_text': match.group()
                 })
                 
         # Deduplicate biomarkers
@@ -147,7 +278,36 @@ class RegexNLPEngine:
                 
         return unique_biomarkers
 
-    def _extract_genomic_variants(self, text: str) -> List[Dict]:
+    def _extract_genomic_variants(self, text: str) -> List[Dict[str, Any]]:
+        """Extract genomic variants using multiple regex patterns.
+        
+        Parameters
+        ----------
+        text : str
+            Input clinical text to process
+            
+        Returns
+        -------
+        List[Dict[str, Any]]
+            List of standardized variant results with:
+            - gene: str (detected gene symbol)
+            - variant_type: str (mutation/amplification/fusion/etc.)
+            - variant: str (specific variant if available)
+            - source_text: str (original matched text)
+            
+        See Also
+        --------
+        pattern_config.GENE_PATTERN : Centralized regex for gene mentions
+        pattern_config.VARIANT_PATTERN : Centralized regex for variant descriptions
+        pattern_config.COMPLEX_VARIANT_PATTERN : Centralized regex for protein changes
+        
+        Notes
+        -----
+        Handles three types of variant patterns:
+        1. Simple gene mentions (e.g., "BRCA1 mutation")
+        2. Variant descriptions (e.g., "EGFR amplification")
+        3. Protein-level changes (e.g., "BRAF p.Val600Glu")
+        """
         variants = []
         
         # Extract simple gene mentions
@@ -163,12 +323,12 @@ class RegexNLPEngine:
         for match in self.variant_pattern.finditer(text):
             variants.append({
                 'gene': match.group(1).upper(),
-                'variant_type': match.group(2).lower(),
+                'variant_type': match.group(1).lower() + '_variant',
                 'variant': '',
                 'source_text': match.group()
             })
             
-        # Extract protein-level variants (e.g., p.Val600Glu)
+        # Extract protein-level variants
         for match in self.complex_variant_pattern.finditer(text):
             variants.append({
                 'gene': match.group(1).upper(),
@@ -188,16 +348,29 @@ class RegexNLPEngine:
                 
         return unique_variants
 
-    def _extract_treatment(self, text: str) -> Dict:
-        treatment = {'medications': []}
+    def _extract_performance_status(self, text: str) -> Dict[str, Any]:
+        """Extract performance status (ECOG score) from text.
         
-        # Extract medications
-        for match in self.medication_pattern.finditer(text):
-            treatment['medications'].append(match.group(1).capitalize())
+        Parameters
+        ----------
+        text : str
+            Input clinical text to process
             
-        return treatment
-
-    def _extract_performance_status(self, text: str) -> Dict:
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary containing:
+            - ecog_score: str or None (0-4 from ecog_pattern)
+            
+        See Also
+        --------
+        pattern_config.ECOG_PATTERN : Centralized regex for ECOG scores
+        
+        Notes
+        -----
+        Only extracts the first ECOG score found in text.
+        Scores are returned as strings (e.g., "1").
+        """
         status = {}
         
         # Extract ECOG score
@@ -207,337 +380,50 @@ class RegexNLPEngine:
             
         return status
 
-    # Keep existing methods for backward compatibility
-    def clean_text(self, text: str) -> str:
-        """
-        Clean and normalize text
+    def _collect_entities(self, features: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Convert extracted features into standardized entity format.
         
-        Args:
-            text: Input text to clean
+        Parameters
+        ----------
+        features : Dict[str, Any]
+            Dictionary containing extracted features from:
+            - _extract_biomarkers()
+            - _extract_genomic_variants()
             
-        Returns:
-            Cleaned text
-        """
-        if not text:
-            return ""
+        Returns
+        -------
+        List[Dict[str, Any]]
+            List of standardized entities with:
+            - type: str ('biomarker' or 'genomic_variant')
+            - text: str (original matched text)
+            - label: str (biomarker name or gene symbol)
+            - value: str (status or variant description)
             
-        # Remove extra whitespace
-        text = re.sub(r'\s+', ' ', text)
-        
-        # Normalize line breaks
-        text = re.sub(r'\n+', '\n', text)
-        
-        # Remove non-printable characters
-        text = ''.join(char for char in text if char.isprintable() or char == '\n')
-        
-        return text.strip()
-    
-    def identify_sections(self, text: str) -> Dict[str, str]:
+        Notes
+        -----
+        Used to prepare extracted features for:
+        - Downstream processing
+        - Result visualization
+        - FHIR resource generation
         """
-        Identify inclusion and exclusion sections in criteria text
+        entities = []
         
-        Args:
-            text: Input criteria text
+        # Add biomarkers
+        for bio in features.get('biomarkers', []):
+            entities.append({
+                'type': 'biomarker',
+                'text': bio['source_text'],
+                'label': bio['name'],
+                'value': bio['status']
+            })
             
-        Returns:
-            Dictionary with section names and content
-        """
-        sections = {}
-        
-        # Common inclusion section headers
-        inclusion_patterns = [
-            r'inclusion criteria',
-            r'eligible subjects',
-            r'selection criteria'
-        ]
-        
-        # Common exclusion section headers
-        exclusion_patterns = [
-            r'exclusion criteria',
-            r'ineligible subjects',
-            r'non[-\s]inclusion criteria'
-        ]
-        
-        # Convert to lowercase for pattern matching
-        text_lower = text.lower()
-        
-        # Find inclusion section
-        inclusion_start = -1
-        for pattern in inclusion_patterns:
-            match = re.search(pattern, text_lower)
-            if match:
-                inclusion_start = match.start()
-                break
-        
-        # Find exclusion section
-        exclusion_start = -1
-        for pattern in exclusion_patterns:
-            match = re.search(pattern, text_lower)
-            if match:
-                exclusion_start = match.start()
-                break
-        
-        # Split text into sections
-        if inclusion_start >= 0 and exclusion_start >= 0:
-            # Both sections exist
-            if inclusion_start < exclusion_start:
-                # Inclusion section comes first
-                sections['inclusion'] = text[inclusion_start:exclusion_start].strip()
-                sections['exclusion'] = text[exclusion_start:].strip()
-            else:
-                # Exclusion section comes first
-                sections['exclusion'] = text[exclusion_start:inclusion_start].strip()
-                sections['inclusion'] = text[inclusion_start:].strip()
-        elif inclusion_start >= 0:
-            # Only inclusion section exists
-            sections['inclusion'] = text[inclusion_start:].strip()
-        elif exclusion_start >= 0:
-            # Only exclusion section exists
-            sections['exclusion'] = text[exclusion_start:].strip()
-        else:
-            # No clear sections, treat entire text as inclusion
-            sections['inclusion'] = text.strip()
+        # Add genomic variants
+        for var in features.get('genomic_variants', []):
+            entities.append({
+                'type': 'genomic_variant',
+                'text': var['source_text'],
+                'label': var['gene'],
+                'value': var['variant'] or var['variant_type']
+            })
             
-        return sections
-    
-    def classify_criteria(self, criteria_text: str) -> str:
-        """
-        Classify criteria as inclusion or exclusion
-        
-        Args:
-            criteria_text: Criteria text to classify
-            
-        Returns:
-            Classification: 'inclusion', 'exclusion', or 'unclear'
-        """
-        inclusion_indicators = [
-            'must have', 'required', 'diagnosed with', 'history of',
-            'able to', 'capable of', 'willing to'
-        ]
-        
-        exclusion_indicators = [
-            'must not have', 'excluded', 'ineligible', 'unwilling',
-            'unable to', 'contraindicated', 'allergy to', 'intolerance to'
-        ]
-        
-        classification = 'unclear'
-        
-        # Check for inclusion indicators
-        if any(indicator in criteria_text.lower() for indicator in inclusion_indicators):
-            classification = 'inclusion'
-        
-        # Check for exclusion indicators
-        elif any(indicator in criteria_text.lower() for indicator in exclusion_indicators):
-            classification = 'exclusion'
-        
-        return classification
-    
-    def extract_age_criteria(self, text: str) -> List[Dict[str, Any]]:
-        """
-        Extract age criteria from text
-        
-        Args:
-            text: Input text to process
-            
-        Returns:
-            List of age criteria
-        """
-        age_patterns = [
-            r'(age|aged?)\s*(?:of\s*)?(\d+)\s*(?:years?\s*)?(?:or\s+(older|younger|greater|less))?',
-            r'(\d+)\s*(?:years?\s*)?(?:or\s+(older|younger|greater|less))?\s*(?:of\s+)?age',
-            r'(?:between|from)\s+(\d+)\s*(?:and|to)\s*(\d+)'
-        ]
-        
-        ages = []
-        for pattern in age_patterns:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                ages.append({
-                    'text': match.group(),
-                    'min_age': match.group(1) if len(match.groups()) >= 1 else None,
-                    'max_age': match.group(2) if len(match.groups()) >= 2 else None,
-                    'unit': 'years'
-                })
-        
-        return ages
-    
-    def extract_gender_criteria(self, text: str) -> List[Dict[str, Any]]:
-        """
-        Extract gender criteria from text
-        
-        Args:
-            text: Input text to process
-            
-        Returns:
-            List of gender criteria
-        """
-        gender_patterns = {
-            'male': r'\b(male|men)\b',
-            'female': r'\b(female|women)\b',
-            'pregnant': r'\b(pregnant|nursing|breast[-\s]?feeding)\b'
-        }
-        
-        genders = []
-        for gender, pattern in gender_patterns.items():
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                genders.append({
-                    'text': match.group(),
-                    'gender': gender,
-                    'start': match.start(),
-                    'end': match.end()
-                })
-        
-        return genders
-    
-    def extract_conditions(self, text: str) -> List[Dict[str, Any]]:
-        """
-        Extract medical conditions from text
-        
-        Args:
-            text: Input text to process
-            
-        Returns:
-            List of medical conditions
-        """
-        # Patterns for condition extraction
-        condition_patterns = [
-            r'(diagnosis|history|presence)\s+of\s+([^,;.]+)',
-            r'(?:diagnosed|suffering|afflicted)\s+(?:with|from)\s+([^,;.]+)',
-            r'([^,;.]+)\s+(?:cancer|tumor|carcinoma|malignancy|disease|disorder)',
-            r'(?:with|having)\s+([^,;.]+?)(?:\s+disease|\s+disorder|[,;.]|$)',
-            r'(?:exclusion|inclusion)\s+criteria\s*:\s*-?\s*([^,;.]+)',
-            r'-?\s*([^,;.]+?)(?:\s*\([^)]+\))?(?=[,;.]|$)'
-        ]
-        
-        conditions = []
-        seen_conditions = set()
-        
-        for pattern in condition_patterns:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                condition_text = match.group(2) if len(match.groups()) >= 2 else match.group(1)
-                condition_text = condition_text.strip()
-                
-                # Skip empty or very short conditions
-                if len(condition_text) < 3:
-                    continue
-                    
-                # Skip duplicates
-                if condition_text.lower() in seen_conditions:
-                    continue
-                    
-                seen_conditions.add(condition_text.lower())
-                
-                conditions.append({
-                    'text': match.group(),
-                    'condition': condition_text,
-                    'confidence': 0.9 if 'cancer' in condition_text.lower() else 0.8
-                })
-        
-        return conditions
-    
-    def extract_procedures(self, text: str) -> List[Dict[str, Any]]:
-        """
-        Extract procedures from text
-        
-        Args:
-            text: Input text to process
-            
-        Returns:
-            List of procedures
-        """
-        procedure_patterns = [
-            r'(underwent|received|history of)\s+([^,;.]+(?:surgery|therapy|treatment|procedure))',
-            r'(radiation|radiograph|ct|pet|mri|scan)\s+(?:scan|imaging|therapy)',
-            r'(chemo|radio|immuno|targeted|combination)\s+therapy'
-        ]
-        
-        procedures = []
-        for pattern in procedure_patterns:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                procedures.append({
-                    'text': match.group(),
-                    'procedure': match.group(2) if len(match.groups()) >= 2 else match.group(1),
-                    'type': 'procedure'
-                })
-        
-        return procedures
-    
-    def process_criteria(self, criteria_text: str) -> Dict[str, Any]:
-        """
-        Process eligibility criteria text and extract structured information
-        
-        Args:
-            criteria_text: Eligibility criteria text to process
-            
-        Returns:
-            Dictionary containing extracted information
-        """
-        if not criteria_text:
-            return {}
-        
-        # Clean the text
-        cleaned_text = self.clean_text(criteria_text)
-        
-        # Identify sections
-        sections = self.identify_sections(cleaned_text)
-        
-        # Process each section
-        result = {
-            'entities': [],
-            'demographics': {},
-            'conditions': [],
-            'procedures': [],
-            'sections': sections
-        }
-        
-        # Extract demographic information
-        result['demographics'] = {
-            'age': self.extract_age_criteria(cleaned_text),
-            'gender': self.extract_gender_criteria(cleaned_text)
-        }
-        
-        # Extract conditions
-        result['conditions'] = self.extract_conditions(cleaned_text)
-        
-        # Extract procedures
-        result['procedures'] = self.extract_procedures(cleaned_text)
-        
-        # Add metadata
-        result['metadata'] = {
-            'text_length': len(cleaned_text),
-            'condition_count': len(result['conditions']),
-            'procedure_count': len(result['procedures'])
-        }
-        
-        return result
-
-
-# Example usage
-if __name__ == "__main__":
-    # This is just for testing purposes
-    nlp_engine = RegexNLPEngine()
-    
-    # Sample criteria text
-    sample_text = """
-    Inclusion Criteria:
-    - Male or female patients aged 18 years or older
-    - Histologically confirmed diagnosis of breast cancer
-    - Must have received prior chemotherapy treatment
-    - Currently receiving radiation therapy
-    
-    Exclusion Criteria:
-    - Pregnant or nursing women
-    - History of other malignancies within the past 5 years
-    - Allergy to contrast agents
-    """
-    
-    # Process the sample text
-    result = nlp_engine.process_criteria(sample_text)
-    print("Processing complete. Found:")
-    print(f"- {result['metadata']['condition_count']} conditions")
-    print(f"- {result['metadata']['procedure_count']} procedures")
-    print(f"- {len(result['demographics']['age'])} age criteria")
-    print(f"- {len(result['demographics']['gender'])} gender criteria")
+        return entities

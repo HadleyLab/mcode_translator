@@ -52,8 +52,8 @@ def run_tests():
     print("\nRegex NLP Engine Performance:")
     print(f"- Processing time: {regex_time:.4f} seconds")
     print(f"- Text length: {len(test_text)} characters")
-    print(f"- Conditions found: {len(regex_result.get('conditions', []))}")
-    print(f"- Procedures found: {len(regex_result.get('procedures', []))}")
+    print(f"- Conditions found: {1 if regex_result.features.get('cancer_characteristics', {}).get('cancer_type') else 0}")
+    print(f"- Procedures found: {len(regex_result.features.get('treatment_history', {}).get('procedures', []))}")
     
     # Test SpaCy Engine
     spacy_engine = SpacyNLPEngine()
@@ -62,8 +62,8 @@ def run_tests():
     print("\nSpaCy NLP Engine Performance:")
     print(f"- Processing time: {spacy_time:.4f} seconds")
     print(f"- Text length: {len(test_text)} characters")
-    print(f"- Entities found: {len(spacy_result.get('entities', []))}")
-    print(f"- Average confidence: {sum(e.get('confidence', 0) for e in spacy_result.get('entities', [0]))/len(spacy_result.get('entities', [1])):.2f}")
+    print(f"- Entities found: {len(spacy_result.entities)}")
+    print(f"- Average confidence: {sum(e.get('confidence', 0) for e in spacy_result.entities)/len(spacy_result.entities) if spacy_result.entities else 0:.2f}")
     
     # Test LLM Engine
     llm_engine = LLMNLPEngine()
@@ -72,8 +72,8 @@ def run_tests():
     print("\nLLM NLP Engine Performance:")
     print(f"- Processing time: {llm_time:.4f} seconds")
     print(f"- Text length: {len(test_text)} characters")
-    print(f"- Genomic variants found: {len(llm_result.get('genomic_variants', []))}")
-    print(f"- Biomarkers found: {len(llm_result.get('biomarkers', []))}")
+    print(f"- Genomic variants found: {len(llm_result.features.get('genomic_variants', []))}")
+    print(f"- Biomarkers found: {len(llm_result.features.get('biomarkers', []))}")
     
     # Print comparative metrics
     print("\nComparative Performance Metrics (avg over 5 runs):")

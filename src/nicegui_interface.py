@@ -5,6 +5,7 @@ import asyncio
 import logging
 import traceback
 import colorlog
+from typing import Dict, List, Optional, Union, Callable
 
 # Configure colored logging FIRST
 logger = colorlog.getLogger()
@@ -146,18 +147,18 @@ patient_profile = {
 def validate_form():
     """Validate all form fields before submission"""
     valid = True
-    if not age_input.validate():
-        ui.notify('Please enter a valid age (18-100)', type='negative')
-        valid = False
-    if not cancer_type_select.validate():
-        ui.notify('Please select a cancer type', type='negative')
-        valid = False
-    if not histology_input.validate():
-        ui.notify('Histology is required', type='negative')
-        valid = False
-    if not grade_select.validate():
-        ui.notify('Please select a grade', type='negative')
-        valid = False
+    try:
+        if not age_input.validate():
+            raise ValueError('Please enter a valid age (18-100)')
+        if not cancer_type_select.validate():
+            raise ValueError('Please select a cancer type')
+        if not histology_input.validate():
+            raise ValueError('Histology is required')
+        if not grade_select.validate():
+            raise ValueError('Please select a grade')
+    except ValueError as e:
+        handle_error(e, "Form validation error")
+        return False
     return valid
 
 def update_patient_profile():
@@ -166,69 +167,89 @@ def update_patient_profile():
         return
     # Convert UI inputs to structured format
     new_biomarkers = [
-        {'name': 'ER', 'status': er_select.value, 'value': er_value_input.value},
-        {'name': 'PR', 'status': pr_select.value, 'value': pr_value_input.value},
-        {'name': 'HER2', 'status': her2_select.value, 'value': her2_value_input.value},
-        {'name': 'Ki67', 'status': ki67_select.value, 'value': ki67_value_input.value}
+        {'name': 'ER', 'status': biomarker_controls['ER']['status'].value, 'value': biomarker_controls['ER']['value'].value},
+        {'name': 'PR', 'status': biomarker_controls['PR']['status'].value, 'value': biomarker_controls['PR']['value'].value},
+        {'name': 'HER2', 'status': biomarker_controls['HER2']['status'].value, 'value': biomarker_controls['HER2']['value'].value},
+        {'name': 'Ki67', 'status': biomarker_controls['Ki67']['status'].value, 'value': biomarker_controls['Ki67']['value'].value}
     ]
     
     new_variants = []
-    for variant in variants_input.value.split(';'):
-        if variant.strip():
-            parts = variant.strip().split(',')
-            new_variants.append({
-                'gene': parts[0].strip(),
-                'variant': parts[1].strip() if len(parts) > 1 else '',
-                'significance': parts[2].strip() if len(parts) > 2 else ''
-            })
+    for gene_input, variant_input, significance_input in variant_controls:
+        new_variants.append({
+            'gene': gene_input.value.strip(),
+            'variant': variant_input.value.strip(),
+            'significance': significance_input.value.strip()
+        })
     
-    patient_profile.update({
-        # Demographics
-        'cancer_type': cancer_type_select.value,
-        'age': int(age_input.value),
-        'gender': gender_select.value,
-        'birth_date': birth_date_input.value,
+    if not validate_form():
+        return
         
-        # Cancer Condition
-        'stage': stage_select.value,
-        'histology': histology_input.value,
-        'grade': grade_select.value,
-        'tnm_staging': {
-            't': t_stage_select.value,
-            'n': n_stage_select.value,
-            'm': m_stage_select.value
-        },
-        'primary_site': primary_site_input.value,
-        'laterality': laterality_select.value,
+    try:
+        # Convert UI inputs to structured format
+        new_biomarkers = [
+            {'name': 'ER', 'status': biomarker_controls['ER']['status'].value, 'value': biomarker_controls['ER']['value'].value},
+            {'name': 'PR', 'status': biomarker_controls['PR']['status'].value, 'value': biomarker_controls['PR']['value'].value},
+            {'name': 'HER2', 'status': biomarker_controls['HER2']['status'].value, 'value': biomarker_controls['HER2']['value'].value},
+            {'name': 'Ki67', 'status': biomarker_controls['Ki67']['status'].value, 'value': biomarker_controls['Ki67']['value'].value}
+        ]
         
-        # Biomarkers
-        'biomarkers': new_biomarkers,
-        
-        # Genomic Variants
-        'genomic_variants': new_variants,
-        
-        # Treatment History
-        'treatments': [{
-            'type': treatment_type_select.value,
-            'name': treatment_name_input.value,
-            'start_date': treatment_start_input.value,
-            'end_date': treatment_end_input.value
-        }],
-        
-        # Performance Status
-        'performance_status': {
-            'system': performance_system_select.value,
-            'score': performance_score_select.value,
-            'date': performance_date_input.value
-        },
-        
-        # Comorbidities
-        'comorbidities': [{
-            'condition': comorbidity_input.value,
-            'severity': comorbidity_severity_select.value
-        }]
-    })
-    ui.notify('Patient profile updated!')
+        new_variants = []
+        for gene_input, variant_input, significance_input in variant_controls:
+            new_variants.append({
+                'gene': gene_input.value.strip(),
+                'variant': variant_input.value.strip(),
+                'significance': significance_input.value.strip()
+            })
+
+        patient_profile.update({
+            # Demographics
+            'cancer_type': cancer_type_select.value,
+            'age': int(age_input.value),
+            'gender': gender_select.value,
+            'birth_date': birth_date_input.value,
+            
+            # Cancer Condition
+            'stage': stage_select.value,
+            'histology': histology_input.value,
+            'grade': grade_select.value,
+            'tnm_staging': {
+                't': t_stage_select.value,
+                'n': n_stage_select.value,
+                'm': m_stage_select.value
+            },
+            'primary_site': primary_site_input.value,
+            'laterality': laterality_select.value,
+            
+            # Biomarkers
+            'biomarkers': new_biomarkers,
+            
+            # Genomic Variants
+            'genomic_variants': new_variants,
+            
+            # Treatment History
+            'treatments': [{
+                'type': treatment_type_select.value,
+                'name': treatment_name_input.value,
+                'start_date': treatment_start_input.value,
+                'end_date': treatment_end_input.value
+            }],
+            
+            # Performance Status
+            'performance_status': {
+                'system': performance_system_select.value,
+                'score': performance_score_select.value,
+                'date': performance_date_input.value
+            },
+            
+            # Comorbidities
+            'comorbidities': [{
+                'condition': comorbidity_input.value,
+                'severity': comorbidity_severity_select.value
+            }]
+        })
+        ui.notify('Patient profile updated!')
+    except Exception as e:
+        handle_error(e, "Profile update error")
 
 # Patient profile UI with expansion sections
 patient_profile_expansion = ui.expansion('PATIENT PROFILE', icon='person', value=False).classes('w-full')
@@ -330,68 +351,75 @@ with patient_profile_expansion:
                             m_stage_select = ui.select(['0', '1'], value=patient_profile['tnm_staging']['m'], label='M') \
                                 .props('tooltip="Distant metastasis presence"')
         
-        # Biomarkers Section
+        # Biomarkers Section - Refactored to handle all engine formats
         with ui.expansion('BIOMARKERS', icon='science', value=False).classes('w-full'):
             with ui.card().classes('w-full p-6 bg-gray-50 shadow-sm rounded-lg gap-4 hover:bg-white transition-colors'):
-                with ui.column().classes('gap-2'):
-                    # ER Biomarker
+                def create_biomarker_row(name, default_status='Unknown', default_value=''):
+                    """Create standardized biomarker input row"""
                     with ui.row().classes('items-center gap-2'):
-                        ui.label('ER:').classes('font-medium w-16')
-                        er_select = ui.select(
+                        ui.label(f'{name}:').classes('font-medium w-16')
+                        status_select = ui.select(
                             ['Positive', 'Negative', 'Unknown'],
-                            value=next((b['status'] for b in patient_profile['biomarkers'] if b['name'] == 'ER'), 'Unknown'),
+                            value=default_status,
                         ).classes('flex-grow')
-                        er_value_input = ui.input(
-                            value=next((b['value'] for b in patient_profile['biomarkers'] if b['name'] == 'ER'), '')
-                        ).classes('w-24')
+                        value_input = ui.input(value=default_value).classes('w-24')
+                    return status_select, value_input
 
-                    # PR Biomarker
-                    with ui.row().classes('items-center gap-2'):
-                        ui.label('PR:').classes('font-medium w-16')
-                        pr_select = ui.select(
-                            ['Positive', 'Negative', 'Unknown'],
-                            value=next((b['status'] for b in patient_profile['biomarkers'] if b['name'] == 'PR'), 'Unknown'),
-                        ).classes('flex-grow')
-                        pr_value_input = ui.input(
-                            value=next((b['value'] for b in patient_profile['biomarkers'] if b['name'] == 'PR'), '')
-                        ).classes('w-24')
+                # Standard biomarkers with fallback to patient profile
+                biomarkers_to_show = ['ER', 'PR', 'HER2', 'Ki67']
+                biomarker_controls = {}
+                
+                for biomarker in biomarkers_to_show:
+                    # Find in patient profile or use defaults
+                    patient_bm = next((b for b in patient_profile['biomarkers'] if b['name'] == biomarker), None)
+                    default_status = patient_bm['status'] if patient_bm else 'Unknown'
+                    default_value = patient_bm['value'] if patient_bm else ''
+                    
+                    # Create UI controls and store references
+                    status_select, value_input = create_biomarker_row(
+                        biomarker, default_status, default_value
+                    )
+                    biomarker_controls[biomarker] = {
+                        'status': status_select,
+                        'value': value_input
+                    }
 
-                    # HER2 Biomarker
-                    with ui.row().classes('items-center gap-2'):
-                        ui.label('HER2:').classes('font-medium w-16')
-                        her2_select = ui.select(
-                            ['Positive', 'Negative', 'Unknown'],
-                            value=next((b['status'] for b in patient_profile['biomarkers'] if b['name'] == 'HER2'), 'Unknown'),
-                        ).classes('flex-grow')
-                        her2_value_input = ui.input(
-                            value=next((b['value'] for b in patient_profile['biomarkers'] if b['name'] == 'HER2'), '')
-                        ).classes('w-24')
-
-                    # Ki67 Biomarker
-                    with ui.row().classes('items-center gap-2'):
-                        ui.label('Ki67:').classes('font-medium w-16')
-                        ki67_select = ui.select(
-                            ['Positive', 'Negative', 'Unknown'],
-                            value=next((b['status'] for b in patient_profile['biomarkers'] if b['name'] == 'Ki67'), 'Unknown'),
-                        ).classes('flex-grow')
-                        ki67_value_input = ui.input(
-                            value=next((b['value'] for b in patient_profile['biomarkers'] if b['name'] == 'Ki67'), '')
-                        ).classes('w-24')
+                # Dynamic biomarker adder
+                with ui.row().classes('items-center gap-2 mt-4'):
+                    new_bm_input = ui.input(placeholder='Biomarker name').classes('flex-grow')
+                    ui.button('Add', icon='add', on_click=lambda: (
+                        biomarker_controls.update({
+                            new_bm_input.value: {
+                                'status': create_biomarker_row(new_bm_input.value)[0],
+                                'value': create_biomarker_row(new_bm_input.value)[1]
+                            }
+                        }),
+                        new_bm_input.set_value('')
+                    ))
         
             # Clinical Data Section
-        # Clinical Data Section
-        with ui.expansion('CLINICAL DATA', icon='medical_services', value=False).classes('w-full z-10'):
-                with ui.card().classes('w-full p-4 sm:p-6 bg-gray-50 shadow-sm rounded-lg gap-4 hover:bg-white transition-colors relative'):
-                    # Genomic Variants
-                    with ui.column().classes('gap-2 mb-4'):
-                        ui.label('Genomic Variants').classes('font-medium')
-                        variant_text = []
-                        for v in patient_profile['genomic_variants']:
-                            variant_text.append(f"{v['gene']}, {v.get('variant', '')}, {v.get('significance', '')}")
-                        variants_input = ui.textarea(
-                            value='; '.join(variant_text),
-                            placeholder='gene,variant,significance (one per line)'
-                        ).classes('w-full text-xs')
+        # Genomic Variants Section - Refactored
+        with ui.expansion('GENOMIC VARIANTS', icon='dna', value=False).classes('w-full'):
+            with ui.card().classes('w-full p-6 bg-gray-50 shadow-sm rounded-lg gap-4 hover:bg-white transition-colors'):
+                def create_variant_row(gene='', variant='', significance=''):
+                    """Create standardized variant input row"""
+                    with ui.row().classes('items-center gap-2'):
+                        gene_input = ui.input(value=gene, placeholder='Gene').classes('w-24')
+                        variant_input = ui.input(value=variant, placeholder='Variant').classes('w-32')
+                        significance_input = ui.input(value=significance, placeholder='Significance').classes('w-32')
+                    return gene_input, variant_input, significance_input
+
+                # Existing variants from patient profile
+                variant_controls = []
+                for v in patient_profile['genomic_variants']:
+                    gene, variant, sig = v.get('gene', ''), v.get('variant', ''), v.get('significance', '')
+                    variant_controls.append(create_variant_row(gene, variant, sig))
+
+                # Dynamic variant adder
+                with ui.row().classes('items-center gap-2 mt-4'):
+                    ui.button('Add Variant', icon='add', on_click=lambda: (
+                        variant_controls.append(create_variant_row())
+                    ))
                 
                 # Treatment History
                 ui.label('Treatment').classes('text-md font-bold mt-4')
@@ -497,34 +525,25 @@ with ui.column().classes('w-full items-center'):
                         tooltip="Regex: Fast pattern matching|SpaCy: Balanced accuracy|LLM: Most accurate (OpenAI)"
                     ''')
                     
-                    # Benchmark Mode Toggle
-                    with ui.row().classes('items-center w-full mt-3'):
-                        ui.label('Benchmark Mode:').classes('font-medium')
-                        benchmark_toggle = ui.switch(
-                            'Benchmark Mode',
-                            value=False
-                        ).props(
-                            'color=secondary '
-                            'tooltip="Compare all NLP engines:\\n- Tests accuracy\\n- Measures speed\\n- Shows differences"'
-                        ).classes('ml-2')
-                        
-                        def update_engine_state():
-                            if benchmark_toggle.value:
-                                engine_select.disable()
-                                ui.notify('All NLP engines will be compared in benchmark mode', type='info')
-                            else:
-                                engine_select.enable()
-                                ui.notify('Using selected NLP engine only', type='positive')
-                        
-                        benchmark_toggle.on('change', lambda: update_engine_state())
-                        # Set initial state
-                        if benchmark_toggle.value:
-                            engine_select.disable()
-                        else:
-                            engine_select.enable()
                 
     # Results display
     trials_container = ui.column().classes('w-full p-4')
+
+def handle_error(error: Exception, context: str = "", ui_cleanup: Optional[Callable] = None):
+    """Centralized error handler with consistent logging and user feedback"""
+    error_msg = f"{context}: {str(error)}" if context else str(error)
+    
+    # Log the error with full traceback
+    logger.error(f"{error_msg}\n{traceback.format_exc()}")
+    
+    # User notification
+    ui.notify(f"Error: {error_msg}", type='negative')
+    
+    # Cleanup UI if needed
+    if ui_cleanup:
+        ui_cleanup()
+    
+    return error_msg
 
 # Define search handler
 async def on_search():
@@ -534,9 +553,31 @@ async def on_search():
         loading = ui.spinner('dots', size='lg', color='primary')
         status_label = ui.label('Searching clinical trials...')
         
+        def cleanup():
+            loading.set_visibility(False)
+            status_label.set_text("Search failed")
+        
+        try:
+            # Validate inputs
+            if not search_input.value.strip():
+                raise ValueError("Please enter a search term")
+            if not 1 <= limit_slider.value <= 20:
+                raise ValueError("Results limit must be between 1-20")
+            
+            # Rest of search logic...
+            
+        except ValueError as e:
+            handle_error(e, "Validation error", cleanup)
+        except Exception as e:
+            handle_error(e, "Unexpected search error", cleanup)
+        
         try:
             ui.notify(f"Searching for: {search_input.value}")
             logger.info(f"Starting search for: {search_input.value}")
+            
+            def search_cleanup():
+                loading.set_visibility(False)
+                status_label.set_text("Search operation failed")
             
             # Perform async search
             def search_task():
@@ -576,7 +617,7 @@ async def on_search():
                         ui.notify('Starting mCODE feature extraction...', type='info')
                         selected_engine = engine_select.value
                         logger.info(f"Starting feature extraction for trial {protocol_section.get('identificationModule', {}).get('nctId')} using {selected_engine} engine")
-                        logger.debug(f"Engine selection state - UI: {engine_select.value}, Benchmark: {benchmark_toggle.value}")
+                        logger.debug(f"Engine selection state: {engine_select.value}")
                         
                         # Run extraction in executor to prevent blocking
                         def extraction_task():
@@ -584,68 +625,38 @@ async def on_search():
                                 logger.info(f"Starting extraction for criteria: {criteria[:100]}...")
                                 selected_engine = engine_select.value
                                 logger.debug(f"Executing extraction with engine: {selected_engine}")
-                                logger.info(f"Engine selection - UI: {engine_select.value}, Benchmark: {benchmark_toggle.value}")
                                 logger.debug(f"Engines available: {list(engines.keys())}")
-                                logger.debug(f"Current engine state - UI: {engine_select.value}, Actual: {selected_engine}")
                                 
-                                if benchmark_toggle.value:
-                                    # Benchmark all engines
-                                    results = {}
-                                    reference_result = None
-                                    
-                                    for name, pipeline in engines.items():
-                                        try:
-                                            start = time.time()
-                                            logger.info(f"Processing criteria with {name} engine...")
-                                            logger.debug(f"Raw criteria text: {criteria[:200]}...")  # Log first 200 chars
-                                            result = pipeline.process_criteria(criteria)
-                                            elapsed = time.time() - start
-                                            logger.debug(f"{name} engine result: {json.dumps(result, indent=2)}")
-                                            
-                                            # Calculate accuracy if we have a reference (LLM)
-                                            accuracy = None
-                                            if name == 'LLM':
-                                                reference_result = result
-                                            elif reference_result:
-                                                from src.matcher import calculate_similarity
-                                                accuracy = calculate_similarity(
-                                                    reference_result.get('features', {}),
-                                                    result.get('features', {})
-                                                ) if reference_result else None
-                                            
-                                            results[name] = {
-                                                'result': result,
-                                                'time': elapsed,
-                                                'accuracy': accuracy * 100 if accuracy else None,  # Convert to percentage
-                                                'entities': len(result.get('entities', [])),
-                                                'error': None
+                                def process_with_engine(engine_name, criteria_text):
+                                    """Standardized engine processing with consistent output format"""
+                                    try:
+                                        start = time.time()
+                                        logger.info(f"Processing with {engine_name} engine...")
+                                        raw_result = engines[engine_name].process_criteria(criteria_text)
+                                        elapsed = time.time() - start
+                                        
+                                        # Standardize output format
+                                        standardized = {
+                                            'features': raw_result.get('features', {}),
+                                            'entities': raw_result.get('entities', []),
+                                            'metadata': {
+                                                'processing_time': elapsed,
+                                                'engine': engine_name,
+                                                'biomarkers_count': len(raw_result.get('features', {}).get('biomarkers', [])),
+                                                'variants_count': len(raw_result.get('features', {}).get('genomic_variants', []))
                                             }
-                                        except Exception as e:
-                                            results[name] = {
-                                                'result': None,
-                                                'time': 0,
-                                                'accuracy': 0,
-                                                'entities': 0,
-                                                'error': str(e)
-                                            }
-                                            logger.error(f"Benchmark error in {name} engine: {str(e)}")
-                                    
-                                    return {'benchmark': results}
-                                else:
-                                    # Use selected engine
-                                    logger.debug(f"Processing with {selected_engine} engine")
-                                    logger.info(f"Processing with {selected_engine} engine...")
-                                    logger.debug(f"Raw criteria text: {criteria[:200]}...")
-                                    result = engines[selected_engine].process_criteria(criteria)
-                                    logger.debug(f"Raw {selected_engine} engine result: {json.dumps(result, indent=2)}")
-                                    logger.debug(f"Result features type: {type(result.get('features'))}")
-                                    logger.debug(f"Result features keys: {list(result.get('features', {}).keys())}")
-                                    return {
-                                        'single': {
-                                            'engine': selected_engine,
-                                            'result': result
                                         }
-                                    }
+                                        logger.debug(f"{engine_name} result: {json.dumps(standardized, indent=2)}")
+                                        return standardized, None
+                                    except Exception as e:
+                                        logger.error(f"{engine_name} engine error: {str(e)}")
+                                        return None, str(e)
+            
+                                # Process with selected engine only
+                                result, error = process_with_engine(selected_engine, criteria)
+                                if error:
+                                    return {'error': error}
+                                return {'single': result}
                             except Exception as e:
                                 logger.error(f"Extraction error: {str(e)}\n{traceback.format_exc()}")
                                 raise
@@ -657,60 +668,18 @@ async def on_search():
                         ui.notify('mCODE features extracted successfully', type='positive')
                         logger.info(f"Extraction complete for trial {protocol_section.get('identificationModule', {}).get('nctId')}")
                     
-                    # Display results in main thread
-                    def display_task():
-                        try:
-                            current_display_data = {}
-                            if extraction_result.get('benchmark'):
-                                # For benchmark mode, use LLM results as reference
-                                llm_result = extraction_result['benchmark']['LLM']['result']
-                                current_display_data = {
-                                    'features': llm_result.get('features', {}),
-                                    'mcode_mappings': llm_result.get('mcode_mappings', {}),
-                                    'benchmark': extraction_result['benchmark']
-                                }
-                            elif extraction_result.get('single'):
-                                # For single engine mode, use the selected engine's results
-                                current_display_data = {
-                                    'features': extraction_result['single']['result'].get('features', {}),
-                                    'mcode_mappings': extraction_result['single']['result'].get('mcode_mappings', {})
-                                }
-                            
-                            # Ensure we have valid features data
-                            if not current_display_data.get('features'):
-                                logger.warning("No features data found in extraction results")
-                                return {'success': False, 'error': 'No mCODE features extracted'}
-                            
-                            # Log for debugging rendering issues
-                            logger.debug(f"Display task returning features: {list(current_display_data['features'].keys())}")
-                            return {'success': True, 'data': current_display_data, 'protocol': protocol_section}
-                        except Exception as e:
-                            logger.error(f"Display error: {str(e)}")
-                            logger.error(traceback.format_exc())
-                            return {'success': False, 'error': str(e)}
-                    
-                    display_result = await asyncio.get_event_loop().run_in_executor(None, display_task)
-                    logger.debug(f"Display task result types: { {k: str(type(v)) if k != 'data' else 'DATA' for k,v in display_result.items()} }")
-                    logger.debug(f"Display data features type: {type(display_result['data'].get('features')) if display_result['success'] else 'N/A'}")
+                    # Directly display extraction results
                     with trials_container:
-                        if display_result['success']:
-                            display_trial_results(protocol_section=display_result['protocol'], display_data=display_result['data'])
-                        else:
-                            ui.notify(f"Error displaying trial results: {display_result['error']}", type='negative')
+                        display_trial_results(protocol_section, extraction_result)
                 except Exception as e:
-                    error_msg = f"Error processing trial: {str(e)}"
-                    ui.notify(error_msg, type='negative')
-                    processing_label.set_text(error_msg)
-                    logger.error(f"Trial processing error: {error_msg}\n{traceback.format_exc()}")
-                    # Log full exception details for debugging
-                    logger.error(f"Full exception: {traceback.format_exc()}")
+                    def trial_cleanup():
+                        processing_label.set_text("Trial processing failed")
+                    
+                    handle_error(e, "Trial processing error", trial_cleanup)
                     continue
                     
         except Exception as e:
-            status_label.set_text(f"Search failed: {str(e)}")
-            ui.notify(f"Search error: {str(e)}", type='negative')
-            # Log full exception details for debugging
-            logger.error(f"Search failed with error: {str(e)}\n{traceback.format_exc()}")
+            handle_error(e, "Search operation failed", cleanup)
         finally:
             loading.set_visibility(False)
 
@@ -725,119 +694,43 @@ def display_trial_results(protocol_section, display_data):
         ui.label('Invalid trial data format').classes('text-red-500')
         return
         
-    if 'features' not in display_data:
-        logger.error(f"Missing features in display_data. Keys: {display_data.keys()}")
-        ui.label('No mCODE features available').classes('text-red-500')
-        return
+    # Extract features from display_data
+    if 'single' in display_data:
+        # New format: extraction result is under 'single' key
+        features = display_data['single'].get('features', {})
+    else:
+        # Old format: features are directly in display_data
+        features = display_data.get('features', {})
     
-    # Create a deep copy to avoid modifying original data
+    # Create safe copy of features data
     try:
-        current_display_data = json.loads(json.dumps(display_data, default=str))
-        features = current_display_data['features']
-        logger.debug(f"Features type: {type(features)}")
-        if isinstance(features, dict):
-            logger.debug(f"Features keys: {list(features.keys())}")
+        features_copy = {
+            'genomic_variants': features.get('genomic_variants', []),
+            'biomarkers': features.get('biomarkers', []),
+            'cancer_characteristics': features.get('cancer_characteristics', {}),
+            'treatment_history': features.get('treatment_history', {}),
+            'performance_status': features.get('performance_status', {}),
+            'demographics': features.get('demographics', {})
+        }
+        logger.debug(f"Features structure validated: {features_copy.keys()}")
     except Exception as e:
-        logger.error(f"Error copying display_data: {str(e)}")
+        logger.error(f"Error preparing features: {str(e)}")
         logger.error(traceback.format_exc())
         return
                 
-    # Enhanced logging for debugging rendering issues
-    trial_id = protocol_section.get('identificationModule', {}).get('nctId', 'unknown')
-    logger.debug(f"Displaying trial results for {trial_id}")
-    logger.debug(f"Display data type: {type(display_data)}")
-    
-    if isinstance(display_data, dict):
-        logger.debug(f"Display data keys: {list(display_data.keys())}")
-        if 'features' in display_data:
-            features = display_data['features']
-            logger.debug(f"Features type: {type(features)}")
-            if isinstance(features, dict):
-                logger.debug(f"Feature keys: {list(features.keys())}")
-                logger.debug(f"Biomarkers type: {type(features.get('biomarkers'))}")
-                logger.debug(f"Genomic variants type: {type(features.get('genomic_variants'))}")
-            
-    # Validate features structure
-    if not isinstance(features, dict):
-        logger.error(f"Features is not a dict: {type(features)}")
-        ui.label('Invalid features format').classes('text-red-500')
-        return
-    logger.debug(f"Display data received: {type(display_data)}")
-    if isinstance(display_data, dict):
-        logger.debug(f"Display data keys: {list(display_data.keys())}")
-        if 'features' in display_data:
-            logger.debug(f"Features type: {type(display_data['features'])}")
-            if isinstance(display_data['features'], dict):
-                logger.debug(f"Feature keys: {list(display_data['features'].keys())}")
-    
-    
-    if isinstance(display_data, dict):
-        logger.debug(f"Display data keys: {list(display_data.keys())}")
-        if 'features' in display_data:
-            features = display_data['features']
-            logger.debug(f"Features type: {type(features)}")
-            if isinstance(features, dict):
-                logger.debug(f"Feature keys: {list(features.keys())}")
-                logger.debug(f"Biomarkers type: {type(features.get('biomarkers'))}")
-                logger.debug(f"Genomic variants type: {type(features.get('genomic_variants'))}")
-                
-                # Log first biomarker if available
-                biomarkers = features.get('biomarkers', [])
-                if biomarkers:
-                    if isinstance(biomarkers, list) and biomarkers:
-                        logger.debug(f"First biomarker: {biomarkers[0]}")
-                    elif isinstance(biomarkers, dict) and biomarkers:
-                        first_key = next(iter(biomarkers.keys()))
-                        logger.debug(f"First biomarker key: {first_key}, value: {biomarkers[first_key]}")
-                
-                # Log first variant if available
-                variants = features.get('genomic_variants', [])
-                if variants:
-                    logger.debug(f"First variant: {variants[0]}")
-            else:
-                logger.warning(f"Features is not a dict: {features}")
-        else:
-            logger.warning("Display data missing 'features' key")
-    else:
-        logger.error(f"Display data is not a dict: {display_data}")
     
     with ui.card().classes('w-full'):
         # Trial header with match strength
         with ui.expansion('Patient Match').classes('w-full'):
             # Match strength indicator
-            if current_display_data and 'features' in current_display_data and matching_toggle.value:
+            if display_data and 'features' in display_data and matching_toggle.value:
                 from src.matcher import PatientMatcher
                 matcher = PatientMatcher()
                 
                 # Prepare patient biomarkers as dict for matching, ignoring NOT_FOUND
                 patient_biomarkers = {b['name']: b['status'] for b in patient_profile['biomarkers'] if b['name'] != 'NOT_FOUND'}
-                
-                # Handle both LLM and other engine formats
-                features = current_display_data['features']
-                if isinstance(features.get('biomarkers'), dict):
-                    # Convert LLM format to standard format, ignoring NOT_FOUND
-                    biomarkers = [{'name': k, 'status': v} for k,v in features['biomarkers'].items() if k != 'NOT_FOUND']
-                    variants = [v for v in features.get('genomic_variants', []) if v.get('gene') != 'NOT_FOUND']
-                else:
-                    biomarkers = [b for b in features.get('biomarkers', []) if b.get('name') != 'NOT_FOUND']
-                    variants = [v for v in features.get('genomic_variants', []) if v.get('gene') != 'NOT_FOUND']
-                
-                trial_features = {
-                    'cancer_type': patient_profile['cancer_type'],
-                    'biomarkers': {b['name']: b['status'] for b in biomarkers},
-                    'genomic_variants': [v['gene'] for v in variants],
-                    'cancer_characteristics': {
-                        'stage': features.get('stage', ''),
-                        'histology': features.get('histology', ''),
-                        'grade': features.get('grade', ''),
-                        'tnm_staging': features.get('tnm_staging', {'t': '', 'n': '', 'm': ''})
-                    }
-                }
-                # Build patient data for matching with fallbacks for missing fields
-                # Filter out NOT_FOUND markers from patient data
-                patient_biomarkers = {b['name']: b['status'] for b in patient_profile['biomarkers'] if b['name'] != 'NOT_FOUND'}
                 patient_variants = [v.get('gene', '') for v in patient_profile.get('genomic_variants', [])
-                                    if v.get('gene') != 'NOT_FOUND']
+                                        if v.get('gene') != 'NOT_FOUND']
                 
                 patient_data = {
                     'cancer_type': patient_profile.get('cancer_type', ''),
@@ -849,6 +742,25 @@ def display_trial_results(protocol_section, display_data):
                         'histology': patient_profile.get('histology', ''),
                         'grade': patient_profile.get('grade', ''),
                         'tnm_staging': patient_profile.get('tnm_staging', {'t': '', 'n': '', 'm': ''})
+                    }
+                }
+                
+                # Get features from display_data
+                features = display_data['features']
+                
+                # Extract biomarkers and variants, filtering out NOT_FOUND
+                biomarkers = [b for b in features.get('biomarkers', []) if b.get('name') != 'NOT_FOUND']
+                variants = [v for v in features.get('genomic_variants', []) if v.get('gene') != 'NOT_FOUND']
+                
+                trial_features = {
+                    'cancer_type': features.get('cancer_type', ''),
+                    'biomarkers': {b['name']: b['status'] for b in biomarkers},
+                    'genomic_variants': [v['gene'] for v in variants],
+                    'cancer_characteristics': {
+                        'stage': features.get('stage', ''),
+                        'histology': features.get('histology', ''),
+                        'grade': features.get('grade', ''),
+                        'tnm_staging': features.get('tnm_staging', {'t': '', 'n': '', 'm': ''})
                     }
                 }
                 
@@ -953,61 +865,100 @@ def display_trial_results(protocol_section, display_data):
                             ui.label('CANCER CHARACTERISTICS').classes('text-xl font-bold mb-4 text-primary')
                             with ui.grid(columns=2).classes('w-full gap-4'):
                                 for key, value in cancer_data.items():
+                                    # Dim card if value is empty
                                     extracted = bool(value) and value != 'Not specified'
-                                    with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
-                                                            f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
+                                    card_classes = f'p-4 rounded-lg hover:bg-white transition-colors '
+                                    card_classes += 'bg-gray-50 opacity-50' if not extracted else 'bg-gray-50'
+                                    
+                                    with ui.card().classes(card_classes):
                                         ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                        
+                                        # Show "not mentioned" for empty values
                                         if isinstance(value, dict):
                                             for k, v in value.items():
-                                                ui.label(f"{k}: {v}").classes('text-xs' + ('' if extracted else ' opacity-70'))
+                                                if v:
+                                                    ui.label(f"{k}: {v}").classes('text-xs')
+                                                else:
+                                                    ui.label(f"{k}: not mentioned").classes('text-xs opacity-50')
                                         else:
-                                            ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
+                                            if value:
+                                                ui.label(str(value)).classes('')
+                                            else:
+                                                ui.label('not mentioned').classes('opacity-50')
                     else:
                         ui.label('No cancer characteristics data').classes('text-gray-500')
                 
                 # Genomic Variants
                 with ui.tab_panel(genomics_tab):
-                    variants = features.get('genomic_variants', [])
-                    if variants:
-                        with ui.card().classes('w-full p-4'):
-                            ui.label('GENOMIC VARIANTS').classes('text-xl font-bold mb-4 text-primary')
+                    variants = features_copy.get('genomic_variants', [])
+                    with ui.card().classes('w-full p-4'):
+                        ui.label('GENOMIC VARIANTS').classes('text-xl font-bold mb-4 text-primary')
+                        
+                        if not variants:
+                            ui.label('No genomic variants found').classes('text-gray-500')
+                        else:
                             with ui.grid(columns=2).classes('w-full gap-4'):
                                 for variant in variants:
-                                    with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
-                                        if variant.get('gene') == 'NOT_FOUND':
+                                    if not isinstance(variant, dict):
+                                        continue
+                                    
+                                    # Dim card if variant is NOT_FOUND
+                                    if variant.get('gene') == 'NOT_FOUND':
+                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors opacity-50'):
                                             ui.label("No genomic variants mentioned").classes('font-bold text-gray-500')
-                                        else:
+                                    else:
+                                        with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
                                             with ui.column().classes('gap-1'):
                                                 ui.label(f"Gene: {variant.get('gene', 'Unknown')}").classes('font-bold')
                                                 ui.label(f"Variant: {variant.get('variant', 'N/A')}").classes('text-sm')
-                                                ui.label(f"Significance: {variant.get('significance', 'N/A')}").classes('text-sm text-blue-600')
-                    else:
-                        ui.label('No genomic variants found').classes('text-gray-500')
+                                                significance = variant.get('significance', 'N/A')
+                                                if significance and significance != 'N/A':
+                                                    ui.label(f"Significance: {significance}").classes('text-sm text-blue-600')
                 
                 # Biomarkers
                 with ui.tab_panel(biomarkers_tab):
-                    biomarkers = features.get('biomarkers', [])
-                    if biomarkers:
-                        with ui.card().classes('w-full p-4'):
-                            ui.label('BIOMARKERS').classes('text-xl font-bold mb-4 text-primary')
+                    biomarkers = features_copy.get('biomarkers', [])
+                    with ui.card().classes('w-full p-4'):
+                        ui.label('BIOMARKERS').classes('text-xl font-bold mb-4 text-primary')
+                        
+                        if not biomarkers:
+                            ui.label('No biomarkers found').classes('text-gray-500')
+                        else:
                             with ui.grid(columns=2).classes('w-full gap-4'):
                                 for biomarker in biomarkers:
+                                    if not isinstance(biomarker, dict):
+                                        continue
+                                    
+                                    # Dim card if biomarker is NOT_FOUND
                                     if biomarker.get('name') == 'NOT_FOUND':
                                         with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors opacity-50'):
                                             ui.label("No biomarkers mentioned").classes('font-bold text-gray-500')
-                                        break
                                     else:
                                         with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
                                             with ui.column().classes('gap-1'):
                                                 ui.label(biomarker.get('name', 'Unknown')).classes('font-bold')
-                                                with ui.row().classes('items-center gap-2'):
-                                                    ui.label('Status:').classes('text-sm font-medium')
-                                                    ui.label(biomarker.get('status', 'N/A')).classes('text-sm')
-                                                with ui.row().classes('items-center gap-2'):
-                                                    ui.label('Value:').classes('text-sm font-medium')
-                                                    ui.label(biomarker.get('value', 'N/A')).classes('text-sm')
-                    else:
-                        ui.label('No biomarkers found').classes('text-gray-500')
+                                                
+                                                # Show status with "not mentioned" if missing
+                                                status = biomarker.get('status', 'N/A')
+                                                if status and status != 'N/A':
+                                                    with ui.row().classes('items-center gap-2'):
+                                                        ui.label('Status:').classes('text-sm font-medium')
+                                                        ui.label(status).classes('text-sm')
+                                                else:
+                                                    with ui.row().classes('items-center gap-2 opacity-50'):
+                                                        ui.label('Status:').classes('text-sm font-medium')
+                                                        ui.label('not mentioned').classes('text-sm')
+                                                
+                                                # Show value with "not mentioned" if missing
+                                                value = biomarker.get('value', 'N/A')
+                                                if value and value != 'N/A':
+                                                    with ui.row().classes('items-center gap-2'):
+                                                        ui.label('Value:').classes('text-sm font-medium')
+                                                        ui.label(value).classes('text-sm')
+                                                else:
+                                                    with ui.row().classes('items-center gap-2 opacity-50'):
+                                                        ui.label('Value:').classes('text-sm font-medium')
+                                                        ui.label('not mentioned').classes('text-sm')
                 
                 # Treatment History
                 with ui.tab_panel(treatment_tab):
@@ -1017,11 +968,19 @@ def display_trial_results(protocol_section, display_data):
                             ui.label('TREATMENT HISTORY').classes('text-xl font-bold mb-4 text-primary')
                             with ui.grid(columns=2).classes('w-full gap-4'):
                                 for key, value in treatment.items():
+                                    # Dim card if value is empty
                                     extracted = bool(value) and value != 'Not specified'
-                                    with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
-                                                            f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
+                                    card_classes = f'p-4 rounded-lg hover:bg-white transition-colors '
+                                    card_classes += 'bg-gray-50 opacity-50' if not extracted else 'bg-gray-50'
+                                    
+                                    with ui.card().classes(card_classes):
                                         ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
-                                        ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
+                                        
+                                        # Show "not mentioned" for empty values
+                                        if value:
+                                            ui.label(str(value)).classes('')
+                                        else:
+                                            ui.label('not mentioned').classes('opacity-50')
                     else:
                         ui.label('No treatment history data').classes('text-gray-500')
                 
@@ -1033,137 +992,22 @@ def display_trial_results(protocol_section, display_data):
                             ui.label('PERFORMANCE STATUS').classes('text-xl font-bold mb-4 text-primary')
                             with ui.grid(columns=2).classes('w-full gap-4'):
                                 for key, value in performance.items():
+                                    # Dim card if value is empty
                                     extracted = bool(value) and value != 'Not specified'
-                                    with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
-                                                            f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
+                                    card_classes = f'p-4 rounded-lg hover:bg-white transition-colors '
+                                    card_classes += 'bg-gray-50 opacity-50' if not extracted else 'bg-gray-50'
+                                    
+                                    with ui.card().classes(card_classes):
                                         ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
-                                        ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
+                                        
+                                        # Show "not mentioned" for empty values
+                                        if value:
+                                            ui.label(str(value)).classes('')
+                                        else:
+                                            ui.label('not mentioned').classes('opacity-50')
                     else:
                         ui.label('No performance status data').classes('text-gray-500')
-
-        # # Create UI elements for displaying results
-        # with ui.expansion('mCODE Extracted Features').classes('w-full'):
-        #     # Biomarkers section
-        #     with ui.expansion('Biomarkers', icon='science').classes('w-full'):
-        #         if features.get('biomarkers'):
-        #             for biomarker in features['biomarkers']:
-        #                 if biomarker.get('name') == 'NOT_FOUND':
-        #                     continue
-        #                 status = biomarker.get('status', '')
-        #                 value = biomarker.get('value', '')
-        #                 with ui.row().classes('items-center'):
-        #                     ui.label(f"{biomarker['name']}:").classes('font-medium')
-        #                     ui.label(status).classes(
-        #                         'text-green-500' if status == 'positive' else
-        #                         'text-red-500' if status == 'negative' else
-        #                         'text-yellow-500' if status == 'equivocal' else
-        #                         'text-gray-500'
-        #                     )
-        #                     if value:
-        #                         ui.label(f"({value})").classes('text-sm text-gray-500')
-        #         else:
-        #             ui.label('No biomarker data available').classes('text-gray-500')
-
-        #     # Genomic Variants section
-        #     with ui.expansion('Genomic Variants', icon='fingerprint').classes('w-full'):
-        #         if features.get('genomic_variants'):
-        #             for variant in features['genomic_variants']:
-        #                 if variant.get('gene') == 'NOT_FOUND':
-        #                     continue
-        #                 with ui.row().classes('items-center'):
-        #                     ui.label(f"{variant['gene']}:").classes('font-medium')
-        #                     if variant.get('variant'):
-        #                         ui.label(variant['variant']).classes('text-gray-600')
-        #                     if variant.get('significance'):
-        #                         ui.label(f"({variant['significance']})").classes('text-sm text-gray-500')
-        #         else:
-        #             ui.label('No genomic variant data available').classes('text-gray-500')
-
-        #     # Treatment History section
-        #     with ui.expansion('Treatment History', icon='medication').classes('w-full'):
-        #         if features.get('treatment_history'):
-        #             treatments = features['treatment_history']
-        #             if treatments.get('surgeries'):
-        #                 ui.label('Surgeries:').classes('font-medium')
-        #                 for surgery in treatments['surgeries']:
-        #                     ui.label(f"• {surgery}").classes('ml-4')
-        #             if treatments.get('chemotherapy'):
-        #                 ui.label('Chemotherapy:').classes('font-medium')
-        #                 for chemo in treatments['chemotherapy']:
-        #                     ui.label(f"• {chemo}").classes('ml-4')
-        #             if treatments.get('radiation'):
-        #                 ui.label('Radiation:').classes('font-medium')
-        #                 for rad in treatments['radiation']:
-        #                     ui.label(f"• {rad}").classes('ml-4')
-        #             if treatments.get('immunotherapy'):
-        #                 ui.label('Immunotherapy:').classes('font-medium')
-        #                 for immuno in treatments['immunotherapy']:
-        #                     ui.label(f"• {immuno}").classes('ml-4')
-        #         else:
-        #             ui.label('No treatment history available').classes('text-gray-500')
-
-        #     # Cancer Characteristics section
-        #     with ui.expansion('Cancer Characteristics', icon='monitor_heart').classes('w-full'):
-        #         if features.get('cancer_characteristics'):
-        #             chars = features['cancer_characteristics']
-        #             if chars.get('stage'):
-        #                 ui.label(f"Stage: {chars['stage']}").classes('font-medium')
-        #             if chars.get('tumor_size'):
-        #                 ui.label(f"Tumor Size: {chars['tumor_size']}")
-        #             if chars.get('metastasis_sites') and chars['metastasis_sites']:
-        #                 ui.label('Metastasis Sites:').classes('font-medium')
-        #                 for site in chars['metastasis_sites']:
-        #                     ui.label(f"• {site}").classes('ml-4')
-        #         else:
-        #             ui.label('No cancer characteristics available').classes('text-gray-500')
-
-        #     # Performance Status section
-        #     with ui.expansion('Performance Status', icon='accessibility').classes('w-full'):
-        #         if features.get('performance_status'):
-        #             status = features['performance_status']
-        #             if status.get('ecog'):
-        #                 ui.label(f"ECOG: {status['ecog']}")
-        #             if status.get('karnofsky'):
-        #                 ui.label(f"Karnofsky: {status['karnofsky']}")
-        #         else:
-        #             ui.label('No performance status available').classes('text-gray-500')
-
-        #     # Demographics section
-        #     with ui.expansion('Demographics', icon='group').classes('w-full'):
-        #         if features.get('demographics'):
-        #             demo = features['demographics']
-        #             if demo.get('age'):
-        #                 age = demo['age']
-        #                 ui.label(f"Age: {age.get('min', '')}-{age.get('max', '')}")
-        #             if demo.get('gender'):
-        #                 ui.label(f"Gender: {', '.join(demo['gender'])}")
-        #         else:
-        #             ui.label('No demographic data available').classes('text-gray-500')
                 
-        # Show benchmark results if available
-        if current_display_data.get('benchmark'):
-            with ui.expansion('Engine Performance Comparison').classes('w-full mt-4'):
-                columns = [
-                    {'name': 'engine', 'label': 'Engine', 'field': 'engine'},
-                    {'name': 'time', 'label': 'Time (ms)', 'field': 'time'},
-                    {'name': 'genomic_variants', 'label': 'Genomic Variants', 'field': 'genomic_variants_count'},
-                    {'name': 'biomarkers', 'label': 'Biomarkers', 'field': 'biomarkers_count'},
-                    {'name': 'accuracy', 'label': 'Accuracy (%)', 'field': 'accuracy'}
-                ]
-                rows = []
-                for engine, data in current_display_data['benchmark'].items():
-                    # Safely get metadata counts
-                    genomic_count = data['result']['metadata']['genomic_variants_count'] if data.get('result') and data['result'].get('metadata') else 0
-                    biomarkers_count = data['result']['metadata']['biomarkers_count'] if data.get('result') and data['result'].get('metadata') else 0
-                    
-                    rows.append({
-                        'engine': engine,
-                        'time': round(data['time']*1000, 2),
-                        'genomic_variants_count': genomic_count,
-                        'biomarkers_count': biomarkers_count,
-                        'accuracy': round(data['accuracy'], 2) if data['accuracy'] is not None else 'N/A'
-                    })
-                ui.table(columns=columns, rows=rows).classes('w-full')
 
 # Reset function
 def on_reset():

@@ -58,12 +58,14 @@ class ExtractionPipeline:
         # - LLM: Uses DeepSeek API for comprehensive extraction
         # - Regex/SpaCy: Uses pattern matching and medical NLP
         mcode_features = {}
+        self.logger.debug(f"Starting mCODE feature extraction with engine: {self.engine_type}")
         if self.engine_type == "LLM":
             if not hasattr(self, 'llm_extractor'):
                 raise ValueError("LLM engine requested but not initialized")
             self.logger.info(f"Using LLM engine: {self.llm_extractor.model}")
             try:
-                mcode_features = self.llm_extractor.extract_mcode_features(criteria_text)
+                result = self.llm_extractor.extract_mcode_features(criteria_text)
+                mcode_features = result.features if hasattr(result, 'features') else {}
                 self.logger.info(f"Extracted {len(mcode_features.get('genomic_variants', []))} genomic variants")
                 self.logger.info(f"Extracted {len(mcode_features.get('biomarkers', []))} biomarkers")
             except Exception as e:
@@ -110,14 +112,17 @@ class ExtractionPipeline:
             self.logger.debug(f"Features structure: {features.keys()}")
             self.logger.debug(f"Features content: {features}")
         
+        self.logger.debug(f"Features being sent to mapper: {features.keys()}")
         mapping_result = self.mcode_mapper.process_nlp_output(features)
+        self.logger.debug(f"Received mapping result with keys: {mapping_result.keys()}")
         
         # Add genomic feature counts to metadata
         if isinstance(mcode_features, dict):
             variant_count = len(mcode_features.get('genomic_variants', []))
             biomarker_count = len(mcode_features.get('biomarkers', []))
-            mapping_result['metadata']['genomic_variants_count'] = variant_count
-            mapping_result['metadata']['biomarkers_count'] = biomarker_count
+            if 'original_mappings' in mapping_result and 'metadata' in mapping_result['original_mappings']:
+                mapping_result['original_mappings']['metadata']['genomic_variants_count'] = variant_count
+                mapping_result['original_mappings']['metadata']['biomarkers_count'] = biomarker_count
 
         # Prepare final output structure with:
         # - Extracted codes

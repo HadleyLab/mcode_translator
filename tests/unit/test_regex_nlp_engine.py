@@ -1,53 +1,47 @@
 import unittest
 import time
 from src.regex_nlp_engine import RegexNLPEngine
+from src.nlp_engine import ProcessingResult
 
 class TestRegexNLPEngine(unittest.TestCase):
     def setUp(self):
         self.engine = RegexNLPEngine()
         
-    def test_process_criteria(self):
-        """Test processing criteria text"""
-        sample_text = """
-        Inclusion Criteria:
-        - Male or female patients aged 18 years or older
-        - Histologically confirmed diagnosis of breast cancer
-        - Must have received prior chemotherapy treatment
-        - Currently receiving radiation therapy
-        - Laboratory values within normal limits
-        
-        Exclusion Criteria:
-        - Pregnant or nursing women
-        - History of other malignancies within the past 5 years
-        - Allergy to contrast agents
-        - Unable to undergo MRI scanning
-        """
+    def test_process_text(self):
+        """Test processing text with regex patterns"""
+        sample_text = "Male patient with breast cancer, ER+"
         
         start_time = time.time()
-        result = self.engine.process_criteria(sample_text)
+        result = self.engine.process_text(sample_text)
         processing_time = time.time() - start_time
         
-        self.assertIsInstance(result, dict)
-        self.assertIn('entities', result)
-        self.assertIn('demographics', result)
-        self.assertIn('conditions', result)
-        self.assertIn('procedures', result)
-        self.assertIn('metadata', result)
+        self.assertIsInstance(result, ProcessingResult)
+        self.assertIsNotNone(result.features)
+        self.assertIsNotNone(result.entities)
+        self.assertIsNotNone(result.metadata)
         
-        # Validate entity extraction
-        self.assertGreater(len(result['conditions']), 1)
+        # Validate feature extraction
+        self.assertIn('demographics', result.features)
+        self.assertIn('cancer_characteristics', result.features)
+        self.assertIn('biomarkers', result.features)
         
         # Validate demographics
-        self.assertGreater(len(result['demographics']['age']), 0)
-        self.assertGreater(len(result['demographics']['gender']), 0)
+        self.assertEqual(result.features['demographics']['gender'], 'Male')
+        
+        # Validate cancer type
+        self.assertEqual(result.features['cancer_characteristics']['cancer_type'], 'Breast cancer')
+        
+        # Validate biomarkers
+        self.assertGreater(len(result.features['biomarkers']), 0)
+        self.assertEqual(result.features['biomarkers'][0]['name'], 'ER')
+        self.assertEqual(result.features['biomarkers'][0]['status'], 'Positive')
         
         # Validate metadata
-        self.assertGreater(result['metadata']['text_length'], 100)
-        self.assertGreaterEqual(result['metadata']['condition_count'], 4)
+        self.assertGreater(result.metadata['processing_time'], 0)
+        self.assertEqual(result.metadata['engine'], 'regex')
         
         # Log performance metrics
         print(f"\nRegex NLP Engine Performance:")
         print(f"- Processing time: {processing_time:.4f} seconds")
-        print(f"- Text length: {result['metadata']['text_length']} characters")
-        print(f"- Conditions found: {result['metadata']['condition_count']}")
-        print(f"- Procedures found: {result['metadata']['procedure_count']}")
+        print(f"- Text length: {len(sample_text)} characters")
+        print(f"- Biomarkers found: {result.metadata['biomarkers_count']}")
