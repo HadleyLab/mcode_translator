@@ -26,7 +26,7 @@ class TestMCODEMappingEngine:
         result = mcode_mapper.map_concept_to_mcode('paclitaxel', 0.8)
         assert result is not None
         assert result['mcode_element'] == 'MedicationStatement'
-        assert result['primary_code']['code'] == '123456'
+        assert result['primary_code']['code'] == '57359'
         assert result['confidence'] == 0.8
         
         # Test mapping of unknown concept
@@ -47,9 +47,9 @@ class TestMCODEMappingEngine:
         assert 'SNOMEDCT' in result['mapped_codes']
         
         # Test mapping of RxNorm code
-        result = mcode_mapper.map_code_to_mcode('123456', 'RxNorm')
+        result = mcode_mapper.map_code_to_mcode('57359', 'RxNorm')
         assert result is not None
-        assert result['code'] == '123456'
+        assert result['code'] == '57359'
         assert result['system'] == 'RxNorm'
         assert result['mcode_required'] == True
         assert result['mcode_element'] == 'MedicationStatement'
@@ -203,7 +203,7 @@ class TestMCODEMappingEngine:
             'codes': {
                 'extracted_codes': {
                     'ICD10CM': [{'code': 'C50.911', 'system': 'ICD-10-CM'}],
-                    'RxNorm': [{'code': '123456', 'system': 'RxNorm'}]
+                    'RxNorm': [{'code': '57359', 'system': 'RxNorm'}]
                 }
             },
             'demographics': {

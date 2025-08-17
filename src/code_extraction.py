@@ -22,7 +22,7 @@ class CodeExtractionModule:
         self.code_patterns = {
             'ICD10CM': r'\b[A-TV-Z][0-9][A-Z0-9]{0,5}(\.[A-Z0-9]{1,4})?\b',
             'CPT': r'(?<![-\d])\b\d{5}\b(?![\d-])',
-            'LOINC': r'\b[A-Z0-9]+-\d+\b',
+            'LOINC': r'\b[A-Z0-9]{4,}-\d+\b',
             'RxNorm': r'\b\d+\b'
         }
         
@@ -271,7 +271,7 @@ class CodeExtractionModule:
         format_rules = {
             'ICD10CM': r'^[A-TV-Z][0-9][A-Z0-9]{0,5}(\.[A-Z0-9]{1,4})?$',
             'CPT': r'^\d{5}$',
-            'LOINC': r'^[A-Z0-9]+-\d+$',
+            'LOINC': r'^[A-Z0-9]{4,}-\d+$',
             'RxNorm': r'^\d+$'
         }
         
