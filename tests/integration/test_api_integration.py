@@ -12,106 +12,163 @@ from tests.shared.test_components import MockClinicalTrialsAPI, MockCacheManager
 class TestAPIIntegration:
     """Integration tests for API components"""
     
-    def test_search_api_integration(self):
-        """Test integration between search API and cache layer"""
-        with patch('pytrials.client.ClinicalTrials') as mock_client, \
-             patch('src.utils.cache.CacheManager') as mock_cache:
-            
-            from src.data_fetcher.fetcher import search_trials
-            
-            # Set up mocks
-            mock_client.return_value.get_study_fields.return_value = {
-                "StudyFields": [
-                    {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
-                    {"NCTId": ["NCT87654321"], "BriefTitle": ["Test Study 2"]}
-                ]
-            }
-            mock_cache.return_value.get.return_value = None
-            mock_cache.return_value.set.return_value = None
-            
-            # Call function
-            result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2)
-            
-            # Verify API was called
-            mock_client.return_value.get_study_fields.assert_called_once()
-            
-            # Verify cache was set
-            mock_cache.return_value.set.assert_called_once()
-            
-            # Verify results structure
-            assert isinstance(result, dict)
-            assert "StudyFields" in result
-            assert len(result["StudyFields"]) == 2
-    
-    def test_full_study_api_integration(self):
-        """Test integration for full study API calls"""
-        with patch('pytrials.client.ClinicalTrials') as mock_client, \
-             patch('src.utils.cache.CacheManager') as mock_cache:
-            
-            from src.data_fetcher.fetcher import get_full_study
-            
-            # Set up mocks
-            mock_client.return_value.get_study_fields.return_value = {
-                "StudyFields": [
-                    {
-                        "NCTId": ["NCT12345678"],
-                        "BriefTitle": ["Test Study"]
+    def test_search_trials_integration(self, mock_clinical_trials_api, mock_cache_manager):
+        """Test integration between search_trials function and ClinicalTrials API"""
+        from src.data_fetcher.fetcher import search_trials
+        
+        # Set up mocks to return realistic data
+        mock_clinical_trials_api.return_value.get_study_fields.return_value = {
+            "studies": [
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT12345678",
+                            "briefTitle": "Test Study 1"
+                        }
                     }
-                ]
-            }
-            mock_cache.return_value.get.return_value = None
-            mock_cache.return_value.set.return_value = None
-            
-            # Call function
-            result = get_full_study("NCT12345678")
-            
-            # Verify API was called
-            mock_client.return_value.get_study_fields.assert_called_once()
-            
-            # Verify cache was set
-            mock_cache.return_value.set.assert_called_once()
-            
-            # Verify results structure
-            assert isinstance(result, dict)
-            assert "protocolSection" in result
-            assert result["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
+                },
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT87654321",
+                            "briefTitle": "Test Study 2"
+                        }
+                    }
+                }
+            ]
+        }
+        mock_cache_manager.return_value.get.return_value = None
+        
+        # Call function
+        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2)
+        
+        # Verify results
+        assert isinstance(result, dict)
+        assert "studies" in result
+        assert len(result["studies"]) == 2
+        
+        # Verify that the API was called with correct parameters
+        mock_clinical_trials_api.return_value.get_study_fields.assert_called_once()
+        
+        # Verify cache was set
+        mock_cache_manager.return_value.set.assert_called()
     
-    def test_cache_layer_integration(self):
-        """Test integration with cache layer"""
-        with patch('pytrials.client.ClinicalTrials') as mock_client, \
-             patch('src.utils.cache.CacheManager') as mock_cache:
-            from src.data_fetcher.fetcher import search_trials
-            
-            # Set up mocks
-            mock_client.return_value.get_study_fields.return_value = {
-                "StudyFields": [
-                    {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study"]}
-                ]
-            }
-            
-            # First call - should hit API and set cache
-            mock_cache.return_value.get.return_value = None
-            mock_cache.return_value.set.return_value = None
-            
-            result1 = search_trials("cancer", max_results=1)
-            
-            # Verify API was called for first request
-            mock_client.return_value.get_study_fields.assert_called_once()
-            
-            # Reset mock call count
-            mock_client.reset_mock()
-            
-            # Second call - should use cache (but we still need to set up the mock properly)
-            mock_cache.return_value.get.return_value = result1
-            mock_cache.return_value.set.return_value = None
-            
-            result2 = search_trials("cancer", max_results=1)
-            
-            # Verify both results are the same
-            assert result1 == result2
-            
-            # For the second call, the API should not be called because of caching
-            # But our mock setup might still cause it to be called, so we won't assert that
+    def test_get_full_study_integration(self, mock_clinical_trials_api, mock_cache_manager):
+        """Test integration between get_full_study function and ClinicalTrials API"""
+        from src.data_fetcher.fetcher import get_full_study
+        
+        # Set up mocks to return realistic data
+        mock_clinical_trials_api.return_value.get_full_studies.return_value = {
+            "studies": [
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT12345678",
+                            "briefTitle": "Full Test Study"
+                        },
+                        "eligibilityModule": {
+                            "eligibilityCriteria": "Sample eligibility criteria"
+                        }
+                    }
+                }
+            ]
+        }
+        mock_cache_manager.return_value.get.return_value = None
+        
+        # Call function
+        result = get_full_study("NCT12345678")
+        
+        # Verify results
+        assert isinstance(result, dict)
+        assert "protocolSection" in result
+        assert result["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
+        
+        # Verify that the API was called with correct parameters
+        mock_clinical_trials_api.return_value.get_full_studies.assert_called_once()
+        
+        # Verify cache was set
+        mock_cache_manager.return_value.set.assert_called()
+    
+    def test_calculate_total_studies_integration(self, mock_clinical_trials_api, mock_cache_manager):
+        """Test integration between calculate_total_studies function and ClinicalTrials API"""
+        from src.data_fetcher.fetcher import calculate_total_studies
+        
+        # Set up mocks to return realistic data
+        mock_clinical_trials_api.return_value.get_study_fields.return_value = {
+            "studies": [
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT00000001",
+                            "briefTitle": "Test Study 1"
+                        }
+                    }
+                }
+            ],
+            "totalCount": 1500
+        }
+        mock_cache_manager.return_value.get.return_value = None
+        
+        # Call function
+        result = calculate_total_studies("cancer", fields=["NCTId", "BriefTitle"])
+        
+        # Verify results
+        assert isinstance(result, dict)
+        assert result["total_studies"] == 1500
+        assert result["total_pages"] == 15  # 1500 / 100 (default page size)
+        assert result["page_size"] == 100
+        
+        # Verify that the API was called with correct parameters
+        mock_clinical_trials_api.return_value.get_study_fields.assert_called_once()
+        
+        # Verify cache was set
+        mock_cache_manager.return_value.set.assert_called()
+    
+    def test_search_trials_with_pagination_integration(self, mock_clinical_trials_api, mock_cache_manager):
+        """Test search_trials function with pagination integration"""
+        from src.data_fetcher.fetcher import search_trials
+        
+        # Set up mocks to return realistic data
+        mock_clinical_trials_api.return_value.get_study_fields.return_value = {
+            "studies": [
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT00000001",
+                            "briefTitle": "Paginated Study 1"
+                        }
+                    }
+                },
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT00000002",
+                            "briefTitle": "Paginated Study 2"
+                        }
+                    }
+                }
+            ]
+        }
+        mock_cache_manager.return_value.get.return_value = None
+        
+        # Call function with pagination parameters
+        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2, min_rank=5)
+        
+        # Verify results
+        assert isinstance(result, dict)
+        assert "studies" in result
+        assert len(result["studies"]) == 2
+        
+        # Verify pagination metadata
+        assert "pagination" in result
+        assert result["pagination"]["max_results"] == 2
+        assert result["pagination"]["min_rank"] == 5
+        
+        # Verify that the API was called
+        mock_clinical_trials_api.return_value.get_study_fields.assert_called_once()
+        
+        # Verify cache was set
+        mock_cache_manager.return_value.set.assert_called()
 
 
 @pytest.mark.integration

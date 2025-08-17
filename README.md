@@ -1,74 +1,101 @@
 # mCODE Translator
 
-[![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![CI Status](https://github.com/yourusername/mcode-translator/actions/workflows/python-app.yml/badge.svg)](https://github.com/yourusername/mcode-translator/actions)
+## Running the Clinical Trial Data Fetcher
 
-A clinical trial matching system that translates eligibility criteria into structured mCODE (Minimal Common Oncology Data Elements) format using multiple NLP approaches with benchmark capabilities.
+The clinical trial data fetcher can be run from the command line with various options:
 
-Key Updates:
-- Enhanced engine selection (Regex/SpaCy/LLM)
-- Benchmark mode for comparing NLP engines
-- Improved UI with visual extraction feedback
-- Optimized extraction pipeline
+### Basic Usage
 
-## Features
-
-- **Multi-engine NLP processing**:
-  - LLM-based (DeepSeek API)
-  - spaCy medical NLP
-  - Regex pattern matching
-- **Breast cancer specialization** with genomic feature extraction
-- **Structured output** in mCODE FHIR format
-- **Modular architecture** for easy extension
-
-## Testing
-
-The mCODE Translator uses a comprehensive, modular testing approach:
-
-- **Unit Tests**: Individual component testing in `tests/unit/`
-- **Integration Tests**: Component interaction testing in `tests/integration/`
-- **Component Tests**: mCODE element and feature testing in `tests/component/`
-- **Shared Components**: Reusable test utilities in `tests/shared/`
-
-Run all tests with:
 ```bash
+# Activate the conda environment first
+conda activate mcode_translator
+
+# Show help
+python src/data_fetcher/fetcher.py --help
+
+# Search for clinical trials
+python src/data_fetcher/fetcher.py --condition "breast cancer" --limit 10
+
+# Fetch a specific trial by NCT ID
+python src/data_fetcher/fetcher.py --nct-id NCT00000000
+
+# Export results to JSON file
+python src/data_fetcher/fetcher.py --condition "lung cancer" --export results.json
+
+# Process eligibility criteria with NLP engine
+python src/data_fetcher/fetcher.py --nct-id NCT00000000 --process-criteria
+
+# Search with pagination
+python src/data_fetcher/fetcher.py --condition "breast cancer" --min-rank 50
+
+# Calculate total number of studies
+python src/data_fetcher/fetcher.py --condition "breast cancer" --count
+```
+
+## Running Tests
+
+### Unit Tests
+
+```bash
+# Run unit tests for the fetcher
+python -m pytest tests/unit/test_fetcher.py -v
+
+# Run all unit tests
+python -m pytest tests/unit/ -v
+```
+
+### Integration Tests
+
+```bash
+# Run integration tests (including the new TestAPIIntegration class)
+python -m pytest tests/integration/test_api_integration.py -v
+
+# Run all integration tests
+python -m pytest tests/integration/ -v
+```
+
+### All Tests
+
+```bash
+# Run the complete test suite
 python run_tests.py
 ```
 
-## Quick Start
+## Project Structure
 
+- `src/data_fetcher/fetcher.py` - Main clinical trial data fetcher script
+- `tests/unit/test_fetcher.py` - Unit tests for the fetcher
+- `tests/integration/test_api_integration.py` - Integration tests including TestAPIIntegration class
+- `src/utils/config.py` - Configuration management
+- `src/utils/cache.py` - Caching mechanism
+- `src/nlp_engine/` - NLP processing components
+- `src/code_extraction/` - Code extraction components
+- `src/mcode_mapper/` - mCODE mapping components
+- `src/structured_data_generator/` - Structured data generation components
+
+## Dependencies
+
+The project requires the following dependencies:
+
+- `requests>=2.25.1`
+- `click>=7.1.2`
+- `python-dotenv>=0.15.0`
+- `spacy==3.7.5`
+- `scispacy==0.5.4`
+- `pytrials==0.3.0`
+
+Install with:
 ```bash
-# Install dependencies (Python 3.10+ recommended)
 pip install -r requirements.txt
-python -m spacy download en_core_web_sm
-
-# Run the web interface
-python src/nicegui_interface.py
-
-# Run tests
-python run_tests.py
-
-# Or use the CLI version
-python main.py --input "ER+ breast cancer" --engine regex
 ```
 
-## Documentation
+## Testing Dependencies
 
-- [System Overview](docs/architecture/system_documentation.md)
-- [Architecture Design](docs/architecture/mcode_translator_summary.md)
-- [NLP Engine Details](docs/components/nlp_criteria_parsing_design.md)
-- [Contribution Guide](CONTRIBUTING.md)
+- `pytest>=6.0.0`
+- `pytest-cov>=2.10.0`
+- `pytest-html>=3.1.1`
+- `coverage>=5.5`
 
-## Examples
-
-```python
-from src.llm_nlp_engine import LLMNLPEngine
-
-engine = LLMNLPEngine()
-result = engine.extract_mcode_features("ER+ breast cancer, HER2-negative")
-```
-
-## License
-
-MIT License - See [LICENSE](LICENSE) for details.
+Install with:
+```bash
+pip install -r requirements-test.txt
