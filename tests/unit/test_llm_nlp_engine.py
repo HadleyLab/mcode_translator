@@ -1,8 +1,8 @@
 import unittest
 import json
 from unittest.mock import patch, MagicMock
-from src.llm_nlp_engine import LLMNLPEngine
-from src.nlp_engine import ProcessingResult
+from src.nlp_engine.llm_nlp_engine import LLMNLPEngine
+from src.nlp_engine.nlp_engine import ProcessingResult
 
 class TestLLMNLPEngine(unittest.TestCase):
     def setUp(self):
@@ -21,7 +21,7 @@ class TestLLMNLPEngine(unittest.TestCase):
             "demographics": {}
         }
         
-    @patch('src.llm_nlp_engine.openai.OpenAI')
+    @patch('src.nlp_engine.llm_nlp_engine.openai.OpenAI')
     def test_process_text(self, mock_openai):
         # Setup mock response
         mock_client = MagicMock()

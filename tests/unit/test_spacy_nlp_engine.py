@@ -1,7 +1,7 @@
 import unittest
 import time
-from src.spacy_nlp_engine import SpacyNLPEngine
-from src.nlp_engine import ProcessingResult
+from src.nlp_engine.spacy_nlp_engine import SpacyNLPEngine
+from src.nlp_engine.nlp_engine import ProcessingResult
 
 class TestSpacyNLPEngine(unittest.TestCase):
     def setUp(self):

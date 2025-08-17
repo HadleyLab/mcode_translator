@@ -13,7 +13,7 @@ class TestClinicalTrialsFetcher:
     
     def test_search_trials(self, mock_clinical_trials_api, mock_cache_manager):
         """Test search_trials function with mocks"""
-        from src.fetcher import search_trials
+        from src.data_fetcher.fetcher import search_trials
         
         # Set up mocks
         mock_clinical_trials_api.return_value.get_study_fields.return_value = {
@@ -38,7 +38,7 @@ class TestClinicalTrialsFetcher:
     
     def test_search_trials_cached(self, mock_clinical_trials_api, mock_cache_manager):
         """Test search_trials with cached results"""
-        from src.fetcher import search_trials
+        from src.data_fetcher.fetcher import search_trials
         
         # Set up mocks
         mock_cache_manager.return_value.get.return_value = {
@@ -61,7 +61,7 @@ class TestClinicalTrialsFetcher:
     
     def test_get_full_study(self, mock_clinical_trials_api, mock_cache_manager):
         """Test get_full_study function"""
-        from src.fetcher import get_full_study
+        from src.data_fetcher.fetcher import get_full_study
         
         # Set up mocks
         mock_clinical_trials_api.return_value.get_study_fields.return_value = {
@@ -84,7 +84,7 @@ class TestClinicalTrialsFetcher:
     
     def test_get_full_study_cached(self, mock_cache_manager):
         """Test get_full_study with cached results"""
-        from src.fetcher import get_full_study
+        from src.data_fetcher.fetcher import get_full_study
         
         # Set up mocks
         mock_cache_manager.return_value.get.return_value = {
@@ -106,7 +106,7 @@ class TestClinicalTrialsFetcher:
     
     def test_search_trials_error(self, mock_clinical_trials_api, mock_cache_manager):
         """Test search_trials with API error"""
-        from src.fetcher import search_trials, ClinicalTrialsAPIError
+        from src.data_fetcher.fetcher import search_trials, ClinicalTrialsAPIError
         
         # Set up mocks to raise exception
         mock_clinical_trials_api.return_value.get_study_fields.side_effect = Exception("API error")

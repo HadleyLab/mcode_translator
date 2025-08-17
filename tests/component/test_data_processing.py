@@ -299,25 +299,25 @@ class TestDataProcessingPipeline:
     def test_end_to_end_processing(self, sample_eligibility_criteria):
         """Test end-to-end processing of eligibility criteria"""
         # Step 1: Parse criteria
-        from src.criteria_parser import CriteriaParser
+        from src.criteria_parser.criteria_parser import CriteriaParser
         criteria_parser = CriteriaParser()
         parsed_criteria = criteria_parser.parse(sample_eligibility_criteria)
         
         # Step 2: Extract codes
-        from src.code_extraction import CodeExtractionModule
+        from src.code_extraction.code_extraction import CodeExtractionModule
         code_extractor = CodeExtractionModule()
         extracted_codes = code_extractor.process_criteria_for_codes(
-            sample_eligibility_criteria, 
+            sample_eligibility_criteria,
             parsed_criteria.get('entities', [])
         )
         
         # Step 3: Map to mCODE
-        from src.mcode_mapping_engine import MCODEMappingEngine
+        from src.mcode_mapper.mcode_mapping_engine import MCODEMappingEngine
         mcode_mapper = MCODEMappingEngine()
         mapped_elements = mcode_mapper.map_entities_to_mcode(parsed_criteria.get('entities', []))
         
         # Step 4: Generate structured data
-        from src.structured_data_generator import StructuredDataGenerator
+        from src.structured_data_generator.structured_data_generator import StructuredDataGenerator
         structured_generator = StructuredDataGenerator()
         demographics = parsed_criteria.get('demographics', {})
         structured_data = structured_generator.generate_mcode_resources(mapped_elements, demographics)
@@ -335,12 +335,12 @@ class TestDataProcessingPipeline:
         invalid_text = ""
         
         # Step 1: Parse criteria (should handle gracefully)
-        from src.criteria_parser import CriteriaParser
+        from src.criteria_parser.criteria_parser import CriteriaParser
         criteria_parser = CriteriaParser()
         parsed_criteria = criteria_parser.parse(invalid_text)
         
         # Step 2: Extract codes (should handle gracefully)
-        from src.code_extraction import CodeExtractionModule
+        from src.code_extraction.code_extraction import CodeExtractionModule
         code_extractor = CodeExtractionModule()
         extracted_codes = code_extractor.process_criteria_for_codes(invalid_text)
         
@@ -354,9 +354,9 @@ class TestDataProcessingPipeline:
         complex_criteria = clinical_trial_generator.generate_eligibility_criteria("complex")
         
         # Process through pipeline
-        from src.criteria_parser import CriteriaParser
-        from src.code_extraction import CodeExtractionModule
-        from src.mcode_mapping_engine import MCODEMappingEngine
+        from src.criteria_parser.criteria_parser import CriteriaParser
+        from src.code_extraction.code_extraction import CodeExtractionModule
+        from src.mcode_mapper.mcode_mapping_engine import MCODEMappingEngine
         
         criteria_parser = CriteriaParser()
         parsed_criteria = criteria_parser.parse(complex_criteria)

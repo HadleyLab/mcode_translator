@@ -341,7 +341,7 @@ from tests.shared.test_data_generators import MockClinicalTrialsAPI, MockCacheMa
 @pytest.fixture
 def mock_clinical_trials_api():
     """Provide a mock ClinicalTrials.gov API for testing"""
-    with patch('src.fetcher.ClinicalTrials') as mock_client:
+    with patch('src.data_fetcher.fetcher.ClinicalTrials') as mock_client:
         mock_client.return_value.get_study_fields.return_value = {
             "StudyFields": [
                 {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
@@ -353,7 +353,7 @@ def mock_clinical_trials_api():
 @pytest.fixture
 def mock_cache_manager():
     """Provide a mock CacheManager for testing"""
-    with patch('src.fetcher.CacheManager') as mock_cache:
+    with patch('src.data_fetcher.fetcher.CacheManager') as mock_cache:
         mock_cache.return_value.get.return_value = None
         yield mock_cache
 ```
@@ -391,7 +391,7 @@ def test_nlp_engine_comparison(regex_nlp_engine, spacy_nlp_engine, sample_eligib
 ```python
 def test_api_with_mock(mock_clinical_trials_api, mock_cache_manager):
     """Test API functionality with mock objects"""
-    from src.fetcher import search_trials
+    from src.data_fetcher.fetcher import search_trials
     
     result = search_trials("cancer", max_results=2)
     

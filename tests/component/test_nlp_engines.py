@@ -134,11 +134,11 @@ class TestNLPComponentParameterized:
     def test_entity_extraction_count(self, engine_type, text, expected_entity_count):
         """Test entity extraction count for different engines and texts"""
         if engine_type == "regex":
-            from src.regex_nlp_engine import RegexNLPEngine
+            from src.nlp_engine.regex_nlp_engine import RegexNLPEngine
             engine = RegexNLPEngine()
             result = engine.process_criteria(text)
         elif engine_type == "spacy":
-            from src.spacy_nlp_engine import SpacyNLPEngine
+            from src.nlp_engine.spacy_nlp_engine import SpacyNLPEngine
             engine = SpacyNLPEngine()
             result = engine.process_criteria(text)
         else:

@@ -10,19 +10,19 @@ import unittest
 # Add src directory to path so we can import the module
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from src.output_formatter import OutputFormatter
+from src.structured_data_generator.structured_data_generator import StructuredDataGenerator
 
 
 class TestOutputFormatter(unittest.TestCase):
     """
-    Unit tests for the OutputFormatter
+    Unit tests for the StructuredDataGenerator
     """
     
     def setUp(self):
         """
         Set up test fixtures before each test method
         """
-        self.formatter = OutputFormatter()
+        self.formatter = StructuredDataGenerator()
     
     def test_to_json(self):
         """

@@ -516,7 +516,7 @@ class MockNLPEngine:
     def process_criteria(self, text):
         """Mock implementation of process_criteria"""
         self.call_count += 1
-        from src.nlp_engine import ProcessingResult
+        from src.nlp_engine.nlp_engine import ProcessingResult
         return ProcessingResult(
             features=self.features,
             mcode_mappings={},
@@ -546,7 +546,7 @@ class MockLLMNLPEngine(MockNLPEngine):
     def extract_mcode_features(self, text):
         """Mock implementation of extract_mcode_features"""
         self.call_count += 1
-        from src.nlp_engine import ProcessingResult
+        from src.nlp_engine.nlp_engine import ProcessingResult
         return ProcessingResult(
             features=self.features,
             mcode_mappings={},

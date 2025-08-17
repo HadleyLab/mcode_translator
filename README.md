@@ -55,9 +55,9 @@ python main.py --input "ER+ breast cancer" --engine regex
 
 ## Documentation
 
-- [System Overview](system_documentation.md)
-- [Architecture Design](mcode_translator_architecture.md) 
-- [NLP Engine Details](nlp_criteria_parsing_design.md)
+- [System Overview](docs/architecture/system_documentation.md)
+- [Architecture Design](docs/architecture/mcode_translator_summary.md)
+- [NLP Engine Details](docs/components/nlp_criteria_parsing_design.md)
 - [Contribution Guide](CONTRIBUTING.md)
 
 ## Examples

@@ -116,8 +116,8 @@ class TestRunner:
         
         try:
             # Import engines for benchmarking
-            from src.regex_nlp_engine import RegexNLPEngine
-            from src.spacy_nlp_engine import SpacyNLPEngine
+            from src.nlp_engine.regex_nlp_engine import RegexNLPEngine
+            from src.nlp_engine.spacy_nlp_engine import SpacyNLPEngine
             
             # Test text sample
             test_text = "Patient with BRCA1 mutation, ER+ HER2- breast cancer, stage IIA"

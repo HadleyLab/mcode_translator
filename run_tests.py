@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'tests'))
 def main():
     """Run the test suite using the new test runner"""
     try:
-        from test_runner import TestRunner
+        from tests.test_runner import TestRunner
         runner = TestRunner()
         success = runner.run_all_tests()
         sys.exit(0 if success else 1)

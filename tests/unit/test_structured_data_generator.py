@@ -5,7 +5,7 @@ import os
 # Add src directory to path so we can import the module
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from src.structured_data_generator import StructuredDataGenerator
+from src.structured_data_generator.structured_data_generator import StructuredDataGenerator
 
 class TestStructuredDataGenerator(unittest.TestCase):
     """

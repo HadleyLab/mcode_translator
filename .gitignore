@@ -57,3 +57,10 @@ error.log
 # Temp files
 *.tmp
 *.bak
+
+# Project-specific
+config.json
+*.log
+cache/
+.spacy/
+</content>

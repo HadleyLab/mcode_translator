@@ -1,7 +1,7 @@
 import unittest
 import time
-from src.regex_nlp_engine import RegexNLPEngine
-from src.nlp_engine import ProcessingResult
+from src.nlp_engine.regex_nlp_engine import RegexNLPEngine
+from src.nlp_engine.nlp_engine import ProcessingResult
 
 class TestRegexNLPEngine(unittest.TestCase):
     def setUp(self):

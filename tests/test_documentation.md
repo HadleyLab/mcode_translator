@@ -135,7 +135,7 @@ Use mocks for external dependencies:
 ```python
 def test_api_search_with_mock(mock_clinical_trials_api, mock_cache_manager):
     """Test API search with mocked fixtures"""
-    from src.fetcher import search_trials
+    from src.data_fetcher.fetcher import search_trials
     
     result = search_trials("cancer", max_results=2)
     

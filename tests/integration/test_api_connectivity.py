@@ -1,6 +1,6 @@
 """Simple test to verify ClinicalTrials.gov API connectivity"""
 import unittest
-from src.fetcher import search_trials
+from src.data_fetcher.fetcher import search_trials
 
 class TestAPISanityCheck(unittest.TestCase):
     """Basic connectivity test for ClinicalTrials.gov API"""

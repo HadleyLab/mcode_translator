@@ -1,0 +1,3 @@
+"""
+mCODE Translator - Main package
+"""

@@ -208,7 +208,7 @@ Provides a mock ClinicalTrials.gov API for testing.
 @pytest.fixture
 def mock_clinical_trials_api():
     """Provide a mock ClinicalTrials.gov API for testing"""
-    with patch('src.fetcher.ClinicalTrials') as mock_client:
+    with patch('src.data_fetcher.fetcher.ClinicalTrials') as mock_client:
         mock_client.return_value.get_study_fields.return_value = {
             "StudyFields": [
                 {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
@@ -225,7 +225,7 @@ Provides a mock CacheManager for testing.
 @pytest.fixture
 def mock_cache_manager():
     """Provide a mock CacheManager for testing"""
-    with patch('src.fetcher.CacheManager') as mock_cache:
+    with patch('src.data_fetcher.fetcher.CacheManager') as mock_cache:
         mock_cache.return_value.get.return_value = None
         yield mock_cache
 ```

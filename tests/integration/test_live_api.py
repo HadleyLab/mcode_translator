@@ -7,7 +7,7 @@ import time
 # Add the src directory to the path so we can import our modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from src.fetcher import search_trials, get_full_study, ClinicalTrialsAPIError
+from src.data_fetcher.fetcher import search_trials, get_full_study, ClinicalTrialsAPIError
 
 class TestLiveClinicalTrialsAPI(unittest.TestCase):
     """Test live API interactions with ClinicalTrials.gov"""

@@ -16,28 +16,28 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 @pytest.fixture
 def code_extractor():
     """Provide a CodeExtractionModule instance for testing"""
-    from src.code_extraction import CodeExtractionModule
+    from src.code_extraction.code_extraction import CodeExtractionModule
     return CodeExtractionModule()
 
 
 @pytest.fixture
 def mcode_mapper():
     """Provide an MCODEMappingEngine instance for testing"""
-    from src.mcode_mapping_engine import MCODEMappingEngine
+    from src.mcode_mapper.mcode_mapping_engine import MCODEMappingEngine
     return MCODEMappingEngine()
 
 
 @pytest.fixture
 def structured_data_generator():
     """Provide a StructuredDataGenerator instance for testing"""
-    from src.structured_data_generator import StructuredDataGenerator
+    from src.structured_data_generator.structured_data_generator import StructuredDataGenerator
     return StructuredDataGenerator()
 
 
 @pytest.fixture
 def criteria_parser():
     """Provide a CriteriaParser instance for testing"""
-    from src.criteria_parser import CriteriaParser
+    from src.criteria_parser.criteria_parser import CriteriaParser
     return CriteriaParser()
 
 
@@ -46,21 +46,21 @@ def criteria_parser():
 @pytest.fixture
 def regex_nlp_engine():
     """Provide a RegexNLPEngine instance for testing"""
-    from src.regex_nlp_engine import RegexNLPEngine
+    from src.nlp_engine.regex_nlp_engine import RegexNLPEngine
     return RegexNLPEngine()
 
 
 @pytest.fixture
 def spacy_nlp_engine():
     """Provide a SpacyNLPEngine instance for testing"""
-    from src.spacy_nlp_engine import SpacyNLPEngine
+    from src.nlp_engine.spacy_nlp_engine import SpacyNLPEngine
     return SpacyNLPEngine()
 
 
 @pytest.fixture
 def llm_nlp_engine():
     """Provide an LLMNLPEngine instance for testing"""
-    from src.llm_nlp_engine import LLMNLPEngine
+    from src.nlp_engine.llm_nlp_engine import LLMNLPEngine
     return LLMNLPEngine()
 
 
@@ -214,7 +214,7 @@ def sample_patient_demographics():
 @pytest.fixture
 def sample_breast_cancer_profile():
     """Provide a BreastCancerProfile instance for testing"""
-    from src.breast_cancer_profile import BreastCancerProfile
+    from src.pipeline.breast_cancer_profile import BreastCancerProfile
     return BreastCancerProfile()
 
 
@@ -224,7 +224,7 @@ def sample_breast_cancer_profile():
 def mock_clinical_trials_api():
     """Provide a mock ClinicalTrials.gov API for testing"""
     from unittest.mock import patch
-    with patch('src.fetcher.ClinicalTrials') as mock_client:
+    with patch('src.data_fetcher.fetcher.ClinicalTrials') as mock_client:
         mock_client.return_value.get_study_fields.return_value = {
             "StudyFields": [
                 {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
@@ -233,12 +233,11 @@ def mock_clinical_trials_api():
         }
         yield mock_client
 
-
 @pytest.fixture
 def mock_cache_manager():
     """Provide a mock CacheManager for testing"""
     from unittest.mock import patch
-    with patch('src.fetcher.CacheManager') as mock_cache:
+    with patch('src.data_fetcher.fetcher.CacheManager') as mock_cache:
         mock_cache.return_value.get.return_value = None
         yield mock_cache
 
