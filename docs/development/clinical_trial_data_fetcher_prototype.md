@@ -42,6 +42,12 @@ class ClinicalTrialsAPI:
         Get complete study record for a specific trial
         """
         pass
+    
+    def calculate_total_studies(self, search_expr, fields=None, page_size=100):
+        """
+        Calculate the total number of studies matching the search expression
+        """
+        pass
 ```
 
 #### 2. Data Model Classes
@@ -95,6 +101,19 @@ search_expr = "breast cancer"
 fields = "NCTId,BriefTitle,EligibilityCriteria,Condition,Gender,MinimumAge"
 ```
 
+### Count Total Usage
+To get the total count of studies matching a search expression:
+```
+GET /study_fields?
+    expr=<search_expression>&countTotal=true&
+    fields=<comma_separated_fields>&
+    min_rnk=1&
+    max_rnk=1&
+    fmt=json
+```
+
+The response will include a `totalCount` field with the total number of studies matching the search criteria.
+
 ## Prototype Implementation Plan
 
 ### Phase 1: Basic API Interaction
@@ -136,6 +155,11 @@ python fetcher.py --condition "breast cancer" --limit 10
 ### Scenario 3: Export Results
 ```bash
 python fetcher.py --condition "lung cancer" --export results.json
+```
+
+### Scenario 4: Calculate Total Studies
+```bash
+python fetcher.py --condition "breast cancer" --count
 ```
 
 ## Error Handling Strategy
@@ -218,6 +242,10 @@ def test_parse_eligibility_criteria():
 
 def test_handle_api_error():
     # Test error handling for API failures
+    pass
+
+def test_calculate_total_studies():
+    # Test calculating total studies for a search expression
     pass
 ```
 
