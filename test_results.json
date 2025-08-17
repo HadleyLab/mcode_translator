@@ -1,0 +1,18 @@
+{
+  "unit_tests": {
+    "success": false
+  },
+  "integration_tests": {
+    "success": true
+  },
+  "component_tests": {
+    "success": true
+  },
+  "performance_metrics": {
+    "regex_engine_avg_time": 7.781982421875e-05,
+    "spacy_engine_avg_time": 0.008206367492675781,
+    "test_text_length": 63,
+    "benchmark_runs": 5
+  },
+  "coverage_report": {}
+}

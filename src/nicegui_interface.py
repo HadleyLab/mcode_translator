@@ -1,11 +1,20 @@
-import json
 import sys
 import os
+
+# Add src directory to Python path - this needs to be done before other imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import json
 import asyncio
 import logging
 import traceback
 import colorlog
+import time
+import hashlib
 from typing import Dict, List, Optional, Union, Callable
+from pytrials.client import ClinicalTrials
+from src.config import Config
+from src.cache import CacheManager
 
 # Configure colored logging FIRST
 logger = colorlog.getLogger()
@@ -28,18 +37,119 @@ logger.addHandler(handler)
 # Now import NiceGUI after logging is configured
 from nicegui import ui
 
-# Add src directory to Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from src.clinical_trials_api import ClinicalTrialsAPI
 from src.extraction_pipeline import ExtractionPipeline
 from src.regex_nlp_engine import RegexNLPEngine
 from src.spacy_nlp_engine import SpacyNLPEngine
 from src.llm_nlp_engine import LLMNLPEngine
-import time
 
-# Initialize API client
-api_client = ClinicalTrialsAPI()
+class ClinicalTrialsAPIError(Exception):
+    """Base exception for ClinicalTrialsAPI errors"""
+    pass
+
+def search_trials(search_expr: str, fields=None, max_results: int = 100):
+    """
+    Search for clinical trials matching the expression
+    
+    Args:
+        search_expr: Search expression (e.g., "breast cancer")
+        fields: List of fields to retrieve (default: ['NCTId', 'BriefTitle', 'Conditions'])
+        max_results: Maximum number of results to return (default: 100)
+        
+    Returns:
+        Dictionary containing search results
+        
+    Raises:
+        ClinicalTrialsAPIError: If there's an error with the API request
+    """
+    # Initialize config and cache manager
+    config = Config()
+    cache_manager = CacheManager(config)
+    
+    # Set default fields if none provided
+    if fields is None:
+        fields = ['NCTId', 'BriefTitle', 'Condition']  # 'Condition' is singular in JSON format
+        
+    # Initialize client and log available fields
+    ct = ClinicalTrials()
+    logger.debug(f"Available fields: {ct.study_fields}")
+    
+    # Create cache key
+    cache_key_data = f"search:{search_expr}:{','.join(fields) if fields else 'all'}:{max_results}"
+    cache_key = hashlib.md5(cache_key_data.encode()).hexdigest()
+    
+    # Try to get from cache first
+    cached_result = cache_manager.get(cache_key)
+    if cached_result:
+        return {'studies': cached_result}
+    
+    try:
+        # Rate limiting
+        time.sleep(config.rate_limit_delay)
+        
+        # Initialize pytrials client
+        ct = ClinicalTrials()
+        
+        # Get study fields with specified fields
+        result = ct.get_study_fields(
+            search_expr=search_expr,
+            fields=fields,
+            max_studies=max_results,
+            fmt='json'
+        )
+        logger.debug(f"API response received with {len(result)} studies")
+        
+        # Convert to consistent format
+        if not result:
+            return {'studies': []}
+            
+        # Cache the result
+        cache_manager.set(cache_key, result)
+        
+        return {'studies': result}
+    except Exception as e:
+        raise ClinicalTrialsAPIError(f"API request failed: {str(e)}")
+
+def get_full_study(nct_id: str):
+    """
+    Get complete study record for a specific trial
+    
+    Args:
+        nct_id: NCT ID of the clinical trial (e.g., "NCT00000000")
+        
+    Returns:
+        Dictionary containing the full study record
+        
+    Raises:
+        ClinicalTrialsAPIError: If there's an error with the API request
+    """
+    # Initialize config and cache manager
+    config = Config()
+    cache_manager = CacheManager(config)
+    
+    # Create cache key
+    cache_key = f"full_study:{nct_id}"
+    
+    # Try to get from cache first
+    cached_result = cache_manager.get(cache_key)
+    if cached_result:
+        return cached_result
+    
+    try:
+        # Rate limiting
+        time.sleep(config.rate_limit_delay)
+        
+        # Initialize pytrials client
+        ct = ClinicalTrials()
+        
+        # Use pytrials get_study method
+        result = ct.get_study(nct_id)
+        
+        # Cache the result
+        cache_manager.set(cache_key, result)
+        
+        return result
+    except Exception as e:
+        raise ClinicalTrialsAPIError(f"API request failed: {str(e)}")
 
 # Configure colored logging
 print("Initializing colored logging...")  # Debug
@@ -469,7 +579,7 @@ with patient_profile_expansion:
                     ['Mild', 'Moderate', 'Severe'],
                     value=patient_profile['comorbidities'][0]['severity'] if patient_profile['comorbidities'] else '',
                     label='Severity'
-            )
+                )
             
     # Update Button (outside accordion)
     ui.button('UPDATE PROFILE', icon='save', on_click=update_patient_profile) \
@@ -582,7 +692,7 @@ async def on_search():
             # Perform async search
             def search_task():
                 logger.info(f"Calling API with search term: '{search_input.value}'")
-                results = api_client.search_trials(search_input.value, max_results=int(limit_slider.value))
+                results = search_trials(search_input.value, max_results=int(limit_slider.value))
                 logger.info(f"API returned {len(results.get('studies', []))} results")
                 return results
             
@@ -598,10 +708,41 @@ async def on_search():
             status_label.set_text(f"Found {len(results.get('studies', []))} trials")
             loading.set_visibility(False)
             
-            for study in results.get('studies', []):
-                protocol_section = study.get('protocolSection', {})
-                eligibility_module = protocol_section.get('eligibilityModule', {})
-                criteria = eligibility_module.get('eligibilityCriteria', '')
+            studies = results.get('studies', [])
+            if not studies:
+                status_label.set_text('No results found')
+                ui.notify('No trials found', type='info')
+                logger.info("No trials found")
+                return
+
+            # Initialize ClinicalTrials client
+            ct = ClinicalTrials()
+            
+            # Process all studies (whether they're NCT IDs or full objects)
+            for study in studies:
+                try:
+                    if isinstance(study, str):
+                        # For NCT IDs, fetch full details
+                        full_study = ct.get_study_fields(
+                            search_expr=study,
+                            fields=ct.study_fields['json'],
+                            max_studies=1,
+                            fmt='json'
+                        )
+                        if not full_study:
+                            logger.warning(f"No data returned for study {study}")
+                            continue
+                        study = full_study[0]
+                    
+                    # Process study object
+                    protocol_section = study.get('protocolSection', {})
+                    eligibility_module = protocol_section.get('eligibilityModule', {})
+                    criteria = eligibility_module.get('eligibilityCriteria', '')
+                    display_trial_results(protocol_section, {})
+                    
+                except Exception as e:
+                    logger.error(f"Failed to process study: {str(e)}")
+                    continue
                 
                 # Show processing status
                 processing_label = ui.label(f"Processing trial {protocol_section.get('identificationModule', {}).get('nctId')}...")
@@ -826,11 +967,11 @@ def display_trial_results(protocol_section, display_data):
             with ui.column().classes('flex-grow'):
                 ui.label(protocol_section.get('identificationModule', {}).get('officialTitle')).classes('text-lg')
                 ui.label(f"NCT ID: {protocol_section.get('identificationModule', {}).get('nctId')}")
-
+        
         # Eligibility criteria
         with ui.expansion('View Eligibility Criteria').classes('w-full'):
             ui.markdown(f"```\n{protocol_section.get('eligibilityModule', {}).get('eligibilityCriteria', 'No criteria available')}\n```")
-
+        
         with ui.expansion('mCODE Features').classes('w-full'):
             with ui.tabs().classes('w-full') as tabs:
                 demographics_tab = ui.tab('Demographics')
@@ -1019,6 +1160,4 @@ def on_reset():
 search_button.on('click', on_search)
 reset_button.on('click', on_reset)
 
-ui.run(title='mCODE Clinical Trials Search')
-
-# Add json to imports at top of file if not already present
+ui.run(title='mCODE Clinical Trials Search', port=8081)

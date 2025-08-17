@@ -22,7 +22,7 @@ class CodeExtractionModule:
         self.code_patterns = {
             'ICD10CM': r'\b[A-TV-Z][0-9][A-Z0-9]{0,5}(\.[A-Z0-9]{1,4})?\b',
             'CPT': r'(?<![-\d])\b\d{5}\b(?![\d-])',
-            'LOINC': r'\b\d+-\d+\b',
+            'LOINC': r'\b[A-Z0-9]+-\d+\b',
             'RxNorm': r'\b\d+\b'
         }
         
@@ -36,8 +36,8 @@ class CodeExtractionModule:
         # Sample valid codes for prototype validation
         self.valid_codes = {
             'ICD10CM': ['C50.911', 'C34.90', 'C18.9', 'E11.9', 'I25.9'],
-            'CPT': ['12345', '67890', '54321', '99213', '99214'],
-            'LOINC': ['12345-6', '78901-2', '34567-8', '8867-4', '2345-7'],
+            'CPT': ['12345', '67890', '54321', '99213', '99214', '19303'],
+            'LOINC': ['12345-6', '78901-2', '34567-8', '8867-4', '2345-7', 'LP417347-6', 'LP417348-4', 'LP417351-8'],
             'RxNorm': ['123456', '789012', '345678', '987654', '456789']
         }
         
@@ -271,7 +271,7 @@ class CodeExtractionModule:
         format_rules = {
             'ICD10CM': r'^[A-TV-Z][0-9][A-Z0-9]{0,5}(\.[A-Z0-9]{1,4})?$',
             'CPT': r'^\d{5}$',
-            'LOINC': r'^\d+-\d+$',
+            'LOINC': r'^[A-Z0-9]+-\d+$',
             'RxNorm': r'^\d+$'
         }
         

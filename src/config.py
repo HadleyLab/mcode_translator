@@ -8,10 +8,6 @@ class Config:
     """
     
     def __init__(self):
-        # API Configuration
-        self.api_base_url = "https://clinicaltrials.gov/api/v2"
-        self.api_key = os.getenv("CLINICALTRIALS_API_KEY", None)
-        
         # Cache Configuration
         self.cache_enabled = os.getenv("CACHE_ENABLED", "true").lower() == "true"
         self.cache_dir = os.getenv("CACHE_DIR", "./cache")
@@ -26,15 +22,6 @@ class Config:
         # Create cache directory if it doesn't exist
         if self.cache_enabled and self.cache_dir:
             os.makedirs(self.cache_dir, exist_ok=True)
-    
-    def get_api_key(self) -> Optional[str]:
-        """
-        Get the API key for clinicaltrials.gov
-        
-        Returns:
-            API key or None if not set
-        """
-        return self.api_key
     
     def is_cache_enabled(self) -> bool:
         """

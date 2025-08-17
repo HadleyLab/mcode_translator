@@ -1,103 +1,121 @@
-#!/usr/bin/env python3
 """
-Test script for the Clinical Trial Data Fetcher
+Unit tests for the Clinical Trial Data Fetcher using the refactored approach.
 """
 
-import sys
-import os
+import pytest
 import json
-
-# Add the src directory to the path so we can import our modules
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-
-from src.clinical_trials_api import ClinicalTrialsAPI
-from src.config import Config
+from unittest.mock import patch, MagicMock
+from tests.shared.test_components import MockClinicalTrialsAPI, MockCacheManager
 
 
-def test_search_trials():
-    """Test searching for clinical trials"""
-    print("Testing search for clinical trials...")
+class TestClinicalTrialsFetcher:
+    """Unit tests for clinicaltrials.gov API fetcher using pytest"""
     
-    # Initialize the API client
-    config = Config()
-    api = ClinicalTrialsAPI(config)
-    
-    try:
-        # Search for a simple term that should return results
-        print("Searching for 'cancer'...")
-        fields = [
-            "NCTId", "BriefTitle", "EligibilityCriteria", "Condition",
-            "Gender", "MinimumAge", "MaximumAge"
-        ]
-        result = api.search_trials("cancer", fields, 5)
+    def test_search_trials(self, mock_clinical_trials_api, mock_cache_manager):
+        """Test search_trials function with mocks"""
+        from src.fetcher import search_trials
         
-        # Try to parse the response correctly
-        if 'studies' in result:
-            studies = result['studies']
-            print(f"Found {len(studies)} trials")
-            for i, study in enumerate(studies[:5]):  # Show up to 5 results
-                # Try different possible structures for NCT ID
-                nct_id = 'Unknown'
-                title = 'No title'
-                
-                # Check if study has protocolSection
-                if 'protocolSection' in study:
-                    protocol_section = study['protocolSection']
-                    # Check for identificationModule
-                    if 'identificationModule' in protocol_section:
-                        identification_module = protocol_section['identificationModule']
-                        if 'nctId' in identification_module:
-                            nct_id = identification_module['nctId']
-                        if 'briefTitle' in identification_module:
-                            title = identification_module['briefTitle']
-                
-                print(f"  {i+1}. {nct_id}: {title}")
-        else:
-            print("No 'studies' key found in response")
-            print("Available keys:", list(result.keys()) if isinstance(result, dict) else "Not a dict")
+        # Set up mocks
+        mock_clinical_trials_api.return_value.get_study_fields.return_value = {
+            "StudyFields": [
+                {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
+                {"NCTId": ["NCT87654321"], "BriefTitle": ["Test Study 2"]}
+            ]
+        }
+        mock_cache_manager.return_value.get.return_value = None
         
-        return result
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return None
-
-
-def test_get_full_study():
-    """Test fetching a full study record"""
-    print("\nTesting fetch of full study record...")
-    
-    # Initialize the API client
-    config = Config()
-    api = ClinicalTrialsAPI(config)
-    
-    try:
-        # Try to fetch a real trial ID if we have any from the search
-        # For now, we'll use a placeholder
-        nct_id = "NCT00000000"  # This is a placeholder, you would use a real NCT ID
-        print(f"Fetching study {nct_id}...")
-        result = api.get_full_study(nct_id)
+        # Call function
+        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2)
         
-        print("Study fetched successfully")
-        return result
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        # This is expected to fail with the placeholder ID
-        return None
-
-
-def main():
-    """Main test function"""
-    print("Running Clinical Trial Data Fetcher Tests")
-    print("=" * 50)
+        # Verify results
+        assert isinstance(result, dict)
+        assert "StudyFields" in result
+        assert len(result["StudyFields"]) == 2
+        assert result["StudyFields"][0]["NCTId"][0] == "NCT12345678"
+        
+        # Verify cache was set
+        mock_cache_manager.return_value.set.assert_called()
     
-    # Test search functionality
-    search_result = test_search_trials()
+    def test_search_trials_cached(self, mock_clinical_trials_api, mock_cache_manager):
+        """Test search_trials with cached results"""
+        from src.fetcher import search_trials
+        
+        # Set up mocks
+        mock_cache_manager.return_value.get.return_value = {
+            "StudyFields": [
+                {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
+                {"NCTId": ["NCT87654321"], "BriefTitle": ["Test Study 2"]}
+            ]
+        }
+        
+        # Call function
+        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2)
+        
+        # Verify results
+        assert isinstance(result, dict)
+        assert "StudyFields" in result
+        assert len(result["StudyFields"]) == 2
+        
+        # Verify API was not called
+        mock_clinical_trials_api.return_value.get_study_fields.assert_not_called()
     
-    # Test full study fetch (this will likely fail with the placeholder)
-    study_result = test_get_full_study()
+    def test_get_full_study(self, mock_clinical_trials_api, mock_cache_manager):
+        """Test get_full_study function"""
+        from src.fetcher import get_full_study
+        
+        # Set up mocks
+        mock_clinical_trials_api.return_value.get_study_fields.return_value = {
+            "StudyFields": [
+                {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]}
+            ]
+        }
+        mock_cache_manager.return_value.get.return_value = None
+        
+        # Call function
+        result = get_full_study("NCT12345678")
+        
+        # Verify results
+        assert isinstance(result, dict)
+        assert "protocolSection" in result
+        assert result["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
+        
+        # Verify cache was set
+        mock_cache_manager.return_value.set.assert_called()
     
-    print("\nTests completed.")
+    def test_get_full_study_cached(self, mock_cache_manager):
+        """Test get_full_study with cached results"""
+        from src.fetcher import get_full_study
+        
+        # Set up mocks
+        mock_cache_manager.return_value.get.return_value = {
+            "protocolSection": {
+                "identificationModule": {
+                    "nctId": "NCT12345678",
+                    "briefTitle": "Test Study 1"
+                }
+            }
+        }
+        
+        # Call function
+        result = get_full_study("NCT12345678")
+        
+        # Verify results
+        assert isinstance(result, dict)
+        assert "protocolSection" in result
+        assert result["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
+    
+    def test_search_trials_error(self, mock_clinical_trials_api, mock_cache_manager):
+        """Test search_trials with API error"""
+        from src.fetcher import search_trials, ClinicalTrialsAPIError
+        
+        # Set up mocks to raise exception
+        mock_clinical_trials_api.return_value.get_study_fields.side_effect = Exception("API error")
+        mock_cache_manager.return_value.get.return_value = None
+        
+        # Call function and verify exception
+        with pytest.raises(ClinicalTrialsAPIError):
+            search_trials("cancer")
 
 
 if __name__ == '__main__':
-    main()
+    pytest.main([__file__])

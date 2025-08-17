@@ -17,6 +17,12 @@
   - IHC scores (e.g., "HER2 3+")
   - MSI/TMB status
 - Deduplication of extracted entities
+- Enhanced biomarker extraction patterns for ER/PR/HER2
+
+### SpaCy Engine Improvements
+- Added fallback model loading (en_core_web_sm) when medical model unavailable
+- Enhanced biomarker extraction patterns for ER/PR/HER2
+- Improved error handling and logging
 
 ### Benchmarking
 - All engines remain available for benchmarking
@@ -30,17 +36,18 @@ Key Features:
 - Benchmark mode for accuracy/speed comparison
 - Visual feedback on extraction results
 - Optimized pipeline architecture
+- Robust error handling and fallback mechanisms
 
 ## Key Components
 
 ### NLP Engines
 - **LLM Engine**: DeepSeek API for complex criteria
-- **spaCy Engine**: Medical NLP for general criteria
+- **spaCy Engine**: Medical NLP for general criteria with fallback support
 - **Regex Engine**: Fast pattern matching
 
 ### Core Modules
 - **Criteria Parser**: Identifies inclusion/exclusion sections
-- **Code Extractor**: Maps text to standard codes
+- **Code Extractor**: Maps text to standard codes (ICD-10-CM, CPT, LOINC, RxNorm)
 - **Mapping Engine**: Converts to mCODE format
 - **Structured Data Generator**: Creates FHIR resources
 
@@ -64,3 +71,8 @@ Key Features:
   - Regex: 75-85% (fastest)
   - SpaCy: 85-90% (balanced)
   - LLM: 90-95% (most accurate)
+
+## Error Handling and Fallbacks
+- SpaCy engine automatically falls back to en_core_web_sm if en_core_sci_md is not available
+- All engines include comprehensive error handling and logging
+- Fallback mechanisms ensure system reliability

@@ -36,6 +36,7 @@ graph TD
    - Identifies medical conditions, treatments, procedures
    - Extracts demographic restrictions and lab values
    - Uses medical terminology dictionaries
+   - Includes fallback mechanisms for robust operation
 
 4. **mCODE Mapper**
    - Maps extracted concepts to mCODE data elements
@@ -160,3 +161,5 @@ graph TD
 The mCODE Translator represents a significant advancement in clinical trial data processing and oncology data standardization. By automatically converting unstructured eligibility criteria into structured mCODE format, this system enables better data interoperability, improved patient matching for clinical trials, and enhanced research capabilities in oncology.
 
 The modular architecture allows for flexible deployment and customization, while comprehensive validation ensures high-quality output that meets clinical and regulatory standards. With continued development and refinement, the mCODE Translator has the potential to become an essential tool in the oncology research ecosystem.
+
+Recent system improvements have enhanced biomarker extraction, added fallback model loading for SpaCy NLP engine, and streamlined debugging scripts.

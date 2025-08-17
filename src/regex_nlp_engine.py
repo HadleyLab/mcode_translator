@@ -11,7 +11,8 @@ from .utils.pattern_config import (
     CANCER_TYPE_PATTERN,
     ECOG_PATTERN,
     GENDER_PATTERN,
-    AGE_PATTERN
+    AGE_PATTERN,
+    CONDITION_PATTERN
 )
 
 class RegexNLPEngine(NLPEngine):
@@ -61,6 +62,7 @@ class RegexNLPEngine(NLPEngine):
         self.ecog_pattern = ECOG_PATTERN
         self.gender_pattern = GENDER_PATTERN
         self.age_pattern = AGE_PATTERN
+        self.condition_pattern = CONDITION_PATTERN
 
     def process_text(self, text: str) -> ProcessingResult:
         """Process clinical text and extract mCODE features using regex patterns.
@@ -110,13 +112,17 @@ class RegexNLPEngine(NLPEngine):
             import time
             start_time = time.time()
             
+            # Extract additional conditions
+            additional_conditions = self._extract_additional_conditions(text)
+            
             features = {
                 'demographics': self._extract_demographics(text),
                 'cancer_characteristics': self._extract_cancer_condition(text),
                 'biomarkers': self._extract_biomarkers(text),
                 'genomic_variants': self._extract_genomic_variants(text),
                 'performance_status': self._extract_performance_status(text),
-                'treatment_history': {}  # Placeholder for future implementation
+                'treatment_history': {},  # Placeholder for future implementation
+                'additional_conditions': additional_conditions
             }
             
             processing_time = time.time() - start_time
@@ -202,10 +208,17 @@ class RegexNLPEngine(NLPEngine):
         """
         condition = {}
         
-        # Extract cancer type
-        cancer_match = self.cancer_type_pattern.search(text)
-        if cancer_match:
-            condition['cancer_type'] = cancer_match.group(1).capitalize() + " cancer"
+        # Extract all cancer types
+        cancer_matches = list(self.cancer_type_pattern.finditer(text))
+        if cancer_matches:
+            # Take the first match for backward compatibility
+            first_match = cancer_matches[0]
+            condition['cancer_type'] = first_match.group(1).capitalize() + " cancer"
+            
+            # Store all matches for entity extraction
+            condition['all_cancer_types'] = [match.group(1).capitalize() + " cancer" for match in cancer_matches]
+        else:
+            condition['all_cancer_types'] = []
             
         # Extract stage
         stage_match = self.stage_pattern.search(text)
@@ -213,6 +226,41 @@ class RegexNLPEngine(NLPEngine):
             condition['stage'] = stage_match.group(1).upper()
             
         return condition
+
+    def _extract_additional_conditions(self, text: str) -> List[Dict[str, Any]]:
+        """Extract additional conditions beyond cancer types using regex patterns.
+        
+        Parameters
+        ----------
+        text : str
+            Input clinical text to process
+            
+        Returns
+        -------
+        List[Dict[str, Any]]
+            List of standardized condition results with:
+            - name: str (condition name from condition_pattern)
+            - source_text: str (original matched text)
+        """
+        conditions = []
+        for match in self.condition_pattern.finditer(text):
+            condition_name = match.group(1)
+            # Only add conditions that are not already captured by cancer type extraction
+            if condition_name.lower() not in ['breast', 'lung', 'colorectal']:
+                conditions.append({
+                    'name': condition_name,
+                    'source_text': match.group()
+                })
+                
+        # Deduplicate conditions
+        unique_conditions = []
+        seen = set()
+        for cond in conditions:
+            if cond['name'] not in seen:
+                seen.add(cond['name'])
+                unique_conditions.append(cond)
+                
+        return unique_conditions
 
     def _extract_biomarkers(self, text: str) -> List[Dict[str, Any]]:
         """Extract biomarker status information using predefined patterns.
@@ -407,6 +455,36 @@ class RegexNLPEngine(NLPEngine):
         - FHIR resource generation
         """
         entities = []
+        
+        # Add conditions/cancer types
+        cancer_characteristics = features.get('cancer_characteristics', {})
+        all_cancer_types = cancer_characteristics.get('all_cancer_types', [])
+        if all_cancer_types:
+            for cancer_type in all_cancer_types:
+                entities.append({
+                    'type': 'CONDITION',
+                    'text': cancer_type.lower(),
+                    'label': 'cancer_type',
+                    'value': cancer_type
+                })
+        elif cancer_characteristics.get('cancer_type'):
+            cancer_type = cancer_characteristics['cancer_type']
+            entities.append({
+                'type': 'CONDITION',
+                'text': cancer_type.lower(),
+                'label': 'cancer_type',
+                'value': cancer_type
+            })
+        
+        # Add additional conditions
+        additional_conditions = features.get('additional_conditions', [])
+        for condition in additional_conditions:
+            entities.append({
+                'type': 'CONDITION',
+                'text': condition['name'].lower(),
+                'label': 'additional_condition',
+                'value': condition['name']
+            })
         
         # Add biomarkers
         for bio in features.get('biomarkers', []):

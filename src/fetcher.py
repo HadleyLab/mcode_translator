@@ -1,12 +1,145 @@
 import click
 import json
 import sys
-from .clinical_trials_api import ClinicalTrialsAPI, ClinicalTrialsAPIError
-from .config import Config
-from .nlp_engine import NLPEngine
-from .code_extraction import CodeExtractionModule
-from .mcode_mapping_engine import MCODEMappingEngine
-from .structured_data_generator import StructuredDataGenerator
+import time
+import hashlib
+from pytrials.client import ClinicalTrials
+from config import Config
+from cache import CacheManager
+from nlp_engine import NLPEngine
+from code_extraction import CodeExtractionModule
+from mcode_mapping_engine import MCODEMappingEngine
+from structured_data_generator import StructuredDataGenerator
+
+# Map our field names to valid ClinicalTrials.gov API field names
+FIELD_MAPPING = {
+    "NCTId": "NCTId",
+    "BriefTitle": "BriefTitle",
+    "Condition": "Condition",
+    "OverallStatus": "OverallStatus"
+}
+
+DEFAULT_SEARCH_FIELDS = ["NCTId", "BriefTitle", "Condition", "OverallStatus"]
+
+
+class ClinicalTrialsAPIError(Exception):
+    """Base exception for ClinicalTrialsAPI errors"""
+    pass
+
+
+def search_trials(search_expr: str, fields=None, max_results: int = 100):
+    """
+    Search for clinical trials matching the expression
+    
+    Args:
+        search_expr: Search expression (e.g., "breast cancer")
+        fields: List of fields to retrieve (default: None for all fields)
+        max_results: Maximum number of results to return (default: 100)
+        
+    Returns:
+        Dictionary containing search results
+        
+    Raises:
+        ClinicalTrialsAPIError: If there's an error with the API request
+    """
+    # Initialize config and cache manager
+    config = Config()
+    cache_manager = CacheManager(config)
+    
+    # Create cache key
+    cache_key_data = f"search:{search_expr}:{','.join(fields) if fields else 'all'}:{max_results}"
+    cache_key = hashlib.md5(cache_key_data.encode()).hexdigest()
+    
+    # Try to get from cache first
+    cached_result = cache_manager.get(cache_key)
+    if cached_result:
+        return cached_result
+    
+    try:
+        # Rate limiting
+        time.sleep(config.rate_limit_delay)
+        
+        # Initialize pytrials client
+        ct = ClinicalTrials()
+        
+        # Map field names to valid API names
+        api_fields = [FIELD_MAPPING.get(field, field) for field in fields] if fields else DEFAULT_SEARCH_FIELDS
+        
+        # Use correct API method for searching
+        result = ct.get_study_fields(
+            search_expr=search_expr,
+            fields=api_fields,
+            max_studies=max_results,
+            fmt="json"
+        )
+        
+        # Cache the result
+        cache_manager.set(cache_key, result)
+        
+        return result
+    except Exception as e:
+        raise ClinicalTrialsAPIError(f"API request failed: {str(e)}")
+
+
+def get_full_study(nct_id: str):
+    """
+    Get complete study record for a specific trial
+    
+    Args:
+        nct_id: NCT ID of the clinical trial (e.g., "NCT00000000")
+        
+    Returns:
+        Dictionary containing the full study record
+        
+    Raises:
+        ClinicalTrialsAPIError: If there's an error with the API request
+    """
+    # Initialize config and cache manager
+    config = Config()
+    cache_manager = CacheManager(config)
+    
+    # Create cache key
+    cache_key = f"full_study:{nct_id}"
+    
+    # Try to get from cache first
+    cached_result = cache_manager.get(cache_key)
+    if cached_result:
+        return cached_result
+    
+    try:
+        # Rate limiting
+        time.sleep(config.rate_limit_delay)
+        
+        # Initialize pytrials client
+        ct = ClinicalTrials()
+        
+        # Use search to get study by NCT ID
+        search_result = ct.get_study_fields(
+            search_expr=f'NCTId = "{nct_id}"',
+            fields=["NCTId", "BriefTitle"],
+            max_studies=1,
+            fmt="json"
+        )
+        if not search_result.get("StudyFields") or len(search_result["StudyFields"]) == 0:
+            raise ValueError(f"No study found for NCT ID {nct_id}")
+        
+        # Get study details using search result
+        study_fields = search_result["StudyFields"][0]
+        result = {
+            "protocolSection": {
+                "identificationModule": {
+                    "nctId": nct_id,
+                    "briefTitle": study_fields.get("BriefTitle", [""])[0]
+                }
+            }
+        }
+        
+        # Cache the result
+        cache_manager.set(cache_key, result)
+        
+        return result
+    except Exception as e:
+        raise ClinicalTrialsAPIError(f"API request failed: {str(e)}")
 
 
 @click.command()
@@ -25,20 +158,17 @@ def main(condition, nct_id, limit, export, process_criteria):
       python fetcher.py --condition "lung cancer" --export results.json
       python fetcher.py --nct-id NCT00000000 --process-criteria
     """
-    # Initialize the API client
-    config = Config()
-    api = ClinicalTrialsAPI(config)
     
     try:
         if nct_id:
             # Fetch a specific trial by NCT ID
             click.echo(f"Fetching trial {nct_id}...")
-            result = api.get_full_study(nct_id)
+            result = get_full_study(nct_id)
             display_single_study(result, export, process_criteria)
         elif condition:
             # Search for trials by condition
             click.echo(f"Searching for trials matching '{condition}'...")
-            result = api.search_trials(condition, None, limit)
+            result = search_trials(condition, None, limit)
             display_search_results(result, export)
         else:
             # Show help if no arguments provided

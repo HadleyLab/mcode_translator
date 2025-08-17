@@ -51,7 +51,7 @@ class MCODEMappingEngine:
             'ICD10CM': ['C50.911', 'C34.90', 'C18.9', 'C22.0', 'C25.9'],
             'CPT': ['12345', '67890'],
             'LOINC': ['12345-6', '78901-2'],
-            'RxNorm': ['123456', '789012']
+            'RxNorm': ['57359', '789012']
         }
         
         # Define cross-walk mappings between coding systems
@@ -68,7 +68,7 @@ class MCODEMappingEngine:
             ('C34.90', 'ICD10CM', 'LOINC'): 'LP78901-2',     # Lung cancer
             
             # RxNorm to SNOMED CT mappings
-            ('123456', 'RxNorm', 'SNOMEDCT'): '386906001',   # Paclitaxel
+            ('57359', 'RxNorm', 'SNOMEDCT'): '386906001',   # Paclitaxel
             ('789012', 'RxNorm', 'SNOMEDCT'): '386907005',   # Doxorubicin
         }
         
@@ -126,7 +126,7 @@ class MCODEMappingEngine:
             },
             'paclitaxel': {
                 'mcode_element': 'MedicationStatement',
-                'primary_code': {'system': 'RxNorm', 'code': '123456'},
+                'primary_code': {'system': 'RxNorm', 'code': '57359'},
                 'mapped_codes': {
                     'SNOMEDCT': '386906001'
                 }
@@ -148,6 +148,13 @@ class MCODEMappingEngine:
                 'primary_code': {'system': 'CPT', 'code': '67890'},
                 'mapped_codes': {}
             },
+            'mastectomy': {
+                'mcode_element': 'Procedure',
+                'primary_code': {'system': 'CPT', 'code': '19303'},
+                'mapped_codes': {
+                    'SNOMEDCT': '373091005'
+                }
+            },
             'genomic testing': {
                 'mcode_element': 'Observation',
                 'primary_code': {'system': 'CPT', 'code': '81479'},
@@ -156,14 +163,65 @@ class MCODEMappingEngine:
                 }
             },
             # Breast cancer-specific biomarkers
+            'er-positive': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP417347-6'},
+                'value': 'Positive'
+            },
+            'er-negative': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP417347-6'},
+                'value': 'Negative'
+            },
+            'pr-positive': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP417348-4'},
+                'value': 'Positive'
+            },
+            'pr-negative': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP417348-4'},
+                'value': 'Negative'
+            },
             'her2-positive': {
                 'mcode_element': 'Observation',
-                'primary_code': {'system': 'LOINC', 'code': '48676-1'},
+                'primary_code': {'system': 'LOINC', 'code': 'LP417351-8'},
                 'value': 'Positive'
             },
             'her2-negative': {
                 'mcode_element': 'Observation',
-                'primary_code': {'system': 'LOINC', 'code': '48676-1'},
+                'primary_code': {'system': 'LOINC', 'code': 'LP417351-8'},
+                'value': 'Negative'
+            },
+            # Support for natural language forms
+            'estrogen receptor positive': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP417347-6'},
+                'value': 'Positive'
+            },
+            'estrogen receptor negative': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP417347-6'},
+                'value': 'Negative'
+            },
+            'progesterone receptor positive': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP417348-4'},
+                'value': 'Positive'
+            },
+            'progesterone receptor negative': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP417348-4'},
+                'value': 'Negative'
+            },
+            'HER2 positive': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP417351-8'},
+                'value': 'Positive'
+            },
+            'HER2 negative': {
+                'mcode_element': 'Observation',
+                'primary_code': {'system': 'LOINC', 'code': 'LP417351-8'},
                 'value': 'Negative'
             },
             'hr-positive': {
@@ -700,7 +758,7 @@ class MCODEMappingEngine:
             'C18.9': 'Malignant neoplasm of colon',
             '12345': 'Chemotherapy procedure',
             '67890': 'Radiation therapy procedure',
-            '123456': 'Paclitaxel',
+            '57359': 'Paclitaxel',
             '789012': 'Doxorubicin'
         }
         

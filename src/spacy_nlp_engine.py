@@ -42,8 +42,16 @@ class SpacyNLPEngine(NLPEngine):
             self.nlp = spacy.load("en_core_sci_md")
             logger.info("Medical NLP model loaded successfully")
         except OSError:
-            logger.error("Medical NLP model not found. Please install with: python -m spacy download en_core_sci_md")
-            raise
+            logger.warning("Medical NLP model not found. Falling back to en_core_web_sm")
+            try:
+                self.nlp = spacy.load("en_core_web_sm")
+                logger.info("Fallback NLP model loaded successfully")
+            except OSError:
+                logger.error("Fallback NLP model not found. Please install with: python -m spacy download en_core_web_sm")
+                raise
+            except Exception as e:
+                logger.error(f"Error loading fallback NLP model: {str(e)}")
+                raise
         except Exception as e:
             logger.error(f"Error loading medical NLP model: {str(e)}")
             raise
@@ -98,6 +106,16 @@ class SpacyNLPEngine(NLPEngine):
         ]
         self.exclusion_phrases = [self.nlp.make_doc(text) for text in exclusion_patterns]
         self.matcher.add("EXCLUSION_INDICATOR", self.exclusion_phrases)
+        
+        # Define biomarker patterns
+        biomarker_patterns = [
+            "er+", "er-", "er positive", "er negative", "estrogen receptor positive", "estrogen receptor negative",
+            "pr+", "pr-", "pr positive", "pr negative", "progesterone receptor positive", "progesterone receptor negative",
+            "her2+", "her2-", "her2 positive", "her2 negative", "human epidermal growth factor receptor 2 positive", "human epidermal growth factor receptor 2 negative",
+            "hr+", "hr-", "hr positive", "hr negative", "hormone receptor positive", "hormone receptor negative"
+        ]
+        self.biomarker_phrases = [self.nlp.make_doc(text) for text in biomarker_patterns]
+        self.matcher.add("BIOMARKER", self.biomarker_phrases)
     
     def clean_text(self, text) -> str:
         """
@@ -371,6 +389,61 @@ class SpacyNLPEngine(NLPEngine):
                 })
         
         return genders
+        
+    def extract_biomarkers(self, text: str) -> List[Dict[str, Any]]:
+        """
+        Extract biomarker information from text
+        
+        Args:
+            text: Input text to process
+            
+        Returns:
+            List of biomarker information
+        """
+        biomarkers = []
+        
+        # Patterns for biomarker extraction
+        # ER/PR/HER2/HR with +/-
+        biomarker_patterns = [
+            r'(ER|PR|HER2|HR)[\s\-\+]*(positive|negative|\+|\-)',
+            r'(estrogen receptor|progesterone receptor|human epidermal growth factor receptor 2|hormone receptor)[\s\-\+]*(positive|negative|\+|\-)'
+        ]
+        
+        for pattern in biomarker_patterns:
+            matches = re.finditer(pattern, text, re.IGNORECASE)
+            for match in matches:
+                # Determine name and status
+                if len(match.groups()) >= 2:
+                    name_match = match.group(1)
+                    status_match = match.group(2)
+                    
+                    # Normalize name
+                    name_map = {
+                        'estrogen receptor': 'ER',
+                        'progesterone receptor': 'PR',
+                        'human epidermal growth factor receptor 2': 'HER2',
+                        'hormone receptor': 'HR'
+                    }
+                    name = name_map.get(name_match.lower(), name_match.upper())
+                    
+                    # Normalize status
+                    if status_match.lower() in ['+', 'positive']:
+                        status = 'positive'
+                    elif status_match.lower() in ['-', 'negative']:
+                        status = 'negative'
+                    else:
+                        status = status_match.lower()
+                    
+                    biomarkers.append({
+                        'text': match.group(),
+                        'name': name,
+                        'status': status,
+                        'start': match.start(),
+                        'end': match.end(),
+                        'confidence': 0.9
+                    })
+        
+        return biomarkers
     
     def extract_conditions_with_umls(self, text: str) -> List[Dict[str, Any]]:
         """
@@ -565,6 +638,10 @@ class SpacyNLPEngine(NLPEngine):
         conditions = self.extract_conditions_with_umls(cleaned_text)
         if conditions:
             features['cancer_characteristics']['cancer_type'] = conditions[0]['condition']
+        
+        # Extract biomarkers
+        biomarkers = self.extract_biomarkers(cleaned_text)
+        features['biomarkers'] = biomarkers
         
         # Extract procedures and map to treatment history
         procedures = self.extract_procedures(cleaned_text)

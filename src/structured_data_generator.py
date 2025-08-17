@@ -637,6 +637,15 @@ class StructuredDataGenerator:
                 }
             elif isinstance(value, str):
                 observation["valueString"] = value
+            elif isinstance(value, dict) and "system" in value and "code" in value:
+                # Handle valueCodeableConcept format
+                observation["valueCodeableConcept"] = {
+                    "coding": [{
+                        "system": self._get_system_uri(value["system"]),
+                        "code": value["code"],
+                        "display": self._get_code_display(value["code"])
+                    }]
+                }
         
         return observation
     

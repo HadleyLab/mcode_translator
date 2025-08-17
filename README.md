@@ -22,6 +22,20 @@ Key Updates:
 - **Structured output** in mCODE FHIR format
 - **Modular architecture** for easy extension
 
+## Testing
+
+The mCODE Translator uses a comprehensive, modular testing approach:
+
+- **Unit Tests**: Individual component testing in `tests/unit/`
+- **Integration Tests**: Component interaction testing in `tests/integration/`
+- **Component Tests**: mCODE element and feature testing in `tests/component/`
+- **Shared Components**: Reusable test utilities in `tests/shared/`
+
+Run all tests with:
+```bash
+python run_tests.py
+```
+
 ## Quick Start
 
 ```bash
@@ -31,6 +45,9 @@ python -m spacy download en_core_web_sm
 
 # Run the web interface
 python src/nicegui_interface.py
+
+# Run tests
+python run_tests.py
 
 # Or use the CLI version
 python main.py --input "ER+ breast cancer" --engine regex

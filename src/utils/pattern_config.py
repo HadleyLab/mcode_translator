@@ -37,6 +37,9 @@ COMPLEX_VARIANT_PATTERN = re.compile(
 STAGE_PATTERN = re.compile(r'stage\s+(I{1,3}V?|IV)', re.IGNORECASE)
 CANCER_TYPE_PATTERN = re.compile(r'\b(breast|lung|colorectal)\s+cancer\b', re.IGNORECASE)
 
+# General condition patterns
+CONDITION_PATTERN = re.compile(r'\b(diabetes|hypertension|heart disease)\b', re.IGNORECASE)
+
 # Performance status patterns
 ECOG_PATTERN = re.compile(r'ECOG\s+status?\s*[:=]?\s*([0-4])', re.IGNORECASE)
 
