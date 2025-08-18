@@ -101,7 +101,7 @@ Note: When using `&countTotal=true`, the `totalCount` field contains the total n
 
 ## Key Differences from Previous Versions
 
-1. **Root key**: Use `"studies"` instead of `"StudyFields"` or `"FullStudies"`
+1. **Root key**: Use `"studies"` instead of `"studies"` or `"FullStudies"`
 2. **Case sensitivity**: Use lowercase key names (e.g., `"nctId"` instead of `"NCTId"`)
 3. **Nested structure**: Follow the nested structure: `studies` → `protocolSection` → `identificationModule` → `nctId`
 4. **Full studies**: Include additional sections like `derivedSection` and `hasResults`

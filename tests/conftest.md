@@ -343,8 +343,15 @@ def mock_clinical_trials_api():
     """Provide a mock ClinicalTrials.gov API for testing"""
     with patch('src.data_fetcher.fetcher.ClinicalTrials') as mock_client:
         mock_client.return_value.get_study_fields.return_value = {
-            "StudyFields": [
-                {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
+            "studies": [
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT12345678",
+                            "briefTitle": "Test Study 1"
+                        }
+                    }
+                },
                 {"NCTId": ["NCT87654321"], "BriefTitle": ["Test Study 2"]}
             ]
         }
@@ -395,8 +402,8 @@ def test_api_with_mock(mock_clinical_trials_api, mock_cache_manager):
     
     result = search_trials("cancer", max_results=2)
     
-    assert "StudyFields" in result
-    assert len(result["StudyFields"]) == 2
+    assert "studies" in result
+    assert len(result["studies"]) == 2
     mock_clinical_trials_api.return_value.get_study_fields.assert_called()
 ```
 

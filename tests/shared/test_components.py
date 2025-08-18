@@ -420,7 +420,7 @@ class MockClinicalTrialsAPI:
         self.call_count = 0
         self.rate_limit_exceeded = False
     
-    def get_study_fields(self, search_expr, fields, max_studies=100, fmt="json"):
+    def get_study_fields(self, search_expr, fields, max_studies=100, fmt="json", min_rnk=1):
         """Mock implementation of get_study_fields"""
         self.call_count += 1
         
@@ -434,7 +434,7 @@ class MockClinicalTrialsAPI:
             # Specific NCT ID search
             nct_id = search_expr.split('"')[1] if '"' in search_expr else "NCT00000000"
             return {
-                "StudyFields": [
+                "studies": [
                     {
                         "NCTId": [nct_id],
                         "BriefTitle": [f"Mock Study for {nct_id}"]
@@ -443,17 +443,24 @@ class MockClinicalTrialsAPI:
             }
         else:
             # General search
-            study_count = min(max_studies, 5)  # Limit to 5 for testing
+            # For testing purposes, we'll simulate a large number of studies
+            total_studies = 1000  # Simulate 1000 total studies
+            study_count = min(max_studies, total_studies - min_rnk + 1)
             studies = []
             for i in range(study_count):
+                # Adjust the NCT ID based on the min_rnk parameter
+                nct_id_num = min_rnk + i
                 studies.append({
-                    "NCTId": [f"NCT{i+1:08d}"],
-                    "BriefTitle": [f"Mock Study {i+1}"],
+                    "NCTId": [f"NCT{nct_id_num:08d}"],
+                    "BriefTitle": [f"Mock Study {nct_id_num}"],
                     "Condition": [search_expr],
                     "OverallStatus": ["Recruiting"]
                 })
             
-            return {"StudyFields": studies}
+            return {
+                "studies": studies,
+                "totalCount": total_studies
+            }
     
     def get_full_study(self, nct_id):
         """Mock implementation of get_full_study"""

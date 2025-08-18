@@ -210,7 +210,7 @@ def mock_clinical_trials_api():
     """Provide a mock ClinicalTrials.gov API for testing"""
     with patch('src.data_fetcher.fetcher.ClinicalTrials') as mock_client:
         mock_client.return_value.get_study_fields.return_value = {
-            "StudyFields": [
+            "studies": [
                 {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
                 {"NCTId": ["NCT87654321"], "BriefTitle": ["Test Study 2"]}
             ]
@@ -285,7 +285,7 @@ def test_api_search(mock_clinical_trials_api, mock_cache_manager):
     """Test API search with mocked fixtures"""
     result = search_trials("cancer", max_results=2)
     assert isinstance(result, dict)
-    assert "StudyFields" in result
+    assert "studies" in result
 ```
 
 ## Benefits of Shared Fixtures

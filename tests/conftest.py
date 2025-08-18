@@ -226,9 +226,23 @@ def mock_clinical_trials_api():
     from unittest.mock import patch
     with patch('src.data_fetcher.fetcher.ClinicalTrials') as mock_client:
         mock_client.return_value.get_study_fields.return_value = {
-            "StudyFields": [
-                {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
-                {"NCTId": ["NCT87654321"], "BriefTitle": ["Test Study 2"]}
+            "studies": [
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT12345678",
+                            "briefTitle": "Test Study 1"
+                        }
+                    }
+                },
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT87654321",
+                            "briefTitle": "Test Study 2"
+                        }
+                    }
+                }
             ]
         }
         yield mock_client

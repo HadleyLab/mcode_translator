@@ -243,7 +243,7 @@ class MockClinicalTrialsAPI:
             # Specific NCT ID search
             nct_id = search_expr.split('"')[1] if '"' in search_expr else "NCT00000000"
             return {
-                "StudyFields": [
+                "studies": [
                     {
                         "NCTId": [nct_id],
                         "BriefTitle": [f"Mock Study for {nct_id}"]
@@ -262,7 +262,7 @@ class MockClinicalTrialsAPI:
                     "OverallStatus": ["Recruiting"]
                 })
             
-            return {"StudyFields": studies}
+            return {"studies": studies}
     
     def get_full_study(self, nct_id):
         """Mock implementation of get_full_study"""
@@ -412,8 +412,8 @@ def test_api_with_mock():
     result = mock_api.get_study_fields("cancer", ["NCTId", "BriefTitle"], 2)
     
     # Verify results
-    assert "StudyFields" in result
-    assert len(result["StudyFields"]) == 2
+    assert "studies" in result
+    assert len(result["studies"]) == 2
     assert mock_api.call_count == 1
 ```
 

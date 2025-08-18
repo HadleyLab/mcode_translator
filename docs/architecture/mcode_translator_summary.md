@@ -5,12 +5,13 @@ The mCODE Translator is a sophisticated system designed to process clinical tria
 
 ## System Architecture
 
+**Default NLP Engine**: LLM (deepseek-coder) with fallback to Regex/SpaCy
+
 ### Component Diagram
 ```mermaid
 graph TD
     A[ClinicalTrials.gov API] --> B[Data Fetcher]
-    B --> C[Criteria Parser]
-    C --> D[NLP Engine]
+    B --> D[NLP Engine]
     D --> E[mCODE Mapper]
     E --> F[Structured Data Generator]
     F --> G[Output Formatter]
@@ -25,13 +26,14 @@ graph TD
    - Retrieves clinical trial data from clinicaltrials.gov API
    - Handles rate limiting and pagination
    - Implements caching for performance optimization
+   - Extracts eligibility criteria text from records
 
-2. **Criteria Parser**
-   - Extracts eligibility criteria text from clinical trial records
-   - Identifies structured elements (age limits, gender restrictions)
-   - Segregates inclusion and exclusion criteria
-
-3. **NLP Engine**
+2. **NLP Engine**
+   - **Primary Engine**: LLM (deepseek-coder) for highest accuracy
+   - **Fallback Engines**:
+     - Regex for fast pattern matching
+     - SpaCy with medical models
+   - Specialized for breast cancer biomarker extraction (ER/PR/HER2)
    - Processes unstructured text using medical NLP techniques
    - Identifies medical conditions, treatments, procedures
    - Extracts demographic restrictions and lab values
@@ -39,10 +41,19 @@ graph TD
    - Includes fallback mechanisms for robust operation
 
 4. **mCODE Mapper**
-   - Maps extracted concepts to mCODE data elements
-   - References ICD-10-CM, CPT, LOINC, RxNorm codes
-   - Handles code translations and equivalencies
-   - Applies business rules for mapping decisions
+   - Comprehensive mapping to mCODE FHIR standards
+   - Specialized breast cancer support:
+     - Biomarker mapping (ER/PR/HER2 status)
+     - Genomic variants (BRCA1/2, PIK3CA, TP53)
+     - Treatment history (chemo, radiation, surgery)
+   - Code system support:
+     - ICD-10-CM, CPT, LOINC, RxNorm, SNOMED CT
+     - Cross-walks between systems (ICD10CM ↔ SNOMEDCT)
+   - Advanced features:
+     - mCODE compliance validation
+     - Demographic mapping (age, gender, race/ethnicity)
+     - Structured FHIR resource generation
+     - Confidence scoring for mappings
 
 5. **Structured Data Generator**
    - Creates structured mCODE representations

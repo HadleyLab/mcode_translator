@@ -9,6 +9,11 @@
   - Protein-level variant detection (e.g., p.Val600Glu)
   - Improved biomarker status detection (quantitative values, IHC scores)
   - Deduplication of extracted variants and biomarkers
+- Data Fetcher Dashboard with NiceGUI interface
+- Pagination support using nextPageToken instead of min_rank
+- Enhanced documentation for system architecture and components
+- Comprehensive test suite refactoring with pytest
+- Sample data files for API responses
 
 ## [Unreleased]
 ### Added
@@ -20,11 +25,17 @@
 - Updated ExtractionPipeline to properly handle engine types
 - Improved UI with switches instead of toggles
 - Optimized processing pipeline
+- Refactored ClinicalTrials API integration to use nextPageToken for pagination
+- Updated documentation to reflect current architecture
+- Enhanced error handling and validation in data fetcher
 
 ### Fixed
 - Regex engine selection issues
 - AttributeError in process_criteria()
 - Deprecated code cleanup
+- Test suite refactoring to use pytest consistently
+- Mock API responses to match actual ClinicalTrials.gov API structure
+- Pagination logic and data structure alignment
 
 ## [0.1.0] - 2025-07-01
 ### Initial Release

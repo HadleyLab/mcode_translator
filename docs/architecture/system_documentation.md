@@ -3,9 +3,14 @@
 ## NLP Engine Configuration
 
 ### Default Engine
-- LLM is now the default NLP engine (using deepseek-coder model)
+- LLM (deepseek-coder) is the default NLP engine
 - Provides most accurate extraction but requires API access
 - Fallback to Regex/SpaCy if LLM unavailable
+- Specialized for breast cancer with:
+  - Focused biomarker extraction (ER/PR/HER2/PD-L1)
+  - Genomic variant detection (BRCA1/2, PIK3CA, TP53, HER2 amp)
+  - Treatment history parsing (chemo drugs, radiation, surgery types)
+  - Cancer characteristics (TNM staging, tumor location)
 
 ### Regex Engine Improvements
 - Enhanced genomic variant detection:
@@ -46,9 +51,13 @@ Key Features:
 - **Regex Engine**: Fast pattern matching
 
 ### Core Modules
-- **Criteria Parser**: Identifies inclusion/exclusion sections
 - **Code Extractor**: Maps text to standard codes (ICD-10-CM, CPT, LOINC, RxNorm)
-- **Mapping Engine**: Converts to mCODE format
+- **mCODE Mapping Engine**: Converts to mCODE format with:
+  - Breast cancer-specific mappings (ER/PR/HER2 biomarkers)
+  - Genomic variant handling (BRCA1/2, PIK3CA, TP53)
+  - Treatment history processing (chemo, radiation, surgery)
+  - Code cross-walks between systems (ICD10CM ↔ SNOMEDCT)
+  - mCODE compliance validation
 - **Structured Data Generator**: Creates FHIR resources
 
 ## Data Flow
@@ -71,6 +80,30 @@ Key Features:
   - Regex: 75-85% (fastest)
   - SpaCy: 85-90% (balanced)
   - LLM: 90-95% (most accurate)
+
+## Data Fetcher Dashboard
+
+### Key Features
+- Interactive search interface with real-time results
+- Multiple view modes (cards, list, table)
+- Visual analytics:
+  - Study status distribution (pie chart)
+  - Top conditions (bar chart)
+- Pagination support for large result sets
+- Detailed study view with tabs for overview/full data
+
+### Technical Implementation
+- Built with NiceGUI framework
+- Responsive design for desktop/tablet use
+- Client-side caching for performance
+- Integrated with Data Fetcher API
+- Supports both CLI and web interfaces
+
+### Performance Metrics
+- Initial search: 500-1500ms
+- Page navigation: 200-800ms
+- Study details fetch: 300-1000ms
+- Visualization rendering: <100ms
 
 ## Error Handling and Fallbacks
 - SpaCy engine automatically falls back to en_core_web_sm if en_core_sci_md is not available

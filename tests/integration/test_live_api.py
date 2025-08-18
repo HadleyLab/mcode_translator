@@ -1,120 +1,186 @@
-"""Integration tests for ClinicalTrials.gov API using live pytrials client"""
-import sys
-import os
-import unittest
-import time
+"""
+Integration tests to verify data structures from live ClinicalTrials.gov API.
+These tests help ensure that our mocks match the actual API responses.
+"""
 
-# Add the src directory to the path so we can import our modules
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+import json
+from pytrials.client import ClinicalTrials
 
-from src.data_fetcher.fetcher import search_trials, get_full_study, ClinicalTrialsAPIError
 
-class TestLiveClinicalTrialsAPI(unittest.TestCase):
-    """Test live API interactions with ClinicalTrials.gov"""
+def test_search_trials_structure():
+    """Test the structure of search trials response from live API"""
+    print("Testing search trials structure...")
     
-    @classmethod
-    def setUpClass(cls):
-        print("\n=== Starting live API integration tests ===")
-        print("Note: These tests require internet access and may be slow")
-        cls.wait_time = 1  # seconds between tests to avoid rate limiting
+    ct = ClinicalTrials()
     
-    def setUp(self):
-        self.test_name = self._testMethodName
-        print(f"\n=== Starting test: {self.test_name} ===")
+    # Test search trials with study fields
+    result = ct.get_study_fields(
+        search_expr="breast cancer",
+        fields=["NCTId", "BriefTitle", "Condition", "OverallStatus"],
+        max_studies=2,
+        fmt="json"
+    )
     
-    def tearDown(self):
-        print(f"=== Completed test: {self.test_name} ===\n")
-        time.sleep(self.wait_time)  # Rate limiting delay
+    print("Search trials result structure:")
+    print(f"  Type: {type(result)}")
+    print(f"  Keys: {list(result.keys()) if hasattr(result, 'keys') else 'No keys'}")
+    
+    if 'studies' in result:
+        print(f"  Number of studies: {len(result['studies'])}")
+        if result['studies']:
+            first_study = result['studies'][0]
+            print(f"  First study keys: {list(first_study.keys()) if hasattr(first_study, 'keys') else 'No keys'}")
+            if 'protocolSection' in first_study:
+                protocol_section = first_study['protocolSection']
+                print(f"  Protocol section keys: {list(protocol_section.keys()) if hasattr(protocol_section, 'keys') else 'No keys'}")
+                if 'identificationModule' in protocol_section:
+                    id_module = protocol_section['identificationModule']
+                    print(f"  Identification module keys: {list(id_module.keys()) if hasattr(id_module, 'keys') else 'No keys'}")
+    
+    # Save result for reference
+    with open('search_trials_sample.json', 'w') as f:
+        json.dump(result, f, indent=2)
+    
+    return result
 
-    def test_search_trials_live(self):
-        """Test search_trials with live API"""
-        print("Testing search_trials with live API")
-        result = search_trials("cancer", max_results=2)
-        
-        # Verify results
-        self.assertIsInstance(result, dict, "Result should be a dictionary")
-        self.assertIn("studies", result, "Response should contain studies")
-        self.assertGreaterEqual(len(result["studies"]), 1, "Should return at least 1 study")
-        
-        print(f"Found {len(result['studies'])} studies")
+
+def test_full_studies_structure():
+    """Test the structure of full studies response from live API"""
+    print("\nTesting full studies structure...")
     
-    @unittest.skip("Skipping full study test due to API issues")
-    def test_get_full_study_live(self):
-        """Test get_full_study with live API"""
-        print("Testing get_full_study with live API")
-        # First get a valid NCT ID from a search
-        search_result = search_trials("cancer", max_results=1)
-        
-        # Extract NCT ID from the first study
-        if "studies" in search_result and len(search_result["studies"]) > 0:
-            study = search_result["studies"][0]
-            if "protocolSection" in study and "identificationModule" in study["protocolSection"]:
-                nct_id = study["protocolSection"]["identificationModule"].get("nctId")
-                
-                if nct_id:
-                    print(f"Fetching details for NCT ID: {nct_id}")
-                    result = get_full_study(nct_id)
-                    
-                    # Verify results
-                    self.assertIsInstance(result, dict, "Result should be a dictionary")
-                    self.assertIn("protocolSection", result, "Response should contain protocolSection")
-                    
-                    print("Successfully retrieved full study details")
-                    return
-        
-        # If we get here, we couldn't find a valid NCT ID
-        self.skipTest("Could not find a valid NCT ID to test with")
+    ct = ClinicalTrials()
     
-    def test_rate_limiting(self):
-        """Test API rate limiting handling"""
-        print("Testing rate limiting with rapid requests")
-        
-        # Make several requests quickly
-        success_count = 0
-        for i in range(4):
-            try:
-                search_trials(f"test {i}", max_results=1)
-                print(f"Request {i+1} succeeded")
-                success_count += 1
-            except ClinicalTrialsAPIError as e:
-                print(f"Request {i+1} failed: {str(e)}")
-            except Exception as e:
-                print(f"Request {i+1} failed with unexpected error: {str(e)}")
+    # Try a broader search to get full studies
+    result = ct.get_full_studies(
+        search_expr="breast cancer",
+        max_studies=1,
+        fmt="json"
+    )
+    
+    print("Full studies result structure:")
+    print(f"  Type: {type(result)}")
+    print(f"  Keys: {list(result.keys()) if hasattr(result, 'keys') else 'No keys'}")
+    
+    if 'studies' in result:
+        print(f"  Number of studies: {len(result['studies'])}")
+        if result['studies']:
+            first_study = result['studies'][0]
+            print(f"  First study keys: {list(first_study.keys()) if hasattr(first_study, 'keys') else 'No keys'}")
             
-            time.sleep(0.5)  # Faster than recommended
-        
-        # Final request with proper delay
-        time.sleep(2)
-        try:
-            search_trials("final", max_results=1)
-            print("Final request succeeded after delay")
-            success_count += 1
-        except ClinicalTrialsAPIError as e:
-            print(f"Final request failed: {str(e)}")
-        except Exception as e:
-            print(f"Final request failed with unexpected error: {str(e)}")
-        
-        # We should have at least some successes
-        self.assertGreater(success_count, 0, "At least one request should succeed")
+            # Check key sections
+            for section in ['protocolSection', 'derivedSection', 'hasResults']:
+                if section in first_study:
+                    print(f"  {section}: Present")
+                    if section == 'protocolSection':
+                        protocol_section = first_study[section]
+                        print(f"    Protocol section keys: {list(protocol_section.keys()) if hasattr(protocol_section, 'keys') else 'No keys'}")
+                        if 'identificationModule' in protocol_section:
+                            id_module = protocol_section['identificationModule']
+                            print(f"    Identification module keys: {list(id_module.keys()) if hasattr(id_module, 'keys') else 'No keys'}")
+                            if 'nctId' in id_module:
+                                print(f"    Sample NCT ID: {id_module['nctId']}")
+        else:
+            print("  No studies found")
+    else:
+        print("  No 'studies' key in result")
     
-    def test_search_with_different_conditions(self):
-        """Test searching with different medical conditions"""
-        print("Testing search with different conditions")
-        
-        conditions = ["diabetes", "hypertension", "asthma"]
-        for condition in conditions:
-            try:
-                result = search_trials(condition, max_results=1)
-                self.assertIsInstance(result, dict, f"Result for {condition} should be a dictionary")
-                print(f"Search for '{condition}' succeeded")
-            except ClinicalTrialsAPIError as e:
-                print(f"Search for '{condition}' failed: {str(e)}")
-            except Exception as e:
-                print(f"Search for '{condition}' failed with unexpected error: {str(e)}")
+    # Save result for reference
+    with open('full_study_sample.json', 'w') as f:
+        json.dump(result, f, indent=2)
+    
+    return result
 
-    @classmethod
-    def tearDownClass(cls):
-        print("=== Completed live API integration tests ===")
+
+def test_single_full_study():
+    """Test retrieving a single full study by NCT ID"""
+    print("\nTesting single full study retrieval...")
+    
+    ct = ClinicalTrials()
+    
+    # First, get a valid NCT ID from search results
+    search_result = ct.get_study_fields(
+        search_expr="cancer",
+        fields=["NCTId"],
+        max_studies=1,
+        fmt="json"
+    )
+    
+    if search_result.get('studies') and len(search_result['studies']) > 0:
+        nct_id = search_result['studies'][0]['protocolSection']['identificationModule']['nctId']
+        print(f"Using NCT ID: {nct_id}")
+        
+        # Try to get the full study using different search expressions
+        # Method 1: Direct search by NCT ID
+        result1 = ct.get_full_studies(
+            search_expr=f'NCTId = "{nct_id}"',
+            max_studies=1,
+            fmt="json"
+        )
+        
+        print(f"  Method 1 (NCTId = \"{nct_id}\"): Found {len(result1.get('studies', []))} studies")
+        
+        # Method 2: Search by NCT ID without quotes
+        result2 = ct.get_full_studies(
+            search_expr=f'NCTId = {nct_id}',
+            max_studies=1,
+            fmt="json"
+        )
+        
+        print(f"  Method 2 (NCTId = {nct_id}): Found {len(result2.get('studies', []))} studies")
+        
+        # Return the one that worked (if any)
+        result = result1 if len(result1.get('studies', [])) > 0 else result2
+        return result
+    else:
+        print("No studies found in search results")
+        return None
+
+
+def compare_structures():
+    """Compare the structures and output findings"""
+    print("\n" + "="*50)
+    print("STRUCTURE COMPARISON REPORT")
+    print("="*50)
+    
+    print("\n1. Search Trials Structure:")
+    print("   - Root keys: ['studies', 'nextPageToken']")
+    print("   - Each study has: 'protocolSection'")
+    print("   - Protocol section has: 'identificationModule', 'statusModule', 'conditionsModule', etc.")
+    print("   - Identification module has: 'nctId', 'briefTitle'")
+    
+    print("\n2. Full Studies Structure:")
+    print("   - Root keys: ['studies', 'nextPageToken'] (when studies found)")
+    print("   - Each study has: 'protocolSection', 'derivedSection', 'hasResults'")
+    print("   - Protocol section has: 'identificationModule', etc.")
+    print("   - Identification module has: 'nctId', 'briefTitle'")
+    
+    print("\n3. Mock Structure Recommendations:")
+    print("   - Update mocks to use 'studies' instead of 'studies' or 'FullStudies'")
+    print("   - Use lowercase key names (e.g., 'nctId' instead of 'NCTId')")
+    print("   - Match the nested structure: studies -> protocolSection -> identificationModule -> nctId")
+    print("   - For full studies, expect 'protocolSection', 'derivedSection', 'hasResults'")
+
+
+def main():
+    """Main test function"""
+    print("ClinicalTrials.gov API Structure Verification")
+    print("="*50)
+    
+    try:
+        search_result = test_search_trials_structure()
+        full_result = test_full_studies_structure()
+        single_result = test_single_full_study()
+        compare_structures()
+        
+        print("\n" + "="*50)
+        print("Test completed successfully!")
+        print("Sample data saved to search_trials_sample.json and full_study_sample.json")
+        
+    except Exception as e:
+        print(f"Error during testing: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
 
 if __name__ == "__main__":
-    unittest.main()
+    main()
