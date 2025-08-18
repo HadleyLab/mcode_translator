@@ -1,6 +1,6 @@
 """
 Clinical Trial Data Fetcher Demo Application
-Demonstrates all capabilities of the fetcher.py module using NiceGUI
+Demonstrates search capabilities of the fetcher.py module using NiceGUI
 """
 import json
 import sys
@@ -15,7 +15,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from src.data_fetcher.fetcher import (
     search_trials,
     get_full_study,
-    get_study_fields,
     calculate_total_studies
 )
 from collections import Counter
@@ -102,7 +101,12 @@ def fetch_study_details(nct_id: str):
     
     try:
         ui.notify(f"Fetching details for study {nct_id}...", type='info')
-        current_study_details = get_full_study(nct_id)
+        study_data = get_full_study(nct_id)
+        # Handle case where get_full_study returns a list of studies
+        if isinstance(study_data, dict) and 'studies' in study_data:
+            current_study_details = study_data['studies'][0] if study_data['studies'] else None
+        else:
+            current_study_details = study_data
         ui.notify(f"Loaded details for study {nct_id}", type='positive')
         logger.info(f"Successfully fetched details for study {nct_id}")
         return True
@@ -112,20 +116,6 @@ def fetch_study_details(nct_id: str):
         logger.error(error_msg)
         current_study_details = None
         return False
-
-def fetch_study_fields():
-    """Fetch and display available study fields."""
-    try:
-        ui.notify("Fetching available study fields...", type='info')
-        fields = get_study_fields()
-        ui.notify("Successfully loaded study fields", type='positive')
-        logger.info("Successfully fetched study fields")
-        return fields
-    except Exception as e:
-        error_msg = f"Error fetching study fields: {str(e)}"
-        ui.notify(error_msg, type='negative')
-        logger.error(error_msg)
-        return {}
 
 def export_to_json(data, filename: str):
     """Export data to JSON file."""
@@ -162,11 +152,12 @@ def get_conditions_distribution(studies):
     return Counter(conditions)
 
 # UI Components
-def create_search_tab():
-    """Create the search trials tab."""
+def create_search_interface():
+    """Create the streamlined search interface."""
     
     with ui.column().classes('w-full p-4'):
-        ui.label('Search Clinical Trials').classes('text-h5')
+        ui.label('Clinical Trial Search').classes('text-h4 text-center')
+        ui.markdown('Search for clinical trials and view results with enhanced visualization').classes('text-center')
         
         # Search controls
         with ui.row().classes('w-full items-center'):
@@ -184,11 +175,11 @@ def create_search_tab():
                     update_results_display()
                     create_pagination_controls()
             
-            ui.button('Search', icon='search', on_click=update_search)
+            ui.button('Search', icon='search', on_click=update_search).tooltip('Search for clinical trials')
             
             # Results per page selector
-            ui.label('Results per page:')
-            results_per_page_select = ui.select([10, 20, 50, 100], value=results_per_page)
+            ui.label('Results per page:').tooltip('Number of results to display per page')
+            results_per_page_select = ui.select([10, 20, 50, 100], value=results_per_page).tooltip('Select number of results per page')
             
             def update_results_per_page():
                 global results_per_page, current_page, page_tokens
@@ -213,22 +204,22 @@ def create_search_tab():
         results_info_label = ui.label('').classes('text-subtitle2')
         
         # Results table
-        results_table = ui.table(columns=[], rows=[], pagination=False).classes('w-full')
+        results_table = ui.table(columns=[], rows=[], pagination=False).classes('w-full mt-4')
         results_table.props('wrap-cells dense')
         
         # Pagination controls
-        pagination_controls_container = ui.column().classes('w-full')
+        pagination_controls_container = ui.column().classes('w-full mt-4')
         
         def create_pagination_controls():
             """Create or recreate the pagination controls."""
             pagination_controls_container.clear()
             with pagination_controls_container:
                 with ui.row().classes('w-full justify-center items-center'):
-                    first_button = ui.button('First', on_click=lambda: change_page(1))
-                    prev_button = ui.button('Previous', on_click=lambda: change_page(max(1, current_page - 1)))
-                    page_label = ui.label(f'Page {current_page} of {total_pages}')
-                    next_button = ui.button('Next', on_click=lambda: change_page(min(total_pages, current_page + 1)))
-                    last_button = ui.button('Last', on_click=lambda: change_page(total_pages))
+                    first_button = ui.button('First', on_click=lambda: change_page(1)).tooltip('Go to first page')
+                    prev_button = ui.button('Previous', on_click=lambda: change_page(max(1, current_page - 1))).tooltip('Go to previous page')
+                    page_label = ui.label(f'Page {current_page} of {total_pages}').tooltip('Current page information')
+                    next_button = ui.button('Next', on_click=lambda: change_page(min(total_pages, current_page + 1))).tooltip('Go to next page')
+                    last_button = ui.button('Last', on_click=lambda: change_page(total_pages)).tooltip('Go to last page')
                     
                     # Set button states
                     if current_page == 1:
@@ -279,12 +270,26 @@ def create_search_tab():
                 conditions_module = protocol_section.get('conditionsModule', {})
                 nct_id = identification_module.get('nctId', 'N/A')
                 
+                # Get status for badge
+                status = status_module.get('overallStatus', 'N/A')
+                
+                # Get status color
+                status_color = {
+                    'ACTIVE_NOT_RECRUITING': 'blue',
+                    'RECRUITING': 'green',
+                    'COMPLETED': 'grey',
+                    'TERMINATED': 'red',
+                    'WITHDRAWN': 'orange',
+                    'UNKNOWN': 'gray'
+                }.get(status, 'purple')
+                
                 rows.append({
                     'nct_id': nct_id,
                     'title': identification_module.get('briefTitle', 'N/A'),
                     'conditions': ', '.join(conditions_module.get('conditions', [])[:3]),
-                    'status': status_module.get('overallStatus', 'N/A'),
-                    'actions': 'View Details'
+                    'status': status,
+                    'status_color': status_color,
+                    'actions': nct_id  # Pass NCT ID for the action button
                 })
             
             results_table.rows = rows
@@ -295,11 +300,32 @@ def create_search_tab():
                     # Log the event structure for debugging
                     logger.info(f"Row click event args: {e.args}")
                     
-                    # Get the clicked row data
-                    row_data = e.args[1]  # Second argument contains row data
-                    nct_id = row_data['nct_id']
-                    logger.info(f"Showing details for study: {nct_id}")
-                    await show_study_details(nct_id)
+                    # Get the clicked row data - handle different event structures
+                    if isinstance(e.args, list) and len(e.args) > 1:
+                        # Newer NiceGUI versions use e.args[1] for row data
+                        row_data = e.args[1]
+                    elif isinstance(e.args, dict) and 'args' in e.args:
+                        # Some versions nest args in a dict
+                        row_data = e.args['args'][1] if len(e.args['args']) > 1 else e.args['args'][0]
+                    else:
+                        # Fallback to first item
+                        row_data = e.args[0] if isinstance(e.args, list) and len(e.args) > 0 else e.args
+                    
+                    # Extract NCT ID from row data
+                    if isinstance(row_data, dict) and 'nct_id' in row_data:
+                        nct_id = row_data['nct_id']
+                    else:
+                        # Fallback - try to find NCT ID in the row data structure
+                        nct_id = None
+                        if isinstance(row_data, dict):
+                            nct_id = row_data.get('nct_id') or row_data.get('key') or row_data.get('id')
+                    
+                    if nct_id:
+                        logger.info(f"Showing details for study: {nct_id}")
+                        show_study_details(nct_id)
+                    else:
+                        logger.error(f"Could not extract NCT ID from row data: {row_data}")
+                        ui.notify("Failed to extract study ID", type='negative')
                 except Exception as ex:
                     logger.error(f"Error handling row click: {str(ex)}")
                     ui.notify("Failed to show study details", type='negative')
@@ -313,6 +339,42 @@ def create_search_tab():
             
             # Force update the table
             results_table.update()
+            
+            # Add custom slot for status column to show badges
+            results_table.add_slot('body-cell-status', '''
+                <q-td :props="props">
+                    <q-badge
+                        :color="props.row.status_color"
+                        :label="props.row.status"
+                    />
+                </q-td>
+            ''')
+            
+            # Add custom slot for actions column to show a button
+            results_table.add_slot('body-cell-actions', '''
+                <q-td :props="props">
+                    <q-btn
+                        flat
+                        size="sm"
+                        label="View Details"
+                        icon="visibility"
+                        @click="() => window.showStudyDetails(props.row.actions)"
+                    />
+                </q-td>
+            ''')
+            
+            # Add JavaScript function to show study details
+            results_table.add_slot('bottom', '''
+                <script>
+                    window.showStudyDetails = function(nctId) {
+                        // This will be handled by NiceGUI's native event system
+                        document.dispatchEvent(new CustomEvent('show-studies', {detail: nctId}));
+                    }
+                </script>
+            ''')
+            
+            # Add event handler for view details
+            # results_table.on('show-studies', lambda e: show_study_details(e.args))  # Removed duplicate event handler
             
             # Update info label
             start_result = (current_page - 1) * results_per_page + 1
@@ -385,20 +447,13 @@ def create_search_tab():
             update_results_display()
             create_pagination_controls()
 
-def create_details_tab():
-    """Create the study details tab."""
-    
-    with ui.column().classes('w-full p-4'):
-        ui.label('Study Details').classes('text-h5')
-        ui.label('Search for a study and click "View Details" to see information here.').classes('text-subtitle2')
-
-async def show_study_details(nct_id: str):
+def show_study_details(nct_id: str):
     """Show detailed information for a specific study."""
     success = fetch_study_details(nct_id)
     
     if success and current_study_details:
         # Create a dialog to show the study details
-        with ui.dialog() as dialog, ui.card().classes('w-full'):
+        with ui.dialog() as dialog, ui.card().classes('w-full max-w-4xl'):
             with ui.scroll_area().classes('h-96 w-full'):
                 with ui.column().classes('w-full'):
                     # Basic info
@@ -413,7 +468,7 @@ async def show_study_details(nct_id: str):
                             ui.label(identification_module.get('briefTitle', 'N/A')).classes('text-h6')
                             ui.label(identification_module.get('nctId', 'N/A')).classes('text-subtitle2')
                         
-                        # Status badge
+                        # Status badge with tooltip
                         status = status_module.get('overallStatus', 'N/A')
                         status_color = {
                             'ACTIVE_NOT_RECRUITING': 'blue',
@@ -423,7 +478,7 @@ async def show_study_details(nct_id: str):
                             'WITHDRAWN': 'red',
                             'UNKNOWN': 'gray'
                         }.get(status, 'gray')
-                        ui.badge(status, color=status_color).classes('self-end')
+                        ui.badge(status, color=status_color).tooltip(f'Study status: {status}').classes('self-end')
                     
                     # Expandable sections
                     with ui.expansion('Description', icon='description').classes('w-full'):
@@ -465,131 +520,9 @@ async def show_study_details(nct_id: str):
     else:
         ui.notify('Failed to load study details', type='negative')
 
-def create_fields_tab():
-    """Create the study fields tab."""
-    
-    with ui.column().classes('w-full p-4'):
-        ui.label('Available Study Fields').classes('text-h5')
-        ui.label('Loading available fields from ClinicalTrials.gov API...').classes('text-subtitle2')
-        
-        fields_table = ui.table(columns=[], rows=[], pagination=False).classes('w-full')
-        
-        # Load fields
-        fields = fetch_study_fields()
-        if fields:
-            # Set columns
-            fields_table.columns = [
-                {'name': 'format', 'label': 'Format', 'field': 'format'},
-                {'name': 'fields', 'label': 'Available Fields', 'field': 'fields'}
-            ]
-            
-            # Set rows
-            rows = []
-            for format_name, field_list in fields.items():
-                rows.append({
-                    'format': format_name,
-                    'fields': ', '.join(field_list[:10]) + (f' and {len(field_list)-10} more...' if len(field_list) > 10 else '')
-                })
-            
-            fields_table.rows = rows
-        else:
-            ui.label('Failed to load study fields').classes('text-negative')
-
-def create_stats_tab():
-    """Create the statistics tab."""
-    
-    with ui.column().classes('w-full p-4'):
-        ui.label('Study Statistics').classes('text-h5')
-        
-        # Search controls
-        with ui.row().classes('w-full items-center'):
-            stats_search_input = ui.input(
-                label='Search Expression',
-                placeholder='Enter search terms (e.g., "breast cancer")',
-                value=search_expression
-            ).classes('flex-grow')
-            
-            def calculate_stats():
-                try:
-                    stats = calculate_total_studies(stats_search_input.value)
-                    total_label.set_text(f"Total Studies: {stats.get('total_studies', 0)}")
-                    pages_label.set_text(f"Total Pages: {stats.get('total_pages', 0)}")
-                    page_size_label.set_text(f"Page Size: {stats.get('page_size', 100)}")
-                except Exception as e:
-                    ui.notify(f"Error calculating statistics: {str(e)}", type='negative')
-            
-            ui.button('Calculate', icon='calculate', on_click=calculate_stats)
-        
-        # Results
-        total_label = ui.label('Total Studies: 0').classes('text-h6')
-        pages_label = ui.label('Total Pages: 0').classes('text-h6')
-        page_size_label = ui.label('Page Size: 100').classes('text-h6')
-        
-        # Export button
-        def export_stats():
-            try:
-                stats = calculate_total_studies(stats_search_input.value)
-                filename = f"study_statistics_{stats_search_input.value.replace(' ', '_')}.json"
-                export_to_json(stats, filename)
-            except Exception as e:
-                ui.notify(f"Error exporting statistics: {str(e)}", type='negative')
-        
-        ui.button('Export Statistics', icon='download', on_click=export_stats)
-
-# Add JavaScript functions for actions
-js_functions = '''
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        ui.notify('Copied to clipboard: ' + text, {type: 'positive'});
-    }).catch(err => {
-        ui.notify('Failed to copy: ' + err, {type: 'negative'});
-    });
-}
-
-function exportStudy(nctId) {
-    // This will be handled by NiceGUI's native event system
-    document.dispatchEvent(new CustomEvent('export-study', {detail: nctId}));
-}
-
-// Store the nctId when buttons are clicked
-window.nctIdForDetails = null;
-window.copyToClipboard = copyToClipboard;
-window.exportStudy = exportStudy;
-'''
-
-# Main UI
+# Main UI - Simplified to only include search functionality
 with ui.column().classes('w-full'):
-    ui.add_head_html(f'<script>{js_functions}</script>')
-    ui.label('Clinical Trial Data Fetcher Demo').classes('text-h4 text-center')
-    ui.markdown('''
-    This application demonstrates all capabilities of the Clinical Trial Data Fetcher:
-    
-    * Search clinical trials with pagination
-    * View detailed study information
-    * Explore available study fields
-    * Calculate study statistics
-    * Export data to JSON files
-    ''').classes('text-center')
-    
-    # Tabs
-    with ui.tabs().classes('w-full') as tabs:
-        search_tab = ui.tab('Search Trials')
-        details_tab = ui.tab('Study Details')
-        fields_tab = ui.tab('Study Fields')
-        stats_tab = ui.tab('Statistics')
-    
-    with ui.tab_panels(tabs, value=search_tab).classes('w-full'):
-        with ui.tab_panel(search_tab):
-            create_search_tab()
-        
-        with ui.tab_panel(details_tab) as details_tab_content:
-            create_details_tab()
-        
-        with ui.tab_panel(fields_tab):
-            create_fields_tab()
-        
-        with ui.tab_panel(stats_tab):
-            create_stats_tab()
+    create_search_interface()
 
 # Run the app
-ui.run(title='Clinical Trial Data Fetcher Demo', port=8084)
+ui.run(title='Clinical Trial Search', port=8084)

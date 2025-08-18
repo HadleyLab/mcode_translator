@@ -27,6 +27,17 @@ FIELD_MAPPING = {
     "EligibilityCriteria": "EligibilityCriteria"
 }
 
+# Fields that are valid for JSON format in ClinicalTrials API
+VALID_JSON_FIELDS = [
+    "NCTId",
+    "BriefTitle",
+    "Condition",
+    "OverallStatus",
+    "BriefSummary",
+    "StartDate",
+    "CompletionDate"
+]
+
 DEFAULT_SEARCH_FIELDS = [
     "NCTId",
     "BriefTitle",
@@ -170,7 +181,7 @@ def get_full_study(nct_id: str):
         # First try with the NCT ID directly
         try:
             # Use specific fields like in search_trials to avoid issues with fields=None
-            api_fields = [FIELD_MAPPING.get(field, field) for field in DEFAULT_SEARCH_FIELDS]
+            api_fields = [FIELD_MAPPING.get(field, field) for field in VALID_JSON_FIELDS]
             result = ct.get_study_fields(
                 search_expr=search_expr,
                 fields=api_fields,
@@ -190,7 +201,7 @@ def get_full_study(nct_id: str):
             logger.info(f"First attempt failed, trying search expression with quotes: {search_expr}")
             try:
                 # Use specific fields like in search_trials to avoid issues with fields=None
-                api_fields = [FIELD_MAPPING.get(field, field) for field in DEFAULT_SEARCH_FIELDS]
+                api_fields = [FIELD_MAPPING.get(field, field) for field in VALID_JSON_FIELDS]
                 result = ct.get_study_fields(
                     search_expr=search_expr,
                     fields=api_fields,
