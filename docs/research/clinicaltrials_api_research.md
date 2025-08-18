@@ -48,7 +48,7 @@ The API returns data in XML format by default, with JSON support available. The 
 ## Example Response Structure
 ```json
 {
-  "StudyFields": {
+  "studies": {
     "MatchedStudies": [
       {
         "StudyId": "NCT00000000",

@@ -17,8 +17,15 @@ class TestClinicalTrialsFetcher:
         
         # Set up mocks
         mock_clinical_trials_api.return_value.get_study_fields.return_value = {
-            "StudyFields": [
-                {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
+            "studies": [
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT12345678",
+                            "briefTitle": "Test Study 1"
+                        }
+                    }
+                },
                 {"NCTId": ["NCT87654321"], "BriefTitle": ["Test Study 2"]}
             ]
         }
@@ -29,9 +36,9 @@ class TestClinicalTrialsFetcher:
         
         # Verify results
         assert isinstance(result, dict)
-        assert "StudyFields" in result
-        assert len(result["StudyFields"]) == 2
-        assert result["StudyFields"][0]["NCTId"][0] == "NCT12345678"
+        assert "studies" in result
+        assert len(result["studies"]) == 2
+        assert result["studies"][0]["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
         
         # Verify cache was set
         mock_cache_manager.return_value.set.assert_called()
@@ -42,8 +49,15 @@ class TestClinicalTrialsFetcher:
         
         # Set up mocks
         mock_cache_manager.return_value.get.return_value = {
-            "StudyFields": [
-                {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]},
+            "studies": [
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT12345678",
+                            "briefTitle": "Test Study 1"
+                        }
+                    }
+                },
                 {"NCTId": ["NCT87654321"], "BriefTitle": ["Test Study 2"]}
             ]
         }
@@ -53,8 +67,8 @@ class TestClinicalTrialsFetcher:
         
         # Verify results
         assert isinstance(result, dict)
-        assert "StudyFields" in result
-        assert len(result["StudyFields"]) == 2
+        assert "studies" in result
+        assert len(result["studies"]) == 2
         
         # Verify API was not called
         mock_clinical_trials_api.return_value.get_study_fields.assert_not_called()
@@ -122,15 +136,22 @@ class TestClinicalTrialsFetcher:
         # Call function and verify exception
         with pytest.raises(ClinicalTrialsAPIError):
             search_trials("cancer")
-
+    
     def test_search_trials_pagination(self, mock_clinical_trials_api, mock_cache_manager):
         """Test search_trials function with pagination"""
         from src.data_fetcher.fetcher import search_trials
         
         # Set up mocks
         mock_clinical_trials_api.return_value.get_study_fields.return_value = {
-            "StudyFields": [
-                {"NCTId": ["NCT00000001"], "BriefTitle": ["Test Study 1"]},
+            "studies": [
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT00000001",
+                            "briefTitle": "Test Study 1"
+                        }
+                    }
+                },
                 {"NCTId": ["NCT00000002"], "BriefTitle": ["Test Study 2"]}
             ]
         }
@@ -141,9 +162,9 @@ class TestClinicalTrialsFetcher:
         
         # Verify results
         assert isinstance(result, dict)
-        assert "StudyFields" in result
-        assert len(result["StudyFields"]) == 2
-        assert result["StudyFields"][0]["NCTId"][0] == "NCT00000001"
+        assert "studies" in result
+        assert len(result["studies"]) == 2
+        assert result["studies"][0]["protocolSection"]["identificationModule"]["nctId"] == "NCT00000001"
         
         # Verify pagination metadata
         assert "pagination" in result
@@ -188,7 +209,7 @@ class TestClinicalTrialsFetcher:
         
         # Set up mocks
         mock_clinical_trials_api.return_value.get_study_fields.return_value = {
-            "StudyFields": []
+            "studies": []
         }
         mock_cache_manager.return_value.get.return_value = None
         
@@ -207,7 +228,7 @@ class TestClinicalTrialsFetcher:
         
         # Set up mocks
         mock_clinical_trials_api.return_value.get_study_fields.return_value = {
-            "StudyFields": [
+            "studies": [
                 {"NCTId": ["NCT12345678"], "BriefTitle": ["Test Study 1"]}
             ]
         }
@@ -218,8 +239,8 @@ class TestClinicalTrialsFetcher:
         
         # Verify results
         assert isinstance(result, dict)
-        assert "StudyFields" in result
-        assert len(result["StudyFields"]) == 1
+        assert "studies" in result
+        assert len(result["studies"]) == 1
     
     def test_get_full_study_not_found(self, mock_clinical_trials_api, mock_cache_manager):
         """Test get_full_study function when study is not found"""
@@ -234,7 +255,7 @@ class TestClinicalTrialsFetcher:
         # Call function and verify exception
         with pytest.raises(ClinicalTrialsAPIError):
             get_full_study("NCT99999999")
-
+    
     def test_search_trials_data_structure(self, mock_clinical_trials_api, mock_cache_manager):
         """Test that search_trials returns correct data structure"""
         from src.data_fetcher.fetcher import search_trials
@@ -309,6 +330,37 @@ class TestClinicalTrialsFetcher:
         # Verify identification module structure
         assert "identificationModule" in result["protocolSection"]
         assert result["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
+    
+    def test_get_study_fields(self, mock_clinical_trials_api):
+        """Test get_study_fields function"""
+        from src.data_fetcher.fetcher import get_study_fields
+        
+        # Set up mocks
+        mock_study_fields = {
+            'csv': ['NCT Number', 'Study Title', 'Study Status'],
+            'json': ['NCTId', 'BriefTitle', 'OverallStatus']
+        }
+        mock_clinical_trials_api.return_value.study_fields = mock_study_fields
+        
+        # Call function
+        result = get_study_fields()
+        
+        # Verify results
+        assert isinstance(result, dict)
+        assert 'csv' in result
+        assert 'json' in result
+        assert result['json'] == ['NCTId', 'BriefTitle', 'OverallStatus']
+    
+    def test_get_study_fields_error(self, mock_clinical_trials_api):
+        """Test get_study_fields function with API error"""
+        from src.data_fetcher.fetcher import get_study_fields, ClinicalTrialsAPIError
+        
+        # Set up mocks to raise exception
+        mock_clinical_trials_api.side_effect = Exception("API error")
+        
+        # Call function and verify exception
+        with pytest.raises(ClinicalTrialsAPIError):
+            get_study_fields()
 
 
 if __name__ == '__main__':

@@ -39,7 +39,7 @@ GET https://clinicaltrials.gov/api/query/study_fields?
 ### Data Structure
 ```json
 {
-  "StudyFields": {
+  "studies": {
     "MatchedStudies": [
       {
         "StudyId": "NCT00000000",

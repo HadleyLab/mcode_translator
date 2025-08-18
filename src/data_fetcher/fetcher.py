@@ -4,6 +4,7 @@ import sys
 import time
 import hashlib
 import os
+import logging
 # Add src directory to path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from pytrials.client import ClinicalTrials
@@ -19,10 +20,23 @@ FIELD_MAPPING = {
     "NCTId": "NCTId",
     "BriefTitle": "BriefTitle",
     "Condition": "Condition",
-    "OverallStatus": "OverallStatus"
+    "OverallStatus": "OverallStatus",
+    "BriefSummary": "BriefSummary",
+    "StartDate": "StartDate",
+    "CompletionDate": "CompletionDate",
+    "EligibilityCriteria": "EligibilityCriteria"
 }
 
-DEFAULT_SEARCH_FIELDS = ["NCTId", "BriefTitle", "Condition", "OverallStatus"]
+DEFAULT_SEARCH_FIELDS = [
+    "NCTId",
+    "BriefTitle",
+    "Condition",
+    "OverallStatus",
+    "BriefSummary",
+    "StartDate",
+    "CompletionDate",
+    "EligibilityCriteria"
+]
 
 
 class ClinicalTrialsAPIError(Exception):
@@ -30,7 +44,7 @@ class ClinicalTrialsAPIError(Exception):
     pass
 
 
-def search_trials(search_expr: str, fields=None, max_results: int = 100, min_rank: int = 1):
+def search_trials(search_expr: str, fields=None, max_results: int = 100, page_token: str = None, use_cache: bool = True):
     """
     Search for clinical trials matching the expression with pagination support
     
@@ -38,7 +52,8 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, min_ran
         search_expr: Search expression (e.g., "breast cancer")
         fields: List of fields to retrieve (default: None for all fields)
         max_results: Maximum number of results to return (default: 100)
-        min_rank: Minimum rank for pagination (default: 1)
+        page_token: Page token for pagination (default: None)
+        use_cache: Whether to use caching (default: True)
         
     Returns:
         Dictionary containing search results with pagination metadata
@@ -51,13 +66,20 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, min_ran
     cache_manager = CacheManager(config)
     
     # Create cache key that includes pagination parameters
-    cache_key_data = f"search:{search_expr}:{','.join(fields) if fields else 'all'}:{max_results}:rank{min_rank}"
+    if page_token:
+        cache_key_data = f"search:{search_expr}:{','.join(fields) if fields else 'all'}:{max_results}:token{page_token}"
+    else:
+        cache_key_data = f"search:{search_expr}:{','.join(fields) if fields else 'all'}:{max_results}:tokenNone"
+    print(f"DEBUG: cache_key_data={cache_key_data}, page_token={page_token}")
     cache_key = hashlib.md5(cache_key_data.encode()).hexdigest()
     
-    # Try to get from cache first
-    cached_result = cache_manager.get(cache_key)
-    if cached_result:
-        return cached_result
+    # Try to get from cache first (if caching is enabled)
+    if use_cache:
+        cached_result = cache_manager.get(cache_key)
+        if cached_result:
+            print(f"DEBUG: search_trials returning cached result, cache_key={cache_key}")
+            print(f"DEBUG: Cached result has {len(cached_result.get('studies', []))} studies")
+            return cached_result
     
     try:
         # Rate limiting
@@ -69,6 +91,10 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, min_ran
         # Map field names to valid API names
         api_fields = [FIELD_MAPPING.get(field, field) for field in fields] if fields else DEFAULT_SEARCH_FIELDS
         
+        # Add pageToken to the search expression if provided
+        if page_token:
+            search_expr = f"{search_expr}&pageToken={page_token}"
+        
         # Use pytrials client properly
         result = ct.get_study_fields(
             search_expr=search_expr,
@@ -79,13 +105,17 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, min_ran
         
         # Add pagination metadata to the result
         if isinstance(result, dict):
+            print(f"DEBUG: search_trials returning {len(result.get('studies', []))} studies")
             result['pagination'] = {
-                'max_results': max_results,
-                'min_rank': min_rank,
-                'next_min_rank': min_rank + max_results if result.get('studies') else min_rank
+                'max_results': max_results
             }
+            
+            # Add nextPageToken if it exists in the response
+            if 'nextPageToken' in result:
+                result['nextPageToken'] = result['nextPageToken']
         
         # Cache the result
+        print(f"DEBUG: search_trials caching result")
         cache_manager.set(cache_key, result)
         
         return result
@@ -125,24 +155,99 @@ def get_full_study(nct_id: str):
         # Initialize pytrials client
         ct = ClinicalTrials()
         
-        # Use get_full_studies to get complete study record
-        result = ct.get_full_studies(
-            search_expr=f'NCTId = "{nct_id}"',
-            max_studies=1,
-            fmt="json"
-        )
+        # Log the NCT ID we're trying to fetch
+        logger = logging.getLogger(__name__)
+        # Make sure logging is configured
+        if not logger.handlers:
+            logging.basicConfig(level=logging.INFO)
+        logger.info(f"Attempting to fetch study details for NCT ID: {nct_id}")
         
-        # Check if study was found
-        if not result.get("studies") or len(result["studies"]) == 0:
-            raise ValueError(f"No study found for NCT ID {nct_id}")
+        # Use get_study_fields with the NCT ID as search expression
+        # Try different search expression formats to handle API variations
+        search_expr = nct_id
+        logger.info(f"Trying search expression: {search_expr}")
         
-        # Extract the study data
-        study_data = result["studies"][0]
+        # First try with the NCT ID directly
+        try:
+            # Use specific fields like in search_trials to avoid issues with fields=None
+            api_fields = [FIELD_MAPPING.get(field, field) for field in DEFAULT_SEARCH_FIELDS]
+            result = ct.get_study_fields(
+                search_expr=search_expr,
+                fields=api_fields,
+                max_studies=1,
+                fmt="json"
+            )
+        except Exception as e:
+            logger.error(f"Exception in get_study_fields for NCT ID {nct_id} with search expression '{search_expr}': {str(e)}")
+            result = None
+        
+        # Log the result for debugging
+        logger.info(f"First attempt result type: {type(result)}, value: {result}")
+        
+        # If we get None or empty result, try with quotes around the NCT ID
+        if result is None or (isinstance(result, dict) and 'studies' in result and len(result['studies']) == 0):
+            search_expr = f'"{nct_id}"'
+            logger.info(f"First attempt failed, trying search expression with quotes: {search_expr}")
+            try:
+                # Use specific fields like in search_trials to avoid issues with fields=None
+                api_fields = [FIELD_MAPPING.get(field, field) for field in DEFAULT_SEARCH_FIELDS]
+                result = ct.get_study_fields(
+                    search_expr=search_expr,
+                    fields=api_fields,
+                    max_studies=1,
+                    fmt="json"
+                )
+            except Exception as e:
+                logger.error(f"Exception in get_study_fields for NCT ID {nct_id} with search expression '{search_expr}': {str(e)}")
+                result = None
+            logger.info(f"Second attempt result type: {type(result)}, value: {result}")
+        
+        # Log the result for debugging
+        # Make sure logging is configured
+        if not logger.handlers:
+            logging.basicConfig(level=logging.INFO)
+        logger.info(f"Attempt result type: {type(result)}, value: {result}")
+        
+        # Check if we got a valid response
+        if result is None:
+            raise ValueError(f"No response received from API for NCT ID {nct_id} after multiple attempts")
+        
+        # Verify result is a dictionary
+        if not isinstance(result, dict):
+            raise ValueError(f"Invalid response format from API for NCT ID {nct_id}: expected dict, got {type(result)}")
+        
+        # Check if studies key exists and has content
+        if 'studies' not in result:
+            raise ValueError(f"API response missing 'studies' key for NCT ID {nct_id}")
+        
+        studies = result['studies']
+        if not isinstance(studies, list) or len(studies) == 0:
+            raise ValueError(f"No study found for NCT ID {nct_id} after multiple attempts")
+        
+        # Extract the study from the response
+        study = studies[0]
         
         # Cache the result
-        cache_manager.set(cache_key, study_data)
+        cache_manager.set(cache_key, study)
         
-        return study_data
+        return study
+    except Exception as e:
+        raise ClinicalTrialsAPIError(f"API request failed for NCT ID {nct_id}: {str(e)}")
+
+
+def get_study_fields():
+    """
+    Get the list of available study fields from the ClinicalTrials.gov API
+    
+    Returns:
+        Dictionary containing available fields for different formats
+    """
+    try:
+        # Initialize pytrials client
+        ct = ClinicalTrials()
+        
+        # Return the study fields attribute
+        return ct.study_fields
     except Exception as e:
         raise ClinicalTrialsAPIError(f"API request failed: {str(e)}")
 

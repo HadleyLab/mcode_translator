@@ -1107,4 +1107,4 @@ def on_reset():
 search_button.on('click', on_search)
 reset_button.on('click', on_reset)
 
-ui.run(title='mCODE Clinical Trials Search', port=8081)
+ui.run(title='mCODE Clinical Trials Search')
