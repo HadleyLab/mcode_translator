@@ -16,6 +16,7 @@ This directory contains all the documentation for the mCODE Translator project, 
 - [Output Formats and Validation Design](components/output_formats_and_validation_design.md) - Design of output formats and validation processes
 - [Structured mCODE Representation Generator Design](components/structured_mcod_representation_generator_design.md) - Design of the structured data generator
 - [Patient Characteristic Identification Design](components/patient_characteristic_identification_design.md) - Design of patient characteristic identification functionality
+- [mCODE Extraction and Mapping Pipeline](components/mcode_extraction_mapping_pipeline.md) - Comprehensive overview of the mCODE extraction and mapping pipeline
 
 ### [Development](development/)
 - [Development Plan](development/development_plan.md) - Overall development plan for implementing missing components

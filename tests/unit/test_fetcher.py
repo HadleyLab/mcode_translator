@@ -106,6 +106,82 @@ class TestClinicalTrialsFetcher:
         # Verify cache was set
         mock_cache_manager.return_value.set.assert_called()
     
+    def test_get_full_study_with_eligibility_criteria(self, mock_clinical_trials_api, mock_cache_manager):
+        """Test get_full_study function returns eligibility criteria"""
+        from src.data_fetcher.fetcher import get_full_study
+        
+        # Set up mocks with eligibility criteria
+        mock_clinical_trials_api.return_value.get_full_studies.return_value = {
+            "studies": [
+                {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": "NCT12345678",
+                            "briefTitle": "Test Study 1"
+                        },
+                        "eligibilityModule": {
+                            "eligibilityCriteria": "Inclusion Criteria:\n- Age > 18 years\n\nExclusion Criteria:\n- Pregnant women"
+                        }
+                    }
+                }
+            ]
+        }
+        mock_cache_manager.return_value.get.return_value = None
+        
+        # Call function
+        result = get_full_study("NCT12345678")
+        
+        # Verify results
+        assert isinstance(result, dict)
+        assert "protocolSection" in result
+        assert result["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
+        
+        # Verify eligibility criteria are included
+        assert "eligibilityModule" in result["protocolSection"]
+        assert "eligibilityCriteria" in result["protocolSection"]["eligibilityModule"]
+        criteria = result["protocolSection"]["eligibilityModule"]["eligibilityCriteria"]
+        assert "Inclusion Criteria" in criteria
+        assert "Exclusion Criteria" in criteria
+        
+        # Verify cache was set
+        mock_cache_manager.return_value.set.assert_called()
+    
+    def test_get_full_study_with_quotes_fallback(self, mock_clinical_trials_api, mock_cache_manager):
+        """Test get_full_study function with quotes fallback"""
+        from src.data_fetcher.fetcher import get_full_study
+        
+        # Set up mocks to simulate first attempt failing and second attempt succeeding
+        mock_clinical_trials_api.return_value.get_full_studies.side_effect = [
+            Exception("First attempt failed"),  # First call fails
+            {
+                "studies": [
+                    {
+                        "protocolSection": {
+                            "identificationModule": {
+                                "nctId": "NCT12345678",
+                                "briefTitle": "Test Study 1"
+                            }
+                        }
+                    }
+                ]
+            }  # Second call succeeds
+        ]
+        mock_cache_manager.return_value.get.return_value = None
+        
+        # Call function
+        result = get_full_study("NCT12345678")
+        
+        # Verify results
+        assert isinstance(result, dict)
+        assert "protocolSection" in result
+        assert result["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
+        
+        # Verify that get_full_studies was called twice (first attempt failed, second succeeded)
+        assert mock_clinical_trials_api.return_value.get_full_studies.call_count == 2
+        
+        # Verify cache was set
+        mock_cache_manager.return_value.set.assert_called()
+    
     def test_get_full_study_cached(self, mock_cache_manager):
         """Test get_full_study with cached results"""
         from src.data_fetcher.fetcher import get_full_study
@@ -365,6 +441,99 @@ class TestClinicalTrialsFetcher:
         # Call function and verify exception
         with pytest.raises(ClinicalTrialsAPIError):
             get_study_fields()
+    
+    def test_valid_json_fields_constant(self):
+        """Test that VALID_JSON_FIELDS contains only valid fields"""
+        from src.data_fetcher.fetcher import VALID_JSON_FIELDS
+        
+        # These are the known valid JSON fields from the API
+        valid_fields = [
+            "NCTId",
+            "BriefTitle",
+            "Condition",
+            "OverallStatus",
+            "BriefSummary",
+            "StartDate",
+            "CompletionDate"
+        ]
+        
+        # Verify all fields in VALID_JSON_FIELDS are valid
+        for field in VALID_JSON_FIELDS:
+            assert field in valid_fields, f"Field {field} is not a valid JSON field"
+    
+    def test_field_mapping_constant(self):
+        """Test that FIELD_MAPPING maps to valid API fields"""
+        from src.data_fetcher.fetcher import FIELD_MAPPING
+        
+        # These are the known valid JSON fields from the API
+        valid_api_fields = [
+            "NCTId",
+            "BriefTitle",
+            "Condition",
+            "OverallStatus",
+            "BriefSummary",
+            "StartDate",
+            "CompletionDate"
+        ]
+        
+        # Verify all mapped fields are valid API fields
+        for our_field, api_field in FIELD_MAPPING.items():
+            assert api_field in valid_api_fields, f"API field {api_field} for our field {our_field} is not valid"
+    
+    def test_default_search_fields_constant(self):
+        """Test that DEFAULT_SEARCH_FIELDS contains only valid fields"""
+        from src.data_fetcher.fetcher import DEFAULT_SEARCH_FIELDS
+        
+        # These are the known valid JSON fields from the API
+        valid_fields = [
+            "NCTId",
+            "BriefTitle",
+            "Condition",
+            "OverallStatus",
+            "BriefSummary",
+            "StartDate",
+            "CompletionDate"
+        ]
+        
+        # Verify all fields in DEFAULT_SEARCH_FIELDS are valid
+        for field in DEFAULT_SEARCH_FIELDS:
+            assert field in valid_fields, f"Field {field} is not a valid search field"
+    
+    def test_invalid_field_detection_in_constants(self):
+        """Test that our field constants don't contain invalid fields like 'EligibilityCriteria'"""
+        from src.data_fetcher.fetcher import VALID_JSON_FIELDS, FIELD_MAPPING, DEFAULT_SEARCH_FIELDS
+        
+        # These are the known valid JSON fields from the API
+        valid_fields = [
+            "NCTId",
+            "BriefTitle",
+            "Condition",
+            "OverallStatus",
+            "BriefSummary",
+            "StartDate",
+            "CompletionDate"
+        ]
+        
+        # Verify VALID_JSON_FIELDS doesn't contain invalid fields
+        for field in VALID_JSON_FIELDS:
+            assert field in valid_fields, f"VALID_JSON_FIELDS contains invalid field: {field}"
+        
+        # Verify FIELD_MAPPING doesn't map to invalid fields
+        for our_field, api_field in FIELD_MAPPING.items():
+            assert api_field in valid_fields, f"FIELD_MAPPING maps to invalid field: {api_field}"
+        
+        # Verify DEFAULT_SEARCH_FIELDS doesn't contain invalid fields
+        for field in DEFAULT_SEARCH_FIELDS:
+            assert field in valid_fields, f"DEFAULT_SEARCH_FIELDS contains invalid field: {field}"
+        
+        # Specifically check that 'EligibilityCriteria' is not in any of our field constants
+        # This was the source of the original bug
+        assert 'EligibilityCriteria' not in VALID_JSON_FIELDS, \
+            "'EligibilityCriteria' should not be in VALID_JSON_FIELDS"
+        assert 'EligibilityCriteria' not in FIELD_MAPPING.values(), \
+            "'EligibilityCriteria' should not be in FIELD_MAPPING values"
+        assert 'EligibilityCriteria' not in DEFAULT_SEARCH_FIELDS, \
+            "'EligibilityCriteria' should not be in DEFAULT_SEARCH_FIELDS"
 
 
 if __name__ == '__main__':

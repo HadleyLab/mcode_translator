@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from pytrials.client import ClinicalTrials
 from src.utils.config import Config
 from src.utils.cache import CacheManager
-from src.nlp_engine.nlp_engine import NLPEngine
+from src.nlp_engine.llm_nlp_engine import LLMNLPEngine
 from src.code_extraction.code_extraction import CodeExtractionModule
 from src.mcode_mapper.mcode_mapping_engine import MCODEMappingEngine
 from src.structured_data_generator.structured_data_generator import StructuredDataGenerator
@@ -23,8 +23,7 @@ FIELD_MAPPING = {
     "OverallStatus": "OverallStatus",
     "BriefSummary": "BriefSummary",
     "StartDate": "StartDate",
-    "CompletionDate": "CompletionDate",
-    "EligibilityCriteria": "EligibilityCriteria"
+    "CompletionDate": "CompletionDate"
 }
 
 # Fields that are valid for JSON format in ClinicalTrials API
@@ -45,8 +44,7 @@ DEFAULT_SEARCH_FIELDS = [
     "OverallStatus",
     "BriefSummary",
     "StartDate",
-    "CompletionDate",
-    "EligibilityCriteria"
+    "CompletionDate"
 ]
 
 
@@ -171,25 +169,22 @@ def get_full_study(nct_id: str):
         # Make sure logging is configured
         if not logger.handlers:
             logging.basicConfig(level=logging.INFO)
-        logger.info(f"Attempting to fetch study details for NCT ID: {nct_id}")
+        logger.info(f"Attempting to fetch full study details for NCT ID: {nct_id}")
         
-        # Use get_study_fields with the NCT ID as search expression
+        # Use get_full_studies with the NCT ID as search expression
         # Try different search expression formats to handle API variations
         search_expr = nct_id
         logger.info(f"Trying search expression: {search_expr}")
         
         # First try with the NCT ID directly
         try:
-            # Use specific fields like in search_trials to avoid issues with fields=None
-            api_fields = [FIELD_MAPPING.get(field, field) for field in VALID_JSON_FIELDS]
-            result = ct.get_study_fields(
+            result = ct.get_full_studies(
                 search_expr=search_expr,
-                fields=api_fields,
                 max_studies=1,
                 fmt="json"
             )
         except Exception as e:
-            logger.error(f"Exception in get_study_fields for NCT ID {nct_id} with search expression '{search_expr}': {str(e)}")
+            logger.error(f"Exception in get_full_studies for NCT ID {nct_id} with search expression '{search_expr}': {str(e)}")
             result = None
         
         # Log the result for debugging
@@ -200,16 +195,13 @@ def get_full_study(nct_id: str):
             search_expr = f'"{nct_id}"'
             logger.info(f"First attempt failed, trying search expression with quotes: {search_expr}")
             try:
-                # Use specific fields like in search_trials to avoid issues with fields=None
-                api_fields = [FIELD_MAPPING.get(field, field) for field in VALID_JSON_FIELDS]
-                result = ct.get_study_fields(
+                result = ct.get_full_studies(
                     search_expr=search_expr,
-                    fields=api_fields,
                     max_studies=1,
                     fmt="json"
                 )
             except Exception as e:
-                logger.error(f"Exception in get_study_fields for NCT ID {nct_id} with search expression '{search_expr}': {str(e)}")
+                logger.error(f"Exception in get_full_studies for NCT ID {nct_id} with search expression '{search_expr}': {str(e)}")
                 result = None
             logger.info(f"Second attempt result type: {type(result)}, value: {result}")
         
@@ -330,8 +322,18 @@ def display_single_study(result, export_path=None, process_criteria=False):
         process_criteria: Whether to process eligibility criteria with NLP
     """
     # Process eligibility criteria with NLP if requested
-    if process_criteria and 'studies' in result and len(result['studies']) > 0:
-        study = result['studies'][0]
+    if process_criteria:
+        # Handle both cases: result could be a single study or a dict with 'studies' key
+        if isinstance(result, dict):
+            if 'studies' in result and len(result['studies']) > 0:
+                study = result['studies'][0]
+            else:
+                # If it's already a study object
+                study = result
+        else:
+            # If result is directly a study object
+            study = result
+            
         if 'protocolSection' in study:
             protocol_section = study['protocolSection']
             if 'eligibilityModule' in protocol_section:
@@ -340,7 +342,9 @@ def display_single_study(result, export_path=None, process_criteria=False):
                     criteria_text = eligibility_module['eligibilityCriteria']
                     if criteria_text:
                         try:
-                            nlp_engine = NLPEngine()
+                            # Process through the full mCODE pipeline
+                            # Step 1: NLP processing
+                            nlp_engine = LLMNLPEngine()
                             # Ensure criteria_text is a string
                             if isinstance(criteria_text, list):
                                 criteria_text = ' '.join(str(item) for item in criteria_text)
@@ -348,29 +352,57 @@ def display_single_study(result, export_path=None, process_criteria=False):
                                 criteria_text = str(criteria_text)
                             nlp_result = nlp_engine.process_criteria(criteria_text)
                             
-                            # Process through the full pipeline
-                            # Step 1: Extract codes
+                            # Step 2: Code extraction
                             code_extractor = CodeExtractionModule()
-                            code_result = code_extractor.process_criteria_for_codes(criteria_text, nlp_result['entities'])
-                            
-                            # Step 2: Map to mCODE
-                            mapper = MCODEMappingEngine()
-                            mapping_result = mapper.process_nlp_output(nlp_result)
-                            
-                            # Step 3: Generate structured data
-                            generator = StructuredDataGenerator()
-                            structured_result = generator.generate_mcode_resources(
-                                mapping_result['mapped_elements'],
-                                nlp_result.get('demographics', {})
+                            code_result = code_extractor.process_criteria_for_codes(
+                                criteria_text if criteria_text else "",
+                                nlp_result.entities if nlp_result and not nlp_result.error else None
                             )
+                            
+                            # Step 3: mCODE mapping
+                            # Combine NLP entities and extracted codes for mapping
+                            all_entities = []
+                            if nlp_result and not nlp_result.error and hasattr(nlp_result, 'entities'):
+                                all_entities.extend(nlp_result.entities)
+                            
+                            # Add codes as entities for mapping
+                            if code_result and 'extracted_codes' in code_result:
+                                for system, codes in code_result['extracted_codes'].items():
+                                    for code_info in codes:
+                                        all_entities.append({
+                                            'text': code_info.get('text', ''),
+                                            'confidence': code_info.get('confidence', 0.8),
+                                            'codes': {system: code_info.get('code', '')}
+                                        })
+                            
+                            mcode_mapper = MCODEMappingEngine()
+                            mapped_mcode = mcode_mapper.map_entities_to_mcode(all_entities)
+                            
+                            # Step 4: Generate structured data
+                            demographics = {}
+                            if nlp_result and not nlp_result.error and hasattr(nlp_result, 'features'):
+                                demographics = nlp_result.features.get('demographics', {})
+                            
+                            generator = StructuredDataGenerator()
+                            structured_result = generator.generate_mcode_resources(mapped_mcode, demographics)
+                            
+                            # Step 5: Validate mCODE compliance
+                            validation_result = mcode_mapper.validate_mcode_compliance({
+                                'mapped_elements': mapped_mcode,
+                                'demographics': demographics
+                            })
                             
                             # Add all results to the study data
                             if 'mcodeResults' not in result:
                                 result['mcodeResults'] = {}
-                            result['mcodeResults']['nlp'] = nlp_result
+                            result['mcodeResults']['nlp'] = {
+                                'entities': nlp_result.entities if nlp_result and hasattr(nlp_result, 'entities') else [],
+                                'features': nlp_result.features if nlp_result and hasattr(nlp_result, 'features') else {}
+                            } if nlp_result else {}
                             result['mcodeResults']['codes'] = code_result
-                            result['mcodeResults']['mappings'] = mapping_result
+                            result['mcodeResults']['mappings'] = mapped_mcode
                             result['mcodeResults']['structured_data'] = structured_result
+                            result['mcodeResults']['validation'] = validation_result
                         except Exception as e:
                             click.echo(f"Warning: Error processing criteria with NLP: {str(e)}", err=True)
     
