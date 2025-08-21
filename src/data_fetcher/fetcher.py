@@ -79,15 +79,15 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
         cache_key_data = f"search:{search_expr}:{','.join(fields) if fields else 'all'}:{max_results}:token{page_token}"
     else:
         cache_key_data = f"search:{search_expr}:{','.join(fields) if fields else 'all'}:{max_results}:tokenNone"
-    print(f"DEBUG: cache_key_data={cache_key_data}, page_token={page_token}")
+    logging.info(f"search_trials: Creating cache key for search_expr='{search_expr}', max_results={max_results}, page_token={page_token}")
     cache_key = hashlib.md5(cache_key_data.encode()).hexdigest()
     
     # Try to get from cache first (if caching is enabled)
     if use_cache:
         cached_result = cache_manager.get(cache_key)
         if cached_result:
-            print(f"DEBUG: search_trials returning cached result, cache_key={cache_key}")
-            print(f"DEBUG: Cached result has {len(cached_result.get('studies', []))} studies")
+            studies_count = len(cached_result.get('studies', []))
+            logging.info(f"search_trials: Returning cached result for cache_key={cache_key}, studies_count={studies_count}")
             return cached_result
     
     try:
@@ -114,7 +114,8 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
         
         # Add pagination metadata to the result
         if isinstance(result, dict):
-            print(f"DEBUG: search_trials returning {len(result.get('studies', []))} studies")
+            studies_count = len(result.get('studies', []))
+            logging.info(f"search_trials: API returned {studies_count} studies")
             result['pagination'] = {
                 'max_results': max_results
             }
@@ -122,9 +123,10 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
             # Add nextPageToken if it exists in the response
             if 'nextPageToken' in result:
                 result['nextPageToken'] = result['nextPageToken']
+                logging.debug(f"search_trials: nextPageToken found in response")
         
         # Cache the result
-        print(f"DEBUG: search_trials caching result")
+        logging.info(f"search_trials: Caching result for cache_key={cache_key}")
         cache_manager.set(cache_key, result)
         
         return result
@@ -155,6 +157,7 @@ def get_full_study(nct_id: str):
     # Try to get from cache first
     cached_result = cache_manager.get(cache_key)
     if cached_result:
+        logging.info(f"get_full_study: Returning cached result for NCT ID {nct_id}")
         return cached_result
     
     try:
@@ -176,13 +179,19 @@ def get_full_study(nct_id: str):
         search_expr = nct_id
         logger.info(f"Trying search expression: {search_expr}")
         
+        # Rate limiting
+        logger.debug(f"Applying rate limit delay: {config.rate_limit_delay}s")
+        time.sleep(config.rate_limit_delay)
+        
         # First try with the NCT ID directly
         try:
+            logger.info(f"Calling get_full_studies API for NCT ID: {nct_id}")
             result = ct.get_full_studies(
                 search_expr=search_expr,
                 max_studies=1,
                 fmt="json"
             )
+            logger.info(f"API call completed for NCT ID: {nct_id}")
         except Exception as e:
             logger.error(f"Exception in get_full_studies for NCT ID {nct_id} with search expression '{search_expr}': {str(e)}")
             result = None
@@ -296,7 +305,7 @@ def main(condition, nct_id, limit, min_rank, count, export, process_criteria):
                         json.dump(stats, f, indent=2)
                     click.echo(f"Results exported to {export}")
             else:
-                result = search_trials(condition, None, limit, min_rank)
+                result = search_trials(condition, None, limit, min_rank, use_cache=True)
                 display_search_results(result, export)
         else:
             # Show help if no arguments provided
@@ -350,7 +359,7 @@ def display_single_study(result, export_path=None, process_criteria=False):
                                 criteria_text = ' '.join(str(item) for item in criteria_text)
                             elif not isinstance(criteria_text, str):
                                 criteria_text = str(criteria_text)
-                            nlp_result = nlp_engine.process_criteria(criteria_text)
+                            nlp_result = nlp_engine.process_text(criteria_text)
                             
                             # Step 2: Code extraction
                             code_extractor = CodeExtractionModule()

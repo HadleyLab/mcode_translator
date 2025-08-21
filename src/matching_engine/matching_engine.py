@@ -33,16 +33,21 @@ class MatchingEngine:
             matched_trials = []
             for trial in trials:
                 if 'mcode_data' not in trial:
+                    self.logger.debug("Skipping trial without mcode_data")
                     continue
                     
                 trial_features = trial['mcode_data']['features']
+                nct_id = trial.get('protocolSection', {}).get('identificationModule', {}).get('nctId', 'Unknown')
+                self.logger.debug(f"Calculating match for trial {nct_id}")
                 match_score, match_reasons = self._calculate_match(validated_profile, trial_features)
+                self.logger.info(f"Match score for trial {nct_id}: {match_score}")
                 
                 if match_score > 0:
                     matched_trial = trial.copy()
                     matched_trial['match_score'] = match_score
                     matched_trial['match_reasons'] = match_reasons
                     matched_trials.append(matched_trial)
+                    self.logger.debug(f"Trial {nct_id} added to matched trials with score {match_score}")
                     
                     # Record metrics
                     self.metrics.record_match(match_reasons, validated_profile.get('genomic_variants', []))
@@ -76,6 +81,8 @@ class MatchingEngine:
         
         # Biomarker matching
         patient_biomarkers = {b['name']: b for b in patient.get('biomarkers', [])}
+        self.logger.debug(f"Patient biomarkers: {list(patient_biomarkers.keys())}")
+        self.logger.debug(f"Trial biomarkers: {[b['name'] for b in trial.get('biomarkers', [])]}")
         for trial_biomarker in trial.get('biomarkers', []):
             name = trial_biomarker['name']
             if name in patient_biomarkers:
@@ -85,41 +92,54 @@ class MatchingEngine:
                 if p_status == t_status:
                     score += 1.0
                     reasons.append(f"Biomarker match: {name} ({t_status})")
+                    self.logger.debug(f"Biomarker match: {name} ({t_status}) (+1.0 points)")
                 elif t_status == 'any':
                     score += 0.5
                     reasons.append(f"Biomarker acceptable: {name} ({p_status})")
+                    self.logger.debug(f"Biomarker acceptable: {name} ({p_status}) (+0.5 points)")
         
         # Genomic variant matching
         patient_variants = {(v['gene'], v['variant']) for v in patient.get('genomic_variants', [])}
+        self.logger.debug(f"Patient variants: {patient_variants}")
+        self.logger.debug(f"Trial variants: {[(v['gene'], v['variant']) for v in trial.get('genomic_variants', [])]}")
         for trial_variant in trial.get('genomic_variants', []):
             key = (trial_variant['gene'], trial_variant['variant'])
             if key in patient_variants:
                 score += 1.0
                 reasons.append(f"Variant match: {trial_variant['gene']} {trial_variant['variant']}")
+                self.logger.debug(f"Variant match: {trial_variant['gene']} {trial_variant['variant']} (+1.0 points)")
         
         # Cancer stage matching
         if patient.get('cancer_characteristics', {}).get('stage') and \
            trial.get('cancer_characteristics', {}).get('stage'):
             p_stage = patient['cancer_characteristics']['stage']
             t_stage = trial['cancer_characteristics']['stage']
+            self.logger.debug(f"Patient stage: {p_stage}, Trial stage: {t_stage}")
             
             if p_stage == t_stage:
                 score += 1.0
                 reasons.append(f"Stage match: {t_stage}")
+                self.logger.debug(f"Stage match: {t_stage} (+1.0 points)")
             elif self._stage_compatible(p_stage, t_stage):
                 score += 0.7
                 reasons.append(f"Stage compatible: {p_stage} vs {t_stage}")
+                self.logger.debug(f"Stage compatible: {p_stage} vs {t_stage} (+0.7 points)")
         
         # Treatment history matching
         common_treatments = set(patient.get('treatment_history', {}).get('chemotherapy', [])) & \
                            set(trial.get('treatment_history', {}).get('chemotherapy', []))
+        self.logger.debug(f"Patient treatments: {patient.get('treatment_history', {}).get('chemotherapy', [])}")
+        self.logger.debug(f"Trial treatments: {trial.get('treatment_history', {}).get('chemotherapy', [])}")
         if common_treatments:
-            score += min(len(common_treatments) * 0.3, 1.0)
+            points = min(len(common_treatments) * 0.3, 1.0)
+            score += points
             reasons.append(f"Shared treatments: {', '.join(common_treatments)}")
+            self.logger.debug(f"Shared treatments: {', '.join(common_treatments)} (+{points} points)")
         
         # Age matching
         p_age = patient.get('demographics', {}).get('age', {})
         t_age = trial.get('demographics', {}).get('age', {})
+        self.logger.debug(f"Patient age: {p_age}, Trial age range: {t_age}")
         if p_age and t_age:
             p_value = p_age.get('value') or (p_age.get('min', 0) + p_age.get('max', 100)) / 2
             t_min = t_age.get('min', 0)
@@ -128,6 +148,7 @@ class MatchingEngine:
             if t_min <= p_value <= t_max:
                 score += 0.5
                 reasons.append(f"Age match: {p_value} in [{t_min}, {t_max}]")
+                self.logger.debug(f"Age match: {p_value} in [{t_min}, {t_max}] (+0.5 points)")
         
         return score, reasons
     

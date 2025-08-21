@@ -6,7 +6,7 @@ import json
 import sys
 import os
 from pathlib import Path
-from nicegui import ui
+from nicegui import run, ui
 
 # Add src directory to path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -25,6 +25,7 @@ import logging
 from src.code_extraction.code_extraction import CodeExtractionModule
 from src.mcode_mapper.mcode_mapping_engine import MCODEMappingEngine
 from src.nlp_engine.llm_nlp_engine import LLMNLPEngine
+from src.utils.feature_utils import standardize_features
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -153,7 +154,7 @@ def export_to_json(data, filename: str):
         logger.error(error_msg)
         return False
 
-def extract_mcode_data(study):
+async def extract_mcode_data(study):
     """Extract mCODE data from a study."""
     try:
         # Extract data from study
@@ -185,7 +186,8 @@ def extract_mcode_data(study):
             nlp_result = None
         else:
             try:
-                nlp_result = nlp_engine.process_criteria(eligibility_criteria)
+                # Use run.io_bound to run the synchronous LLM processing asynchronously
+                nlp_result = await run.io_bound(nlp_engine.process_text, eligibility_criteria)
                 # Check if processing failed
                 if nlp_result.error:
                     logger.warning(f"LLM NLP processing failed for study {nct_id}: {nlp_result.error}")
@@ -403,6 +405,201 @@ def display_mcode_visualization(study_data):
                     else:
                         ui.label('No validation errors').classes('text-body2 text-positive')
 
+def display_mcode_features_tab(nlp_features):
+    """Display mCODE features in a tabbed interface, adapted from src/main.py.
+    
+    Args:
+        nlp_features (dict): NLP features extracted from study eligibility criteria
+    """
+    # Standardize features to ensure consistent structure
+    standardized_features = standardize_features(nlp_features)
+    
+    # Create safe copy of features data
+    features_copy = {
+        'genomic_variants': standardized_features.get('genomic_variants', []),
+        'biomarkers': standardized_features.get('biomarkers', []),
+        'cancer_characteristics': standardized_features.get('cancer_characteristics', {}),
+        'treatment_history': standardized_features.get('treatment_history', {}),
+        'performance_status': standardized_features.get('performance_status', {}),
+        'demographics': standardized_features.get('demographics', {})
+    }
+    
+    with ui.tabs().classes('w-full') as tabs:
+        demographics_tab = ui.tab('Demographics')
+        cancer_tab = ui.tab('Cancer Condition')
+        genomics_tab = ui.tab('Genomic Variants')
+        biomarkers_tab = ui.tab('Biomarkers')
+        treatment_tab = ui.tab('Treatment History')
+        performance_tab = ui.tab('Performance Status')
+    
+    with ui.tab_panels(tabs, value=demographics_tab).classes('w-full'):
+        # Demographics
+        with ui.tab_panel(demographics_tab):
+            demographics = features_copy.get('demographics', {})
+            if demographics:
+                with ui.card().classes('w-full p-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow'):
+                    ui.label('DEMOGRAPHIC DETAILS').classes('text-xl font-bold mb-4 text-primary')
+                    with ui.grid(columns=2).classes('w-full gap-4'):
+                        for key, value in demographics.items():
+                            extracted = bool(value) and value != 'Not specified'
+                            with ui.card().classes(f'p-4 rounded-lg hover:bg-white transition-colors '
+                                                    f'{"bg-gray-50" if extracted else "bg-gray-50 opacity-50"}'):
+                                ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                ui.label(str(value) if value else 'Not specified').classes('' if extracted else 'opacity-70')
+            else:
+                ui.label('No demographic data available').classes('text-gray-500')
+        
+        # Cancer Condition
+        with ui.tab_panel(cancer_tab):
+            cancer_data = features_copy.get('cancer_characteristics', {})
+            if cancer_data:
+                with ui.card().classes('w-full p-4'):
+                    ui.label('CANCER CHARACTERISTICS').classes('text-xl font-bold mb-4 text-primary')
+                    with ui.grid(columns=2).classes('w-full gap-4'):
+                        for key, value in cancer_data.items():
+                            # Dim card if value is empty
+                            extracted = bool(value) and value != 'Not specified'
+                            card_classes = f'p-4 rounded-lg hover:bg-white transition-colors '
+                            card_classes += 'bg-gray-50 opacity-50' if not extracted else 'bg-gray-50'
+                            
+                            with ui.card().classes(card_classes):
+                                ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                
+                                # Show "not mentioned" for empty values
+                                if isinstance(value, dict):
+                                    for k, v in value.items():
+                                        if v:
+                                            ui.label(f"{k}: {v}").classes('text-xs')
+                                        else:
+                                            ui.label(f"{k}: not mentioned").classes('text-xs opacity-50')
+                                else:
+                                    if value:
+                                        ui.label(str(value)).classes('')
+                                    else:
+                                        ui.label('not mentioned').classes('opacity-50')
+            else:
+                ui.label('No cancer characteristics data').classes('text-gray-500')
+        
+        # Genomic Variants
+        with ui.tab_panel(genomics_tab):
+            variants = features_copy.get('genomic_variants', [])
+            with ui.card().classes('w-full p-4'):
+                ui.label('GENOMIC VARIANTS').classes('text-xl font-bold mb-4 text-primary')
+                
+                if not variants:
+                    ui.label('No genomic variants found').classes('text-gray-500')
+                else:
+                    with ui.grid(columns=2).classes('w-full gap-4'):
+                        for variant in variants:
+                            if not isinstance(variant, dict):
+                                continue
+                            
+                            # Dim card if variant is NOT_FOUND
+                            if variant.get('gene') == 'NOT_FOUND':
+                                with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors opacity-50'):
+                                    ui.label("No genomic variants mentioned").classes('font-bold text-gray-500')
+                            else:
+                                with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                    with ui.column().classes('gap-1'):
+                                        ui.label(f"Gene: {variant.get('gene', 'Unknown')}").classes('font-bold')
+                                        ui.label(f"Variant: {variant.get('variant', 'N/A')}").classes('text-sm')
+                                        significance = variant.get('significance', 'N/A')
+                                        if significance and significance != 'N/A':
+                                            ui.label(f"Significance: {significance}").classes('text-sm text-blue-600')
+        
+        # Biomarkers
+        with ui.tab_panel(biomarkers_tab):
+            biomarkers = features_copy.get('biomarkers', [])
+            with ui.card().classes('w-full p-4'):
+                ui.label('BIOMARKERS').classes('text-xl font-bold mb-4 text-primary')
+                
+                if not biomarkers:
+                    ui.label('No biomarkers found').classes('text-gray-500')
+                else:
+                    with ui.grid(columns=2).classes('w-full gap-4'):
+                        for biomarker in biomarkers:
+                            if not isinstance(biomarker, dict):
+                                continue
+                            
+                            # Dim card if biomarker is NOT_FOUND
+                            if biomarker.get('name') == 'NOT_FOUND':
+                                with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors opacity-50'):
+                                    ui.label("No biomarkers mentioned").classes('font-bold text-gray-500')
+                            else:
+                                with ui.card().classes('p-4 bg-gray-50 rounded-lg hover:bg-white transition-colors'):
+                                    with ui.column().classes('gap-1'):
+                                        ui.label(biomarker.get('name', 'Unknown')).classes('font-bold')
+                                        
+                                        # Show status with "not mentioned" if missing
+                                        status = biomarker.get('status', 'N/A')
+                                        if status and status != 'N/A':
+                                            with ui.row().classes('items-center gap-2'):
+                                                ui.label('Status:').classes('text-sm font-medium')
+                                                ui.label(status).classes('text-sm')
+                                        else:
+                                            with ui.row().classes('items-center gap-2 opacity-50'):
+                                                ui.label('Status:').classes('text-sm font-medium')
+                                                ui.label('not mentioned').classes('text-sm')
+                                        
+                                        # Show value with "not mentioned" if missing
+                                        value = biomarker.get('value', 'N/A')
+                                        if value and value != 'N/A':
+                                            with ui.row().classes('items-center gap-2'):
+                                                ui.label('Value:').classes('text-sm font-medium')
+                                                ui.label(value).classes('text-sm')
+                                        else:
+                                            with ui.row().classes('items-center gap-2 opacity-50'):
+                                                ui.label('Value:').classes('text-sm font-medium')
+                                                ui.label('not mentioned').classes('text-sm')
+        
+        # Treatment History
+        with ui.tab_panel(treatment_tab):
+            treatment = features_copy.get('treatment_history', {})
+            if treatment:
+                with ui.card().classes('w-full p-4'):
+                    ui.label('TREATMENT HISTORY').classes('text-xl font-bold mb-4 text-primary')
+                    with ui.grid(columns=2).classes('w-full gap-4'):
+                        for key, value in treatment.items():
+                            # Dim card if value is empty
+                            extracted = bool(value) and value != 'Not specified'
+                            card_classes = f'p-4 rounded-lg hover:bg-white transition-colors '
+                            card_classes += 'bg-gray-50 opacity-50' if not extracted else 'bg-gray-50'
+                            
+                            with ui.card().classes(card_classes):
+                                ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                
+                                # Show "not mentioned" for empty values
+                                if value:
+                                    ui.label(str(value)).classes('')
+                                else:
+                                    ui.label('not mentioned').classes('opacity-50')
+            else:
+                ui.label('No treatment history data').classes('text-gray-500')
+        
+        # Performance Status
+        with ui.tab_panel(performance_tab):
+            performance = features_copy.get('performance_status', {})
+            if performance:
+                with ui.card().classes('w-full p-4'):
+                    ui.label('PERFORMANCE STATUS').classes('text-xl font-bold mb-4 text-primary')
+                    with ui.grid(columns=2).classes('w-full gap-4'):
+                        for key, value in performance.items():
+                            # Dim card if value is empty
+                            extracted = bool(value) and value != 'Not specified'
+                            card_classes = f'p-4 rounded-lg hover:bg-white transition-colors '
+                            card_classes += 'bg-gray-50 opacity-50' if not extracted else 'bg-gray-50'
+                            
+                            with ui.card().classes(card_classes):
+                                ui.label(key.replace('_', ' ').title()).classes('font-medium text-sm')
+                                
+                                # Show "not mentioned" for empty values
+                                if value:
+                                    ui.label(str(value)).classes('')
+                                else:
+                                    ui.label('not mentioned').classes('opacity-50')
+            else:
+                ui.label('No performance status data').classes('text-gray-500')
+
 def generate_condition_colors(conditions):
     """Generate consistent colors for conditions."""
     # Predefined color palette that matches the visual style
@@ -502,7 +699,7 @@ def create_trial_cards():
                     # Action buttons with better styling
                     with ui.row().classes('w-full justify-end mt-3'):
                         ui.button('View Details', icon='visibility',
-                                 on_click=lambda nct_id=identification_module.get('nctId', ''): show_study_details(nct_id)).props('outline color=primary')
+                                 on_click=lambda nct_id=identification_module.get('nctId', ''): show_study_details_mcode_tabs(nct_id)).props('outline color=primary')
 
 
 def create_trial_list():
@@ -554,7 +751,7 @@ def create_trial_list():
                         
                         # Action button with better styling
                         ui.button('View Details', icon='visibility',
-                                 on_click=lambda nct_id=identification_module.get('nctId', ''): show_study_details(nct_id)).props('outline color=primary')
+                                 on_click=lambda nct_id=identification_module.get('nctId', ''): show_study_details_mcode_tabs(nct_id)).props('outline color=primary')
 
 
 def create_trial_table():
@@ -648,13 +845,14 @@ def create_trial_table():
         table.add_slot('body-cell-actions', '''
             <q-td :props="props">
                 <q-btn flat size="sm" icon="visibility" @click="() => $parent.$emit('view-details', props.row.actions)" color="primary" title="View Details"></q-btn>
-                <q-btn flat size="sm" icon="medical_services" @click="() => $parent.$emit('view-mcode', props.row.actions)" color="secondary" title="View mCODE Analysis"></q-btn>
             </q-td>
         ''')
         
-        # Add event handlers for view details and mCODE analysis
-        table.on('view-details', lambda e: show_study_details(e.args))
-        table.on('view-mcode', lambda e: show_mcode_analysis(e.args))
+        # Add event handlers for view details
+        table.on('view-details', lambda e: show_study_details_mcode_tabs(e.args))
+        
+        # No JavaScript needed - using Python functions for color mapping
+        pass
         
         # No JavaScript needed - using Python functions for color mapping
         pass
@@ -928,16 +1126,16 @@ def create_search_interface():
             update_results_display()
             create_pagination_controls()
 
-def show_study_details(nct_id: str):
-    """Show detailed information for a specific study."""
+async def show_study_details_mcode_tabs(nct_id: str):
+    """Show detailed information for a specific study with tabs for details and mCODE analysis."""
     success = fetch_study_details(nct_id)
     
     if success and current_study_details:
-        # Create a maximized dialog to show the study details
+        # Create a maximized dialog to show the study details with tabs
         with ui.dialog(value=True).classes('w-full h-full') as dialog, ui.card().classes('w-full h-full'):
             with ui.scroll_area().classes('w-full h-full'):
                 with ui.column().classes('w-full'):
-                    # Basic info with improved styling
+                    # Header with study info
                     protocol_section = current_study_details.get('protocolSection', {})
                     identification_module = protocol_section.get('identificationModule', {})
                     status_module = protocol_section.get('statusModule', {})
@@ -962,59 +1160,60 @@ def show_study_details(nct_id: str):
                         }.get(status, 'gray')
                         ui.badge(status, color=status_color).tooltip(f'Study status: {status}').classes('self-end')
                     
-                    # Process criteria toggle
-                    process_criteria_toggle = ui.toggle(['Basic View', 'Process Criteria'], value='Basic View').classes('mb-4')
+                    # Create tabs for different views
+                    with ui.tabs().classes('w-full') as tabs:
+                        details_tab = ui.tab('Study Details').classes('text-primary')
+                        mcode_tab = ui.tab('mCODE Analysis').classes('text-secondary')
+                        new_mcode_tab = ui.tab('New mCODE Analysis').classes('text-secondary')
                     
-                    # Expandable sections with improved styling
-                    with ui.expansion('Description', icon='description').classes('w-full'):
-                        brief_summary = description_module.get('briefSummary', '')
-                        if brief_summary:
-                            ui.markdown(brief_summary).classes('text-body2')
-                        else:
-                            ui.label('No description available').classes('text-gray-500 italic')
-                    
-                    with ui.expansion('Conditions', icon='local_hospital').classes('w-full'):
-                        conditions = conditions_module.get('conditions', [])
-                        if conditions:
-                            with ui.column().classes('w-full h-full'):
-                                for condition in conditions:
-                                    ui.label(f'• {condition}').classes('text-body2')
-                        else:
-                            ui.label('No conditions specified').classes('text-gray-500 italic')
-                    
-                    with ui.expansion('Dates', icon='calendar_today').classes('w-full'):
-                        with ui.grid(columns=2).classes('w-full'):
-                            ui.label('Start Date:').classes('font-weight-bold')
-                            ui.label(status_module.get('startDateStruct', {}).get('date', 'N/A')).classes('text-body2')
+                    with ui.tab_panels(tabs, value=details_tab).classes('w-full'):
+                        # Study Details Tab
+                        with ui.tab_panel(details_tab):
+                            # Expandable sections with improved styling
+                            with ui.expansion('Description', icon='description').classes('w-full'):
+                                brief_summary = description_module.get('briefSummary', '')
+                                if brief_summary:
+                                    ui.markdown(brief_summary).classes('text-body2')
+                                else:
+                                    ui.label('No description available').classes('text-gray-500 italic')
                             
-                            ui.label('Completion Date:').classes('font-weight-bold')
-                            ui.label(status_module.get('completionDateStruct', {}).get('date', 'N/A')).classes('text-body2')
-                    
-                    # Eligibility criteria section
-                    with ui.expansion('Eligibility Criteria', icon='rule').classes('w-full'):
-                        eligibility_criteria = eligibility_module.get('eligibilityCriteria', '')
-                        if eligibility_criteria:
-                            # Show raw criteria in a scrollable area
-                            with ui.scroll_area().classes('h-40'):
-                                ui.markdown(eligibility_criteria).classes('text-body2')
-                        else:
-                            ui.label('No eligibility criteria available').classes('text-gray-500 italic')
-                    
-                    # mCODE analysis section
-                    mcode_expansion = ui.expansion('mCODE Analysis', icon='medical_services').classes('w-full')
-                    mcode_container = None
-                    
-                    def update_mcode_view():
-                        nonlocal mcode_container
-                        # Clear previous content
-                        if mcode_container:
-                            mcode_container.clear()
+                            with ui.expansion('Conditions', icon='local_hospital').classes('w-full'):
+                                conditions = conditions_module.get('conditions', [])
+                                if conditions:
+                                    with ui.column().classes('w-full h-full'):
+                                        for condition in conditions:
+                                            ui.label(f'• {condition}').classes('text-body2')
+                                else:
+                                    ui.label('No conditions specified').classes('text-gray-500 italic')
+                            
+                            with ui.expansion('Dates', icon='calendar_today').classes('w-full'):
+                                with ui.grid(columns=2).classes('w-full'):
+                                    ui.label('Start Date:').classes('font-weight-bold')
+                                    ui.label(status_module.get('startDateStruct', {}).get('date', 'N/A')).classes('text-body2')
+                                    
+                                    ui.label('Completion Date:').classes('font-weight-bold')
+                                    ui.label(status_module.get('completionDateStruct', {}).get('date', 'N/A')).classes('text-body2')
+                            
+                            # Eligibility criteria section
+                            with ui.expansion('Eligibility Criteria', icon='rule').classes('w-full'):
+                                eligibility_criteria = eligibility_module.get('eligibilityCriteria', '')
+                                if eligibility_criteria:
+                                    # Show raw criteria in a scrollable area
+                                    with ui.scroll_area().classes('h-40'):
+                                        ui.markdown(eligibility_criteria).classes('text-body2')
+                                else:
+                                    ui.label('No eligibility criteria available').classes('text-gray-500 italic')
                         
-                        # Create new container
-                        with mcode_expansion:
+                        # mCODE Analysis Tab
+                        with ui.tab_panel(mcode_tab):
+                            # mCODE visualization container
                             mcode_container = ui.column().classes('w-full')
-                            with mcode_container:
-                                if process_criteria_toggle.value == 'Process Criteria':
+                            
+                            async def update_mcode_view():
+                                # Clear previous content
+                                mcode_container.clear()
+                                
+                                with mcode_container:
                                     ui.label('Processing criteria with NLP engine...').classes('text-body2 text-info')
                                     # Force UI update
                                     ui.run_javascript('''
@@ -1022,22 +1221,46 @@ def show_study_details(nct_id: str):
                                     ''')
                                     
                                     # Extract mCODE data with processing
-                                    logger.info(f"Extracting mCODE data for study details with criteria processing")
-                                    mcode_data = extract_mcode_data(current_study_details)
-                                    logger.info(f"mCODE data extracted: {mcode_data}")
+                                    logger.info(f"Extracting mCODE data for analysis with criteria processing")
+                                    mcode_data = await extract_mcode_data(current_study_details)
+                                    logger.info(f"mCODE data for analysis: {mcode_data}")
                                     
                                     if mcode_data:
                                         display_mcode_visualization(mcode_data)
                                     else:
                                         ui.label('Failed to process mCODE data').classes('text-body2 text-negative')
-                                else:
-                                    ui.label('Switch to "Process Criteria" view to see mCODE analysis').classes('text-body2 text-info')
-                    
-                    # Set up the initial mCODE view
-                    update_mcode_view()
-                    
-                    # Update mCODE view when toggle changes
-                    process_criteria_toggle.on('update:model-value', lambda: update_mcode_view())
+                            
+                            # Set up the initial mCODE view
+                            ui.timer(0.1, update_mcode_view, once=True)
+                        
+                        # New mCODE Analysis Tab
+                        with ui.tab_panel(new_mcode_tab):
+                            # New mCODE visualization container
+                            new_mcode_container = ui.column().classes('w-full')
+                            
+                            async def update_new_mcode_view():
+                                # Clear previous content
+                                new_mcode_container.clear()
+                                
+                                with new_mcode_container:
+                                    ui.label('Processing criteria with NLP engine...').classes('text-body2 text-info')
+                                    # Force UI update
+                                    ui.run_javascript('''
+                                        return new Promise(resolve => setTimeout(resolve, 100));
+                                    ''')
+                                    
+                                    # Extract mCODE data with processing
+                                    logger.info(f"Extracting mCODE data for new analysis with criteria processing")
+                                    mcode_data = await extract_mcode_data(current_study_details)
+                                    logger.info(f"mCODE data for new analysis: {mcode_data}")
+                                    
+                                    if mcode_data and 'nlp_result' in mcode_data and 'features' in mcode_data['nlp_result']:
+                                        display_mcode_features_tab(mcode_data['nlp_result']['features'])
+                                    else:
+                                        ui.label('Failed to process mCODE data').classes('text-body2 text-negative')
+                            
+                            # Set up the initial new mCODE view
+                            ui.timer(0.1, update_new_mcode_view, once=True)
                     
                     # Export button with improved styling
                     def export_study():
@@ -1053,63 +1276,6 @@ def show_study_details(nct_id: str):
             dialog.open()
     else:
         ui.notify('Failed to load study details', type='negative')
-
-
-def show_mcode_analysis(nct_id: str):
-    """Show mCODE analysis for a specific study in a maximized popup."""
-    success = fetch_study_details(nct_id)
-    
-    if success and current_study_details:
-        # Create a maximized dialog to show the mCODE analysis
-        with ui.dialog(value=True).classes('w-full h-full') as dialog, ui.card().classes('w-full h-full'):
-            with ui.scroll_area().classes('w-full h-full'):
-                with ui.column().classes('w-full'):
-                    # Header with study info
-                    with ui.row().classes('w-full justify-between items-center mb-4'):
-                        ui.label(f'mCODE Analysis: {nct_id}').classes('text-h5 font-weight-bold')
-                    
-                    # Process criteria toggle
-                    process_criteria_toggle = ui.toggle(['Basic View', 'Process Criteria'], value='Process Criteria').classes('mb-4')
-                    
-                    # mCODE visualization container
-                    mcode_container = ui.column().classes('w-full')
-                    
-                    def update_mcode_view():
-                        # Clear previous content
-                        mcode_container.clear()
-                        
-                        with mcode_container:
-                            if process_criteria_toggle.value == 'Process Criteria':
-                                ui.label('Processing criteria with NLP engine...').classes('text-body2 text-info')
-                                # Force UI update
-                                ui.run_javascript('''
-                                    return new Promise(resolve => setTimeout(resolve, 100));
-                                ''')
-                                
-                                # Extract mCODE data with processing
-                                logger.info(f"Extracting mCODE data for analysis with criteria processing")
-                                mcode_data = extract_mcode_data(current_study_details)
-                                logger.info(f"mCODE data for analysis: {mcode_data}")
-                                
-                                if mcode_data:
-                                    display_mcode_visualization(mcode_data)
-                                else:
-                                    ui.label('Failed to process mCODE data').classes('text-body2 text-negative')
-                            else:
-                                ui.label('Switch to "Process Criteria" view to see mCODE analysis').classes('text-body2 text-info')
-                    
-                    # Set up the initial mCODE view
-                    update_mcode_view()
-                    
-                    # Update mCODE view when toggle changes
-                    process_criteria_toggle.on('update:model-value', lambda: update_mcode_view())
-                    
-                    with ui.row().classes('w-full justify-end mt-4'):
-                        ui.button('Close', on_click=dialog.close).props('outline color=secondary')
-            
-            dialog.open()
-    else:
-        ui.notify('Failed to load study details for mCODE analysis', type='negative')
 
 # Main UI - Simplified to only include search functionality
 with ui.column().classes('w-full'):

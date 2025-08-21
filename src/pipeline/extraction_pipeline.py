@@ -64,7 +64,7 @@ class ExtractionPipeline:
                 raise ValueError("LLM engine requested but not initialized")
             self.logger.info(f"Using LLM engine: {self.llm_extractor.model}")
             try:
-                result = self.llm_extractor.extract_mcode_features(criteria_text)
+                result = self.llm_extractor.process_text(criteria_text)
                 mcode_features = result.features if hasattr(result, 'features') else {}
                 self.logger.info(f"Extracted {len(mcode_features.get('genomic_variants', []))} genomic variants")
                 self.logger.info(f"Extracted {len(mcode_features.get('biomarkers', []))} biomarkers")

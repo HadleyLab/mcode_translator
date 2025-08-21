@@ -40,7 +40,7 @@ class TestAPIIntegration:
         mock_cache_manager.return_value.get.return_value = None
         
         # Call function
-        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2)
+        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2, use_cache=False)
         
         # Verify results
         assert isinstance(result, dict)
@@ -155,7 +155,7 @@ class TestAPIIntegration:
         mock_cache_manager.return_value.get.return_value = None
         
         # Call function with pagination parameters
-        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2)
+        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2, use_cache=False)
         
         # Verify results
         assert isinstance(result, dict)

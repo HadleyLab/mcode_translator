@@ -10,7 +10,7 @@ class TestAPISanityCheck(unittest.TestCase):
         print("Testing API connectivity...")
         try:
             # Simple search for cancer trials
-            result = search_trials("cancer", max_results=2)
+            result = search_trials("cancer", max_results=2, use_cache=False)
             
             # Basic validation
             self.assertIsInstance(result, dict, "Response should be a dictionary")

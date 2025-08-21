@@ -2,9 +2,11 @@
 Patient-Trial Matching Algorithm for mCODE Translator
 Calculates match scores between patient profiles and clinical trials
 """
+import logging
 
 class PatientMatcher:
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
         self.biomarker_weights = {
             'ER': 0.8,
             'PR': 0.7,
@@ -41,11 +43,15 @@ class PatientMatcher:
             'stage_grade': False
         }
         
+        # Log input data for debugging
+        self.logger.debug(f"Calculating match score - Patient cancer type: {patient_profile.get('cancer_type')}, Trial cancer type: {trial_features.get('cancer_type')}")
+        
         # Cancer type match (30% weight)
         cancer_match = patient_profile['cancer_type'] == trial_features.get('cancer_type', '')
         if cancer_match:
             score += 30
             match_details['cancer_type'] = True
+            self.logger.debug("Cancer type match found (+30 points)")
             
             # Boost weights for breast cancer biomarkers
             if patient_profile['cancer_type'] == 'breast cancer':
@@ -61,23 +67,31 @@ class PatientMatcher:
         patient_biomarkers = patient_profile.get('biomarkers', {})
         trial_biomarkers = trial_features.get('biomarkers', {})
         
+        self.logger.debug(f"Patient biomarkers: {patient_biomarkers}")
+        self.logger.debug(f"Trial biomarkers: {trial_biomarkers}")
         for biomarker, status in patient_biomarkers.items():
             weight = self.biomarker_weights.get(biomarker, 0.5)
             if biomarker in trial_biomarkers:
                 if status == trial_biomarkers[biomarker]:
-                    score += 8 * weight  # 8% per matching biomarker
+                    points = 8 * weight
+                    score += points  # 8% per matching biomarker
                     match_details['biomarkers'] = True
+                    self.logger.debug(f"Biomarker match found: {biomarker} ({status}) (+{points} points)")
                 max_score += 8
         
         # Genomic variant matches (20% weight)
         patient_variants = patient_profile.get('genomic_variants', [])
         trial_variants = trial_features.get('genomic_variants', [])
         
+        self.logger.debug(f"Patient variants: {patient_variants}")
+        self.logger.debug(f"Trial variants: {trial_variants}")
         for variant in patient_variants:
             weight = self.variant_weights.get(variant, 0.5)
             if variant in trial_variants:
-                score += 4 * weight  # 4% per matching variant
+                points = 4 * weight
+                score += points  # 4% per matching variant
                 match_details['genomic_variants'] = True
+                self.logger.debug(f"Variant match found: {variant} (+{points} points)")
             max_score += 4
         
         # Stage/Grade compatibility (10% weight)
@@ -93,16 +107,22 @@ class PatientMatcher:
         trial_min_stage = stage_mapping.get(trial_features.get('min_stage', 'I'), 1)
         trial_min_grade = grade_mapping.get(trial_features.get('min_grade', 'low'), 1)
         
+        self.logger.debug(f"Patient stage: {patient_stage}, Trial min stage: {trial_min_stage}")
+        self.logger.debug(f"Patient grade: {patient_grade}, Trial min grade: {trial_min_grade}")
         if patient_stage >= trial_min_stage and patient_grade >= trial_min_grade:
             score += 10
             match_details['stage_grade'] = True
+            self.logger.debug("Stage/Grade match found (+10 points)")
         
         final_score = min(100, int(score * 100 / max_score)) if max_score > 0 else 0
+        self.logger.debug(f"Final score calculation - Score: {score}, Max score: {max_score}, Final score: {final_score}")
         
         # Remove duplicate stage/grade assignment
         
         if return_details:
+            self.logger.info(f"Match calculation completed - Final score: {final_score}")
             return final_score, match_details
+        self.logger.info(f"Match calculation completed - Final score: {final_score}")
         return final_score
 
     def get_match_description(self, score):

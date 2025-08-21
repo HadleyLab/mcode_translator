@@ -35,7 +35,7 @@ class TestClinicalTrialsFetcher:
         mock_cache_manager.return_value.get.return_value = None
         
         # Call function
-        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2)
+        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2, use_cache=False)
         
         # Verify results
         assert isinstance(result, dict)
@@ -66,7 +66,7 @@ class TestClinicalTrialsFetcher:
         }
         
         # Call function
-        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2)
+        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2, use_cache=True)
         
         # Verify results
         assert isinstance(result, dict)
@@ -214,7 +214,7 @@ class TestClinicalTrialsFetcher:
         
         # Call function and verify exception
         with pytest.raises(ClinicalTrialsAPIError):
-            search_trials("cancer")
+            search_trials("cancer", use_cache=False)
     
     def test_search_trials_pagination(self, mock_clinical_trials_api, mock_cache_manager):
         """Test search_trials function with pagination"""
@@ -238,7 +238,7 @@ class TestClinicalTrialsFetcher:
         mock_cache_manager.return_value.get.return_value = None
         
         # Call function with pagination parameters
-        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2)
+        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=2, use_cache=False)
         
         # Verify results
         assert isinstance(result, dict)
@@ -316,7 +316,7 @@ class TestClinicalTrialsFetcher:
         mock_cache_manager.return_value.get.return_value = None
         
         # Call function with None fields (should use default fields)
-        result = search_trials("cancer", fields=None, max_results=1)
+        result = search_trials("cancer", fields=None, max_results=1, use_cache=False)
         
         # Verify results
         assert isinstance(result, dict)
@@ -356,7 +356,7 @@ class TestClinicalTrialsFetcher:
         mock_cache_manager.return_value.get.return_value = None
         
         # Call function
-        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=1)
+        result = search_trials("cancer", fields=["NCTId", "BriefTitle"], max_results=1, use_cache=False)
         
         # Verify results structure
         assert isinstance(result, dict)

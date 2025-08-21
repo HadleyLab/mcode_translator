@@ -52,7 +52,7 @@ class TestClinicalTrialsFetcherIntegration:
         condition = "breast cancer"
         
         # Call function
-        result = search_trials(condition, max_results=5)
+        result = search_trials(condition, max_results=5, use_cache=False)
         
         # Verify results
         assert isinstance(result, dict)
@@ -96,7 +96,7 @@ class TestClinicalTrialsFetcherIntegration:
         fields = ["NCTId", "BriefTitle", "Condition", "OverallStatus"]
         
         # Call function
-        result = search_trials(condition, fields=fields, max_results=3)
+        result = search_trials(condition, fields=fields, max_results=3, use_cache=False)
         
         # Verify results
         assert isinstance(result, dict)

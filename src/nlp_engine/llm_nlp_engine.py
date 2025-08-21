@@ -227,25 +227,13 @@ class LLMNLPEngine(NLPEngine):
             try:
                 self.logger.debug(f"Raw LLM response before parsing:\n{content}")
                 
-                # Parse and validate response
-                parsed = json.loads(content)
-                if not isinstance(parsed, dict):
-                    raise ValueError("LLM response must be a JSON object")
+                # Use the proper _parse_response method for comprehensive validation
+                result = self._parse_response(content, prompt)
+                if result.error:
+                    self.logger.error(f"Response parsing failed: {result.error}")
+                    return self._get_empty_response()
                     
-                # Ensure required fields exist
-                required_fields = ['genomic_variants', 'biomarkers']
-                for field in required_fields:
-                    if field not in parsed:
-                        parsed[field] = [{"name": "NOT_FOUND", "status": ""}]
-                        
-                # Convert to ProcessingResult
-                return ProcessingResult(
-                    features=parsed,
-                    mcode_mappings={},
-                    metadata={'source': 'LLM'},
-                    entities=[],
-                    error=None
-                )
+                return result
             except Exception as e:
                 self.logger.error(f"Parsing failed: {str(e)}\nContent: {content[:200]}")
                 # Return structure with NOT_FOUND markers
