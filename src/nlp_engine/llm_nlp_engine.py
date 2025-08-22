@@ -398,7 +398,7 @@ class LLMNLPEngine(NLPEngine):
             
             # Validate biomarkers structure - focus on breast cancer biomarkers
             valid_biomarkers = []
-            breast_cancer_biomarkers = ['ER', 'PR', 'HER2', 'PD-L1']
+            breast_cancer_biomarkers = ['ER', 'PR', 'HER2', 'PD-L1', 'LHRHRECEPTOR']
             
             # Handle missing 'biomarkers' field
             if 'biomarkers' not in parsed:
@@ -440,11 +440,36 @@ class LLMNLPEngine(NLPEngine):
                 if stage and not any(x in stage for x in ['T', 'N', 'M']):
                     self.logger.warning(f"Non-TNM stage format detected: {stage}")
             
+            # Convert features to entities for mapping
+            entities = []
+            
+            # Convert biomarkers to entities
+            for bm in parsed.get('biomarkers', []):
+                if bm['name'] != 'NOT_FOUND':
+                    entities.append({
+                        'text': bm['name'],
+                        'type': 'biomarker',
+                        'status': bm.get('status', ''),
+                        'value': bm.get('value', ''),
+                        'confidence': 0.9
+                    })
+            
+            # Convert genomic variants to entities
+            for variant in parsed.get('genomic_variants', []):
+                if variant['gene'] != 'NOT_FOUND':
+                    entities.append({
+                        'text': variant['gene'],
+                        'type': 'genomic_variant',
+                        'variant': variant.get('variant', ''),
+                        'significance': variant.get('significance', ''),
+                        'confidence': 0.8
+                    })
+
             return ProcessingResult(
                 features=parsed,
                 mcode_mappings={},
                 metadata={'source': 'LLM'},
-                entities=[]
+                entities=entities
             )
             
         except (ValueError, KeyError) as e:
@@ -469,6 +494,52 @@ class LLMNLPEngine(NLPEngine):
             return self.extract_mcode_features(text)
         except Exception as e:
             return self._create_error_result(f"Error processing text: {str(e)}")
+    
+    def process_trial_context(self, criteria_text: str, trial_data: dict) -> ProcessingResult:
+        """Process clinical trial context including eligibility criteria and trial metadata.
+        
+        This method combines eligibility criteria with trial title and design information
+        to provide comprehensive context for mCODE feature extraction.
+        
+        Args:
+            criteria_text: Clinical trial eligibility criteria text
+            trial_data: Dictionary containing trial metadata including:
+                - protocolSection.identificationModule.briefTitle
+                - protocolSection.designModule.designInfo
+                - protocolSection.conditionsModule.conditions
+            
+        Returns:
+            ProcessingResult containing extracted features from combined context
+        """
+        try:
+            # Extract trial context information
+            protocol_section = trial_data.get('protocolSection', {})
+            identification_module = protocol_section.get('identificationModule', {})
+            design_module = protocol_section.get('designModule', {})
+            conditions_module = protocol_section.get('conditionsModule', {})
+            
+            title = identification_module.get('briefTitle', '')
+            design_info = design_module.get('designInfo', {})
+            conditions = conditions_module.get('conditions', [])
+            
+            # Convert design info to string if it's a dictionary
+            design_text = str(design_info) if isinstance(design_info, dict) else design_info
+            
+            # Combine all context information
+            combined_context = f"""
+            TRIAL TITLE: {title}
+            
+            TRIAL DESIGN: {design_text}
+            
+            TRIAL CONDITIONS: {', '.join(conditions)}
+            
+            ELIGIBILITY CRITERIA:
+            {criteria_text}
+            """
+            
+            return self.extract_mcode_features(combined_context)
+        except Exception as e:
+            return self._create_error_result(f"Error processing trial context: {str(e)}")
     
     def _create_error_result(self, error_msg: str) -> ProcessingResult:
         """Create a ProcessingResult with error information.

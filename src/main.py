@@ -11,7 +11,7 @@ import traceback
 import colorlog
 import time
 import hashlib
-from typing import Dict, List, Optional, Union, Callable
+from typing import Dict, List, Optional, Union, Callable, Set
 from pytrials.client import ClinicalTrials
 from src.utils.config import Config
 from src.utils.cache import CacheManager
@@ -158,9 +158,12 @@ code_extractor = CodeExtractionModule()
 mcode_mapper = MCODEMappingEngine()
 nlp_engine = LLMNLPEngine()
 
+# Global task tracking for cleanup
+active_tasks: Set[asyncio.Task] = set()
+
 # Add mCODE extraction function from fetcher_demo.py
 async def extract_mcode_data(study):
-    """Extract mCODE data from a study."""
+    """Extract mCODE data from a study with comprehensive error handling."""
     try:
         # Extract data from study
         protocol_section = study.get('protocolSection', {})
@@ -186,52 +189,102 @@ async def extract_mcode_data(study):
             nlp_result = None
         else:
             try:
-                # Use run.io_bound to run the synchronous LLM processing asynchronously
-                nlp_result = await run.io_bound(nlp_engine.process_text, eligibility_criteria)
+                # Use run.io_bound to run the synchronous LLM processing asynchronously with timeout
+                nlp_result = await asyncio.wait_for(
+                    run.io_bound(nlp_engine.process_text, eligibility_criteria),
+                    timeout=30.0
+                )
                 # Check if processing failed
                 if nlp_result and hasattr(nlp_result, 'error') and nlp_result.error:
                     logger.warning(f"LLM NLP processing failed for study {nct_id}: {nlp_result.error}")
                     nlp_result = None
+            except asyncio.TimeoutError:
+                logger.warning(f"Timeout processing criteria with LLM NLP engine for study {nct_id}")
+                nlp_result = None
             except Exception as e:
                 logger.error(f"Error processing criteria with LLM NLP engine for study {nct_id}: {str(e)}")
                 nlp_result = None
         
-        # Step 2: Code extraction
-        extracted_codes = code_extractor.process_criteria_for_codes(
-            eligibility_criteria if eligibility_criteria else "",
-            nlp_result.entities if nlp_result and not nlp_result.error else None
-        )
+        # Step 2: Code extraction with timeout
+        try:
+            extracted_codes = await asyncio.wait_for(
+                run.io_bound(
+                    code_extractor.process_criteria_for_codes,
+                    eligibility_criteria if eligibility_criteria else "",
+                    nlp_result.entities if nlp_result and not nlp_result.error else None
+                ),
+                timeout=15.0
+            )
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout during code extraction for study {nct_id}")
+            extracted_codes = {'extracted_codes': {}}
+        except Exception as e:
+            logger.error(f"Error during code extraction for study {nct_id}: {str(e)}")
+            extracted_codes = {'extracted_codes': {}}
         
-        # Step 3: mCODE mapping
-        # Combine NLP entities and extracted codes for mapping
-        all_entities = []
-        if nlp_result and not nlp_result.error and hasattr(nlp_result, 'entities'):
-            all_entities.extend(nlp_result.entities)
+        # Step 3: mCODE mapping with timeout
+        try:
+            # Combine NLP entities and extracted codes for mapping
+            all_entities = []
+            if nlp_result and not nlp_result.error and hasattr(nlp_result, 'entities'):
+                all_entities.extend(nlp_result.entities)
+            
+            # Add codes as entities for mapping
+            if extracted_codes and 'extracted_codes' in extracted_codes:
+                for system, codes in extracted_codes['extracted_codes'].items():
+                    for code_info in codes:
+                        all_entities.append({
+                            'text': code_info.get('text', ''),
+                            'confidence': code_info.get('confidence', 0.8),
+                            'codes': {system: code_info.get('code', '')}
+                        })
+            
+            mapped_mcode = await asyncio.wait_for(
+                run.io_bound(mcode_mapper.map_entities_to_mcode, all_entities),
+                timeout=10.0
+            )
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout during mCODE mapping for study {nct_id}")
+            mapped_mcode = []
+        except Exception as e:
+            logger.error(f"Error during mCODE mapping for study {nct_id}: {str(e)}")
+            mapped_mcode = []
         
-        # Add codes as entities for mapping
-        if extracted_codes and 'extracted_codes' in extracted_codes:
-            for system, codes in extracted_codes['extracted_codes'].items():
-                for code_info in codes:
-                    all_entities.append({
-                        'text': code_info.get('text', ''),
-                        'confidence': code_info.get('confidence', 0.8),
-                        'codes': {system: code_info.get('code', '')}
-                    })
+        # Step 4: Generate structured data with timeout
+        try:
+            demographics = {}
+            if nlp_result and not nlp_result.error and hasattr(nlp_result, 'features'):
+                demographics = nlp_result.features.get('demographics', {})
+            
+            structured_data = await asyncio.wait_for(
+                run.io_bound(mcode_mapper.generate_mcode_structure, mapped_mcode, demographics),
+                timeout=10.0
+            )
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout generating structured data for study {nct_id}")
+            structured_data = {}
+        except Exception as e:
+            logger.error(f"Error generating structured data for study {nct_id}: {str(e)}")
+            structured_data = {}
         
-        mapped_mcode = mcode_mapper.map_entities_to_mcode(all_entities)
-        
-        # Step 4: Generate structured data
-        demographics = {}
-        if nlp_result and not nlp_result.error and hasattr(nlp_result, 'features'):
-            demographics = nlp_result.features.get('demographics', {})
-        
-        structured_data = mcode_mapper.generate_mcode_structure(mapped_mcode, demographics)
-        
-        # Step 5: Validate mCODE compliance
-        validation_result = mcode_mapper.validate_mcode_compliance({
-            'mapped_elements': mapped_mcode,
-            'demographics': demographics
-        })
+        # Step 5: Validate mCODE compliance with timeout
+        try:
+            validation_result = await asyncio.wait_for(
+                run.io_bound(
+                    mcode_mapper.validate_mcode_compliance,
+                    {
+                        'mapped_elements': mapped_mcode,
+                        'demographics': demographics
+                    }
+                ),
+                timeout=5.0
+            )
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout during mCODE validation for study {nct_id}")
+            validation_result = {'is_valid': False, 'error': 'Timeout during validation'}
+        except Exception as e:
+            logger.error(f"Error during mCODE validation for study {nct_id}: {str(e)}")
+            validation_result = {'is_valid': False, 'error': str(e)}
         
         return {
             'nct_id': nct_id,
@@ -809,8 +862,13 @@ with ui.column().classes('w-full items-center'):
                         page_status = ui.label('Page 1').classes('text-sm')
                     
                 
-    # Results display
-    trials_container = ui.column().classes('w-full p-4')
+    # Results display - split panel layout
+    with ui.row().classes('w-full h-[calc(100vh-300px)] gap-4'):
+        # Left panel (40%) for condensed trial results
+        trials_container = ui.column().classes('w-2/5 p-4 gap-4 overflow-y-auto')
+        
+        # Right panel (60%) for detailed view
+        details_panel = ui.column().classes('w-3/5 p-4 overflow-y-auto')
 
 def handle_error(error: Exception, context: str = "", ui_cleanup: Optional[Callable] = None):
     """Centralized error handler with consistent logging and user feedback"""
@@ -828,22 +886,227 @@ def handle_error(error: Exception, context: str = "", ui_cleanup: Optional[Calla
     
     return error_msg
 
+# Track currently selected trial card
+current_selected_card = None
+
+def create_trial_card(protocol_section):
+    """Create a condensed trial card showing only mandatory fields"""
+    global current_selected_card
+    
+    identification_module = protocol_section.get('identificationModule', {})
+    status_module = protocol_section.get('statusModule', {})
+    conditions_module = protocol_section.get('conditionsModule', {})
+    
+    # Extract basic information
+    title = identification_module.get('briefTitle', 'No title available')
+    nct_id = identification_module.get('nctId', 'N/A')
+    status = status_module.get('overallStatus', 'Unknown')
+    conditions = conditions_module.get('conditions', [])
+    
+    # Create the condensed trial card with selection state
+    card = ui.card().classes('w-full p-3 mb-2 bg-white shadow-sm rounded-lg hover:shadow-md transition-shadow cursor-pointer')
+    selected_style = 'border-2 border-blue-500 bg-blue-50'
+    with card:
+        # Header with title and status
+        with ui.row().classes('items-center justify-between w-full'):
+            # Truncate title if too long
+            short_title = (title[:40] + '...') if len(title) > 40 else title
+            ui.label(short_title).classes('text-md font-bold text-gray-800 flex-grow')
+            
+            # Compact status badge
+            status_color = 'green' if status.lower() in ['active', 'recruiting', 'completed'] else 'orange' if status.lower() in ['not yet recruiting', 'suspended'] else 'red'
+            ui.badge(status[0].upper()).props(f'color={status_color} size=sm')
+        
+        # Basic information in compact form
+        with ui.column().classes('w-full gap-1 mt-1'):
+            ui.label(f"{nct_id}").classes('text-xs text-gray-600 font-mono')
+            
+            # Conditions (first 2 only)
+            if conditions:
+                display_conditions = conditions[:2]  # Show up to 2 conditions
+                if len(conditions) > 2:
+                    display_text = f"{', '.join(display_conditions)} +{len(conditions) - 2}"
+                else:
+                    display_text = ', '.join(display_conditions)
+                
+                with ui.tooltip(f"All conditions: {', '.join(conditions)}"):
+                    ui.label(display_text).classes('text-xs text-blue-600')
+    
+    # Add click handler to show details in right panel
+    def on_click():
+        global current_selected_card
+        
+        # Clear previous selection
+        if current_selected_card:
+            current_selected_card.classes(remove=selected_style)
+        
+        # Set new selection
+        card.classes(add=selected_style)
+        current_selected_card = card
+        
+        details_panel.clear()
+        with details_panel:
+            loading = ui.spinner('dots', size='lg', color='primary')
+            status_label = ui.label('Loading trial details...')
+        
+        async def load_details():
+            try:
+                full_study = await asyncio.get_event_loop().run_in_executor(
+                    None, lambda: get_full_study(nct_id)
+                )
+                if full_study:
+                    mcode_data = await extract_mcode_data(full_study)
+                    selected_engine = engine_select.value
+                    engine = engines[selected_engine]
+                    criteria = protocol_section.get('eligibilityModule', {}).get('eligibilityCriteria', '')
+                    display_data = await run.io_bound(engine.process_text, criteria)
+                    
+                    details_panel.clear()
+                    with details_panel:
+                        display_trial_results(protocol_section, display_data, mcode_data)
+                else:
+                    status_label.set_text('Failed to load trial details')
+                    loading.set_visibility(False)
+            except Exception as e:
+                status_label.set_text('Error loading details')
+                loading.set_visibility(False)
+                ui.notify(f"Error loading trial details: {str(e)}", type='negative')
+        
+        asyncio.create_task(load_details())
+    
+    card.on('click', on_click)
+    
+    # Return None since we won't track processing status in the card anymore
+    return None, None
+
+async def process_trial_async(protocol_section, criteria, trial_card_element, trial_spinner):
+    """Process a trial asynchronously and display results in right panel"""
+    try:
+        # Extract basic trial info
+        identification_module = protocol_section.get('identificationModule', {})
+        nct_id = identification_module.get('nctId', 'Unknown')
+        
+        logger.info(f"Starting async processing for trial {nct_id}")
+        
+        # Clear and update right panel with loading state
+        details_panel.clear()
+        with details_panel:
+            loading = ui.spinner('dots', size='lg', color='primary')
+            status_label = ui.label('Loading trial details...')
+        
+        # Get full study details for eligibility criteria with timeout
+        try:
+            full_study = await asyncio.wait_for(
+                asyncio.get_event_loop().run_in_executor(None, lambda: get_full_study(nct_id)),
+                timeout=30.0
+            )
+            if not full_study:
+                logger.warning(f"Failed to get full study details for {nct_id}")
+                status_label.set_text('Failed to fetch trial details')
+                loading.set_visibility(False)
+                return
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout fetching study details for {nct_id}")
+            status_label.set_text('Timeout fetching details')
+            loading.set_visibility(False)
+            return
+        
+        # Update status for mCODE extraction
+        status_label.set_text('Extracting mCODE data...')
+        
+        # Extract mCODE data with timeout
+        try:
+            mcode_data = await asyncio.wait_for(extract_mcode_data(full_study), timeout=60.0)
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout extracting mCODE data for {nct_id}")
+            status_label.set_text('Timeout extracting mCODE')
+            loading.set_visibility(False)
+            return
+        
+        # Update status for NLP processing
+        status_label.set_text('Processing eligibility criteria...')
+        
+        # Process with selected NLP engine
+        selected_engine = engine_select.value
+        engine = engines[selected_engine]
+        
+        # Process eligibility criteria with timeout
+        try:
+            # Use run.io_bound to handle synchronous NLP processing asynchronously
+            display_data = await asyncio.wait_for(
+                run.io_bound(engine.process_text, criteria),
+                timeout=45.0
+            )
+            
+            # Update the right panel with results
+            details_panel.clear()
+            with details_panel:
+                display_trial_results(protocol_section, display_data, mcode_data)
+            
+            logger.info(f"Successfully processed trial {nct_id}")
+            
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout processing criteria for trial {nct_id}")
+            status_label.set_text('Timeout processing criteria')
+            loading.set_visibility(False)
+            ui.notify(f"Timeout processing trial {nct_id}", type='warning')
+        except Exception as e:
+            logger.error(f"Error processing criteria for trial {nct_id}: {str(e)}")
+            status_label.set_text('Processing failed')
+            loading.set_visibility(False)
+            ui.notify(f"Failed to process trial {nct_id}: {str(e)}", type='warning')
+            
+    except Exception as e:
+        logger.error(f"Error in async trial processing for {nct_id}: {str(e)}")
+        status_label.set_text('Processing error')
+        loading.set_visibility(False)
+        ui.notify(f"Error processing trial {nct_id}", type='negative')
+    finally:
+        # Clean up any resources if needed
+        pass
+
 # Define search handler
 current_page_token = None
+
+def cancel_active_tasks():
+    """Cancel all active processing tasks"""
+    global active_tasks
+    if active_tasks:
+        logger.info(f"Cancelling {len(active_tasks)} active tasks")
+        for task in active_tasks:
+            if not task.done():
+                task.cancel()
+        active_tasks.clear()
+        ui.notify("Cancelled all active processing tasks", type='info')
 
 async def on_search(page_token=None):
     global current_page_token
     current_page_token = page_token
     
+    # Cancel any existing tasks before starting new search
+    cancel_active_tasks()
+    
     trials_container.clear()
-    with trials_container:
-        # Show loading state
+    details_panel.clear()
+    
+    with details_panel:
+        # Enhanced loading state with comprehensive progress tracking
         loading = ui.spinner('dots', size='lg', color='primary')
         status_label = ui.label('Searching clinical trials...')
+        progress_bar = ui.linear_progress(0).classes('w-full h-2')
+        progress_bar.set_visibility(False)
+        
+        # Add cancel button for long-running operations
+        with ui.row().classes('items-center gap-2'):
+            cancel_button = ui.button('Cancel Processing', icon='cancel', on_click=cancel_active_tasks) \
+                .props('outline color=negative') \
+                .classes('ml-auto')
         
         def cleanup():
             loading.set_visibility(False)
             status_label.set_text("Search failed")
+            progress_bar.set_visibility(False)
+            cancel_button.set_visibility(False)
         
         try:
             # Validate inputs
@@ -865,22 +1128,41 @@ async def on_search(page_token=None):
                 loading.set_visibility(False)
                 status_label.set_text("Search operation failed")
             
-            # Perform async search
-            def search_task():
-                logger.info(f"Calling API with search term: '{search_input.value}'")
-                logger.debug(f"Search parameters: max_results={limit_slider.value}, page_token={page_token}")
-                results = search_trials(
-                    search_input.value,
-                    fields=["NCTId", "BriefTitle", "Condition", "OverallStatus", "BriefSummary"],
-                    max_results=int(limit_slider.value),
-                    page_token=page_token,
-                    use_cache=True
-                )
-                logger.info(f"API returned {len(results.get('studies', []))} results")
-                logger.debug(f"API response keys: {list(results.keys()) if results else 'None'}")
-                return results
+            # Update status to show search in progress
+            status_label.set_text('Connecting to ClinicalTrials.gov API...')
             
-            results = await asyncio.get_event_loop().run_in_executor(None, search_task)
+            # Perform async search with timeout
+            try:
+                def search_task():
+                    logger.info(f"Calling API with search term: '{search_input.value}'")
+                    logger.debug(f"Search parameters: max_results={limit_slider.value}, page_token={page_token}")
+                    results = search_trials(
+                        search_input.value,
+                        fields=["NCTId", "BriefTitle", "Condition", "OverallStatus", "BriefSummary"],
+                        max_results=int(limit_slider.value),
+                        page_token=page_token,
+                        use_cache=True
+                    )
+                    logger.info(f"API returned {len(results.get('studies', []))} results")
+                    logger.debug(f"API response keys: {list(results.keys()) if results else 'None'}")
+                    return results
+                
+                results = await asyncio.wait_for(
+                    asyncio.get_event_loop().run_in_executor(None, search_task),
+                    timeout=60.0
+                )
+            except asyncio.TimeoutError:
+                logger.error("Timeout during API search operation")
+                handle_error(Exception("Search operation timed out"), "API timeout", search_cleanup)
+                return
+            except Exception as e:
+                logger.error(f"Search operation failed: {str(e)}")
+                handle_error(e, "Search operation failed", search_cleanup)
+                return
+            
+            # Update status after search completes
+            status_label.set_text('Processing trial data...')
+            progress_bar.set_visibility(True)
             
             if not results:
                 status_label.set_text('No results found')
@@ -925,6 +1207,9 @@ async def on_search(page_token=None):
             # Initialize ClinicalTrials client
             ct = ClinicalTrials()
             
+            # Store trial processing tasks
+            processing_tasks = []
+            
             # Process all studies (whether they're NCT IDs or full objects)
             for study in studies:
                 try:
@@ -959,134 +1244,92 @@ async def on_search(page_token=None):
                     protocol_section = study.get('protocolSection', {})
                     eligibility_module = protocol_section.get('eligibilityModule', {})
                     criteria = eligibility_module.get('eligibilityCriteria', '')
-                    # Initialize extraction_result to None
-                    extraction_result = None
                     
-                    # Show processing status
-                    processing_label = ui.label(f"Processing trial {protocol_section.get('identificationModule', {}).get('nctId')}...")
-                
+                    # Create trial card immediately with basic information
+                    with trials_container:
+                        create_trial_card(protocol_section)
+                    
+                    # Start async processing for this trial
+                    task = asyncio.create_task(
+                        process_trial_async(protocol_section, criteria, None, None)
+                    )
+                    processing_tasks.append(task)
+                    active_tasks.add(task)
+                    # Add cleanup callback to remove task from active_tasks when done
+                    task.add_done_callback(lambda t: active_tasks.discard(t))
+                    
                 except Exception as e:
                     logger.error(f"Failed to process study: {str(e)}")
                     continue
-                
-                try:
-                    # Check cache before processing
-                    extraction_result = None
-                    if criteria in extraction_cache:
-                        extraction_result = extraction_cache[criteria]
-                        logger.info(f"Using cached extraction for trial {protocol_section.get('identificationModule', {}).get('nctId')}")
-                        logger.debug(f"Cached extraction result keys: {list(extraction_result.keys()) if extraction_result else 'None'}")
-                    elif criteria:
-                        extraction_status = ui.label('Extracting mCODE features...')
-                        ui.notify('Starting mCODE feature extraction...', type='info')
-                        selected_engine = engine_select.value
-                        logger.info(f"Starting feature extraction for trial {protocol_section.get('identificationModule', {}).get('nctId')} using {selected_engine} engine")
-                        logger.debug(f"Engine selection state: {engine_select.value}")
-                        
-                        # Run extraction in executor to prevent blocking
-                        def extraction_task():
-                            try:
-                                logger.info(f"Starting extraction for criteria: {criteria[:100]}...")
-                                selected_engine = engine_select.value
-                                logger.debug(f"Executing extraction with engine: {selected_engine}")
-                                logger.debug(f"Engines available: {list(engines.keys())}")
-                                
-                                def process_with_engine(engine_name, criteria_text):
-                                    """Standardized engine processing with consistent output format"""
-                                    try:
-                                        start = time.time()
-                                        logger.info(f"Processing with {engine_name} engine...")
-                                        raw_result = engines[engine_name].process_text(criteria_text)
-                                        elapsed = time.time() - start
-                                        
-                                        # Standardize output format
-                                        # Check if raw_result is a ProcessingResult object or dict
-                                        if hasattr(raw_result, 'features'):
-                                            # It's a ProcessingResult object
-                                            features = raw_result.features or {}
-                                            entities = raw_result.entities or []
-                                        else:
-                                            # It's a dict
-                                            features = raw_result.get('features', {})
-                                            entities = raw_result.get('entities', [])
-                                        
-                                        standardized = {
-                                            'features': features,
-                                            'entities': entities,
-                                            'metadata': {
-                                                'processing_time': elapsed,
-                                                'engine': engine_name,
-                                                'biomarkers_count': len(features.get('biomarkers', [])),
-                                                'variants_count': len(features.get('genomic_variants', []))
-                                            }
-                                        }
-                                        logger.debug(f"{engine_name} result: {json.dumps(standardized, indent=2)}")
-                                        return standardized, None
-                                    except Exception as e:
-                                        logger.error(f"{engine_name} engine error: {str(e)}")
-                                        return None, str(e)
             
-                                # Process with selected engine only
-                                result, error = process_with_engine(selected_engine, criteria)
-                                if error:
-                                    logger.error(f"Extraction error for trial {protocol_section.get('identificationModule', {}).get('nctId')}: {error}")
-                                    return {'error': error}
-                                logger.debug(f"Extraction successful for trial {protocol_section.get('identificationModule', {}).get('nctId')}")
-                                return {'single': result}
-                            except Exception as e:
-                                logger.error(f"Extraction error: {str(e)}\n{traceback.format_exc()}")
-                                raise
-                            
-                        extraction_result = await asyncio.get_event_loop().run_in_executor(None, extraction_task)
-                        extraction_cache[criteria] = extraction_result
-                        
-                        extraction_status.set_text('Extraction complete')
-                        ui.notify('mCODE features extracted successfully', type='positive')
-                        logger.info(f"Extraction complete for trial {protocol_section.get('identificationModule', {}).get('nctId')}")
-                    
-                    # Extract full mCODE data using the new pipeline
-                    mcode_data = await extract_mcode_data(study)
-                    if mcode_data:
-                        logger.info(f"Full mCODE extraction complete for trial {protocol_section.get('identificationModule', {}).get('nctId')}")
-                    
-                    # Directly display extraction results
-                    with trials_container:
-                        # Handle case where extraction_result is None or error
-                        if extraction_result is None:
-                            logger.warning(f"No extraction result for trial {protocol_section.get('identificationModule', {}).get('nctId')}")
-                            # Create a minimal display_data structure to avoid errors
-                            extraction_result = {'features': {}}
-                        display_trial_results(protocol_section, extraction_result, mcode_data)
+            # Track progress with proper variable scope
+            completed = 0
+            total = len(processing_tasks)
+            
+            # Create a wrapper to track completion with proper variable access
+            async def track_progress(task, completed_ref, total_ref, progress_bar, status_label):
+                try:
+                    result = await task
+                    completed_ref[0] += 1
+                    progress = completed_ref[0] / total_ref if total_ref > 0 else 1
+                    progress_bar.value = progress
+                    status_label.set_text(f'Processed {completed_ref[0]} of {total_ref} trials...')
+                    return result
                 except Exception as e:
-                    def trial_cleanup():
-                        processing_label.set_text("Trial processing failed")
-                    
-                    handle_error(e, "Trial processing error", trial_cleanup)
-                    continue
+                    completed_ref[0] += 1
+                    progress = completed_ref[0] / total_ref if total_ref > 0 else 1
+                    progress_bar.value = progress
+                    status_label.set_text(f'Processed {completed_ref[0]} of {total_ref} trials (some failed)...')
+                    raise e
+            
+            # Process all tasks with progress tracking using mutable reference
+            completed_ref = [0]  # Use list to allow modification in nested function
+            processing_tasks_with_progress = [
+                track_progress(task, completed_ref, total, progress_bar, status_label)
+                for task in processing_tasks
+            ]
+            
+            await asyncio.gather(*processing_tasks_with_progress)
+            
+            # Final status update
+            status_label.set_text(f'Completed processing {total} trials')
+            progress_bar.value = 1
                     
         except Exception as e:
             handle_error(e, "Search operation failed", cleanup)
         finally:
             loading.set_visibility(False)
+            cancel_button.set_visibility(False)
+            # Keep progress bar visible to show completion state
 
 
 def display_trial_results(protocol_section, display_data, mcode_data=None):
-    """Display trial results with mCODE matching information"""
+    """Display detailed trial results in right panel"""
     logger.debug(f"Entering display_trial_results with display_data type: {type(display_data)}")
     
-    # Validate input data
-    if not display_data or not isinstance(display_data, dict):
+    # Validate input data - handle both dict and ProcessingResult objects
+    if not display_data:
         logger.error(f"Invalid display_data: {display_data}")
         ui.label('Invalid trial data format').classes('text-red-500')
         return
-        
-    # Extract features from display_data
-    if 'single' in display_data:
-        # New format: extraction result is under 'single' key
-        features = display_data['single'].get('features', {})
+    
+    # Extract features from different data formats
+    features = {}
+    if isinstance(display_data, dict):
+        # Handle dict format
+        if 'single' in display_data:
+            # New format: extraction result is under 'single' key
+            features = display_data['single'].get('features', {})
+        else:
+            # Old format: features are directly in display_data
+            features = display_data.get('features', {})
+    elif hasattr(display_data, 'features'):
+        # Handle ProcessingResult object
+        features = display_data.features
     else:
-        # Old format: features are directly in display_data
-        features = display_data.get('features', {})
+        logger.error(f"Unsupported display_data format: {type(display_data)}")
+        ui.label('Unsupported data format').classes('text-red-500')
+        return
     
     # Create safe copy of features data
     try:
@@ -1104,205 +1347,277 @@ def display_trial_results(protocol_section, display_data, mcode_data=None):
         logger.error(traceback.format_exc())
         return
     
-    # Add mCODE visualization if available - SIMPLIFIED VERSION
-    if mcode_data:
-        # Display mCODE results prominently at the top level
-        with ui.expansion('mCODE EXTRACTION RESULTS', icon='analytics', value=True).classes('w-full bg-blue-50'):
-            with ui.card().classes('w-full p-4'):
-                ui.label('mCODE EXTRACTION SUMMARY').classes('text-xl font-bold mb-4 text-primary')
-                
-                # Simple summary cards
-                with ui.grid(columns=2).classes('w-full gap-4'):
-                    # Mapped elements count
-                    with ui.card().classes('p-4 bg-blue-100 rounded-lg'):
-                        ui.label('MAPPED ELEMENTS').classes('font-bold text-blue-700 mb-2')
-                        mapped_count = len(mcode_data.get('mapped_mcode', []))
-                        ui.label(f'{mapped_count}').classes('text-2xl font-bold text-blue-600')
-                    
-                    # Validation status
-                    with ui.card().classes('p-4 bg-green-100 rounded-lg'):
-                        ui.label('VALIDATION').classes('font-bold text-green-700 mb-2')
-                        validation = mcode_data.get('validation', {})
-                        if validation.get('is_valid', False):
-                            ui.label('VALID').classes('text-2xl font-bold text-green-600')
-                        else:
-                            ui.label('INVALID').classes('text-2xl font-bold text-red-600')
-                
-                # Quick view of key mCODE data
-                structured_data = mcode_data.get('structured_data', {})
-                if structured_data:
-                    with ui.column().classes('w-full gap-3 mt-4'):
-                        ui.label('KEY mCODE FIELDS:').classes('font-bold text-lg')
+    # Detailed Trial View in Right Panel
+    with details_panel.classes('w-full p-4'):
+        with ui.card().classes('w-full'):
+            # Consolidated expansion panel for all trial analysis
+            with ui.expansion('TRIAL ANALYSIS', icon='analytics', value=True).classes('w-full bg-blue-50'):
+                # Enhanced Trial Information Header with all mandatory fields
+                with ui.card().classes('w-full p-6 bg-white shadow-md rounded-lg mb-4'):
+                    # Header row with title, NCT ID, and status
+                    with ui.row().classes('items-center justify-between w-full mb-4'):
+                        with ui.column().classes('flex-grow'):
+                            # Title - mandatory field
+                            title = protocol_section.get('identificationModule', {}).get('officialTitle') or \
+                                protocol_section.get('identificationModule', {}).get('briefTitle', 'No title available')
+                            ui.label(title).classes('text-2xl font-bold text-gray-800')
+                            
+                            # NCT ID
+                            nct_id = protocol_section.get('identificationModule', {}).get('nctId', 'N/A')
+                            ui.label(f"NCT ID: {nct_id}").classes('text-sm text-gray-600 font-mono')
                         
-                        # Show cancer type if available
-                        cancer_data = structured_data.get('cancer_condition', {})
-                        if cancer_data:
-                            for key, value in cancer_data.items():
-                                if value and value != 'Not specified':
-                                    with ui.row().classes('items-center gap-2'):
-                                        ui.label(f"{key.replace('_', ' ').title()}:").classes('font-medium')
-                                        ui.label(str(value)).classes('text-blue-600')
+                        # Trial status badge with enhanced styling
+                        status_module = protocol_section.get('statusModule', {})
+                        status = status_module.get('overallStatus', 'Unknown')
+                        status_color = 'green' if status.lower() in ['active', 'recruiting', 'completed'] else 'orange' if status.lower() in ['not yet recruiting', 'suspended'] else 'red'
+                        ui.badge(status.upper()).props(f'color={status_color} size=lg').classes('ml-4 px-3 py-1 font-bold')
+                    
+                    # Description - mandatory field (always visible, not in expansion)
+                    description_module = protocol_section.get('descriptionModule', {})
+                    brief_summary = description_module.get('briefSummary', 'No description available')
+                    if brief_summary:
+                        with ui.card().classes('w-full p-4 bg-white rounded-lg mb-4'):
+                            ui.label('DESCRIPTION').classes('text-lg font-bold text-primary mb-2')
+                            ui.markdown(brief_summary).classes('text-sm text-gray-700 leading-relaxed')
+                    
+                    # Trial metadata grid with dates and tags - mandatory fields
+                    with ui.grid(columns=3).classes('w-full gap-4'):
+                        # Start Date
+                        start_date = status_module.get('startDate', 'Unknown')
+                        with ui.card().classes('p-3 bg-white rounded-lg text-center'):
+                            ui.label('START DATE').classes('text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1')
+                            ui.label(start_date).classes('text-sm font-medium text-gray-800')
                         
-                        # Show biomarkers if available
-                        biomarkers = features_copy.get('biomarkers', [])
-                        if biomarkers and any(b.get('name') != 'NOT_FOUND' for b in biomarkers):
-                            with ui.row().classes('items-center gap-2'):
-                                ui.label('Biomarkers:').classes('font-medium')
-                                biomarker_text = ', '.join([f"{b.get('name')} {b.get('status')}"
-                                                          for b in biomarkers if b.get('name') != 'NOT_FOUND'])
-                                ui.label(biomarker_text).classes('text-blue-600')
-                
-                # Link to full details
-                with ui.row().classes('w-full justify-end mt-4'):
-                    ui.button('View Full mCODE Details', icon='open_in_new', on_click=lambda: (
-                        display_mcode_visualization(mcode_data),
-                        display_mcode_features_tab(mcode_data)
-                    )).props('outline')
-    
-    with ui.card().classes('w-full'):
-        # Trial header with enhanced match visualization
-        with ui.expansion('Patient Match Analysis').classes('w-full'):
-            # Match strength indicator
-            if display_data and 'features' in display_data and matching_toggle.value:
-                from src.matching_engine.matcher import PatientMatcher
-                matcher = PatientMatcher()
-                
-                # Prepare patient biomarkers as dict for matching, ignoring NOT_FOUND
-                patient_biomarkers = {b['name']: b['status'] for b in patient_profile['biomarkers'] if b['name'] != 'NOT_FOUND'}
-                patient_variants = [v.get('gene', '') for v in patient_profile.get('genomic_variants', [])
-                                        if v.get('gene') != 'NOT_FOUND']
-                
-                patient_data = {
-                    'cancer_type': patient_profile.get('cancer_type', ''),
-                    'stage': patient_profile.get('stage', ''),
-                    'biomarkers': patient_biomarkers,
-                    'genomic_variants': patient_variants,
-                    'cancer_characteristics': {
-                        'stage': patient_profile.get('stage', ''),
-                        'histology': patient_profile.get('histology', ''),
-                        'grade': patient_profile.get('grade', ''),
-                        'tnm_staging': patient_profile.get('tnm_staging', {'t': '', 'n': '', 'm': ''})
-                    }
-                }
-                
-                # Get features from display_data
-                features = display_data['features']
-                
-                # Extract biomarkers and variants, filtering out NOT_FOUND
-                biomarkers = [b for b in features.get('biomarkers', []) if b.get('name') != 'NOT_FOUND']
-                variants = [v for v in features.get('genomic_variants', []) if v.get('gene') != 'NOT_FOUND']
-                
-                trial_features = {
-                    'cancer_type': features.get('cancer_type', ''),
-                    'biomarkers': {b['name']: b['status'] for b in biomarkers},
-                    'genomic_variants': [v['gene'] for v in variants],
-                    'cancer_characteristics': {
-                        'stage': features.get('stage', ''),
-                        'histology': features.get('histology', ''),
-                        'grade': features.get('grade', ''),
-                        'tnm_staging': features.get('tnm_staging', {'t': '', 'n': '', 'm': ''})
-                    }
-                }
-                
-                # Calculate match score with detailed breakdown
-                logger.debug(f"Calculating match score for trial {protocol_section.get('identificationModule', {}).get('nctId')}")
-                logger.debug(f"Patient data: {patient_data}")
-                logger.debug(f"Trial features: {trial_features}")
-                match_score, match_details = matcher.calculate_match_score(patient_data, trial_features, return_details=True)
-                match_desc = matcher.get_match_description(match_score)
-                logger.info(f"Match score for trial {protocol_section.get('identificationModule', {}).get('nctId')}: {match_score}% - {match_desc}")
-                logger.debug(f"Match details: {match_details}")
-                
-                # Enhanced match visualization
-                with ui.column().classes('items-center w-full gap-2'):
-                    # Match score bar with color coding
-                    color = 'green' if match_score >= 75 else 'orange' if match_score >= 50 else 'red'
-                    with ui.row().classes('items-center w-full gap-4'):
-                        ui.label('Match Score:').classes('font-bold')
-                        ui.linear_progress(match_score/100).classes('flex-grow h-4') \
-                            .props(f'color={color} rounded')
-                        ui.label(f"{match_score}%").classes('font-bold min-w-[50px]')
+                        # Completion Date
+                        completion_date = status_module.get('completionDate', 'Unknown')
+                        with ui.card().classes('p-3 bg-white rounded-lg text-center'):
+                            ui.label('COMPLETION DATE').classes('text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1')
+                            ui.label(completion_date).classes('text-sm font-medium text-gray-800')
+                        
+                        # Conditions/Tags - mandatory field
+                        conditions_module = protocol_section.get('conditionsModule', {})
+                        conditions = conditions_module.get('conditions', [])
+                        
+                        # Debug logging for conditions
+                        logger.debug(f"display_trial_results - conditions_module: {conditions_module}")
+                        logger.debug(f"display_trial_results - conditions: {conditions}")
+                        logger.debug(f"display_trial_results - conditions type: {type(conditions)}")
+                        with ui.card().classes('p-3 bg-blue-50 rounded-lg border border-blue-200'):
+                            ui.label('CONDITIONS').classes('text-xs font-semibold text-blue-800 uppercase tracking-wide mb-2')
+                            if conditions:
+                                # Show first 2-3 conditions with tooltip for all
+                                display_conditions = conditions[:3]  # Show up to 3 conditions
+                                if len(conditions) > 3:
+                                    display_text = f"{', '.join(display_conditions)} +{len(conditions) - 3} more"
+                                else:
+                                    display_text = ', '.join(display_conditions)
+                                
+                                with ui.tooltip(f"All conditions: {', '.join(conditions)}"):
+                                    ui.label(display_text).classes('text-sm font-medium text-blue-900 cursor-help')
+                            else:
+                                ui.label('No conditions specified').classes('text-sm text-gray-500')
                     
-                    # Match description with tooltip
-                    ui.label(match_desc).classes('text-sm') \
-                        .props('tooltip="Score breakdown: Cancer Type (30%), Biomarkers (25%), Variants (25%), Stage/Grade (20%)"')
-                    
-                    # Detailed matching breakdown
-                    with ui.expansion('Detailed Matching Analysis').classes('w-full mt-2'):
-                        with ui.card().classes('w-full p-4 bg-gray-50'):
-                            ui.label('mCODE ELEMENT MATCHING').classes('text-lg font-bold mb-4 text-primary')
-                            
-                            # Cancer Type match
-                            with ui.card().classes('w-full p-4'):
-                                with ui.row().classes('items-center justify-between'):
-                                    with ui.row().classes('items-center gap-2'):
-                                        ui.icon('check_circle' if match_details['cancer_type'] else 'cancel') \
-                                            .classes(f'text-{"green" if match_details["cancer_type"] else "red"}-500')
-                                        ui.label('CANCER TYPE').classes('font-bold')
-                                    ui.label('30% weight').classes('text-xs text-gray-500')
-                                
-                                with ui.column().classes('ml-8 gap-1'):
-                                    ui.label(f"Patient: {patient_data['cancer_type']}").classes('text-sm')
-                                    ui.label(f"Trial: {trial_features['cancer_type']}").classes('text-sm')
-                            
-                            # Biomarkers match
-                            with ui.card().classes('w-full p-4'):
-                                with ui.row().classes('items-center justify-between'):
-                                    with ui.row().classes('items-center gap-2'):
-                                        ui.icon('check_circle' if match_details['biomarkers'] else 'cancel') \
-                                            .classes(f'text-{"green" if match_details["biomarkers"] else "red"}-500')
-                                        ui.label('BIOMARKERS').classes('font-bold')
-                                    ui.label('25% weight').classes('text-xs text-gray-500')
-                                
-                                with ui.column().classes('ml-8 gap-1'):
-                                    if match_details['biomarkers']:
-                                        matched = [b for b in patient_data['biomarkers'] if b in trial_features['biomarkers']]
-                                        for b in matched:
-                                            with ui.row().classes('items-center gap-2'):
-                                                ui.icon('check').classes('text-green-500 text-sm')
-                                                ui.label(f"{b}: {patient_data['biomarkers'][b]}").classes('text-sm')
-                                    else:
-                                        ui.label('No biomarker matches').classes('text-sm text-gray-500')
-                            
-                            # Genomic Variants match
-                            with ui.card().classes('w-full p-4'):
-                                with ui.row().classes('items-center justify-between'):
-                                    with ui.row().classes('items-center gap-2'):
-                                        ui.icon('check_circle' if match_details['genomic_variants'] else 'cancel') \
-                                            .classes(f'text-{"green" if match_details["genomic_variants"] else "red"}-500')
-                                        ui.label('GENOMIC VARIANTS').classes('font-bold')
-                                    ui.label('25% weight').classes('text-xs text-gray-500')
-                                
-                                with ui.column().classes('ml-8 gap-1'):
-                                    if match_details['genomic_variants']:
-                                        matched = [v for v in patient_data['genomic_variants'] if v in trial_features['genomic_variants']]
-                                        for v in matched:
-                                            with ui.row().classes('items-center gap-2'):
-                                                ui.icon('check').classes('text-green-500 text-sm')
-                                                ui.label(v).classes('text-sm')
-                                    else:
-                                        ui.label('No variant matches').classes('text-sm text-gray-500')
-                            
-                            # Stage/Grade match
-                            with ui.card().classes('w-full p-4'):
-                                with ui.row().classes('items-center justify-between'):
-                                    with ui.row().classes('items-center gap-2'):
-                                        ui.icon('check_circle' if match_details['stage_grade'] else 'cancel') \
-                                            .classes(f'text-{"green" if match_details["stage_grade"] else "red"}-500')
-                                        ui.label('STAGE/GRADE').classes('font-bold')
-                                    ui.label('20% weight').classes('text-xs text-gray-500')
-                                
-                                with ui.column().classes('ml-8 gap-1'):
-                                    if match_details['stage_grade']:
-                                        ui.label(f"Patient Stage: {patient_data['cancer_characteristics']['stage']}").classes('text-sm')
-                                        ui.label(f"Trial Minimum: {trial_features['cancer_characteristics']['stage']}").classes('text-sm')
-                                    else:
-                                        ui.label('Stage/grade mismatch').classes('text-sm text-gray-500')
+                    # Additional trial information
+                    with ui.row().classes('w-full justify-between mt-3'):
+                        # Study Type
+                        design_module = protocol_section.get('designModule', {})
+                        study_type = design_module.get('studyType', 'Unknown')
+                        with ui.column().classes('items-center'):
+                            ui.label('Study Type').classes('text-xs text-gray-500')
+                            ui.label(study_type).classes('text-sm font-medium')
+                        
+                        # Phase
+                        phase = design_module.get('phases', ['Unknown'])[0] if design_module.get('phases') else 'Unknown'
+                        with ui.column().classes('items-center'):
+                            ui.label('Phase').classes('text-xs text-gray-500')
+                            ui.label(phase).classes('text-sm font-medium')
+                        
+                        # Enrollment
+                        enrollment_info = status_module.get('enrollmentInfo', {})
+                        enrollment = enrollment_info.get('count', 'Unknown')
+                        with ui.column().classes('items-center'):
+                            ui.label('Enrollment').classes('text-xs text-gray-500')
+                            ui.label(str(enrollment)).classes('text-sm font-medium')
             
-            # Trial info
-            with ui.column().classes('flex-grow'):
-                ui.label(protocol_section.get('identificationModule', {}).get('officialTitle')).classes('text-lg')
-                ui.label(f"NCT ID: {protocol_section.get('identificationModule', {}).get('nctId')}")
+            # Enhanced Patient Match Analysis
+            with ui.expansion('PATIENT MATCH ANALYSIS', icon='person', value=True).classes('w-full mb-4'):
+                # Match strength indicator - use hasattr for ProcessingResult objects
+                if display_data and hasattr(display_data, 'features') and matching_toggle.value:
+                    from src.matching_engine.matcher import PatientMatcher
+                    matcher = PatientMatcher()
+                    
+                    # Prepare patient biomarkers as dict for matching, ignoring NOT_FOUND
+                    patient_biomarkers = {b['name']: b['status'] for b in patient_profile['biomarkers'] if b['name'] != 'NOT_FOUND'}
+                    patient_variants = [v.get('gene', '') for v in patient_profile.get('genomic_variants', [])
+                                            if v.get('gene') != 'NOT_FOUND']
+                    
+                    patient_data = {
+                        'cancer_type': patient_profile.get('cancer_type', ''),
+                        'stage': patient_profile.get('stage', ''),
+                        'biomarkers': patient_biomarkers,
+                        'genomic_variants': patient_variants,
+                        'cancer_characteristics': {
+                            'stage': patient_profile.get('stage', ''),
+                            'histology': patient_profile.get('histology', ''),
+                            'grade': patient_profile.get('grade', ''),
+                            'tnm_staging': patient_profile.get('tnm_staging', {'t': '', 'n': '', 'm': ''})
+                        }
+                    }
+                    
+                    # Use the already extracted features from the proper format handling
+                    # features variable is already properly extracted above
+                    
+                    # Extract biomarkers and variants, filtering out NOT_FOUND
+                    biomarkers = [b for b in features.get('biomarkers', []) if b.get('name') != 'NOT_FOUND']
+                    variants = [v for v in features.get('genomic_variants', []) if v.get('gene') != 'NOT_FOUND']
+                    
+                    trial_features = {
+                        'cancer_type': features.get('cancer_type', ''),
+                        'biomarkers': {b['name']: b['status'] for b in biomarkers},
+                        'genomic_variants': [v['gene'] for v in variants],
+                        'cancer_characteristics': {
+                            'stage': features.get('stage', ''),
+                            'histology': features.get('histology', ''),
+                            'grade': features.get('grade', ''),
+                            'tnm_staging': features.get('tnm_staging', {'t': '', 'n': '', 'm': ''})
+                        }
+                    }
+                    
+                    # Calculate match score with detailed breakdown
+                    logger.debug(f"Calculating match score for trial {protocol_section.get('identificationModule', {}).get('nctId')}")
+                    logger.debug(f"Patient data: {patient_data}")
+                    logger.debug(f"Trial features: {trial_features}")
+                    match_score, match_details = matcher.calculate_match_score(patient_data, trial_features, return_details=True)
+                    match_desc = matcher.get_match_description(match_score)
+                    logger.info(f"Match score for trial {protocol_section.get('identificationModule', {}).get('nctId')}: {match_score}% - {match_desc}")
+                    logger.debug(f"Match details: {match_details}")
+                    
+                    # Enhanced match visualization with comprehensive UI
+                    with ui.column().classes('w-full gap-4'):
+                        # Header with quick stats
+                        with ui.row().classes('items-center justify-between w-full p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg'):
+                            with ui.column().classes('items-center'):
+                                ui.label('OVERALL MATCH').classes('text-xs font-semibold text-gray-600 uppercase tracking-wide')
+                                ui.label(f"{match_score}%").classes('text-3xl font-bold text-primary')
+                                ui.label(match_desc).classes('text-sm font-medium')
+                            
+                            # Quick stats grid
+                            with ui.grid(columns=4).classes('gap-4'):
+                                # Cancer Type
+                                with ui.column().classes('items-center'):
+                                    ui.icon('local_hospital').classes(f'text-{"green" if match_details["cancer_type"] else "red"}-500 text-xl')
+                                    ui.label('Cancer Type').classes('text-xs font-medium')
+                                    ui.label('30%').classes('text-xs text-gray-500')
+                                
+                                # Biomarkers
+                                with ui.column().classes('items-center'):
+                                    ui.icon('science').classes(f'text-{"green" if match_details["biomarkers"] else "red"}-500 text-xl')
+                                    ui.label('Biomarkers').classes('text-xs font-medium')
+                                    ui.label('25%').classes('text-xs text-gray-500')
+                                
+                                # Variants
+                                with ui.column().classes('items-center'):
+                                    ui.icon('dna').classes(f'text-{"green" if match_details["genomic_variants"] else "red"}-500 text-xl')
+                                    ui.label('Variants').classes('text-xs font-medium')
+                                    ui.label('25%').classes('text-xs text-gray-500')
+                                
+                                # Stage/Grade
+                                with ui.column().classes('items-center'):
+                                    ui.icon('trending_up').classes(f'text-{"green" if match_details["stage_grade"] else "red"}-500 text-xl')
+                                    ui.label('Stage/Grade').classes('text-xs font-medium')
+                                    ui.label('20%').classes('text-xs text-gray-500')
+                        
+                        # Main match score visualization
+                        with ui.card().classes('w-full p-6 bg-white shadow-md rounded-lg'):
+                            with ui.column().classes('items-center w-full gap-4'):
+                                # Match score progress with enhanced styling
+                                color = 'green' if match_score >= 75 else 'orange' if match_score >= 50 else 'red'
+                                with ui.row().classes('items-center w-full gap-4'):
+                                    ui.label('MATCH SCORE').classes('text-lg font-bold text-gray-700')
+                                    ui.linear_progress(match_score/100).classes('flex-grow h-6') \
+                                        .props(f'color={color} rounded stripe')
+                                    ui.label(f"{match_score}%").classes('text-2xl font-bold min-w-[60px] text-center')
+                                
+                                # Match description with enhanced tooltip
+                                with ui.tooltip('''Score Breakdown:
+• Cancer Type: 30% weight
+• Biomarkers: 25% weight
+• Genomic Variants: 25% weight
+• Stage/Grade: 20% weight'''):
+                                    ui.label(match_desc.upper()).classes('text-lg font-semibold text-gray-600') \
+                                        .props('tooltip-color=primary')
+# Detailed matching breakdown
+                        with ui.expansion('Detailed Matching Analysis').classes('w-full mt-2'):
+                            with ui.card().classes('w-full p-4 bg-gray-50'):
+                                ui.label('mCODE ELEMENT MATCHING').classes('text-lg font-bold mb-4 text-primary')
+                                
+                                # Cancer Type match
+                                with ui.card().classes('w-full p-4'):
+                                    with ui.row().classes('items-center justify-between'):
+                                        with ui.row().classes('items-center gap-2'):
+                                            ui.icon('check_circle' if match_details['cancer_type'] else 'cancel') \
+                                                .classes(f'text-{"green" if match_details["cancer_type"] else "red"}-500')
+                                            ui.label('CANCER TYPE').classes('font-bold')
+                                        ui.label('30% weight').classes('text-xs text-gray-500')
+                                    
+                                    with ui.column().classes('ml-8 gap-1'):
+                                        ui.label(f"Patient: {patient_data['cancer_type']}").classes('text-sm')
+                                        ui.label(f"Trial: {trial_features['cancer_type']}").classes('text-sm')
+                                
+                                # Biomarkers match
+                                with ui.card().classes('w-full p-4'):
+                                    with ui.row().classes('items-center justify-between'):
+                                        with ui.row().classes('items-center gap-2'):
+                                            ui.icon('check_circle' if match_details['biomarkers'] else 'cancel') \
+                                                .classes(f'text-{"green" if match_details["biomarkers"] else "red"}-500')
+                                            ui.label('BIOMARKERS').classes('font-bold')
+                                        ui.label('25% weight').classes('text-xs text-gray-500')
+                                    
+                                    with ui.column().classes('ml-8 gap-1'):
+                                        if match_details['biomarkers']:
+                                            matched = [b for b in patient_data['biomarkers'] if b in trial_features['biomarkers']]
+                                            for b in matched:
+                                                with ui.row().classes('items-center gap-2'):
+                                                    ui.icon('check').classes('text-green-500 text-sm')
+                                                    ui.label(f"{b}: {patient_data['biomarkers'][b]}").classes('text-sm')
+                                        else:
+                                            ui.label('No biomarker matches').classes('text-sm text-gray-500')
+                                
+                                # Genomic Variants match
+                                with ui.card().classes('w-full p-4'):
+                                    with ui.row().classes('items-center justify-between'):
+                                        with ui.row().classes('items-center gap-2'):
+                                            ui.icon('check_circle' if match_details['genomic_variants'] else 'cancel') \
+                                                .classes(f'text-{"green" if match_details["genomic_variants"] else "red"}-500')
+                                            ui.label('GENOMIC VARIANTS').classes('font-bold')
+                                        ui.label('25% weight').classes('text-xs text-gray-500')
+                                    
+                                    with ui.column().classes('ml-8 gap-1'):
+                                        if match_details['genomic_variants']:
+                                            matched = [v for v in patient_data['genomic_variants'] if v in trial_features['genomic_variants']]
+                                            for v in matched:
+                                                with ui.row().classes('items-center gap-2'):
+                                                    ui.icon('check').classes('text-green-500 text-sm')
+                                                    ui.label(v).classes('text-sm')
+                                        else:
+                                            ui.label('No variant matches').classes('text-sm text-gray-500')
+                                
+                                # Stage/Grade match
+                                with ui.card().classes('w-full p-4'):
+                                    with ui.row().classes('items-center justify-between'):
+                                        with ui.row().classes('items-center gap-2'):
+                                            ui.icon('check_circle' if match_details['stage_grade'] else 'cancel') \
+                                                .classes(f'text-{"green" if match_details["stage_grade"] else "red"}-500')
+                                            ui.label('STAGE/GRADE').classes('font-bold')
+                                        ui.label('20% weight').classes('text-xs text-gray-500')
+                                    
+                                    with ui.column().classes('ml-8 gap-1'):
+                                        if match_details['stage_grade']:
+                                            ui.label(f"Patient Stage: {patient_data['cancer_characteristics']['stage']}").classes('text-sm')
+                                            ui.label(f"Trial Minimum: {trial_features['cancer_characteristics']['stage']}").classes('text-sm')
+                                        else:
+                                            ui.label('Stage/grade mismatch').classes('text-sm text-gray-500')
+            
         
         # Eligibility criteria
         with ui.expansion('View Eligibility Criteria').classes('w-full'):
@@ -1486,8 +1801,160 @@ def display_trial_results(protocol_section, display_data, mcode_data=None):
                         ui.label('No performance status data').classes('text-gray-500')
                 
 
+        # Raw mCODE Data Panel
+        with ui.expansion('RAW mCODE DATA', icon='code', value=False).classes('w-full'):
+            with ui.card().classes('w-full p-4 bg-gray-50'):
+                ui.label('RAW mCODE EXTRACTION DATA').classes('text-xl font-bold mb-4 text-primary')
+                
+                if not mcode_data:
+                    ui.label('No mCODE data available for raw display').classes('text-gray-500')
+                else:
+                    # Display raw mCODE data in a structured format
+                    with ui.tabs().classes('w-full') as raw_tabs:
+                        raw_overview_tab = ui.tab('Overview')
+                        raw_nlp_tab = ui.tab('NLP Results')
+                        raw_codes_tab = ui.tab('Extracted Codes')
+                        raw_mapped_tab = ui.tab('Mapped mCODE')
+                        raw_structured_tab = ui.tab('Structured Data')
+                        raw_validation_tab = ui.tab('Validation')
+                    
+                    with ui.tab_panels(raw_tabs, value=raw_overview_tab).classes('w-full'):
+                        # Overview tab
+                        with ui.tab_panel(raw_overview_tab):
+                            with ui.card().classes('w-full p-4'):
+                                ui.label('mCODE EXTRACTION OVERVIEW').classes('text-lg font-bold mb-4')
+                                with ui.grid(columns=2).classes('w-full gap-4'):
+                                    # Basic trial info
+                                    with ui.card().classes('p-3 bg-blue-50'):
+                                        ui.label('TRIAL INFO').classes('font-bold text-blue-700 text-sm mb-2')
+                                        ui.label(f"NCT ID: {mcode_data.get('nct_id', 'N/A')}").classes('text-sm')
+                                        ui.label(f"Title: {mcode_data.get('title', 'N/A')}").classes('text-sm')
+                                        ui.label(f"Status: {mcode_data.get('status', 'N/A')}").classes('text-sm')
+                                    
+                                    # Extraction metrics
+                                    with ui.card().classes('p-3 bg-green-50'):
+                                        ui.label('EXTRACTION METRICS').classes('font-bold text-green-700 text-sm mb-2')
+                                        nlp_entities = len(mcode_data.get('nlp_result', {}).get('entities', []))
+                                        ui.label(f"NLP Entities: {nlp_entities}").classes('text-sm')
+                                        mapped_count = len(mcode_data.get('mapped_mcode', []))
+                                        ui.label(f"Mapped Elements: {mapped_count}").classes('text-sm')
+                                        validation = mcode_data.get('validation', {})
+                                        ui.label(f"Validation: {'VALID' if validation.get('is_valid') else 'INVALID'}").classes('text-sm')
+                        
+                        # NLP Results tab
+                        with ui.tab_panel(raw_nlp_tab):
+                            nlp_result = mcode_data.get('nlp_result', {})
+                            if nlp_result and nlp_result.get('entities'):
+                                with ui.card().classes('w-full p-4'):
+                                    ui.label('NLP EXTRACTED ENTITIES').classes('text-lg font-bold mb-4')
+                                    with ui.column().classes('w-full gap-2'):
+                                        for entity in nlp_result.get('entities', []):
+                                            with ui.card().classes('p-3 bg-gray-50 rounded-lg'):
+                                                with ui.row().classes('items-center justify-between'):
+                                                    ui.label(entity.get('text', 'Unknown')).classes('font-medium')
+                                                    if entity.get('confidence'):
+                                                        ui.label(f"Confidence: {entity.get('confidence'):.2f}").classes('text-xs text-gray-600')
+                                                if entity.get('codes'):
+                                                    with ui.row().classes('items-center gap-2 mt-1'):
+                                                        ui.label('Codes:').classes('text-xs font-medium')
+                                                        for system, code in entity.get('codes', {}).items():
+                                                            ui.label(f"{system}: {code}").classes('text-xs text-blue-600')
+                            else:
+                                ui.label('No NLP entities extracted').classes('text-gray-500')
+                        
+                        # Extracted Codes tab
+                        with ui.tab_panel(raw_codes_tab):
+                            extracted_codes = mcode_data.get('extracted_codes', {})
+                            if extracted_codes and extracted_codes.get('extracted_codes'):
+                                with ui.card().classes('w-full p-4'):
+                                    ui.label('CODE SYSTEM EXTRACTION').classes('text-lg font-bold mb-4')
+                                    for system, codes in extracted_codes.get('extracted_codes', {}).items():
+                                        with ui.expansion(f"{system.upper()} CODES ({len(codes)})").classes('w-full mb-2'):
+                                            with ui.column().classes('w-full gap-2'):
+                                                for code_info in codes:
+                                                    with ui.card().classes('p-3 bg-gray-50 rounded-lg'):
+                                                        with ui.row().classes('items-center justify-between'):
+                                                            ui.label(f"{code_info.get('text', 'Unknown')}").classes('font-medium')
+                                                            ui.label(f"Confidence: {code_info.get('confidence', 0):.2f}").classes('text-xs text-gray-600')
+                                                        ui.label(f"Code: {code_info.get('code', 'N/A')}").classes('text-sm')
+                                                        if code_info.get('system'):
+                                                            ui.label(f"System: {code_info.get('system')}").classes('text-xs text-gray-500')
+                            else:
+                                ui.label('No codes extracted from eligibility criteria').classes('text-gray-500')
+                        
+                        # Mapped mCODE tab
+                        with ui.tab_panel(raw_mapped_tab):
+                            mapped_mcode = mcode_data.get('mapped_mcode', [])
+                            if mapped_mcode:
+                                with ui.card().classes('w-full p-4'):
+                                    ui.label('MAPPED mCODE ELEMENTS').classes('text-lg font-bold mb-4')
+                                    with ui.column().classes('w-full gap-3'):
+                                        for element in mapped_mcode:
+                                            with ui.card().classes('p-4 bg-white shadow-sm rounded-lg'):
+                                                with ui.row().classes('items-center justify-between mb-2'):
+                                                    ui.label(element.get('element_name', 'Unknown')).classes('font-bold text-lg')
+                                                    if element.get('confidence'):
+                                                        ui.badge(f"{element.get('confidence'):.2f}").props(f'color={"green" if element.get("confidence", 0) > 0.7 else "orange" if element.get("confidence", 0) > 0.5 else "red"}')
+                                                ui.label(f"Type: {element.get('element_type', 'Unknown')}").classes('text-sm')
+                                                if element.get('value'):
+                                                    ui.label(f"Value: {element.get('value')}").classes('text-sm text-blue-600')
+                                                if element.get('source_text'):
+                                                    with ui.expansion('Source Text').classes('w-full mt-2'):
+                                                        ui.markdown(f"`{element.get('source_text')}`").classes('text-xs')
+                            else:
+                                ui.label('No mCODE elements mapped').classes('text-gray-500')
+                        
+                        # Structured Data tab
+                        with ui.tab_panel(raw_structured_tab):
+                            structured_data = mcode_data.get('structured_data', {})
+                            if structured_data:
+                                with ui.card().classes('w-full p-4'):
+                                    ui.label('STRUCTURED mCODE DATA').classes('text-lg font-bold mb-4')
+                                    ui.markdown(f"```json\n{json.dumps(structured_data, indent=2)}\n```").classes('text-xs font-mono')
+                            else:
+                                ui.label('No structured mCODE data available').classes('text-gray-500')
+                        
+                        # Validation tab
+                        with ui.tab_panel(raw_validation_tab):
+                            validation = mcode_data.get('validation', {})
+                            if validation:
+                                with ui.card().classes('w-full p-4'):
+                                    ui.label('mCODE VALIDATION RESULTS').classes('text-lg font-bold mb-4')
+                                    with ui.grid(columns=2).classes('w-full gap-4'):
+                                        # Validation status
+                                        with ui.card().classes(f'p-3 {"bg-green-50" if validation.get("is_valid") else "bg-red-50"}'):
+                                            ui.label('VALIDATION STATUS').classes('font-bold text-sm mb-2')
+                                            ui.label('VALID' if validation.get('is_valid') else 'INVALID').classes(f'font-bold {"text-green-600" if validation.get("is_valid") else "text-red-600"}')
+                                        
+                                        # Required elements
+                                        with ui.card().classes('p-3 bg-blue-50'):
+                                            ui.label('REQUIRED ELEMENTS').classes('font-bold text-sm mb-2')
+                                            required = validation.get('required_elements_present', [])
+                                            ui.label(f"{len(required)} present").classes('text-sm')
+                                        
+                                        # Optional elements
+                                        with ui.card().classes('p-3 bg-purple-50'):
+                                            ui.label('OPTIONAL ELEMENTS').classes('font-bold text-sm mb-2')
+                                            optional = validation.get('optional_elements_present', [])
+                                            ui.label(f"{len(optional)} present").classes('text-sm')
+                                        
+                                        # Missing elements
+                                        with ui.card().classes('p-3 bg-orange-50'):
+                                            ui.label('MISSING ELEMENTS').classes('font-bold text-sm mb-2')
+                                            missing = validation.get('missing_elements', [])
+                                            ui.label(f"{len(missing)} missing").classes('text-sm')
+                                    
+                                    # Detailed validation results
+                                    if validation.get('validation_details'):
+                                        with ui.expansion('Detailed Validation').classes('w-full mt-4'):
+                                            ui.markdown(f"```json\n{json.dumps(validation.get('validation_details', {}), indent=2)}\n```").classes('text-xs font-mono')
+                            else:
+                                ui.label('No validation data available').classes('text-gray-500')
+
 # Reset function
 def on_reset():
+    # Cancel any active tasks before clearing
+    cancel_active_tasks()
     trials_container.clear()
     search_input.value = patient_profile['cancer_type']
     ui.notify('Search results cleared', type='info')

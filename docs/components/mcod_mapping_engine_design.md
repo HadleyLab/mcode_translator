@@ -181,6 +181,9 @@ terminology_map = {
 - All referenced codes are valid
 - No conflicting information
 - Age/gender restrictions consistent
+- Special handling for trial-specific elements:
+  - LHRHRECEPTOR biomarker (LOINC LP417352-6)
+  - Stage IV cancer (SNOMED 399555006)
 
 ### Consistency Checks
 - No contradictory conditions
