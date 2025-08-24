@@ -272,11 +272,10 @@ def get_study_fields():
 @click.option('--condition', '-c', help='Condition to search for (e.g., "breast cancer")')
 @click.option('--nct-id', '-n', help='Specific NCT ID to fetch (e.g., "NCT00000000")')
 @click.option('--limit', '-l', default=10, help='Maximum number of results to return')
-@click.option('--min-rank', '-r', default=1, help='Minimum rank for pagination')
 @click.option('--count', '--calculate-count', is_flag=True, help='Calculate total number of studies and pages')
 @click.option('--export', '-e', type=click.Path(), help='Export results to JSON file')
 @click.option('--process-criteria', '-p', is_flag=True, help='Process eligibility criteria with NLP engine')
-def main(condition, nct_id, limit, min_rank, count, export, process_criteria):
+def main(condition, nct_id, limit, count, export, process_criteria):
     """
     Clinical Trial Data Fetcher for mCODE Translator
     
@@ -285,7 +284,6 @@ def main(condition, nct_id, limit, min_rank, count, export, process_criteria):
       python fetcher.py --nct-id NCT00000000
       python fetcher.py --condition "lung cancer" --export results.json
       python fetcher.py --nct-id NCT00000000 --process-criteria
-      python fetcher.py --condition "breast cancer" --min-rank 50
       python fetcher.py --condition "breast cancer" --count
     """
     
@@ -425,8 +423,7 @@ def display_search_results(result, export_path=None):
             if 'pagination' in result:
                 pagination = result['pagination']
                 max_results = pagination.get('max_results', 100)
-                min_rank = pagination.get('min_rank', 1)
-                click.echo(f"Showing {len(studies)} results starting from rank {min_rank}")
+                click.echo(f"Showing {len(studies)} results")
                 click.echo(f"Results per page: {max_results}")
             
             for i, study in enumerate(studies):
