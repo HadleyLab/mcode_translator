@@ -4,16 +4,18 @@ import sys
 import time
 import hashlib
 import os
-import logging
+import re
+import requests
 # Add src directory to path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from pytrials.client import ClinicalTrials
 from src.utils.config import Config
 from src.utils.cache import CacheManager
-from src.nlp_engine.llm_nlp_engine import LLMNLPEngine
-from src.code_extraction.code_extraction import CodeExtractionModule
-from src.mcode_mapper.mcode_mapping_engine import MCODEMappingEngine
-from src.structured_data_generator.structured_data_generator import StructuredDataGenerator
+from src.pipeline.dynamic_extraction_pipeline import DynamicExtractionPipeline
+from src.utils.logging_config import get_logger
+
+# Get logger instance
+logger = get_logger(__name__)
 
 # Map our field names to valid ClinicalTrials.gov API field names
 FIELD_MAPPING = {
@@ -79,7 +81,7 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
         cache_key_data = f"search:{search_expr}:{','.join(fields) if fields else 'all'}:{max_results}:token{page_token}"
     else:
         cache_key_data = f"search:{search_expr}:{','.join(fields) if fields else 'all'}:{max_results}:tokenNone"
-    logging.info(f"search_trials: Creating cache key for search_expr='{search_expr}', max_results={max_results}, page_token={page_token}")
+    logger.info(f"search_trials: Creating cache key for search_expr='{search_expr}', max_results={max_results}, page_token={page_token}")
     cache_key = hashlib.md5(cache_key_data.encode()).hexdigest()
     
     # Try to get from cache first (if caching is enabled)
@@ -87,7 +89,7 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
         cached_result = cache_manager.get(cache_key)
         if cached_result:
             studies_count = len(cached_result.get('studies', []))
-            logging.info(f"search_trials: Returning cached result for cache_key={cache_key}, studies_count={studies_count}")
+            logger.info(f"search_trials: Returning cached result for cache_key={cache_key}, studies_count={studies_count}")
             return cached_result
     
     try:
@@ -100,22 +102,31 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
         # Map field names to valid API names
         api_fields = [FIELD_MAPPING.get(field, field) for field in fields] if fields else DEFAULT_SEARCH_FIELDS
         
-        # Add pageToken to the search expression if provided
-        if page_token:
-            search_expr = f"{search_expr}&pageToken={page_token}"
+        # Use direct API call to ClinicalTrials.gov API v2 for proper token-based pagination
+        import requests
         
-        # Use pytrials client properly
-        result = ct.get_study_fields(
-            search_expr=search_expr,
-            fields=api_fields,
-            max_studies=max_results,
-            fmt="json"
-        )
+        # Build the API URL
+        base_url = "https://clinicaltrials.gov/api/v2/studies"
+        params = {
+            "format": "json",
+            "query.term": search_expr,
+            "pageSize": max_results,
+            "fields": ",".join(api_fields)
+        }
+        
+        # Add page token if provided
+        if page_token:
+            params["pageToken"] = page_token
+        
+        # Make the API request
+        response = requests.get(base_url, params=params)
+        response.raise_for_status()
+        result = response.json()
         
         # Add pagination metadata to the result
         if isinstance(result, dict):
             studies_count = len(result.get('studies', []))
-            logging.info(f"search_trials: API returned {studies_count} studies")
+            logger.info(f"search_trials: API returned {studies_count} studies")
             result['pagination'] = {
                 'max_results': max_results
             }
@@ -123,10 +134,10 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
             # Add nextPageToken if it exists in the response
             if 'nextPageToken' in result:
                 result['nextPageToken'] = result['nextPageToken']
-                logging.debug(f"search_trials: nextPageToken found in response")
+                logger.debug(f"search_trials: nextPageToken found in response")
         
         # Cache the result
-        logging.info(f"search_trials: Caching result for cache_key={cache_key}")
+        logger.info(f"search_trials: Caching result for cache_key={cache_key}")
         cache_manager.set(cache_key, result)
         
         return result
@@ -157,7 +168,7 @@ def get_full_study(nct_id: str):
     # Try to get from cache first
     cached_result = cache_manager.get(cache_key)
     if cached_result:
-        logging.info(f"get_full_study: Returning cached result for NCT ID {nct_id}")
+        logger.info(f"get_full_study: Returning cached result for NCT ID {nct_id}")
         return cached_result
     
     try:
@@ -168,10 +179,6 @@ def get_full_study(nct_id: str):
         ct = ClinicalTrials()
         
         # Log the NCT ID we're trying to fetch
-        logger = logging.getLogger(__name__)
-        # Make sure logging is configured
-        if not logger.handlers:
-            logging.basicConfig(level=logging.INFO)
         logger.info(f"Attempting to fetch full study details for NCT ID: {nct_id}")
         
         # Use get_full_studies with the NCT ID as search expression
@@ -215,9 +222,6 @@ def get_full_study(nct_id: str):
             logger.info(f"Second attempt result type: {type(result)}, value: {result}")
         
         # Log the result for debugging
-        # Make sure logging is configured
-        if not logger.handlers:
-            logging.basicConfig(level=logging.INFO)
         logger.info(f"Attempt result type: {type(result)}, value: {result}")
         
         # Check if we got a valid response
@@ -305,7 +309,7 @@ def main(condition, nct_id, limit, min_rank, count, export, process_criteria):
                         json.dump(stats, f, indent=2)
                     click.echo(f"Results exported to {export}")
             else:
-                result = search_trials(condition, None, limit, min_rank, use_cache=True)
+                result = search_trials(condition, None, limit, None, use_cache=True)
                 display_search_results(result, export)
         else:
             # Show help if no arguments provided
@@ -351,67 +355,40 @@ def display_single_study(result, export_path=None, process_criteria=False):
                     criteria_text = eligibility_module['eligibilityCriteria']
                     if criteria_text:
                         try:
-                            # Process through the full mCODE pipeline
-                            # Step 1: NLP processing
-                            nlp_engine = LLMNLPEngine()
+                            # Process through the new dynamic extraction pipeline
+                            pipeline = DynamicExtractionPipeline()
+                            
                             # Ensure criteria_text is a string
                             if isinstance(criteria_text, list):
                                 criteria_text = ' '.join(str(item) for item in criteria_text)
                             elif not isinstance(criteria_text, str):
                                 criteria_text = str(criteria_text)
-                            nlp_result = nlp_engine.process_text(criteria_text)
                             
-                            # Step 2: Code extraction
-                            code_extractor = CodeExtractionModule()
-                            code_result = code_extractor.process_criteria_for_codes(
-                                criteria_text if criteria_text else "",
-                                nlp_result.entities if nlp_result and not nlp_result.error else None
-                            )
+                            # Create section context for source tracking
+                            section_context = {
+                                'source_type': 'clinical_trial',
+                                'source_id': study['protocolSection']['identificationModule'].get('nctId', ''),
+                                'content_type': 'eligibility_criteria',
+                                'criteria_section': 'inclusion' if 'inclusion' in criteria_text.lower() else 'exclusion' if 'exclusion' in criteria_text.lower() else 'unspecified',
+                                'source_section': 'eligibilityModule',
+                                'source_document': 'protocolSection'
+                            }
                             
-                            # Step 3: mCODE mapping
-                            # Combine NLP entities and extracted codes for mapping
-                            all_entities = []
-                            if nlp_result and not nlp_result.error and hasattr(nlp_result, 'entities'):
-                                all_entities.extend(nlp_result.entities)
+                            # Process criteria through the dynamic pipeline
+                            pipeline_result = pipeline.process_eligibility_criteria(criteria_text, section_context)
                             
-                            # Add codes as entities for mapping
-                            if code_result and 'extracted_codes' in code_result:
-                                for system, codes in code_result['extracted_codes'].items():
-                                    for code_info in codes:
-                                        all_entities.append({
-                                            'text': code_info.get('text', ''),
-                                            'confidence': code_info.get('confidence', 0.8),
-                                            'codes': {system: code_info.get('code', '')}
-                                        })
-                            
-                            mcode_mapper = MCODEMappingEngine()
-                            mapped_mcode = mcode_mapper.map_entities_to_mcode(all_entities)
-                            
-                            # Step 4: Generate structured data
-                            demographics = {}
-                            if nlp_result and not nlp_result.error and hasattr(nlp_result, 'features'):
-                                demographics = nlp_result.features.get('demographics', {})
-                            
-                            generator = StructuredDataGenerator()
-                            structured_result = generator.generate_mcode_resources(mapped_mcode, demographics)
-                            
-                            # Step 5: Validate mCODE compliance
-                            validation_result = mcode_mapper.validate_mcode_compliance({
-                                'mapped_elements': mapped_mcode,
-                                'demographics': demographics
-                            })
-                            
-                            # Add all results to the study data
+                            # Add results to the study data
                             if 'mcodeResults' not in result:
                                 result['mcodeResults'] = {}
-                            result['mcodeResults']['nlp'] = {
-                                'entities': nlp_result.entities if nlp_result and hasattr(nlp_result, 'entities') else [],
-                                'features': nlp_result.features if nlp_result and hasattr(nlp_result, 'features') else {}
-                            } if nlp_result else {}
-                            result['mcodeResults']['codes'] = code_result
-                            result['mcodeResults']['mappings'] = mapped_mcode
-                            result['mcodeResults']['structured_data'] = structured_result
-                            result['mcodeResults']['validation'] = validation_result
+                            
+                            result['mcodeResults'] = {
+                                'extracted_entities': pipeline_result.extracted_entities,
+                                'mcode_mappings': pipeline_result.mcode_mappings,
+                                'source_references': pipeline_result.source_references,
+                                'validation': pipeline_result.validation_results,
+                                'metadata': pipeline_result.metadata,
+                                'error': pipeline_result.error
+                            }
                         except Exception as e:
                             click.echo(f"Warning: Error processing criteria with NLP: {str(e)}", err=True)
     
