@@ -35,7 +35,7 @@ from src.utils.model_loader import model_loader
 from src.utils.logging_config import get_logger
 
 
-class BenchmarkTaskTrackerUI(AdvancedTaskTrackerUI):
+class BenchmarkTaskTrackerUI:
     """Extended UI for benchmark task tracking with mcode-optimize integration"""
     
     def __init__(self):
@@ -69,15 +69,35 @@ class BenchmarkTaskTrackerUI(AdvancedTaskTrackerUI):
         self.validation_results = []
         self.preloaded_validations = []  # Store preloaded validations
         
+        # Dark mode
+        self.dark_mode = ui.dark_mode()
+        
         # Load libraries and data
         self._load_libraries()
         self._load_test_data()
         
-        # Initialize parent class
-        super().__init__()
+        # Setup UI components
+        self._setup_ui()
+    
+    def _setup_ui(self):
+        """Setup the main UI layout using NiceGUI's built-in features"""
+        with ui.header().classes('bg-primary text-white p-4 items-center'):
+            with ui.row().classes('w-full justify-between items-center'):
+                ui.label('Benchmark Task Tracker').classes('text-2xl font-bold')
+                with ui.row().classes('items-center'):
+                    ui.button('Toggle Dark Mode', on_click=self._toggle_dark_mode).props('flat color=white')
+                    ui.button('Reset', on_click=self._reset_interface).props('flat color=white')
         
-        # Setup additional UI components
-        self._setup_benchmark_components()
+        with ui.column().classes('w-full p-4 gap-4'):
+            self._setup_benchmark_control_panel()
+            self._setup_validation_display()
+            self._setup_results_display()
+            self._setup_live_logger()
+    
+    def _toggle_dark_mode(self):
+        """Toggle dark mode"""
+        self.dark_mode.toggle()
+        ui.notify("Dark mode toggled")
     
     def _load_libraries(self) -> None:
         """Load prompt and model libraries"""
@@ -120,51 +140,6 @@ class BenchmarkTaskTrackerUI(AdvancedTaskTrackerUI):
         # These will be added to the UI in the setup_ui method
         pass
     
-    def _reset_interface(self) -> None:
-        """Reset the interface to its initial state"""
-        # Cancel any running benchmarks
-        if self.is_benchmark_running:
-            self.benchmark_cancelled = True
-            self.is_benchmark_running = False
-            if self.run_benchmark_button:
-                self.run_benchmark_button.enable()
-            if self.stop_benchmark_button:
-                self.stop_benchmark_button.set_visibility(False)
-        
-        # Clear benchmark results
-        self.benchmark_results = []
-        self.validation_results = []
-        
-        # Reset progress and status
-        if self.benchmark_progress:
-            self.benchmark_progress.set_value(0)
-        if self.benchmark_status:
-            self.benchmark_status.set_text("Ready to run benchmark")
-        
-        # Clear log display
-        if self.live_log_display:
-            self.live_log_display.clear()
-        
-        # Clear results display
-        if self.results_display:
-            self.results_display.clear()
-        
-        # Reset selections to default (all selected)
-        if self.prompt_selection:
-            self.prompt_selection.set_value(list(self.available_prompts.keys()))
-        if self.model_selection:
-            self.model_selection.set_value(list(self.available_models.keys()))
-        if self.trial_selection:
-            self.trial_selection.set_value(list(self.trial_data.keys()))
-        
-        # Reload initial validations
-        self._load_initial_validations()
-        
-        # Use background task safe notification
-        async def notify_reset():
-            ui.notify("Interface reset to initial state", type='positive')
-        background_tasks.create(notify_reset())
-    
     def _update_statistics(self):
         """Override parent class method to prevent updating non-existent UI elements"""
         # Intentionally left empty to prevent updating statistics UI elements
@@ -184,9 +159,9 @@ class BenchmarkTaskTrackerUI(AdvancedTaskTrackerUI):
         with ui.column().classes('w-full p-4 gap-4'):
             with ui.card().classes('w-full'):
                 self._setup_benchmark_control_panel()
-            self._setup_live_logger()
             self._setup_validation_display()
             self._setup_results_display()
+            self._setup_live_logger()
     
     def _setup_benchmark_control_panel(self) -> None:
         """Setup the benchmark control panel"""
