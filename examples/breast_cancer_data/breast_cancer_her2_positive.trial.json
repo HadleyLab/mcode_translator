@@ -1,0 +1,44 @@
+{
+  "test_cases": {
+    "breast_cancer_her2_positive": {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT12345678",
+          "briefTitle": "Study of Novel Therapy in HER2-Positive Breast Cancer",
+          "officialTitle": "A Phase III Study of Novel Targeted Therapy in HER2-Positive Metastatic Breast Cancer"
+        },
+        "conditionsModule": {
+          "conditions": [
+            "HER2-Positive Breast Cancer",
+            "Metastatic Breast Cancer"
+          ]
+        },
+        "eligibilityModule": {
+          "eligibilityCriteria": "INCLUSION CRITERIA:\n- Histologically confirmed HER2-positive metastatic breast cancer\n- Measurable disease per RECIST 1.1\n- ECOG performance status 0-1\n- Adequate organ function\n\nEXCLUSION CRITERIA:\n- Prior treatment with Trastuzumab Deruxtecan\n- Active brain metastases\n- Pregnancy or breastfeeding"
+        },
+        "armsInterventionsModule": {
+          "interventions": [
+            {
+              "type": "Drug",
+              "name": "Trastuzumab Deruxtecan",
+              "description": "Novel antibody-drug conjugate targeting HER2"
+            },
+            {
+              "type": "Drug", 
+              "name": "trastuzumab",
+              "description": "Standard HER2-targeted therapy"
+            },
+            {
+              "type": "Drug",
+              "name": "taxane",
+              "description": "Chemotherapy backbone"
+            }
+          ]
+        },
+        "descriptionModule": {
+          "briefSummary": "This study evaluates a novel HER2-targeted therapy in patients with HER2-positive metastatic breast cancer who have progressed on prior trastuzumab-based therapy."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "test_cases": {
+    "breast_cancer_early_stage": {
+      "protocolSection": {
+        "identificationModule": {
+          "briefTitle": "Phase III Study of Adjuvant Therapy in Early Breast Cancer",
+          "nctId": "NCT12345678",
+          "officialTitle": "A Randomized Phase III Trial of Standard Adjuvant Therapy Versus Experimental Regimen in Early Stage Breast Cancer Patients"
+        },
+        "descriptionModule": {
+          "briefSummary": "This phase III trial studies how well standard adjuvant therapy works compared to experimental regimen in treating patients with early stage breast cancer. Hormone receptor-positive, HER2-negative breast cancer patients with 1-3 positive lymph nodes are eligible. Primary endpoint is invasive disease-free survival.",
+          "detailedDescription": "Patients are randomized to receive either standard adjuvant therapy (anthracycline/taxane-based chemotherapy followed by endocrine therapy) or experimental regimen (chemotherapy with CDK4/6 inhibitor combination). The study aims to recruit 2000 patients over 3 years with 5-year follow-up."
+        },
+        "conditionsModule": {
+          "conditions": ["Breast Cancer", "Early Stage Breast Cancer", "HR+ HER2- Breast Cancer"]
+        },
+        "eligibilityModule": {
+          "eligibilityCriteria": "Inclusion Criteria:\n- Histologically confirmed invasive breast cancer\n- 1-3 positive axillary lymph nodes\n- ER-positive and/or PR-positive\n- HER2-negative by IHC or FISH\n- Age ≥18 years\n- ECOG performance status 0-1\n\nExclusion Criteria:\n- Metastatic disease\n- Prior chemotherapy for breast cancer\n- Severe cardiac disease\n- Pregnancy or lactation"
+        }
+      }
+    },
+    "lung_cancer_advanced": {
+      "protocolSection": {
+        "identificationModule": {
+          "briefTitle": "Targeted Therapy in Advanced NSCLC with EGFR Mutations",
+          "nctId": "NCT87654321",
+          "officialTitle": "A Phase II Study of Novel EGFR Inhibitor in Treatment-Naive Advanced Non-Small Cell Lung Cancer Patients with EGFR Exon 19 Deletions"
+        },
+        "descriptionModule": {
+          "briefSummary": "This phase II trial studies the efficacy and safety of a novel third-generation EGFR tyrosine kinase inhibitor in patients with previously untreated advanced non-small cell lung cancer harboring EGFR exon 19 deletions. Primary endpoint is objective response rate.",
+          "detailedDescription": "Single-arm study evaluating the novel EGFR inhibitor XYZ-123 in treatment-naive advanced NSCLC patients with confirmed EGFR exon 19 deletions. Patients receive oral XYZ-123 150mg daily until disease progression or unacceptable toxicity. Tumor assessments every 8 weeks."
+        },
+        "conditionsModule": {
+          "conditions": ["Non-Small Cell Lung Cancer", "Advanced NSCLC", "EGFR Mutation Positive NSCLC"]
+        },
+        "eligibilityModule": {
+          "eligibilityCriteria": "Inclusion Criteria:\n- Histologically confirmed NSCLC\n- Stage IV disease\n- Documented EGFR exon 19 deletion\n- No prior systemic therapy for advanced disease\n- Measurable disease per RECIST 1.1\n- Adequate organ function\n\nExclusion Criteria:\n- Active brain metastases\n- Previous EGFR TKI therapy\n- Interstitial lung disease\n- Uncontrolled cardiovascular disease"
+        }
+      }
+    },
+    "colon_cancer_adjuvant": {
+      "protocolSection": {
+        "identificationModule": {
+          "briefTitle": "Adjuvant Chemotherapy in Stage III Colon Cancer",
+          "nctId": "NCT55555555",
+          "officialTitle": "Randomized Phase III Trial Comparing CAPOX Versus FOLFOX as Adjuvant Therapy for Stage III Colon Cancer"
+        },
+        "descriptionModule": {
+          "briefSummary": "This phase III randomized trial compares the efficacy and toxicity of CAPOX (capecitabine plus oxaliplatin) versus FOLFOX (leucovorin, fluorouracil, and oxaliplatin) as adjuvant chemotherapy in patients with completely resected stage III colon cancer. Primary endpoint is 3-year disease-free survival.",
+          "detailedDescription": "Patients with surgically resected stage III colon adenocarcinoma are randomized 1:1 to receive either CAPOX (8 cycles) or FOLFOX (12 cycles). The study plans to enroll 1500 patients to demonstrate non-inferiority of CAPOX. Secondary endpoints include overall survival, toxicity profile, and quality of life."
+        },
+        "conditionsModule": {
+          "conditions": ["Colon Cancer", "Stage III Colon Cancer", "Adenocarcinoma of Colon"]
+        },
+        "eligibilityModule": {
+          "eligibilityCriteria": "Inclusion Criteria:\n- Histologically confirmed colon adenocarcinoma\n- Stage III disease (AJCC 8th edition)\n- Complete surgical resection within 8 weeks\n- Age 18-75 years\n- Adequate bone marrow and organ function\n\nExclusion Criteria:\n- Rectal cancer\n- Previous chemotherapy\n- Peripheral neuropathy ≥ grade 2\n- Known DPD deficiency"
+        }
+      }
+    },
+    "melanoma_immunotherapy": {
+      "protocolSection": {
+        "identificationModule": {
+          "briefTitle": "Combination Immunotherapy in Advanced Melanoma",
+          "nctId": "NCT99998888",
+          "officialTitle": "Phase Ib/II Study of Anti-PD-1 Plus Anti-LAG-3 Combination Therapy in Treatment-Naive Advanced Melanoma"
+        },
+        "descriptionModule": {
+          "briefSummary": "This phase Ib/II trial evaluates the safety and efficacy of combination immunotherapy with anti-PD-1 and anti-LAG-3 antibodies in patients with previously untreated advanced melanoma. Primary endpoints include safety/tolerability (phase Ib) and overall response rate (phase II).",
+          "detailedDescription": "The study consists of a phase Ib dose escalation followed by phase II expansion. Patients receive intravenous anti-PD-1 antibody plus anti-LAG-3 antibody every 3 weeks. Biomarker analysis includes PD-L1 expression, tumor mutational burden, and immune cell profiling."
+        },
+        "conditionsModule": {
+          "conditions": ["Melanoma", "Advanced Melanoma", "Cutaneous Melanoma", "Metastatic Melanoma"]
+        },
+        "eligibilityModule": {
+          "eligibilityCriteria": "Inclusion Criteria:\n- Histologically confirmed melanoma\n- Unresectable stage III or stage IV disease\n- No prior systemic therapy for advanced disease\n- Measurable disease per RECIST 1.1\n- ECOG performance status 0-1\n\nExclusion Criteria:\n- Active autoimmune disease\n- Previous anti-PD-1/PD-L1 therapy\n- Active brain metastases\n- Requirement for immunosuppressive therapy"
+        }
+      }
+    },
+    "prostate_cancer_metastatic": {
+      "protocolSection": {
+        "identificationModule": {
+          "briefTitle": "Novel AR Inhibitor in Metastatic Castration-Resistant Prostate Cancer",
+          "nctId": "NCT11112222",
+          "officialTitle": "Phase III Randomized Trial of Novel Androgen Receptor Inhibitor Versus Enzalutamide in Metastatic Castration-Resistant Prostate Cancer"
+        },
+        "descriptionModule": {
+          "briefSummary": "This phase III randomized trial compares the efficacy of a novel androgen receptor inhibitor versus enzalutamide in patients with metastatic castration-resistant prostate cancer who have progressed on abiraterone. Primary endpoint is radiographic progression-free survival.",
+          "detailedDescription": "Patients are randomized 1:1 to receive either the novel AR inhibitor ABC-123 (200mg daily) or enzalutamide (160mg daily). The study aims to demonstrate superiority of the novel agent with target enrollment of 800 patients. Key secondary endpoints include overall survival, PSA response, and time to cytotoxic chemotherapy."
+        },
+        "conditionsModule": {
+          "conditions": ["Prostate Cancer", "Metastatic Castration-Resistant Prostate Cancer", "mCRPC"]
+        },
+        "eligibilityModule": {
+          "eligibilityCriteria": "Inclusion Criteria:\n- Histologically confirmed prostate adenocarcinoma\n- Metastatic castration-resistant disease\n- Progression on abiraterone therapy\n- Ongoing androgen deprivation therapy\n- PSA ≥2 ng/mL\n- Adequate organ function\n\nExclusion Criteria:\n- Previous enzalutamide treatment\n- Visceral crisis\n- History of seizures\n- Significant cardiovascular disease"
+        }
+      }
+    }
+  }
+}

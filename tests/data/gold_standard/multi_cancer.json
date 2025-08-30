@@ -1,0 +1,403 @@
+{
+  "gold_standard": {
+    "pancreatic_cancer_advanced": {
+      "expected_extraction": {
+        "entities": [
+          {
+            "text": "FOLFIRINOX",
+            "type": "treatment",
+            "start_char": 0,
+            "end_char": 10
+          },
+          {
+            "text": "Gemcitabine",
+            "type": "treatment",
+            "start_char": 14,
+            "end_char": 25
+          },
+          {
+            "text": "Nab-Paclitaxel",
+            "type": "treatment",
+            "start_char": 26,
+            "end_char": 40
+          },
+          {
+            "text": "metastatic pancreatic adenocarcinoma",
+            "type": "condition",
+            "start_char": 90,
+            "end_char": 125
+          }
+        ]
+      },
+      "expected_mcode_mappings": {
+        "mapped_elements": [
+          {
+            "text": "FOLFIRINOX",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "Gemcitabine",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "Nab-Paclitaxel",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "metastatic pancreatic adenocarcinoma",
+            "mcode_type": "CancerCondition",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    "ovarian_cancer_recurrent": {
+      "expected_extraction": {
+        "entities": [
+          {
+            "text": "PARP Inhibitor",
+            "type": "treatment",
+            "start_char": 0,
+            "end_char": 14
+          },
+          {
+            "text": "platinum-based chemotherapy",
+            "type": "treatment",
+            "start_char": 80,
+            "end_char": 105
+          },
+          {
+            "text": "platinum-sensitive recurrent ovarian cancer",
+            "type": "condition",
+            "start_char": 45,
+            "end_char": 85
+          }
+        ]
+      },
+      "expected_mcode_mappings": {
+        "mapped_elements": [
+          {
+            "text": "PARP Inhibitor",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "platinum-based chemotherapy",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.85
+          },
+          {
+            "text": "platinum-sensitive recurrent ovarian cancer",
+            "mcode_type": "CancerCondition",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    "glioblastoma_newly_diagnosed": {
+      "expected_extraction": {
+        "entities": [
+          {
+            "text": "TTFields",
+            "type": "treatment",
+            "start_char": 0,
+            "end_char": 8
+          },
+          {
+            "text": "Temozolomide",
+            "type": "treatment",
+            "start_char": 14,
+            "end_char": 26
+          },
+          {
+            "text": "newly diagnosed glioblastoma",
+            "type": "condition",
+            "start_char": 50,
+            "end_char": 75
+          }
+        ]
+      },
+      "expected_mcode_mappings": {
+        "mapped_elements": [
+          {
+            "text": "TTFields",
+            "mcode_type": "Radiotherapy",
+            "confidence": 0.8
+          },
+          {
+            "text": "Temozolomide",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "newly diagnosed glioblastoma",
+            "mcode_type": "CancerCondition",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    "bladder_cancer_muscle_invasive": {
+      "expected_extraction": {
+        "entities": [
+          {
+            "text": "Immunotherapy",
+            "type": "treatment",
+            "start_char": 0,
+            "end_char": 13
+          },
+          {
+            "text": "anti-PD-L1 antibody",
+            "type": "treatment",
+            "start_char": 18,
+            "end_char": 36
+          },
+          {
+            "text": "chemotherapy",
+            "type": "treatment",
+            "start_char": 41,
+            "end_char": 53
+          },
+          {
+            "text": "muscle-invasive bladder cancer",
+            "type": "condition",
+            "start_char": 60,
+            "end_char": 88
+          }
+        ]
+      },
+      "expected_mcode_mappings": {
+        "mapped_elements": [
+          {
+            "text": "Immunotherapy",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.85
+          },
+          {
+            "text": "anti-PD-L1 antibody",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "chemotherapy",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "muscle-invasive bladder cancer",
+            "mcode_type": "CancerCondition",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    "multiple_myeloma_relapsed": {
+      "expected_extraction": {
+        "entities": [
+          {
+            "text": "CAR-T Cell Therapy",
+            "type": "treatment",
+            "start_char": 0,
+            "end_char": 18
+          },
+          {
+            "text": "BCMA-directed CAR-T cells",
+            "type": "treatment",
+            "start_char": 25,
+            "end_char": 49
+          },
+          {
+            "text": "triple-class refractory multiple myeloma",
+            "type": "condition",
+            "start_char": 70,
+            "end_char": 107
+          }
+        ]
+      },
+      "expected_mcode_mappings": {
+        "mapped_elements": [
+          {
+            "text": "CAR-T Cell Therapy",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "BCMA-directed CAR-T cells",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "triple-class refractory multiple myeloma",
+            "mcode_type": "CancerCondition",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    "head_neck_cancer_recurrent": {
+      "expected_extraction": {
+        "entities": [
+          {
+            "text": "Anti-PD-1",
+            "type": "treatment",
+            "start_char": 0,
+            "end_char": 9
+          },
+          {
+            "text": "Cetuximab",
+            "type": "treatment",
+            "start_char": 14,
+            "end_char": 23
+          },
+          {
+            "text": "platinum-refractory recurrent/metastatic head and neck squamous cell carcinoma",
+            "type": "condition",
+            "start_char": 50,
+            "end_char": 120
+          }
+        ]
+      },
+      "expected_mcode_mappings": {
+        "mapped_elements": [
+          {
+            "text": "Anti-PD-1",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "Cetuximab",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "platinum-refractory recurrent/metastatic head and neck squamous cell carcinoma",
+            "mcode_type": "CancerCondition",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    "gastric_cancer_advanced": {
+      "expected_extraction": {
+        "entities": [
+          {
+            "text": "Immunotherapy",
+            "type": "treatment",
+            "start_char": 0,
+            "end_char": 13
+          },
+          {
+            "text": "Anti-PD-1 antibody",
+            "type": "treatment",
+            "start_char": 18,
+            "end_char": 35
+          },
+          {
+            "text": "chemotherapy",
+            "type": "treatment",
+            "start_char": 41,
+            "end_char": 53
+          },
+          {
+            "text": "advanced gastric or gastroesophageal junction adenocarcinoma",
+            "type": "condition",
+            "start_char": 80,
+            "end_char": 140
+          }
+        ]
+      },
+      "expected_mcode_mappings": {
+        "mapped_elements": [
+          {
+            "text": "Immunotherapy",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.85
+          },
+          {
+            "text": "Anti-PD-1 antibody",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "chemotherapy",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "advanced gastric or gastroesophageal junction adenocarcinoma",
+            "mcode_type": "CancerCondition",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    "renal_cell_carcinoma_advanced": {
+      "expected_extraction": {
+        "entities": [
+          {
+            "text": "IO/TKI Combination",
+            "type": "treatment",
+            "start_char": 0,
+            "end_char": 18
+          },
+          {
+            "text": "Immunotherapy",
+            "type": "treatment",
+            "start_char": 19,
+            "end_char": 32
+          },
+          {
+            "text": "Tyrosine Kinase Inhibitor",
+            "type": "treatment",
+            "start_char": 37,
+            "end_char": 61
+          },
+          {
+            "text": "Sunitinib",
+            "type": "treatment",
+            "start_char": 65,
+            "end_char": 74
+          },
+          {
+            "text": "advanced renal cell carcinoma",
+            "type": "condition",
+            "start_char": 100,
+            "end_char": 128
+          }
+        ]
+      },
+      "expected_mcode_mappings": {
+        "mapped_elements": [
+          {
+            "text": "IO/TKI Combination",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.85
+          },
+          {
+            "text": "Immunotherapy",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.85
+          },
+          {
+            "text": "Tyrosine Kinase Inhibitor",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "Sunitinib",
+            "mcode_type": "CancerRelatedMedicationAdministration",
+            "confidence": 0.9
+          },
+          {
+            "text": "advanced renal cell carcinoma",
+            "mcode_type": "CancerCondition",
+            "confidence": 0.95
+          }
+        ]
+      }
+    }
+  }
+}

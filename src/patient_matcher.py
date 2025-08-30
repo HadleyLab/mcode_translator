@@ -6,19 +6,35 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from data_fetcher.fetcher import search_trials, get_full_study
-from mcode_mapper.mcode_mapping_engine import MCODEMappingEngine
-from nlp_engine.llm_nlp_engine import LLMNLPEngine
-from code_extraction.code_extraction import CodeExtractionModule
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    logger.info("✅ Loaded environment variables from .env file")
+except ImportError:
+    logger.warning("⚠️  python-dotenv not installed, using system environment variables")
 
-class PatientMatcherApp:
+from src.utils.logging_config import get_logger, Loggable, setup_logging
+import logging
+
+# Setup logging at the start
+setup_logging(logging.INFO)
+logger = get_logger(__name__)
+
+from src.pipeline.fetcher import search_trials, get_full_study
+from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+
+# Test logging at startup
+logger.info("PatientMatcherApp starting up...")
+logger.debug("Debug logging enabled")
+
+class PatientMatcherApp(Loggable):
     def __init__(self):
+        super().__init__()
         self.current_trial = None
         self.search_results = []
         self.loading = False
-        self.mcode_mapper = MCODEMappingEngine()
-        self.nlp_engine = LLMNLPEngine()
-        self.code_extractor = CodeExtractionModule()
+        self.dynamic_pipeline = StrictDynamicExtractionPipeline()
         
         # Pagination variables
         self.current_page = 1
@@ -66,11 +82,35 @@ class PatientMatcherApp:
         with ui.column().classes('w-full gap-4'):
             ui.label('Patient-Trial Matcher').classes('text-2xl font-bold')
             
-            # Search input
-            self.search_input = ui.input(
-                placeholder='Search trials by cancer type or biomarker',
-                value=self.patient_profile['cancer_type']
-            ).classes('w-full')
+            # Search inputs grid
+            with ui.grid(columns=2).classes('w-full gap-4'):
+                # Primary search input
+                self.search_input = ui.input(
+                    placeholder='Search trials by cancer type or biomarker',
+                    value=self.patient_profile['cancer_type']
+                ).classes('w-full')
+                
+                # Additional search fields
+                self.date_filter = ui.select(
+                    options=['All Dates', 'Last 30 days', 'Last 6 months', 'Last year', 'Last 5 years'],
+                    value='All Dates',
+                    label='Date Range'
+                ).classes('w-full')
+            
+            # Advanced search options
+            with ui.expansion('Advanced Search', icon='tune').classes('w-full'):
+                with ui.grid(columns=2).classes('w-full gap-4'):
+                    self.status_filter = ui.select(
+                        options=['All Statuses', 'Recruiting', 'Active, not recruiting', 'Completed', 'Terminated'],
+                        value='All Statuses',
+                        label='Trial Status'
+                    ).classes('w-full')
+                    
+                    self.phase_filter = ui.select(
+                        options=['All Phases', 'Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'],
+                        value='All Phases',
+                        label='Trial Phase'
+                    ).classes('w-full')
             
             # Search button
             with ui.row().classes('w-full justify-between'):
@@ -93,16 +133,21 @@ class PatientMatcherApp:
             search_term = self.search_input.value
             self.current_search_term = search_term
             
+            self.logger.info(f"Starting search for term: {search_term}")
+            
             # Calculate total studies and pages if this is a new search
             if self.page_token is None and self.current_page == 1:
                 # Get total count and pages
+                self.logger.debug("Calculating total studies for new search")
                 stats = await run.io_bound(
                     self._calculate_total_studies,
                     search_term
                 )
                 self.total_studies = stats['total_studies']
                 self.total_pages = stats['total_pages']
+                self.logger.info(f"Total studies: {self.total_studies}, Total pages: {self.total_pages}")
             
+            self.logger.debug(f"Fetching search results - page_token: {self.page_token}")
             results = await run.io_bound(
                 search_trials,
                 search_term,
@@ -116,42 +161,96 @@ class PatientMatcherApp:
             self.search_results = []
             studies = results.get('StudyFields', results.get('studies', []))
             
+            self.logger.info(f"Received {len(studies)} studies from API")
+            
             # Update pagination info
             if 'nextPageToken' in results:
                 next_page_token = results['nextPageToken']
                 self.page_token = next_page_token
                 # Store the token for this page
                 self.page_tokens[self.current_page + 1] = next_page_token
+                self.logger.debug(f"Next page token stored: {next_page_token[:10]}...")
             else:
                 self.page_token = None
+                self.logger.debug("No more pages available")
             
             # Update page label and button states
             self._update_pagination_ui()
             
             for study in studies:
                 if isinstance(study, dict):
-                    # New format (studies array)
+                    # New format (studies array) - forward-facing robust implementation
                     if 'protocolSection' in study:
                         ident = study.get('protocolSection', {}).get('identificationModule', {})
                         status = study.get('protocolSection', {}).get('statusModule', {})
+                        conditions = study.get('protocolSection', {}).get('conditionsModule', {}).get('conditions', [])
+                        design = study.get('protocolSection', {}).get('designModule', {})
+                        description = study.get('protocolSection', {}).get('descriptionModule', {})
+                        
+                        # Extract dates from structured date objects
+                        start_date_struct = status.get('startDateStruct', {})
+                        completion_date_struct = status.get('completionDateStruct', {})
+                        
+                        start_date = start_date_struct.get('date', '')
+                        completion_date = completion_date_struct.get('date', '')
+                        
+                        # Extract phase information from design module
+                        phase_info = design.get('phases', [])
+                        phase = phase_info[0] if phase_info and isinstance(phase_info, list) else design.get('phase', 'Not specified')
+                        
+                        nct_id = ident.get('nctId', 'N/A')
+                        title = ident.get('briefTitle', 'No title')
                         self.search_results.append({
-                            'NCTId': ident.get('nctId', 'N/A'),
-                            'BriefTitle': ident.get('briefTitle', 'No title'),
-                            'Condition': ', '.join(study.get('protocolSection', {}).get('conditionsModule', {}).get('conditions', [])),
-                            'OverallStatus': status.get('overallStatus', 'Unknown')
+                            'NCTId': nct_id,
+                            'BriefTitle': title,
+                            'OfficialTitle': ident.get('officialTitle', ''),
+                            'Condition': conditions,
+                            'OverallStatus': status.get('overallStatus', 'Unknown'),
+                            'Phase': phase,
+                            'StudyType': design.get('studyType', 'Not specified'),
+                            'BriefSummary': description.get('briefSummary', ''),
+                            'DetailedDescription': description.get('detailedDescription', ''),
+                            'StartDate': start_date,
+                            'CompletionDate': completion_date,
+                            'StartDateType': start_date_struct.get('type', ''),
+                            'CompletionDateType': completion_date_struct.get('type', '')
                         })
-                    # Old format (StudyFields)
+                        self.logger.debug(f"Added study: {nct_id} - {title}")
+                    # Old format (StudyFields) - maintain for backward compatibility
                     elif 'NCTId' in study:
+                        conditions = study.get('Condition', [''])
+                        # Convert to list if it's a string from old format
+                        if isinstance(conditions, str):
+                            conditions = [conditions]
+                        elif isinstance(conditions, list) and len(conditions) > 0 and isinstance(conditions[0], str):
+                            conditions = conditions
+                        else:
+                            conditions = ['Unknown']
+                            
+                        nct_id = study.get('NCTId', [''])[0]
+                        title = study.get('BriefTitle', [''])[0]
                         self.search_results.append({
-                            'NCTId': study.get('NCTId', [''])[0],
-                            'BriefTitle': study.get('BriefTitle', [''])[0],
-                            'Condition': ', '.join(study.get('Condition', [''])),
-                            'OverallStatus': study.get('OverallStatus', [''])[0]
+                            'NCTId': nct_id,
+                            'BriefTitle': title,
+                            'OfficialTitle': study.get('OfficialTitle', [''])[0] if study.get('OfficialTitle') else '',
+                            'Condition': conditions,
+                            'OverallStatus': study.get('OverallStatus', [''])[0],
+                            'Phase': study.get('Phase', ['Not specified'])[0],
+                            'StudyType': study.get('StudyType', ['Not specified'])[0],
+                            'BriefSummary': study.get('BriefSummary', [''])[0],
+                            'StartDate': study.get('StartDate', [''])[0] if study.get('StartDate') else '',
+                            'CompletionDate': study.get('CompletionDate', [''])[0] if study.get('CompletionDate') else '',
+                            'StartDateType': '',
+                            'CompletionDateType': ''
                         })
+                        self.logger.debug(f"Added study: {nct_id} - {title}")
+            
+            self.logger.info(f"Processed {len(self.search_results)} studies for display")
             self.display_search_results()
             self.status_label.text = f'Found {len(self.search_results)} trials'
             
         except Exception as e:
+            self.logger.error(f"Search failed: {str(e)}", exc_info=True)
             self.status_label.text = f'Error: {str(e)}'
             ui.notify(f'Search failed: {str(e)}', type='negative')
         finally:
@@ -161,11 +260,69 @@ class PatientMatcherApp:
         """Display search results in left panel"""
         for trial in self.search_results:
             with self.results_container:
-                with ui.card().classes('w-full p-3 mb-2 cursor-pointer hover:bg-gray-50') as card:
-                    ui.label(trial.get('BriefTitle', 'No title')).classes('font-bold')
-                    with ui.row().classes('items-center justify-between'):
-                        ui.label(trial.get('NCTId', 'N/A')).classes('text-xs text-gray-600')
-                        ui.badge(trial.get('OverallStatus', 'Unknown')).props('color=green')
+                with ui.card().classes('w-full p-4 mb-3 cursor-pointer hover:bg-gray-50 hover:shadow-md transition-all') as card:
+                    # Trial title and ID
+                    ui.label(trial.get('BriefTitle', 'No title')).classes('font-bold text-lg')
+                    
+                    # Official title if available (collapsed by default)
+                    if trial.get('OfficialTitle'):
+                        with ui.expansion('View Official Title', icon='title').classes('w-full text-sm'):
+                            ui.label(trial['OfficialTitle']).classes('text-gray-600 italic')
+                    
+                    # Trial metadata badges
+                    with ui.row().classes('flex-wrap gap-2 mt-3'):
+                        # Status badge
+                        status = trial.get('OverallStatus', 'Unknown')
+                        status_color = 'green' if status.lower() in ['recruiting', 'active'] else 'orange' if status.lower() in ['completed'] else 'red'
+                        ui.badge(status).props(f'color={status_color}')
+                        
+                        # Phase badge
+                        phase = trial.get('Phase', 'Not specified')
+                        if phase != 'Not specified':
+                            ui.badge(f"Phase {phase}").props('color=blue outline')
+                        
+                        # Study type badge
+                        study_type = trial.get('StudyType', 'Not specified')
+                        if study_type != 'Not specified':
+                            ui.badge(study_type).props('color=purple outline')
+                    
+                    # Condition badges
+                    if 'Condition' in trial and trial['Condition']:
+                        conditions = trial['Condition']
+                        with ui.row().classes('flex-wrap gap-1 mt-3'):
+                            for condition in conditions[:3]:  # Show first 3 conditions
+                                ui.badge(condition.strip()).props('color=blue outline')
+                            if len(conditions) > 3:
+                                ui.badge(f"+{len(conditions) - 3} more").props('color=grey outline')
+                    
+                    # Trial dates with type indicators
+                    with ui.row().classes('items-center justify-between mt-3 text-xs text-gray-500'):
+                        start_date = trial.get('StartDate', '')
+                        completion_date = trial.get('CompletionDate', '')
+                        start_type = trial.get('StartDateType', '')
+                        completion_type = trial.get('CompletionDateType', '')
+                        
+                        if start_date:
+                            date_text = f"Start: {start_date}"
+                            if start_type:
+                                date_text += f" ({start_type.lower()})"
+                            ui.label(date_text)
+                        if completion_date:
+                            date_text = f"End: {completion_date}"
+                            if completion_type:
+                                date_text += f" ({completion_type.lower()})"
+                            ui.label(date_text)
+                    
+                    # Brief summary (truncated)
+                    brief_summary = trial.get('BriefSummary', '')
+                    if brief_summary:
+                        truncated_summary = brief_summary[:120] + '...' if len(brief_summary) > 120 else brief_summary
+                        ui.label(truncated_summary).classes('text-sm text-gray-600 mt-3 line-clamp-2')
+                    
+                    # NCT ID at bottom
+                    with ui.row().classes('items-center justify-between mt-3'):
+                        ui.label(trial.get('NCTId', 'N/A')).classes('text-xs text-gray-400 font-mono')
+                        ui.icon('arrow_forward').classes('text-gray-400')
                     
                     # Click handler to show details
                     card.on('click', lambda t=trial: self.show_trial_details(t))
@@ -175,6 +332,9 @@ class PatientMatcherApp:
         self.current_trial = trial
         self.details_panel.clear()
         
+        nct_id = trial.get('NCTId', 'Unknown')
+        self.logger.info(f"Loading details for trial: {nct_id}")
+        
         with self.details_panel:
             # Loading state
             loading = ui.spinner('dots', size='lg', color='primary')
@@ -182,128 +342,80 @@ class PatientMatcherApp:
             
             try:
                 # Fetch full trial details
+                self.logger.debug(f"Fetching full study details for {nct_id}")
                 full_study = await run.io_bound(
                     get_full_study,
-                    trial['NCTId']
+                    nct_id
                 )
                 
                 if not full_study:
+                    self.logger.warning(f"No trial details found for {nct_id}")
                     raise Exception('No trial details found')
                 
-                # Extract eligibility criteria
-                criteria = full_study.get('protocolSection', {}).get('eligibilityModule', {}).get('eligibilityCriteria', '')
-                
-                # Process with NLP engine using trial context
-                nlp_result = await run.io_bound(
-                    self.nlp_engine.process_trial_context,
-                    criteria,
+                self.logger.debug(f"Processing trial through dynamic extraction pipeline for {nct_id}")
+                # Process trial through dynamic extraction pipeline
+                pipeline_result = await run.io_bound(
+                    self.dynamic_pipeline.process_clinical_trial,
                     full_study
                 )
                 
-                # Extract codes
-                codes_result = await run.io_bound(
-                    self.code_extractor.process_criteria_for_codes,
-                    criteria,
-                    nlp_result.entities if nlp_result else None
-                )
+                if pipeline_result is None:
+                    self.logger.warning(f"Pipeline returned None for trial {nct_id}")
+                    raise Exception('Pipeline processing failed - no results returned')
                 
-                # Enhanced mCODE mapping with fallbacks
-                mapped_mcode = []
-                
-                # 1. Try full NLP + code extraction pipeline
-                try:
-                    all_entities = []
-                    if nlp_result and not nlp_result.error:
-                        all_entities.extend(nlp_result.entities)
-                    if codes_result and 'extracted_codes' in codes_result:
-                        for system, codes in codes_result['extracted_codes'].items():
-                            all_entities.extend([{
-                                'text': c.get('text', ''),
-                                'confidence': c.get('confidence', 0.8),
-                                'codes': {system: c.get('code', '')}
-                            } for c in codes])
-                    
-                    mapped_mcode = await run.io_bound(
-                        self.mcode_mapper.map_entities_to_mcode,
-                        all_entities,
-                        full_study  # Pass trial information for context-aware mapping
-                    )
-                except Exception as e:
-                    print(f"Full mapping failed: {str(e)}")
-                
-                # 2. Fallback to basic cancer type mapping if no elements found
-                if not mapped_mcode:
-                    cancer_type = trial.get('protocolSection', {}).get('conditionsModule', {}).get('conditions', [''])[0]
-                    if cancer_type.lower() == 'breast cancer':
-                        mapped_mcode = [{
-                            'element_name': 'Breast Cancer',
-                            'element_type': 'Condition',
-                            'value': cancer_type,
-                            'confidence': 0.9,
-                            'primary_code': {
-                                'system': 'ICD10CM',
-                                'code': 'C50.911'
-                            }
-                        }]
-                    elif cancer_type:
-                        mapped_mcode = [{
-                            'element_name': cancer_type,
-                            'element_type': 'Condition',
-                            'value': cancer_type,
-                            'confidence': 0.7
-                        }]
-                
-                # 3. Add study-specific biomarkers only if relevant
-                if not mapped_mcode:
-                    # Get study conditions
-                    study_conditions = trial.get('protocolSection', {}).get('conditionsModule', {}).get('conditions', [])
-                    study_conditions_lower = [c.lower() for c in study_conditions]
-                    
-                    # Only add patient biomarkers if they match study conditions
-                    if (self.patient_profile.get('cancer_type', '').lower() in study_conditions_lower and
-                        self.patient_profile.get('biomarkers')):
-                        relevant_biomarkers = []
-                        for b in self.patient_profile['biomarkers']:
-                            # Check if biomarker is mentioned in eligibility criteria
-                            criteria = trial.get('protocolSection', {}).get('eligibilityModule', {}).get('eligibilityCriteria', '').lower()
-                            if b['name'].lower() in criteria:
-                                relevant_biomarkers.append({
-                                    'element_name': b['name'],
-                                    'element_type': 'Biomarker',
-                                    'status': b['status'],
-                                    'confidence': 0.8,
-                                    'source': 'patient'
-                                })
-                        
-                        if relevant_biomarkers:
-                            mapped_mcode.extend(relevant_biomarkers)
-                
+                self.logger.info(f"Pipeline processing complete for {nct_id}. "
+                                f"Entities: {len(pipeline_result.extracted_entities)}, "
+                                f"Mappings: {len(pipeline_result.mcode_mappings)}, "
+                                f"Source References: {len(pipeline_result.source_references)}")
+
+                # Extract results from pipeline with source tracking
+                mapped_mcode = pipeline_result.mcode_mappings
+                nlp_result = type('NLPResult', (), {
+                    'entities': pipeline_result.extracted_entities,
+                    'error': None
+                })()
+                source_references = pipeline_result.source_references
+
+                # Add source tracking to mapped mCODE elements
+                nct_id_from_trial = trial.get('protocolSection', {}).get('identificationModule', {}).get('nctId', nct_id)
+                for element in mapped_mcode:
+                    element['source'] = nct_id_from_trial
+
                 # Clear loading state
                 loading.set_visibility(False)
                 status.set_visibility(False)
-                
-                # Display detailed view with NLP results
-                self.display_trial_analysis(full_study, mapped_mcode, nlp_result)
+
+                # Update entities with mapping information for visualization
+                if nlp_result and hasattr(nlp_result, 'entities') and nlp_result.entities and mapped_mcode:
+                    self.logger.debug(f"Updating entities with mapping information for {nct_id}")
+                    self._update_entities_with_mapping(nlp_result.entities, mapped_mcode, source_references)
+
+                # Display detailed view with NLP results and source provenance
+                self.logger.debug(f"Displaying trial analysis for {nct_id}")
+                await self.display_trial_analysis(full_study, mapped_mcode, nlp_result, source_references)
                 
             except Exception as e:
+                self.logger.error(f"Failed to load trial details for {nct_id}: {str(e)}", exc_info=True)
                 loading.set_visibility(False)
                 status.text = f'Error loading details: {str(e)}'
                 ui.notify(f'Failed to load trial details: {str(e)}', type='negative')
 
-    def display_trial_analysis(self, trial, mapped_mcode, nlp_result=None):
-        """Display trial analysis with matching visualization
+    async def display_trial_analysis(self, trial, mapped_mcode, nlp_result=None, source_references=None):
+        """Display trial analysis with enhanced mapping visualization and source provenance
         
         Args:
             trial: Dictionary containing trial details from ClinicalTrials.gov API
             mapped_mcode: List of mCODE elements mapped from trial criteria
             nlp_result: NLP processing result containing raw extracted features
+            source_references: List of SourceReference objects for provenance tracking
             
         Data Binding Notes:
             - Trial details are bound directly from API response
             - mCODE elements are grouped by type for display
+            - Shows many-to-one mapping relationships between NLP entities and mCODE elements
             - Confidence scores are color-coded (green >70%, orange >50%, red <=50%)
             - Biomarker matching is calculated against patient profile
-            - Shows side-by-side comparison of NLP vs mCODE results
+            - Source provenance is shown with comprehensive tooltips
         """
         with ui.column().classes('w-full gap-4'):
             # Trial header with bound data
@@ -354,147 +466,68 @@ class PatientMatcherApp:
                             for detail in biomarker_details:
                                 ui.label(detail).classes('text-xs')
             
-            # Data Visualization
-            with ui.expansion('Data Analysis', icon='analytics', value=True).classes('w-full'):
-                # NLP Extractions
-                with ui.expansion('NLP Extractions', icon='text_snippet').classes('w-full'):
-                    if nlp_result and not nlp_result.error and hasattr(nlp_result, 'features'):
-                        features = nlp_result.features
-                        for feature_type, feature_data in features.items():
-                            with ui.expansion(feature_type.title(), icon='category').classes('w-full'):
-                                if isinstance(feature_data, list):
-                                    for item in feature_data:
-                                        if isinstance(item, dict):
-                                            with ui.card().classes('w-full p-2 mb-2'):
-                                                for key, value in item.items():
-                                                    ui.label(f"{key}: {value}").classes('text-xs')
-                                elif isinstance(feature_data, dict):
-                                    for key, value in feature_data.items():
-                                        ui.label(f"{key}: {value}").classes('text-sm')
-                    else:
-                        ui.label('No NLP features extracted').classes('text-gray-500')
+            # NLP to mCODE Mapping Visualization with Many-to-One Relationships
+            with ui.expansion('NLP to mCODE Mapping', icon='compare_arrows', value=True).classes('w-full'):
                 
-                # mCODE Elements
-                with ui.expansion('mCODE Elements', icon='dna').classes('w-full'):
-                    if mapped_mcode:
-                        # Group elements by type
-                        element_groups = {}
-                        for element in mapped_mcode:
-                            element_type = element.get('element_type', 'Other')
-                            if element_type not in element_groups:
-                                element_groups[element_type] = []
-                            element_groups[element_type].append(element)
+                # Summary statistics with mapping relationships
+                with ui.row().classes('w-full justify-between items-center mb-4'):
+                    ui.label('Extraction & Mapping Summary').classes('text-lg font-bold')
+                    with ui.row().classes('gap-4'):
+                        if nlp_result and hasattr(nlp_result, 'entities'):
+                            ui.badge(f"NLP: {len(nlp_result.entities)}").props('color=blue')
+                        if mapped_mcode:
+                            ui.badge(f"mCODE: {len(mapped_mcode)}").props('color=green')
+                        if source_references:
+                            ui.badge(f"Sources: {len(source_references)}").props('color=purple')
+                
+                # Show many-to-one mapping relationships
+                if mapped_mcode and nlp_result and hasattr(nlp_result, 'entities') and nlp_result.entities:
+                    # Create mapping visualization showing relationships
+                    self._display_mapping_relationships(nlp_result.entities, mapped_mcode, source_references)
+                else:
+                    # Fallback to simple badge display if no relationships can be established
+                    with ui.card().classes('w-full p-4 mb-4'):
+                        ui.label('NLP Entities').classes('text-md font-bold mb-3 text-blue-600')
                         
-                        # Display each group
-                        for element_type, elements in element_groups.items():
-                            with ui.expansion(element_type, icon='category').classes('w-full'):
-                                for element in elements:
-                                    with ui.card().classes('w-full p-3 mb-2 hover:shadow-md'):
-                                        # Main element info
-                                        with ui.row().classes('items-center justify-between'):
-                                            ui.label(element.get('element_name', 'Unknown')).classes('font-bold')
-                                            if 'confidence' in element:
-                                                ui.badge(f"{element['confidence']*100:.0f}%")\
-                                                    .props(f'color={"green" if element["confidence"] > 0.7 else "orange" if element["confidence"] > 0.5 else "red"}')
-                                        
-                                        # Detailed fields
-                                        with ui.column().classes('mt-2 gap-1'):
-                                            if 'value' in element:
-                                                with ui.row().classes('items-center gap-2'):
-                                                    ui.icon('check_circle').classes('text-green-500')
-                                                    ui.label(f"Value: {element['value']}").classes('text-sm')
-                                            if 'status' in element:
-                                                with ui.row().classes('items-center gap-2'):
-                                                    ui.icon('info').classes('text-blue-500')
-                                                    ui.label(f"Status: {element['status']}").classes('text-sm')
-                                            
-                                            # Code information
-                                            if 'primary_code' in element:
-                                                primary_code = element['primary_code']
-                                                with ui.row().classes('items-center gap-2'):
-                                                    ui.icon('code').classes('text-purple-500')
-                                                    ui.label(f"{primary_code.get('system', 'N/A')}: {primary_code.get('code', 'N/A')}").classes('text-xs font-mono')
-                                            
-                                            # Additional codes
-                                            if 'mapped_codes' in element:
-                                                mapped_codes = element['mapped_codes']
-                                                for system, code in mapped_codes.items():
-                                                    with ui.row().classes('items-center gap-2'):
-                                                        ui.icon('link').classes('text-gray-500')
-                                                        ui.label(f"{system}: {code}").classes('text-xs font-mono')
-                                            
-                                            # Source information
-                                            if 'source' in element:
-                                                with ui.row().classes('items-center gap-2'):
-                                                    ui.icon('source').classes('text-yellow-500')
-                                                    ui.label(f"Source: {element['source']}").classes('text-xs')
-                    else:
-                        ui.label('No mCODE elements were mapped').classes('text-gray-500')
-            
-            # # Original mCODE visualization panel (kept for backward compatibility)
-            # with ui.expansion('mCODE Detailed View', icon='dna').classes('w-full'):
-            #     if mapped_mcode:
-            #         # Summary stats
-            #         with ui.card().classes('w-full p-4 bg-blue-50'):
-            #             with ui.row().classes('items-center justify-between'):
-            #                 ui.label('Mapped Elements').classes('font-bold')
-            #                 ui.badge(f"{len(mapped_mcode)} elements").props('color=blue')
+                        if nlp_result and not nlp_result.error and hasattr(nlp_result, 'entities') and nlp_result.entities:
+                            with ui.row().classes('flex-wrap gap-2'):
+                                for entity in nlp_result.entities:
+                                    entity_text = entity.get('text', 'Unknown')
+                                    entity_type = entity.get('type', 'Unknown')
+                                    confidence = entity.get('confidence', 0.8)
+                                    
+                                    # Create badge with tooltip showing source provenance
+                                    badge = ui.badge(f"{entity_text}").props(
+                                        f'color={"green" if confidence > 0.7 else "orange" if confidence > 0.5 else "red"}'
+                                    )
+                                    
+                                    # Tooltip with comprehensive source information
+                                    tooltip_content = self._create_entity_tooltip(entity, entity_type, source_references)
+                                    badge.tooltip(tooltip_content)
+                        else:
+                            ui.label('No NLP entities extracted').classes('text-gray-500 text-center')
                     
-            #         # Group elements by type
-            #         element_groups = {}
-            #         for element in mapped_mcode:
-            #             element_type = element.get('element_type', 'Other')
-            #             if element_type not in element_groups:
-            #                 element_groups[element_type] = []
-            #             element_groups[element_type].append(element)
-                    
-            #         # Display each group with enhanced details
-            #         for element_type, elements in element_groups.items():
-            #             with ui.expansion(element_type, icon='category').classes('w-full'):
-            #                 with ui.grid(columns=1).classes('w-full gap-4'):
-            #                     for element in elements:
-            #                         with ui.card().classes('w-full p-4 hover:shadow-md'):
-            #                             # Main element info
-            #                             with ui.row().classes('items-center justify-between'):
-            #                                 ui.label(element.get('element_name', 'Unknown')).classes('font-bold')
-            #                                 if 'confidence' in element:
-            #                                     ui.badge(f"{element['confidence']*100:.0f}%")\
-            #                                         .props(f'color={"green" if element["confidence"] > 0.7 else "orange" if element["confidence"] > 0.5 else "red"}')
-                                        
-            #                             # Detailed fields with better organization
-            #                             with ui.column().classes('mt-2 gap-1'):
-            #                                 # Value information
-            #                                 if 'value' in element:
-            #                                     with ui.row().classes('items-center gap-2'):
-            #                                         ui.icon('check_circle').classes('text-green-500')
-            #                                         ui.label(f"Value: {element['value']}").classes('text-sm')
-            #                                 if 'status' in element:
-            #                                     with ui.row().classes('items-center gap-2'):
-            #                                         ui.icon('info').classes('text-blue-500')
-            #                                         ui.label(f"Status: {element['status']}").classes('text-sm')
-                                            
-            #                                 # Code information
-            #                                 if 'primary_code' in element:
-            #                                     primary_code = element['primary_code']
-            #                                     with ui.row().classes('items-center gap-2'):
-            #                                         ui.icon('code').classes('text-purple-500')
-            #                                         ui.label(f"{primary_code.get('system', 'N/A')}: {primary_code.get('code', 'N/A')}").classes('text-xs font-mono')
-                                            
-            #                                 # Additional codes
-            #                                 if 'mapped_codes' in element:
-            #                                     mapped_codes = element['mapped_codes']
-            #                                     for system, code in mapped_codes.items():
-            #                                         with ui.row().classes('items-center gap-2'):
-            #                                             ui.icon('link').classes('text-gray-500')
-            #                                             ui.label(f"{system}: {code}").classes('text-xs font-mono')
-                                            
-            #                                 # Source information
-            #                                 if 'source' in element:
-            #                                     with ui.row().classes('items-center gap-2'):
-            #                                         ui.icon('source').classes('text-yellow-500')
-            #                                         ui.label(f"Source: {element['source']}").classes('text-xs')
-            #     else:
-            #         ui.label('No mCODE elements were mapped from this trial').classes('text-gray-500 p-4 text-center')
+                    # mCODE Mappings Badges
+                    with ui.card().classes('w-full p-4'):
+                        ui.label('mCODE Mappings').classes('text-md font-bold mb-3 text-green-600')
+                        
+                        if mapped_mcode:
+                            with ui.row().classes('flex-wrap gap-2'):
+                                for element in mapped_mcode:
+                                    element_name = element.get('element_name', 'Unknown')
+                                    element_type = element.get('element_type', 'Unknown')
+                                    confidence = element.get('confidence', 0.8)
+                                    
+                                    # Create badge with tooltip showing source provenance
+                                    badge = ui.badge(f"{element_name}").props(
+                                        f'color={"green" if confidence > 0.7 else "orange" if confidence > 0.5 else "red"}'
+                                    )
+                                    
+                                    # Tooltip with comprehensive source information
+                                    tooltip_content = self._create_mcode_tooltip(element, element_type, source_references)
+                                    badge.tooltip(tooltip_content)
+                        else:
+                            ui.label('No mCODE elements were mapped').classes('text-gray-500 text-center')
             
             # Raw eligibility criteria
             with ui.expansion('Eligibility Criteria', icon='list').classes('w-full'):
@@ -503,6 +536,7 @@ class PatientMatcherApp:
 
     def reset_search(self):
         """Reset search results and pagination state"""
+        self.logger.info("Resetting search results and pagination state")
         self.search_results = []
         self.results_container.clear()
         self.details_panel.clear()
@@ -516,6 +550,7 @@ class PatientMatcherApp:
         
         # Reset pagination UI
         self._update_pagination_ui()
+        self.logger.debug("Search reset completed")
 
     def setup_patient_panel(self):
         """Setup patient profile visualization and editing"""
@@ -585,6 +620,7 @@ class PatientMatcherApp:
 
     def update_patient_profile(self, field: str, value: str):
         """Update patient profile field"""
+        self.logger.info(f"Updating patient profile field '{field}' to '{value}'")
         self.patient_profile[field] = value
         ui.notify(f"Updated patient {field} to {value}")
 
@@ -600,6 +636,7 @@ class PatientMatcherApp:
 
     def add_biomarker(self):
         """Add a new biomarker to the patient profile"""
+        self.logger.info("Adding new biomarker to patient profile")
         new_biomarker = {'name': '', 'status': ''}
         self.patient_profile['biomarkers'].append(new_biomarker)
         # Refresh the patient panel to show the new biomarker
@@ -607,11 +644,15 @@ class PatientMatcherApp:
 
     def remove_biomarker(self, index: int):
         """Remove a biomarker from the patient profile"""
+        self.logger.info(f"Removing biomarker at index {index}")
         if 0 <= index < len(self.patient_profile['biomarkers']):
             removed = self.patient_profile['biomarkers'].pop(index)
+            self.logger.debug(f"Removed biomarker: {removed['name']}")
             ui.notify(f"Removed biomarker: {removed['name']}")
             # Refresh the patient panel to update the display
             self.refresh_patient_panel()
+        else:
+            self.logger.warning(f"Invalid biomarker index {index} for removal")
 
     def add_variant(self):
         """Add a new genomic variant to the patient profile"""
@@ -663,6 +704,7 @@ class PatientMatcherApp:
 
     async def prev_page(self):
         """Navigate to previous page of results"""
+        self.logger.info(f"Navigating to previous page from page {self.current_page}")
         if self.current_page > 1:
             self.current_page -= 1
             # For previous page navigation, we need to re-search from the beginning
@@ -675,6 +717,7 @@ class PatientMatcherApp:
             search_term = self.current_search_term
             self.current_search_term = None
             
+            self.logger.debug(f"Re-searching to reach target page {target_page}")
             # Perform search to get to target page
             for page in range(1, target_page):
                 results = await run.io_bound(
@@ -697,18 +740,22 @@ class PatientMatcherApp:
             self.current_search_term = search_term
             self.page_token = self.page_tokens.get(target_page)
             
+            self.logger.debug(f"Restored to page {self.current_page}")
             # Update UI and perform final search
             self._update_pagination_ui()
             await self.on_search()
         else:
+            self.logger.debug("Already on first page")
             ui.notify("Already on first page", type='warning')
 
     async def next_page(self):
         """Navigate to next page of results"""
+        self.logger.info(f"Navigating to next page from page {self.current_page}")
         if self.page_token:
             self.current_page += 1
             await self.on_search()
         else:
+            self.logger.debug("No more results available")
             ui.notify("No more results available", type='warning')
 
     def _update_pagination_ui(self):
@@ -734,13 +781,18 @@ class PatientMatcherApp:
     
     async def go_to_page(self, page_num):
         """Navigate directly to a specific page that has been visited"""
+        self.logger.info(f"Navigating to page {page_num} from page {self.current_page}")
         if page_num == self.current_page:
+            self.logger.debug("Already on target page")
             return
             
         if page_num in self.page_tokens or page_num == 1:
             self.current_page = page_num
             self.page_token = self.page_tokens.get(page_num)
+            self.logger.debug(f"Page token for page {page_num}: {self.page_token[:10] if self.page_token else None}")
             await self.on_search()
+        else:
+            self.logger.warning(f"Page {page_num} not available in page tokens")
     
     def _create_feature_mapping(self, nlp_result, mapped_mcode):
         """Create a mapping between NLP features and mCODE elements with strict 1:1 biomarker matching
@@ -819,14 +871,236 @@ class PatientMatcherApp:
         
         return feature_mapping
 
+    def _update_entities_with_mapping(self, entities, mapped_mcode, source_references=None):
+        """Update NLP entities with mapping information for visualization
+        
+        Args:
+            entities: List of NLP entities
+            mapped_mcode: List of mapped mCODE elements
+            source_references: List of SourceReference objects for provenance tracking
+        """
+        # Create a mapping from entity text to mCODE element
+        mapping_dict = {}
+        for mcode_element in mapped_mcode:
+            if isinstance(mcode_element, dict):
+                element_name = mcode_element.get('element_name', '')
+                element_type = mcode_element.get('element_type', '')
+                element_value = mcode_element.get('value', '')
+                
+                # Try multiple ways to match back to source entity
+                keys_to_try = [
+                    mcode_element.get('mapped_from', ''),
+                    element_name.lower(),
+                    f"{element_name.lower()}-{element_value.lower()}" if element_value else ''
+                ]
+                
+                for key in keys_to_try:
+                    if key:
+                        mapping_dict[key] = {
+                            'name': element_name,
+                            'type': element_type,
+                            'value': element_value
+                        }
+        
+        # Update entities with mapping information
+        for entity in entities:
+            entity_text = entity.get('text', '').lower()
+            entity_with_value = f"{entity_text}-{entity.get('value', '').lower()}"
+            
+            # Try to find mapping with multiple attempts
+            mapping = (mapping_dict.get(entity_text) or
+                      mapping_dict.get(entity_with_value))
+            
+            if mapping:
+                entity['mapped_to'] = mapping['name']
+                entity['mapped_type'] = mapping['type']
+                entity['mapped_value'] = mapping['value']
+                entity['has_mapping'] = True
+    
+    def _display_mapping_relationships(self, entities, mapped_mcode, source_references):
+        """Display many-to-one mapping relationships between NLP entities and mCODE elements
+        
+        Args:
+            entities: List of NLP entities
+            mapped_mcode: List of mapped mCODE elements
+            source_references: List of SourceReference objects for provenance tracking
+        """
+        # Group mCODE elements by type for better organization
+        mcode_by_type = {}
+        for element in mapped_mcode:
+            element_type = element.get('element_type', 'Other')
+            if element_type not in mcode_by_type:
+                mcode_by_type[element_type] = []
+            mcode_by_type[element_type].append(element)
+        
+        # Display mCODE elements grouped by type with their source relationships
+        for element_type, elements in mcode_by_type.items():
+            with ui.expansion(f"{element_type} Mappings", icon='category', value=True).classes('w-full mb-4'):
+                for element in elements:
+                    with ui.card().classes('w-full p-4 mb-3 bg-gray-50'):
+                        # mCODE element header
+                        with ui.row().classes('w-full justify-between items-center mb-3'):
+                            element_name = element.get('element_name', 'Unknown')
+                            confidence = element.get('confidence', 0.8)
+                            
+                            ui.label(element_name).classes('font-bold text-lg')
+                            ui.badge(f"{confidence:.2f}").props(
+                                f'color={"green" if confidence > 0.7 else "orange" if confidence > 0.5 else "red"}'
+                            )
+                        
+                        # Show value if available
+                        value = element.get('value', '')
+                        if value:
+                            with ui.row().classes('items-center gap-2 mb-3'):
+                                ui.label('Value:').classes('font-semibold')
+                                ui.label(value).classes('text-blue-600')
+                        
+                        # Show source references and connected NLP entities
+                        element_sources = element.get('source_references', [])
+                        if element_sources:
+                            with ui.expansion('Source Provenance', icon='source').classes('w-full'):
+                                for source_ref in element_sources:
+                                    with ui.card().classes('w-full p-3 mb-2 bg-white'):
+                                        # Source reference details
+                                        with ui.row().classes('items-center gap-2 mb-2'):
+                                            ui.icon('description').classes('text-blue-500')
+                                            ui.label(f"{source_ref.get('section_name', 'Unknown')} ({source_ref.get('section_type', 'Unknown')})").classes('font-medium')
+                                        
+                                        # Text fragment
+                                        text_fragment = source_ref.get('text_fragment', '')
+                                        if text_fragment:
+                                            ui.markdown(f"**Text:** `{text_fragment[:100]}{'...' if len(text_fragment) > 100 else ''}`").classes('text-sm mb-2')
+                                        
+                                        # Confidence and method
+                                        with ui.row().classes('items-center gap-4 text-xs text-gray-500'):
+                                            ui.label(f"Confidence: {source_ref.get('confidence', 0.8):.2f}")
+                                            ui.label(f"Method: {source_ref.get('extraction_method', 'Unknown')}")
+                        
+                        # Find and show connected NLP entities
+                        connected_entities = []
+                        text_fragments = [ref.get('text_fragment', '').lower() for ref in element_sources]
+                        
+                        for entity in entities:
+                            entity_text = entity.get('text', '').lower()
+                            if any(fragment in entity_text or entity_text in fragment for fragment in text_fragments if fragment):
+                                connected_entities.append(entity)
+                        
+                        if connected_entities:
+                            with ui.expansion(f"Connected NLP Entities ({len(connected_entities)})", icon='link').classes('w-full'):
+                                with ui.row().classes('flex-wrap gap-2'):
+                                    for entity in connected_entities:
+                                        entity_text = entity.get('text', 'Unknown')
+                                        entity_type = entity.get('type', 'Unknown')
+                                        confidence = entity.get('confidence', 0.8)
+                                        
+                                        badge = ui.badge(f"{entity_text}").props(
+                                            f'color={"green" if confidence > 0.7 else "orange" if confidence > 0.5 else "red"}'
+                                        )
+                                        badge.tooltip(self._create_entity_tooltip(entity, entity_type, source_references))
+
     def _calculate_total_studies(self, search_term):
         """Calculate total studies and pages for a search term"""
-        from data_fetcher.fetcher import calculate_total_studies
+        from src.pipeline.fetcher import calculate_total_studies
         try:
             return calculate_total_studies(search_term, page_size=10)
         except Exception as e:
-            print(f"Error calculating total studies: {str(e)}")
+            logger.error(f"Error calculating total studies: {str(e)}")
             return {'total_studies': 0, 'total_pages': 1, 'page_size': 10}
+
+    def _create_entity_tooltip(self, entity, entity_type, source_references=None):
+        """Create comprehensive tooltip content for NLP entity showing source provenance
+        
+        Args:
+            entity: NLP entity dictionary
+            entity_type: Type of the entity
+            source_references: List of SourceReference objects for provenance tracking
+            
+        Returns:
+            String with detailed source information
+        """
+        text = entity.get('text', 'Unknown')
+        confidence = entity.get('confidence', 0.8)
+        source = entity.get('source', 'NLP extraction')
+        extraction_method = entity.get('extraction_method', 'Pattern matching')
+        context = entity.get('context', 'No context available')
+        
+        # Find source references for this entity
+        entity_sources = []
+        if source_references:
+            entity_text = text.lower()
+            for ref in source_references:
+                if ref.get('text_fragment', '').lower() in entity_text or entity_text in ref.get('text_fragment', '').lower():
+                    entity_sources.append(ref)
+        
+        tooltip_content = f"""
+{text}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: {entity_type}
+Confidence: {confidence:.2f}
+Source: {source}
+Method: {extraction_method}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Context: {context[:80]}{'...' if len(context) > 80 else ''}
+        """
+        
+        # Add source provenance information if available
+        if entity_sources:
+            tooltip_content += "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            tooltip_content += "\nSource Provenance:"
+            for i, source_ref in enumerate(entity_sources[:3]):  # Show up to 3 sources
+                section = source_ref.get('section_name', 'Unknown')
+                fragment = source_ref.get('text_fragment', '')
+                tooltip_content += f"\n{i+1}. {section}: {fragment[:60]}{'...' if len(fragment) > 60 else ''}"
+            if len(entity_sources) > 3:
+                tooltip_content += f"\n... and {len(entity_sources) - 3} more sources"
+        
+        return tooltip_content.strip()
+
+    def _create_mcode_tooltip(self, element, element_type, source_references=None):
+        """Create comprehensive tooltip content for mCODE element showing source provenance
+        
+        Args:
+            element: mCODE element dictionary
+            element_type: Type of the element
+            source_references: List of SourceReference objects for provenance tracking
+            
+        Returns:
+            String with detailed source information
+        """
+        element_name = element.get('element_name', 'Unknown')
+        value = element.get('value', 'Not specified')
+        confidence = element.get('confidence', 0.8)
+        source = element.get('source', 'Clinical trial criteria')
+        mapping_method = element.get('mapping_method', 'Rule-based mapping')
+        criteria_context = element.get('criteria_context', 'No context available')
+        
+        # Get source references from the element itself (connected by LLMMappingEngine)
+        element_sources = element.get('source_references', [])
+        
+        tooltip_content = f"""
+{element_name}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: {element_type}
+Value: {value}
+Confidence: {confidence:.2f}
+Source: {source}
+Method: {mapping_method}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Criteria Context: {criteria_context[:80]}{'...' if len(criteria_context) > 80 else ''}
+        """
+        
+        # Add source provenance information if available
+        if element_sources:
+            tooltip_content += "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            tooltip_content += "\nSource Provenance:"
+            for i, source_ref in enumerate(element_sources[:3]):  # Show up to 3 sources
+                section = source_ref.get('section_name', 'Unknown')
+                fragment = source_ref.get('text_fragment', '')
+                tooltip_content += f"\n{i+1}. {section}: {fragment[:60]}{'...' if len(fragment) > 60 else ''}"
+            if len(element_sources) > 3:
+                tooltip_content += f"\n... and {len(element_sources) - 3} more sources"
+        
+        return tooltip_content.strip()
 
 # Run the application
 if __name__ in {'__main__', '__mp_main__', 'patient_matcher'}:

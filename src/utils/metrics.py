@@ -1,6 +1,6 @@
-import logging
 from collections import defaultdict
 from typing import Dict, List, Any
+from src.utils.logging_config import get_logger
 
 class MatchingMetrics:
     """
@@ -8,7 +8,7 @@ class MatchingMetrics:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger(__name__)
         self.reset()
     
     def reset(self):

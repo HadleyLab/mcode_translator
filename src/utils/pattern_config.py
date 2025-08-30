@@ -1,6 +1,6 @@
 """Configuration of regex patterns for clinical text processing.
 
-Contains all regular expression patterns used by the RegexNLPEngine,
+Contains all regular expression patterns used for pattern matching,
 organized by category for better maintainability.
 """
 

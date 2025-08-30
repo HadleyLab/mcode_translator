@@ -1,0 +1,1859 @@
+[
+  {
+    "case_name": "breast_cancer_her2_positive",
+    "extraction_metrics": {
+      "precision": 0.221,
+      "recall": 0.773,
+      "f1": 0.343,
+      "true_positives": 17,
+      "false_positives": 60,
+      "false_negatives": 5
+    },
+    "mapping_metrics": {
+      "precision": 0,
+      "recall": 0.0,
+      "f1": 0,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 22
+    },
+    "extraction_result": {
+      "entities": [
+        {
+          "text": "Breast Cancer",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "conditions",
+            "position": 12,
+            "context_sentence": "Conditions: Breast Cancer, Metastatic Breast Cancer, HER2-Positive Breast Cancer, Advanced Breast Cancer, HER2 Amplified Breast Cancer",
+            "section_name": "conditionsModule",
+            "section_type": "conditions",
+            "document_id": "unknown",
+            "section_position": 0
+          }
+        },
+        {
+          "text": "Metastatic Breast Cancer",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "conditions",
+            "position": 26,
+            "context_sentence": "Conditions: Breast Cancer, Metastatic Breast Cancer, HER2-Positive Breast Cancer, Advanced Breast Cancer, HER2 Amplified Breast Cancer",
+            "section_name": "conditionsModule",
+            "section_type": "conditions",
+            "document_id": "unknown",
+            "section_position": 0
+          }
+        },
+        {
+          "text": "HER2-Positive Breast Cancer",
+          "type": "condition",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "conditions",
+            "position": 52,
+            "context_sentence": "Conditions: Breast Cancer, Metastatic Breast Cancer, HER2-Positive Breast Cancer, Advanced Breast Cancer, HER2 Amplified Breast Cancer",
+            "section_name": "conditionsModule",
+            "section_type": "conditions",
+            "document_id": "unknown",
+            "section_position": 0
+          }
+        },
+        {
+          "text": "HER2-Positive",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "conditions",
+            "position": 52,
+            "context_sentence": "Conditions: Breast Cancer, Metastatic Breast Cancer, HER2-Positive Breast Cancer, Advanced Breast Cancer, HER2 Amplified Breast Cancer",
+            "section_name": "conditionsModule",
+            "section_type": "conditions",
+            "document_id": "unknown",
+            "section_position": 0
+          }
+        },
+        {
+          "text": "Advanced Breast Cancer",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "conditions",
+            "position": 80,
+            "context_sentence": "Conditions: Breast Cancer, Metastatic Breast Cancer, HER2-Positive Breast Cancer, Advanced Breast Cancer, HER2 Amplified Breast Cancer",
+            "section_name": "conditionsModule",
+            "section_type": "conditions",
+            "document_id": "unknown",
+            "section_position": 0
+          }
+        },
+        {
+          "text": "HER2 Amplified Breast Cancer",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "conditions",
+            "position": 104,
+            "context_sentence": "Conditions: Breast Cancer, Metastatic Breast Cancer, HER2-Positive Breast Cancer, Advanced Breast Cancer, HER2 Amplified Breast Cancer",
+            "section_name": "conditionsModule",
+            "section_type": "conditions",
+            "document_id": "unknown",
+            "section_position": 0
+          }
+        },
+        {
+          "text": "HER2 Amplified",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "conditions",
+            "position": 104,
+            "context_sentence": "Conditions: Breast Cancer, Metastatic Breast Cancer, HER2-Positive Breast Cancer, Advanced Breast Cancer, HER2 Amplified Breast Cancer",
+            "section_name": "conditionsModule",
+            "section_type": "conditions",
+            "document_id": "unknown",
+            "section_position": 0
+          }
+        },
+        {
+          "text": "Histologically confirmed",
+          "type": "procedure",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 30,
+            "context_sentence": "Histologically confirmed HER2-positive breast cancer (IHC 3+ or FISH amplified)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "HER2-positive",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "eligibility",
+            "position": 50,
+            "context_sentence": "Histologically confirmed HER2-positive breast cancer (IHC 3+ or FISH amplified)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "breast cancer",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "eligibility",
+            "position": 65,
+            "context_sentence": "Histologically confirmed HER2-positive breast cancer (IHC 3+ or FISH amplified)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "IHC 3+",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "3+",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 80,
+            "context_sentence": "Histologically confirmed HER2-positive breast cancer (IHC 3+ or FISH amplified)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "FISH amplified",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 90,
+            "context_sentence": "Histologically confirmed HER2-positive breast cancer (IHC 3+ or FISH amplified)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "Metastatic disease",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "eligibility",
+            "position": 110,
+            "context_sentence": "Metastatic disease",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "Prior treatment with trastuzumab",
+          "type": "medication",
+          "attributes": {
+            "status": "prior",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 130,
+            "context_sentence": "Prior treatment with trastuzumab and a taxane",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "taxane",
+          "type": "medication",
+          "attributes": {
+            "status": "prior",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 155,
+            "context_sentence": "Prior treatment with trastuzumab and a taxane",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "Measurable disease per RECIST 1.1",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "eligibility",
+            "position": 175,
+            "context_sentence": "Measurable disease per RECIST 1.1",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "ECOG performance status 0-1",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "0-1",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 200,
+            "context_sentence": "ECOG performance status 0-1",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "Left ventricular ejection fraction ≥50%",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "50",
+            "unit": "%"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 225,
+            "context_sentence": "Left ventricular ejection fraction ≥50%",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "Adequate bone marrow function",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.8,
+          "source_context": {
+            "section": "eligibility",
+            "position": 260,
+            "context_sentence": "Adequate bone marrow, renal, and hepatic function",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "renal function",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.8,
+          "source_context": {
+            "section": "eligibility",
+            "position": 280,
+            "context_sentence": "Adequate bone marrow, renal, and hepatic function",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "hepatic function",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.8,
+          "source_context": {
+            "section": "eligibility",
+            "position": 295,
+            "context_sentence": "Adequate bone marrow, renal, and hepatic function",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "tumor tissue for biomarker analysis",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "eligibility",
+            "position": 315,
+            "context_sentence": "Willing to provide tumor tissue for biomarker analysis (HER2, PIK3CA, ESR1, PTEN, TMB)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "HER2",
+          "type": "biomarker",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 350,
+            "context_sentence": "Willing to provide tumor tissue for biomarker analysis (HER2, PIK3CA, ESR1, PTEN, TMB)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "PIK3CA",
+          "type": "genomic_variant",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "eligibility",
+            "position": 355,
+            "context_sentence": "Willing to provide tumor tissue for biomarker analysis (HER2, PIK3CA, ESR1, PTEN, TMB)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "ESR1",
+          "type": "genomic_variant",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "eligibility",
+            "position": 362,
+            "context_sentence": "Willing to provide tumor tissue for biomarker analysis (HER2, PIK3CA, ESR1, PTEN, TMB)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "PTEN",
+          "type": "genomic_variant",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "eligibility",
+            "position": 367,
+            "context_sentence": "Willing to provide tumor tissue for biomarker analysis (HER2, PIK3CA, ESR1, PTEN, TMB)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "TMB",
+          "type": "biomarker",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.8,
+          "source_context": {
+            "section": "eligibility",
+            "position": 372,
+            "context_sentence": "Willing to provide tumor tissue for biomarker analysis (HER2, PIK3CA, ESR1, PTEN, TMB)",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "demographic information",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "eligibility",
+            "position": 385,
+            "context_sentence": "Willing to provide demographic information including race and ethnicity",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "race",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 410,
+            "context_sentence": "Willing to provide demographic information including race and ethnicity",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "ethnicity",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 415,
+            "context_sentence": "Willing to provide demographic information including race and ethnicity",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "Previous treatment with trastuzumab deruxtecan",
+          "type": "exclusion",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 435,
+            "context_sentence": "Previous treatment with trastuzumab deruxtecan",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "trastuzumab deruxtecan",
+          "type": "medication",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 455,
+            "context_sentence": "Previous treatment with trastuzumab deruxtecan",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "Active brain metastases",
+          "type": "condition",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 485,
+            "context_sentence": "Active brain metastases requiring steroids",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "steroids",
+          "type": "medication",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "eligibility",
+            "position": 510,
+            "context_sentence": "Active brain metastases requiring steroids",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "History of interstitial lung disease",
+          "type": "exclusion",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 530,
+            "context_sentence": "History of interstitial lung disease",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "interstitial lung disease",
+          "type": "condition",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 545,
+            "context_sentence": "History of interstitial lung disease",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "Uncontrolled cardiac disease",
+          "type": "exclusion",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 575,
+            "context_sentence": "Uncontrolled cardiac disease",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "cardiac disease",
+          "type": "condition",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 590,
+            "context_sentence": "Uncontrolled cardiac disease",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "Pregnancy",
+          "type": "condition",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "eligibility",
+            "position": 615,
+            "context_sentence": "Pregnancy or breastfeeding",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "breastfeeding",
+          "type": "condition",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "eligibility",
+            "position": 625,
+            "context_sentence": "Pregnancy or breastfeeding",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "Known germline BRCA1/2 mutations",
+          "type": "exclusion",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 645,
+            "context_sentence": "Known germline BRCA1/2 mutations",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "BRCA1/2 mutations",
+          "type": "genomic_variant",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "eligibility",
+            "position": 660,
+            "context_sentence": "Known germline BRCA1/2 mutations",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "MSI-H",
+          "type": "biomarker",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "eligibility",
+            "position": 685,
+            "context_sentence": "MSI-H or dMMR status",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "dMMR status",
+          "type": "biomarker",
+          "attributes": {
+            "status": "negative",
+            "value": "",
+            "unit": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "eligibility",
+            "position": 690,
+            "context_sentence": "MSI-H or dMMR status",
+            "section_name": "eligibilityModule",
+            "section_type": "eligibility",
+            "document_id": "unknown",
+            "section_position": 1
+          }
+        },
+        {
+          "text": "phase III randomized trial",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 0,
+            "context_sentence": "This phase III randomized trial compares trastuzumab deruxtecan versus physician's choice in HER2-positive metastatic breast cancer patients with prior trastuzumab/taxane treatment.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "trastuzumab deruxtecan",
+          "type": "medication",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 40,
+            "context_sentence": "This phase III randomized trial compares trastuzumab deruxtecan versus physician's choice in HER2-positive metastatic breast cancer patients with prior trastuzumab/taxane treatment.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "physician's choice",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 65,
+            "context_sentence": "This phase III randomized trial compares trastuzumab deruxtecan versus physician's choice in HER2-positive metastatic breast cancer patients with prior trastuzumab/taxane treatment.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "HER2-positive",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 85,
+            "context_sentence": "This phase III randomized trial compares trastuzumab deruxtecan versus physician's choice in HER2-positive metastatic breast cancer patients with prior trastuzumab/taxane treatment.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "metastatic breast cancer",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 100,
+            "context_sentence": "This phase III randomized trial compares trastuzumab deruxtecan versus physician's choice in HER2-positive metastatic breast cancer patients with prior trastuzumab/taxane treatment.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "prior trastuzumab/taxane treatment",
+          "type": "medication",
+          "attributes": {
+            "status": "prior",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 125,
+            "context_sentence": "This phase III randomized trial compares trastuzumab deruxtecan versus physician's choice in HER2-positive metastatic breast cancer patients with prior trastuzumab/taxane treatment.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "comprehensive biomarker analysis",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 160,
+            "context_sentence": "Includes comprehensive biomarker analysis (HER2 amplification, PIK3CA mutations, ESR1 mutations), genomic profiling, and detailed demographic collection including race and ethnicity data.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "HER2 amplification",
+          "type": "genomic_variant",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 190,
+            "context_sentence": "Includes comprehensive biomarker analysis (HER2 amplification, PIK3CA mutations, ESR1 mutations), genomic profiling, and detailed demographic collection including race and ethnicity data.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "PIK3CA mutations",
+          "type": "genomic_variant",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 210,
+            "context_sentence": "Includes comprehensive biomarker analysis (HER2 amplification, PIK3CA mutations, ESR1 mutations), genomic profiling, and detailed demographic collection including race and ethnicity data.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "ESR1 mutations",
+          "type": "genomic_variant",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 230,
+            "context_sentence": "Includes comprehensive biomarker analysis (HER2 amplification, PIK3CA mutations, ESR1 mutations), genomic profiling, and detailed demographic collection including race and ethnicity data.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "genomic profiling",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 250,
+            "context_sentence": "Includes comprehensive biomarker analysis (HER2 amplification, PIK3CA mutations, ESR1 mutations), genomic profiling, and detailed demographic collection including race and ethnicity data.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "demographic collection",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 270,
+            "context_sentence": "Includes comprehensive biomarker analysis (HER2 amplification, PIK3CA mutations, ESR1 mutations), genomic profiling, and detailed demographic collection including race and ethnicity data.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "race",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 295,
+            "context_sentence": "Includes comprehensive biomarker analysis (HER2 amplification, PIK3CA mutations, ESR1 mutations), genomic profiling, and detailed demographic collection including race and ethnicity data.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "ethnicity",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "briefSummary",
+            "position": 300,
+            "context_sentence": "Includes comprehensive biomarker analysis (HER2 amplification, PIK3CA mutations, ESR1 mutations), genomic profiling, and detailed demographic collection including race and ethnicity data.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "HER2-positive metastatic breast cancer",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 350,
+            "context_sentence": "Patients with HER2-positive metastatic breast cancer who received prior trastuzumab and taxane therapy are randomized 2:1 to receive either trastuzumab deruxtecan or physician's choice (trastuzumab emtansine, lapatinib plus capecitabine, or trastuzumab plus chemotherapy).",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "prior trastuzumab and taxane therapy",
+          "type": "medication",
+          "attributes": {
+            "status": "prior",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 390,
+            "context_sentence": "Patients with HER2-positive metastatic breast cancer who received prior trastuzumab and taxane therapy are randomized 2:1 to receive either trastuzumab deruxtecan or physician's choice (trastuzumab emtansine, lapatinib plus capecitabine, or trastuzumab plus chemotherapy).",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "trastuzumab emtansine",
+          "type": "medication",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 480,
+            "context_sentence": "Patients with HER2-positive metastatic breast cancer who received prior trastuzumab and taxane therapy are randomized 2:1 to receive either trastuzumab deruxtecan or physician's choice (trastuzumab emtansine, lapatinib plus capecitabine, or trastuzumab plus chemotherapy).",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "lapatinib",
+          "type": "medication",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 505,
+            "context_sentence": "Patients with HER2-positive metastatic breast cancer who received prior trastuzumab and taxane therapy are randomized 2:1 to receive either trastuzumab deruxtecan or physician's choice (trastuzumab emtansine, lapatinib plus capecitabine, or trastuzumab plus chemotherapy).",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "capecitabine",
+          "type": "medication",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 515,
+            "context_sentence": "Patients with HER2-positive metastatic breast cancer who received prior trastuzumab and taxane therapy are randomized 2:1 to receive either trastuzumab deruxtecan or physician's choice (trastuzumab emtansine, lapatinib plus capecitabine, or trastuzumab plus chemotherapy).",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "trastuzumab",
+          "type": "medication",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 535,
+            "context_sentence": "Patients with HER2-positive metastatic breast cancer who received prior trastuzumab and taxane therapy are randomized 2:1 to receive either trastuzumab deruxtecan or physician's choice (trastuzumab emtansine, lapatinib plus capecitabine, or trastuzumab plus chemotherapy).",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "chemotherapy",
+          "type": "medication",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 550,
+            "context_sentence": "Patients with HER2-positive metastatic breast cancer who received prior trastuzumab and taxane therapy are randomized 2:1 to receive either trastuzumab deruxtecan or physician's choice (trastuzumab emtansine, lapatinib plus capecitabine, or trastuzumab plus chemotherapy).",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "HER2 amplification by FISH",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 600,
+            "context_sentence": "The study includes comprehensive biomarker analysis: HER2 amplification by FISH, PIK3CA mutations by NGS, ESR1 mutations, PTEN expression by IHC, and tumor mutational burden.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "PIK3CA mutations by NGS",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 625,
+            "context_sentence": "The study includes comprehensive biomarker analysis: HER2 amplification by FISH, PIK3CA mutations by NGS, ESR1 mutations, PTEN expression by IHC, and tumor mutational burden.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "ESR1 mutations",
+          "type": "genomic_variant",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 650,
+            "context_sentence": "The study includes comprehensive biomarker analysis: HER2 amplification by FISH, PIK3CA mutations by NGS, ESR1 mutations, PTEN expression by IHC, and tumor mutational burden.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "PTEN expression by IHC",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 665,
+            "context_sentence": "The study includes comprehensive biomarker analysis: HER2 amplification by FISH, PIK3CA mutations by NGS, ESR1 mutations, PTEN expression by IHC, and tumor mutational burden.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "tumor mutational burden",
+          "type": "biomarker",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 690,
+            "context_sentence": "The study includes comprehensive biomarker analysis: HER2 amplification by FISH, PIK3CA mutations by NGS, ESR1 mutations, PTEN expression by IHC, and tumor mutational burden.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "self-reported race",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 720,
+            "context_sentence": "Detailed demographic data including self-reported race (White, Black/African American, Asian, Native Hawaiian/Pacific Islander, American Indian/Alaska Native, Multiple Races) and ethnicity (Hispanic/Latino, Not Hispanic/Latino) are collected.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "White",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 745,
+            "context_sentence": "Detailed demographic data including self-reported race (White, Black/African American, Asian, Native Hawaiian/Pacific Islander, American Indian/Alaska Native, Multiple Races) and ethnicity (Hispanic/Latino, Not Hispanic/Latino) are collected.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "Black/African American",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 750,
+            "context_sentence": "Detailed demographic data including self-reported race (White, Black/African American, Asian, Native Hawaiian/Pacific Islander, American Indian/Alaska Native, Multiple Races) and ethnicity (Hispanic/Latino, Not Hispanic/Latino) are collected.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "Asian",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 775,
+            "context_sentence": "Detailed demographic data including self-reported race (White, Black/African American, Asian, Native Hawaiian/Pacific Islander, American Indian/Alaska Native, Multiple Races) and ethnicity (Hispanic/Latino, Not Hispanic/Latino) are collected.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "Native Hawaiian/Pacific Islander",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 780,
+            "context_sentence": "Detailed demographic data including self-reported race (White, Black/African American, Asian, Native Hawaiian/Pacific Islander, American Indian/Alaska Native, Multiple Races) and ethnicity (Hispanic/Latino, Not Hispanic/Latino) are collected.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "American Indian/Alaska Native",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 810,
+            "context_sentence": "Detailed demographic data including self-reported race (White, Black/African American, Asian, Native Hawaiian/Pacific Islander, American Indian/Alaska Native, Multiple Races) and ethnicity (Hispanic/Latino, Not Hispanic/Latino) are collected.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "Multiple Races",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 845,
+            "context_sentence": "Detailed demographic data including self-reported race (White, Black/African American, Asian, Native Hawaiian/Pacific Islander, American Indian/Alaska Native, Multiple Races) and ethnicity (Hispanic/Latino, Not Hispanic/Latino) are collected.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "ethnicity",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 860,
+            "context_sentence": "Detailed demographic data including self-reported race (White, Black/African American, Asian, Native Hawaiian/Pacific Islander, American Indian/Alaska Native, Multiple Races) and ethnicity (Hispanic/Latino, Not Hispanic/Latino) are collected.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "Hispanic/Latino",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 870,
+            "context_sentence": "Detailed demographic data including self-reported race (White, Black/African American, Asian, Native Hawaiian/Pacific Islander, American Indian/Alaska Native, Multiple Races) and ethnicity (Hispanic/Latino, Not Hispanic/Latino) are collected.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "Not Hispanic/Latino",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 890,
+            "context_sentence": "Detailed demographic data including self-reported race (White, Black/African American, Asian, Native Hawaiian/Pacific Islander, American Indian/Alaska Native, Multiple Races) and ethnicity (Hispanic/Latino, Not Hispanic/Latino) are collected.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "600 patients",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "600",
+            "unit": "patients",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "detailedDescription",
+            "position": 950,
+            "context_sentence": "Target enrollment is 600 patients with stratification by biomarker status and demographic factors.",
+            "section_name": "descriptionModule",
+            "section_type": "description",
+            "document_id": "unknown",
+            "section_position": 2
+          }
+        },
+        {
+          "text": "Trastuzumab Deruxtecan",
+          "type": "medication",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "briefTitle",
+            "position": 0,
+            "context_sentence": "Trastuzumab Deruxtecan in HER2-Positive Metastatic Breast Cancer with Comprehensive Biomarker Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "HER2-Positive",
+          "type": "biomarker",
+          "attributes": {
+            "status": "positive",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "briefTitle",
+            "position": 25,
+            "context_sentence": "Trastuzumab Deruxtecan in HER2-Positive Metastatic Breast Cancer with Comprehensive Biomarker Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "Metastatic Breast Cancer",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "briefTitle",
+            "position": 38,
+            "context_sentence": "Trastuzumab Deruxtecan in HER2-Positive Metastatic Breast Cancer with Comprehensive Biomarker Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "Comprehensive Biomarker Analysis",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "briefTitle",
+            "position": 62,
+            "context_sentence": "Trastuzumab Deruxtecan in HER2-Positive Metastatic Breast Cancer with Comprehensive Biomarker Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "Phase III Study",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "III",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "officialTitle",
+            "position": 0,
+            "context_sentence": "Phase III Study of Trastuzumab Deruxtecan Versus Physician's Choice of Treatment in Patients with HER2-Positive Metastatic Breast Cancer Previously Treated with Trastuzumab and a Taxane - Comprehensive Genomic and Demographic Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "Physician's Choice of Treatment",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.85,
+          "source_context": {
+            "section": "officialTitle",
+            "position": 30,
+            "context_sentence": "Phase III Study of Trastuzumab Deruxtecan Versus Physician's Choice of Treatment in Patients with HER2-Positive Metastatic Breast Cancer Previously Treated with Trastuzumab and a Taxane - Comprehensive Genomic and Demographic Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "HER2-Positive Metastatic Breast Cancer",
+          "type": "condition",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "officialTitle",
+            "position": 65,
+            "context_sentence": "Phase III Study of Trastuzumab Deruxtecan Versus Physician's Choice of Treatment in Patients with HER2-Positive Metastatic Breast Cancer Previously Treated with Trastuzumab and a Taxane - Comprehensive Genomic and Demographic Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "Previously Treated",
+          "type": "temporal",
+          "attributes": {
+            "status": "past",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "officialTitle",
+            "position": 100,
+            "context_sentence": "Phase III Study of Trastuzumab Deruxtecan Versus Physician's Choice of Treatment in Patients with HER2-Positive Metastatic Breast Cancer Previously Treated with Trastuzumab and a Taxane - Comprehensive Genomic and Demographic Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "Trastuzumab",
+          "type": "medication",
+          "attributes": {
+            "status": "prior",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.95,
+          "source_context": {
+            "section": "officialTitle",
+            "position": 118,
+            "context_sentence": "Phase III Study of Trastuzumab Deruxtecan Versus Physician's Choice of Treatment in Patients with HER2-Positive Metastatic Breast Cancer Previously Treated with Trastuzumab and a Taxane - Comprehensive Genomic and Demographic Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "Taxane",
+          "type": "medication",
+          "attributes": {
+            "status": "prior",
+            "value": "",
+            "unit": "",
+            "temporal_context": "past"
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "officialTitle",
+            "position": 132,
+            "context_sentence": "Phase III Study of Trastuzumab Deruxtecan Versus Physician's Choice of Treatment in Patients with HER2-Positive Metastatic Breast Cancer Previously Treated with Trastuzumab and a Taxane - Comprehensive Genomic and Demographic Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "Comprehensive Genomic Analysis",
+          "type": "procedure",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "officialTitle",
+            "position": 145,
+            "context_sentence": "Phase III Study of Trastuzumab Deruxtecan Versus Physician's Choice of Treatment in Patients with HER2-Positive Metastatic Breast Cancer Previously Treated with Trastuzumab and a Taxane - Comprehensive Genomic and Demographic Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        },
+        {
+          "text": "Demographic Analysis",
+          "type": "demographic",
+          "attributes": {
+            "status": "",
+            "value": "",
+            "unit": "",
+            "temporal_context": ""
+          },
+          "confidence": 0.9,
+          "source_context": {
+            "section": "officialTitle",
+            "position": 170,
+            "context_sentence": "Phase III Study of Trastuzumab Deruxtecan Versus Physician's Choice of Treatment in Patients with HER2-Positive Metastatic Breast Cancer Previously Treated with Trastuzumab and a Taxane - Comprehensive Genomic and Demographic Analysis",
+            "section_name": "identificationModule",
+            "section_type": "identification",
+            "document_id": "unknown",
+            "section_position": 3
+          }
+        }
+      ]
+    },
+    "mapping_result": {
+      "mapped_elements": []
+    },
+    "success": true
+  }
+]

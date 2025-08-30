@@ -1,0 +1,3 @@
+Extract medical entities from this clinical text. Return JSON with entities array.
+
+Text: {clinical_text}

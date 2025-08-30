@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 ### Added
+- Unified token tracking system for standardized token usage reporting across all LLM providers
+- File-based model library for centralized LLM model configuration management
 - Made LLM the default NLP engine in ExtractionPipeline
 - Engine-specific caching system to prevent conflicts between different NLP engines
 - Enhanced RegexNLPEngine with:
@@ -28,6 +30,7 @@
 - Refactored ClinicalTrials API integration to use nextPageToken for pagination
 - Updated documentation to reflect current architecture
 - Enhanced error handling and validation in data fetcher
+- Archived legacy code_extraction and criteria_parser modules
 
 ### Fixed
 - Regex engine selection issues

@@ -1,0 +1,65 @@
+{
+  "prompt_library": {
+    "version": "1.0.0",
+    "created_date": "2024-08-26",
+    "description": "Strict implementation - only working prompts retained",
+    "prompts": {
+      "production": {
+        "nlp_extraction": [
+          {
+            "name": "generic_extraction",
+            "prompt_type": "NLP_EXTRACTION",
+            "prompt_file": "txt/nlp_extraction/generic_extraction.txt",
+            "description": "Generic clinical entity extraction prompt with comprehensive structure",
+            "version": "1.0.0",
+            "author": "Clinical NLP Team",
+            "created_date": "2024-01-15",
+            "status": "production",
+            "default": true,
+            "tags": ["generic", "comprehensive", "structured"]
+          },
+          {
+            "name": "minimal_extraction",
+            "prompt_type": "NLP_EXTRACTION",
+            "prompt_file": "txt/nlp_extraction/minimal_extraction.txt",
+            "description": "Minimal clinical entity extraction prompt with simplified structure",
+            "version": "1.0.0",
+            "author": "Clinical NLP Team",
+            "created_date": "2024-08-28",
+            "status": "production",
+            "tags": ["minimal", "simplified", "structured"]
+          }
+        ],
+        "mcode_mapping": [
+          {
+            "name": "generic_mapping",
+            "prompt_type": "MCODE_MAPPING",
+            "prompt_file": "txt/mcode_mapping/generic_mapping.txt",
+            "description": "Generic mCODE mapping prompt with comprehensive instructions",
+            "version": "1.0.0",
+            "author": "mCODE Team",
+            "created_date": "2024-08-26",
+            "status": "production",
+            "default": true,
+            "tags": ["generic", "comprehensive", "mcode"]
+          },
+          {
+            "name": "minimal_mapping",
+            "prompt_type": "MCODE_MAPPING",
+            "prompt_file": "txt/mcode_mapping/minimal_mapping.txt",
+            "description": "Minimal mCODE mapping prompt with simplified instructions",
+            "version": "1.0.0",
+            "author": "mCODE Team",
+            "created_date": "2024-08-28",
+            "status": "production",
+            "tags": ["minimal", "simplified", "mcode"]
+          }
+        ]
+      },
+      "variations": {
+        "nlp_extraction": [],
+        "mcode_mapping": []
+      }
+    }
+  }
+}
