@@ -1,25 +1,20 @@
-# Prompt Optimization Framework
+# Optimization Module
 
-A comprehensive system for optimizing LLM prompts in clinical NLP and mCODE mapping pipelines. This framework enables systematic experimentation, benchmarking, and analysis of prompt variations across different API configurations.
+This module handles the optimization and benchmarking of LLM extraction pipelines. The system operates as a standalone benchmarking tool focused on performance validation and analysis with strict error handling and cache isolation.
 
 ## 🚀 Quick Start
 
 ### Installation
 ```bash
 # Ensure you have the required dependencies
-pip install nicegui pandas aiohttp
+pip install pandas aiohttp
 ```
 
-### Run Demo
+### Run Benchmark Validation
 ```bash
-python mcode-cli.py optimization demo
+# Run standalone benchmark validation
+python src/optimization/benchmark_task_tracker.py
 ```
-
-### Launch Web Interface
-```bash
-python -m src.optimization.optimization_ui
-```
-Access: http://localhost:8081
 
 ## 📋 Features
 
@@ -28,8 +23,10 @@ Access: http://localhost:8081
 - **Prompt Versioning**: Track and compare prompt variants with semantic versioning
 - **Automated Benchmarking**: Run comprehensive experiments across configurations
 - **Performance Metrics**: Track success rate, latency, extraction quality, compliance
-- **Web-Based UI**: NiceGUI interface for configuration and analysis
+- **Standalone Operation**: Command-line benchmarking without web interface
 - **Result Export**: CSV, JSON, and report generation
+- **Cache Isolation**: Proper cache separation between different model configurations
+- **Strict Error Handling**: No fallbacks - invalid configurations result in immediate failures
 
 ### Supported Prompt Types
 - **NLP Extraction**: Clinical entity extraction from trial protocols
@@ -42,14 +39,20 @@ Access: http://localhost:8081
 - **APIConfig**: API endpoint configurations with rate limiting
 - **PromptVariant**: Versioned prompt templates with metadata
 - **BenchmarkResult**: Structured performance measurement storage
-- **OptimizationUI**: Web-based management interface
+- **BenchmarkTaskTracker**: Standalone benchmarking execution
+- **StrictLLMBase**: Foundation for LLM operations with cache isolation
 
 ### File Structure
 ```
 src/optimization/
 ├── strict_prompt_optimization_framework.py  # Core framework logic
-├── optimization_ui.py                # Web interface
+├── benchmark_task_tracker.py         # Standalone benchmarking execution
 └── __init__.py
+
+src/pipeline/
+├── strict_llm_base.py                # LLM foundation with cache isolation
+├── strict_nlp_extractor.py          # Strict NLP extraction component
+└── strict_dynamic_extraction_pipeline.py # Main processing pipeline
 
 tests/unit/test_optimization_framework.py        # Comprehensive test harness
 docs/prompt_optimization_framework.md # Detailed documentation
@@ -131,33 +134,21 @@ The framework tracks comprehensive metrics:
 - **Cost Estimation**: Approximate API call costs
 - **Error Analysis**: Categorized failure reasons
 
-## 🌐 Web Interface
+## 🖥️ Command-Line Operation
 
-The NiceGUI-based interface provides four main tabs:
+The system operates as a standalone benchmarking tool with the following capabilities:
 
-### 1. Configuration Tab
-- Manage API configurations with form validation
-- Create and version prompt variants
-- Load test cases from JSON files
-- Real-time configuration preview
+### Benchmark Execution
+- Run comprehensive experiments via command line
+- Monitor progress through console output
+- Automatic result collection and storage
+- Performance metrics tracking
 
-### 2. Benchmarking Tab
-- Select configurations for experiments
-- Monitor progress with live updates
-- Run comprehensive benchmarks
-- Progress tracking with visual indicators
-
-### 3. Results Tab
-- Load and view benchmark results
-- Interactive data table with filtering
-- Export to CSV format
+### Result Management
+- Load and analyze benchmark results programmatically
+- Export to CSV format for external analysis
 - Generate performance reports
-- Summary statistics dashboard
-
-### 4. Visualizations Tab
-- Performance charts (placeholder implementation)
-- Comparative analysis views
-- Trend visualization
+- Summary statistics calculation
 
 ## 🔧 Integration
 

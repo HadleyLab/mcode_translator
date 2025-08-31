@@ -565,7 +565,7 @@ class BenchmarkTaskTrackerUI:
     
     def _create_pipeline_callback(self) -> Callable:
         """Create pipeline callback for benchmark execution"""
-        def pipeline_callback(test_data, prompt_content, prompt_variant_id):
+        def pipeline_callback(test_data, prompt_content, prompt_variant_id, api_config_name=None):
             from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
             
             # Get the prompt variant to determine prompt type
@@ -573,8 +573,36 @@ class BenchmarkTaskTrackerUI:
             if not variant:
                 raise ValueError(f"Prompt variant {prompt_variant_id} not found")
             
-            # Create pipeline instance
+            # Get the API configuration if provided
+            model_name = None
+            temperature = None
+            max_tokens = None
+            if api_config_name:
+                api_config = self.framework.api_configs.get(api_config_name)
+                if api_config:
+                    model_name = api_config.model
+                    temperature = api_config.temperature
+                    max_tokens = api_config.max_tokens
+            
+            # Create a NEW pipeline instance for each benchmark run to ensure cache isolation
+            # Pass explicit model configuration if available
             pipeline = StrictDynamicExtractionPipeline()
+            
+            # If we have explicit model configuration, update the pipeline components
+            if model_name:
+                # Update NLP engine configuration
+                pipeline.nlp_engine.model_name = model_name
+                if temperature is not None:
+                    pipeline.nlp_engine.temperature = temperature
+                if max_tokens is not None:
+                    pipeline.nlp_engine.max_tokens = max_tokens
+                
+                # Update LLM mapper configuration
+                pipeline.llm_mapper.model_name = model_name
+                if temperature is not None:
+                    pipeline.llm_mapper.temperature = temperature
+                if max_tokens is not None:
+                    pipeline.llm_mapper.max_tokens = max_tokens
             
             # Set the prompt content directly on the NLP engine based on prompt type
             if variant.prompt_type == PromptType.NLP_EXTRACTION:

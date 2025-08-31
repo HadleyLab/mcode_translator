@@ -3,13 +3,11 @@ STRICT Base LLM Engine - Shared foundation for StrictNlpExtractor and StrictMcod
 No fallbacks, explicit error handling, and strict initialization validation
 """
 
-import os
 import json
 import re
-import hashlib
 import time
+import hashlib
 from typing import Dict, List, Any, Optional, Tuple, Union
-from functools import lru_cache
 import openai
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -106,6 +104,9 @@ class StrictLLMBase(Loggable, ABC):
         # Initialize OpenAI client
         self.client = self._initialize_openai_client()
         
+        # Initialize instance-level cache
+        self._cache = {}
+        
         self.logger.info(f"✅ Strict LLM Base initialized successfully with model: {self.model_name}")
     
     def _validate_model_name(self, model_name: str) -> str:
@@ -165,9 +166,6 @@ class StrictLLMBase(Loggable, ABC):
         Raises:
             LLMExecutionError: If API call fails
         """
-        # Generate cache key
-        cache_key = self._generate_cache_key(cache_key_data)
-        
         metrics = LLMCallMetrics(duration=0.0)
         start_time = time.time()
         
@@ -175,20 +173,22 @@ class StrictLLMBase(Loggable, ABC):
             self.logger.info(f"🚀 Starting LLM API call to {self.model_name}...")
             self.logger.debug(f"LLM Request - Model: {self.model_name}, Temperature: {self.temperature}, Max Tokens: {self.max_tokens}")
             
-            # Convert objects to JSON strings for caching
-            import json
-            response_format_str = json.dumps(self.response_format) if self.response_format else "null"
-            messages_str = json.dumps(messages)
+            # Create a comprehensive cache data structure that includes all parameters
+            # We include instance-specific parameters to ensure cache isolation
+            complete_cache_data = {
+                "model": self.model_name,
+                "temperature": self.temperature,
+                "max_tokens": self.max_tokens,
+                "response_format": self.response_format,
+                "messages": messages,
+                **cache_key_data  # Include the original cache key data
+            }
             
-            # Call the cached LLM method
-            response_content, token_usage_dict = self._cached_llm_call(
-                cache_key,
-                self.model_name,
-                self.temperature,
-                self.max_tokens,
-                response_format_str,
-                messages_str
-            )
+            # Generate a complete cache key that includes all parameters
+            complete_cache_key = json.dumps(complete_cache_data, sort_keys=True)
+            
+            # Call the cached LLM method with just the complete cache key
+            response_content, token_usage_dict = self._cached_llm_call(complete_cache_key)
             
             end_time = time.time()
             metrics.duration = end_time - start_time
@@ -243,50 +243,69 @@ class StrictLLMBase(Loggable, ABC):
             metrics.error_type = "unknown_error"
             raise LLMExecutionError(f"Unexpected error during LLM call: {str(e)}")
     
-    @lru_cache(maxsize=128)
-    def _cached_llm_call(self, cache_key: str, model_name: str, temperature: float, max_tokens: int, response_format_str: str, messages_str: str) -> Tuple[str, Dict[str, Any]]:
+    def _cached_llm_call(self, cache_key: str) -> Tuple[str, Dict[str, Any]]:
         """
-        Cached LLM call with token usage tracking
+        Instance-level cached LLM call with token usage tracking
         
         Args:
-            cache_key: Cache key for the request
-            model_name: Model name
-            temperature: Temperature for generation
-            max_tokens: Maximum tokens for response
-            response_format_str: Response format as JSON string
-            messages_str: Messages as JSON string
-            
+            cache_key: Cache key for the request (contains hash of all parameters)
+        
         Returns:
             Tuple of (response_content, token_usage_dict)
+        
+        Raises:
+            LLMExecutionError: If API call fails
         """
-        # Parse the JSON strings back to objects
-        import json
-        response_format = json.loads(response_format_str) if response_format_str != "null" else None
-        messages = json.loads(messages_str)
+        # Check instance-level cache first
+        if cache_key in self._cache:
+            self.logger.debug(f"📦 Cache hit for key: {cache_key[:50]}...")
+            return self._cache[cache_key]
         
-        # Make the actual LLM call
-        response = self.client.chat.completions.create(
-            model=model_name,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            response_format=response_format
-        )
-        
-        if not response.choices or not response.choices[0].message.content:
-            raise LLMExecutionError("Empty LLM response received")
-        
-        response_content = response.choices[0].message.content
-        
-        # Capture token usage metrics
-        token_usage = extract_token_usage_from_response(response, model_name, "deepseek")
-        
-        # Return response content and token usage as dictionary
-        return response_content, {
-            "prompt_tokens": token_usage.prompt_tokens,
-            "completion_tokens": token_usage.completion_tokens,
-            "total_tokens": token_usage.total_tokens
-        }
+        # The cache_key contains all the necessary information for the LLM call
+        # We need to parse it to extract all the parameters
+        try:
+            import json
+            cache_data = json.loads(cache_key)
+            
+            # Extract ALL parameters from cache data to ensure cache isolation
+            messages = cache_data["messages"]
+            model_name = cache_data["model"]
+            temperature = cache_data["temperature"]
+            max_tokens = cache_data["max_tokens"]
+            response_format = cache_data["response_format"]
+            
+            # Make the actual LLM call using the parameters from the cache data
+            # This ensures that cached responses match the exact configuration
+            response = self.client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                response_format=response_format
+            )
+            
+            if not response.choices or not response.choices[0].message.content:
+                raise LLMExecutionError("Empty LLM response received")
+            
+            response_content = response.choices[0].message.content
+            
+            # Capture token usage metrics
+            token_usage = extract_token_usage_from_response(response, model_name, "deepseek")
+            
+            # Store result in instance-level cache
+            result = (response_content, {
+                "prompt_tokens": token_usage.prompt_tokens,
+                "completion_tokens": token_usage.completion_tokens,
+                "total_tokens": token_usage.total_tokens
+            })
+            
+            self._cache[cache_key] = result
+            self.logger.debug(f"📦 Cache miss - stored new entry for key: {cache_key[:50]}...")
+            
+            return result
+            
+        except Exception as e:
+            raise LLMExecutionError(f"Failed to process cached LLM call: {str(e)}")
     
     def _initialize_openai_client(self) -> openai.OpenAI:
         """Initialize OpenAI client with validation"""
@@ -327,96 +346,6 @@ class StrictLLMBase(Loggable, ABC):
         except Exception as e:
             raise LLMExecutionError(f"Failed to generate cache key: {str(e)}")
     
-    def _call_llm_api_wrapper(self,
-                     messages: List[Dict[str, str]],
-                     cache_key_data: Dict[str, Any]) -> Tuple[str, LLMCallMetrics]:
-        """
-        Make LLM API call with strict error handling and metrics tracking
-        
-        Args:
-            messages: List of message dictionaries for the LLM
-            cache_key_data: Data for generating cache key
-            
-        Returns:
-            Tuple of (response_content, call_metrics)
-            
-        Raises:
-            LLMExecutionError: If API call fails
-        """
-        metrics = LLMCallMetrics(duration=0.0)
-        start_time = time.time()
-        
-        try:
-            self.logger.info(f"🚀 Starting LLM API call to {self.model_name}...")
-            self.logger.debug(f"LLM Request - Model: {self.model_name}, Temperature: {self.temperature}, Max Tokens: {self.max_tokens}")
-            
-            # Convert objects to JSON strings for caching
-            import json
-            response_format_str = json.dumps(self.response_format)
-            messages_str = json.dumps(messages)
-            
-            # Call the cached LLM method
-            response_content, token_usage_dict = self._call_llm_api(
-                messages_str,
-                self.model_name,
-                self.temperature,
-                self.max_tokens,
-                response_format_str
-            )
-            
-            end_time = time.time()
-            metrics.duration = end_time - start_time
-            
-            # Convert token usage dict back to TokenUsage object
-            token_usage = TokenUsage(
-                prompt_tokens=token_usage_dict["prompt_tokens"],
-                completion_tokens=token_usage_dict["completion_tokens"],
-                total_tokens=token_usage_dict["total_tokens"],
-                model_name=self.model_name,
-                provider_name="deepseek"
-            )
-            
-            metrics.prompt_tokens = token_usage.prompt_tokens
-            metrics.completion_tokens = token_usage.completion_tokens
-            metrics.total_tokens = token_usage.total_tokens
-            
-            # Track token usage globally
-            global_token_tracker.add_usage(token_usage, self.__class__.__name__)
-            
-            self.logger.info(f"✅ LLM API call completed in {metrics.duration:.2f}s")
-            self.logger.info(f"   📊 Token usage - Prompt: {token_usage.prompt_tokens}, Completion: {token_usage.completion_tokens}, Total: {token_usage.total_tokens}")
-            self.logger.debug(f"Raw LLM response length: {len(response_content)} characters")
-            
-            return response_content, metrics
-            
-        except openai.APIConnectionError as e:
-            end_time = time.time()
-            metrics.duration = end_time - start_time
-            metrics.success = False
-            metrics.error_type = "connection_error"
-            raise LLMExecutionError(f"API connection failed: {str(e)}")
-            
-        except openai.APIError as e:
-            end_time = time.time()
-            metrics.duration = end_time - start_time
-            metrics.success = False
-            metrics.error_type = "api_error"
-            raise LLMExecutionError(f"API error: {str(e)}")
-            
-        except openai.RateLimitError as e:
-            end_time = time.time()
-            metrics.duration = end_time - start_time
-            metrics.success = False
-            metrics.error_type = "rate_limit"
-            raise LLMExecutionError(f"Rate limit exceeded: {str(e)}")
-            
-        except Exception as e:
-            end_time = time.time()
-            metrics.duration = end_time - start_time
-            metrics.success = False
-            metrics.error_type = "unknown_error"
-            raise LLMExecutionError(f"Unexpected error during LLM call: {str(e)}")
-    
     def _parse_and_validate_json_response(self, response_text: str) -> Dict[str, Any]:
         """
         Parse and validate JSON response from LLM with strict error handling
@@ -430,163 +359,100 @@ class StrictLLMBase(Loggable, ABC):
         Raises:
             LLMResponseError: If JSON parsing fails or response is invalid
         """
-        try:
-            # Log the raw response for debugging
-            self.logger.debug(f"Raw LLM response: {repr(response_text[:500])}")
-            
-            # First attempt direct JSON parsing
-            try:
-                parsed = json.loads(response_text)
-                self.logger.debug("✅ Direct JSON parsing successful")
-                
-                # Validate that parsed result is a dictionary
-                if not isinstance(parsed, dict):
-                    raise LLMResponseError(f"Parsed JSON must be a dictionary, got {type(parsed).__name__}")
-                
-                return parsed
-            except json.JSONDecodeError as e:
-                self.logger.info(f"Direct JSON parsing failed, attempting cleanup: {str(e)}")
-                
-                # Clean the response text
-                cleaned_text = re.sub(r'^.*?(\{.*\}).*?$', r'\1', response_text, flags=re.DOTALL)
-                cleaned_text = cleaned_text.replace('```json', '').replace('```', '').strip()
-                
-                self.logger.debug(f"Cleaned text for parsing: {repr(cleaned_text[:200])}")
-                
-                # Try to parse cleaned text
-                try:
-                    parsed = json.loads(cleaned_text)
-                    self.logger.info("✅ Successfully parsed cleaned LLM response")
-                    
-                    # Validate that parsed result is a dictionary
-                    if not isinstance(parsed, dict):
-                        raise LLMResponseError(f"Parsed JSON must be a dictionary, got {type(parsed).__name__}")
-                    
-                    return parsed
-                except json.JSONDecodeError as e2:
-                    self.logger.error(f"❌ Cleaned JSON parsing also failed: {str(e2)}")
-                    
-                    # Attempt JSON repair
-                    try:
-                        repaired_text = self._repair_malformed_json(cleaned_text)
-                        parsed = json.loads(repaired_text)
-                        self.logger.info("✅ Successfully parsed repaired LLM response")
-                        
-                        # Validate that parsed result is a dictionary
-                        if not isinstance(parsed, dict):
-                            raise LLMResponseError(f"Parsed JSON must be a dictionary, got {type(parsed).__name__}")
-                        
-                        return parsed
-                    except json.JSONDecodeError as e3:
-                        self.logger.error(f"❌ JSON repair also failed: {str(e3)}")
-                        # Log the exact problematic text for debugging
-                        self.logger.error(f"Problematic text: {repr(cleaned_text[:200])}")
-                        raise LLMResponseError(f"Failed to parse LLM response as JSON: {str(e3)}")
+        # Log the raw response for debugging
+        self.logger.debug(f"Raw LLM response: {repr(response_text[:500])}")
         
-        except Exception as e:
-            raise LLMResponseError(f"JSON parsing failed: {str(e)}")
+        try:
+            # STRICT: Only attempt direct JSON parsing - no fallbacks or cleanup
+            parsed = json.loads(response_text)
+            
+            # Validate that parsed result is a dictionary
+            if not isinstance(parsed, dict):
+                raise LLMResponseError(f"Parsed JSON must be a dictionary, got {type(parsed).__name__}")
+            
+            # Check for truncation patterns that indicate max_tokens limit reached
+            self._check_for_truncation(response_text, parsed)
+            
+            self.logger.debug("✅ Direct JSON parsing successful")
+            return parsed
+            
+        except json.JSONDecodeError as e:
+            # Check if this looks like a truncated JSON response due to max_tokens limit
+            if self._is_truncated_json(response_text):
+                raise LLMResponseError(
+                    f"JSON response appears truncated due to max_tokens limit ({self.max_tokens}). "
+                    f"Increase max_tokens parameter to allow complete JSON responses. "
+                    f"Error: {str(e)}"
+                )
+            else:
+                raise LLMResponseError(
+                    f"Failed to parse LLM response as valid JSON. "
+                    f"Expected well-formed JSON but got malformed response. "
+                    f"Error: {str(e)}"
+                )
     
-    def _repair_malformed_json(self, json_text: str) -> str:
+    def _is_truncated_json(self, response_text: str) -> bool:
         """
-        Attempt to repair common JSON malformations from LLM responses
+        Check if JSON response appears truncated due to max_tokens limit
         
         Args:
-            json_text: Potentially malformed JSON text
+            response_text: Raw LLM response text
             
         Returns:
-            Repaired JSON text
+            True if response appears truncated, False otherwise
+        """
+        # Common truncation patterns:
+        # 1. Missing closing brace/bracket
+        # 2. Incomplete field values
+        # 3. Trailing comma without closing
+        text = response_text.strip()
+        
+        # Check for missing closing brace
+        if text.startswith('{') and not text.endswith('}'):
+            return True
+            
+        # Check for missing closing bracket in arrays
+        if text.startswith('[') and not text.endswith(']'):
+            return True
+            
+        # Check for trailing comma without proper closing
+        if text.endswith(',') and not (text.endswith('},') or text.endswith('],')):
+            return True
+            
+        # Check for incomplete field values (ends with colon or partial string)
+        if re.search(r':\s*[^"]*$', text) or re.search(r'"\w+":\s*"([^"]*)$', text):
+            return True
+            
+        return False
+    
+    def _check_for_truncation(self, response_text: str, parsed_json: Dict[str, Any]) -> None:
+        """
+        Check parsed JSON for signs of truncation and alert user if detected
+        
+        Args:
+            response_text: Raw LLM response text
+            parsed_json: Parsed JSON dictionary
             
         Raises:
-            LLMResponseError: If JSON cannot be repaired
+            LLMResponseError: If truncation is detected and user should be alerted
         """
-        try:
-            repaired = json_text
-            self.logger.debug(f"Original text for repair: {repr(json_text[:200])}")
+        # Check if we have common truncation patterns in the parsed structure
+        text = response_text.strip()
+        
+        # Pattern 1: Response ends with incomplete structure
+        if text.endswith(',') or text.endswith(':'):
+            self.logger.warning(
+                f"⚠️  JSON response appears truncated (ends with '{text[-10:]}'). "
+                f"Consider increasing max_tokens from {self.max_tokens} for complete responses."
+            )
             
-            # Fix 0: Handle JSON that starts with indentation/newlines followed by field name
-            # This handles cases like '\n  "mapped_elements": [...]' or '\n  "mapped_elements"'
-            stripped = repaired.strip()
-            if (stripped.startswith('"') and not stripped.startswith('{') and
-                not stripped.startswith('[') and ':' in stripped):
-                
-                # This is likely a JSON object that starts with a field name instead of braces
-                self.logger.info("Detected JSON starting with field name, wrapping in object")
-                
-                # Find the first colon to separate field name from value
-                colon_pos = stripped.find(':')
-                if colon_pos != -1:
-                    field_name_part = stripped[:colon_pos].strip()
-                    value_part = stripped[colon_pos + 1:].strip()
-                    
-                    # Extract field name (remove quotes if present)
-                    if field_name_part.startswith('"') and field_name_part.endswith('"'):
-                        field_name = field_name_part[1:-1]
-                    else:
-                        field_name = field_name_part
-                    
-                    # Wrap in proper JSON object
-                    repaired = f'{{"{field_name}": {value_part}}}'
-                    self.logger.info(f"Repaired JSON starting with field: {field_name}")
-            
-            # Fix 1: Handle the specific case where we have just '\n  "mapped_elements"'
-            # This might be an incomplete response that needs to be completed
-            if repaired.strip() == '"mapped_elements"':
-                self.logger.info("Detected incomplete mapped_elements field, completing structure")
-                repaired = '{"mapped_elements": []}'
-            
-            # Fix 2: Handle case where we have '\n  "mapped_elements":' but no value
-            if re.match(r'^\s*"mapped_elements"\s*:\s*$', repaired):
-                self.logger.info("Detected mapped_elements with missing value, adding empty array")
-                repaired = '{"mapped_elements": []}'
-            
-            # Fix 3: Add missing opening brace if we have field:value but no braces
-            if (not repaired.startswith('{') and not repaired.startswith('[') and
-                ':' in repaired and not re.search(r'^\s*\{', repaired)):
-                # Check if this looks like a JSON object without braces
-                if re.search(r'"\w+"\s*:', repaired):
-                    repaired = '{' + repaired + '}'
-                    self.logger.info("Added missing opening/closing braces")
-            
-            # Fix 4: Add missing closing brackets/braces
-            open_braces = repaired.count('{')
-            close_braces = repaired.count('}')
-            open_brackets = repaired.count('[')
-            close_brackets = repaired.count(']')
-            
-            # Add missing closing braces
-            while open_braces > close_braces:
-                repaired += '}'
-                close_braces += 1
-            
-            # Add missing closing brackets for arrays
-            while open_brackets > close_brackets:
-                repaired += ']'
-                close_brackets += 1
-            
-            # Fix 5: Remove trailing commas before closing braces/brackets
-            repaired = re.sub(r',\s*([}\]])', r'\1', repaired)
-            
-            # Fix 6: Ensure proper array structure for common fields
-            for field in ['entities', 'mapped_elements']:
-                field_pattern = f'"{field}":'
-                if field_pattern in repaired:
-                    # Check if it's missing array brackets
-                    if not re.search(field_pattern + r'\s*\[', repaired):
-                        # Add opening bracket
-                        repaired = re.sub(field_pattern + r'\s*([^{])', field_pattern + r' [\1', repaired)
-                    # Check if it's missing closing bracket
-                    if re.search(field_pattern + r'\s*\[[^\]]*$', repaired):
-                        repaired = repaired + ']'
-            
-            self.logger.info(f"Attempting to repair malformed JSON, result: {repr(repaired[:200])}")
-            
-            # Validate that the repaired JSON is parseable
-            json.loads(repaired)
-            
-            return repaired
-            
-        except Exception as e:
-            raise LLMResponseError(f"Failed to repair malformed JSON: {str(e)}")
+        # Pattern 2: Missing expected array structures in common fields
+        for field in ['entities', 'mapped_elements']:
+            if field in parsed_json and not isinstance(parsed_json[field], list):
+                self.logger.warning(
+                    f"⚠️  Field '{field}' is not an array as expected. "
+                    f"This may indicate truncation. Current max_tokens: {self.max_tokens}"
+                )
     
     @abstractmethod
     def process_request(self, *args, **kwargs) -> Any:

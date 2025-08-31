@@ -79,24 +79,30 @@ The application will be accessible at:
 
 ### Core Components
 
-#### 1. Strict Dynamic Extraction Pipeline ([`src/pipeline/strict_dynamic_extraction_pipeline.py`](src/pipeline/strict_dynamic_extraction_pipeline.py:33))
+#### 1. Strict LLM Base Engine ([`src/pipeline/strict_llm_base.py`](src/pipeline/strict_llm_base.py:52))
+- **Purpose**: Foundation for all LLM-based components with strict error handling
+- **Features**: Cache isolation, token tracking, strict JSON parsing, no fallbacks
+- **Key Classes**: `StrictLLMBase`, `LLMCallMetrics`, `LLMConfigurationError`
+
+#### 2. Strict NLP Extractor ([`src/pipeline/strict_nlp_extractor.py`](src/pipeline/strict_nlp_extractor.py))
+- **Purpose**: Entity extraction from clinical text using LLMs
+- **Features**: Pattern-based extraction, confidence scoring, strict validation
+- **Key Classes**: `StrictNlpExtractor`
+
+#### 3. Strict Dynamic Extraction Pipeline ([`src/pipeline/strict_dynamic_extraction_pipeline.py`](src/pipeline/strict_dynamic_extraction_pipeline.py:33))
 - **Purpose**: Main processing pipeline for clinical trial data
 - **Features**: LLM-based entity extraction, mCODE mapping, source provenance tracking
 - **Key Classes**: `StrictDynamicExtractionPipeline`, `StrictPipelineResult`
 
-#### 2. NLP Engine ([`src/pipeline/nlp_engine.py`](src/pipeline/nlp_engine.py))
-- **Purpose**: Entity extraction from clinical text using LLMs
-- **Features**: Pattern-based extraction, confidence scoring, context awareness
-
-#### 3. mCODE Mapper ([`src/pipeline/mcode_mapper.py`](src/pipeline/mcode_mapper.py))
+#### 4. mCODE Mapper ([`src/pipeline/mcode_mapper.py`](src/pipeline/mcode_mapper.py))
 - **Purpose**: Map extracted entities to standardized mCODE elements
 - **Features**: Rule-based mapping, validation, compliance scoring
 
-#### 4. Document Ingestor ([`src/pipeline/document_ingestor.py`](src/pipeline/document_ingestor.py))
+#### 5. Document Ingestor ([`src/pipeline/document_ingestor.py`](src/pipeline/document_ingestor.py))
 - **Purpose**: Extract and structure clinical trial document sections
 - **Features**: Section identification, content extraction, metadata enrichment
 
-#### 5. Patient-Trial Matcher ([`src/patient_matcher.py`](src/patient_matcher.py:31))
+#### 6. Patient-Trial Matcher ([`src/patient_matcher.py`](src/patient_matcher.py:31))
 - **Purpose**: Interactive web application for matching patients to trials
 - **Features**: Real-time search, visualization, matching analysis
 - **Technologies**: NiceGUI, asynchronous processing
@@ -109,6 +115,8 @@ The project uses a **strict framework** approach with no fallbacks:
 - **Direct Integration**: Tight coupling between NLP engine and mCODE mapper
 - **Hard Failures**: Invalid configurations result in immediate failures
 - **Source Provenance**: Comprehensive tracking of extraction sources
+- **Cache Isolation**: Proper cache separation between different model configurations
+- **Strict JSON Parsing**: No fallbacks or repair mechanisms - valid JSON or exception
 
 ## Usage Examples
 
@@ -198,7 +206,7 @@ python -m pytest tests/ -v
 mcode_translator/
 ├── src/                    # Source code
 │   ├── pipeline/          # Core processing pipeline
-│   ├── optimization/      # Prompt optimization framework
+│   ├── optimization/      # Prompt optimization and benchmarking
 │   ├── utils/            # Utility functions and helpers
 │   └── validation/       # Validation components
 ├── tests/                # Test suite
@@ -213,7 +221,8 @@ mcode_translator/
 │   └── prompts_config.json
 ├── examples/            # Usage examples and configurations
 ├── docs/               # Documentation
-└── results/            # Processing results
+├── archive/            # Archived components (deprecated)
+└── optimization_results/ # Benchmark results (gitignored)
 
 ## Performance
 

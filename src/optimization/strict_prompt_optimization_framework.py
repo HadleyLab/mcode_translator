@@ -713,7 +713,7 @@ class StrictPromptOptimizationFramework(Loggable):
             
             # Run the pipeline processing
             start_time = time.time()
-            pipeline_result = pipeline_callback(test_case, prompt_content, prompt_variant_id)
+            pipeline_result = pipeline_callback(test_case, prompt_content, prompt_variant_id, api_config_name)
             end_time = time.time()
             
             # Calculate duration
