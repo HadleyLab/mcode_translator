@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import Dict, List, Any
 import logging
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent / 'src'))
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.utils.prompt_loader import PromptLoader
 from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline

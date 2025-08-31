@@ -1,8 +1,10 @@
 import re
 from typing import List, Dict, Any, Optional, Tuple
-from functools import lru_cache
+import diskcache
 from src.utils.logging_config import Loggable
 
+# Initialize disk cache
+cache = diskcache.Cache('./cache/code_extraction_cache')
 class CodeExtractionModule(Loggable):
     """
     Code Extraction Module for mCODE Translator
@@ -549,7 +551,7 @@ class CodeExtractionModule(Loggable):
         
         return mapped_codes
     
-    @lru_cache(maxsize=128)
+    @cache.memoize()
     def _cached_process_text(self, input_text: str, entities_str: str) -> Dict[str, Any]:
         """
         Cached process any input text and extract medical codes with enhanced error handling

@@ -297,3 +297,31 @@ See [`CHANGELOG.md`](CHANGELOG.md) for recent changes and updates.
 - mCODE initiative for standardized oncology data elements
 - DeepSeek for LLM API services
 - NiceGUI for the web application framework
+
+## Caching System
+
+The project now uses disk-based caching with `diskcache` instead of `@lru_cache` for persistent caching between program runs.
+
+### Cache Locations
+
+- **Fetcher Cache**: `./cache/fetcher_cache/` - Caches ClinicalTrials.gov API responses
+- **Code Extraction Cache**: `./cache/code_extraction_cache/` - Caches code extraction results
+
+### Cache Debugging
+
+See [`CACHE_DEBUGGING.md`](CACHE_DEBUGGING.md) for detailed information on inspecting and managing caches during development.
+
+### Debugging Tool
+
+A debugging tool is available at [`cache_debug.py`](cache_debug.py) for inspecting cache contents:
+
+```bash
+# Show cache statistics
+python cache_debug.py stats
+
+# List cache keys
+python cache_debug.py list fetcher_cache
+
+# Clear caches
+python cache_debug.py clear
+```

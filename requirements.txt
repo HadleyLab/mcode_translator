@@ -11,3 +11,4 @@ pandas>=1.5.0
 nicegui>=1.4.0
 flask>=2.0.0
 uuid>=1.30
+diskcache>=5.4.0

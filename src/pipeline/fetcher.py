@@ -13,8 +13,11 @@ from src.utils.config import Config
 from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
 from src.pipeline.prompt_model_interface import create_configured_pipeline
 from src.utils.logging_config import get_logger
+import diskcache
 
 # Get logger instance
+# Initialize disk cache
+cache = diskcache.Cache('./cache/fetcher_cache')
 logger = get_logger(__name__)
 
 # ClinicalTrials.gov API field names
@@ -34,7 +37,7 @@ class ClinicalTrialsAPIError(Exception):
     pass
 
 
-@lru_cache(maxsize=128)
+@cache.memoize()
 def _cached_search_trials(search_expr: str, fields_str: str, max_results: int, page_token: str):
     """
     Cached search for clinical trials matching the expression with pagination support
@@ -135,7 +138,7 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
         return _cached_search_trials.__wrapped__(search_expr, fields_str, max_results, page_token_str)
 
 
-@lru_cache(maxsize=128)
+@cache.memoize()
 def _cached_get_full_study(nct_id: str):
     """
     Cached get complete study record for a specific trial
@@ -581,7 +584,7 @@ def display_results(results, export_path=None):
         click.echo(json.dumps(results, indent=2))
 
 
-@lru_cache(maxsize=128)
+@cache.memoize()
 def _cached_calculate_total_studies(search_expr: str, fields_str: str, page_size: int):
     """
     Cached calculate the total number of studies matching the search expression

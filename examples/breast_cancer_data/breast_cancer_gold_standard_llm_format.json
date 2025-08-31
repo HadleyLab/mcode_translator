@@ -1,0 +1,10 @@
+{
+    "test_case_1": {
+        "expected_extraction": {
+            "entities": []
+        },
+        "expected_mcode_mappings": {
+            "mapped_elements": []
+        }
+    }
+}

@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from utils.logging_config import Loggable
 from utils.config import Config
 from utils.token_tracker import TokenUsage, extract_token_usage_from_response, global_token_tracker
+from utils.cache_manager import cache_manager
 
 
 class LLMConfigurationError(Exception):
@@ -103,9 +104,6 @@ class StrictLLMBase(Loggable, ABC):
         
         # Initialize OpenAI client
         self.client = self._initialize_openai_client()
-        
-        # Initialize instance-level cache
-        self._cache = {}
         
         self.logger.info(f"✅ Strict LLM Base initialized successfully with model: {self.model_name}")
     
@@ -245,7 +243,7 @@ class StrictLLMBase(Loggable, ABC):
     
     def _cached_llm_call(self, cache_key: str) -> Tuple[str, Dict[str, Any]]:
         """
-        Instance-level cached LLM call with token usage tracking
+        Disk-based cached LLM call with token usage tracking
         
         Args:
             cache_key: Cache key for the request (contains hash of all parameters)
@@ -256,10 +254,11 @@ class StrictLLMBase(Loggable, ABC):
         Raises:
             LLMExecutionError: If API call fails
         """
-        # Check instance-level cache first
-        if cache_key in self._cache:
+        # Check disk-based cache first
+        cached_result = cache_manager.llm_cache.get(cache_key)
+        if cached_result is not None:
             self.logger.debug(f"📦 Cache hit for key: {cache_key[:50]}...")
-            return self._cache[cache_key]
+            return cached_result
         
         # The cache_key contains all the necessary information for the LLM call
         # We need to parse it to extract all the parameters
@@ -292,14 +291,14 @@ class StrictLLMBase(Loggable, ABC):
             # Capture token usage metrics
             token_usage = extract_token_usage_from_response(response, model_name, "deepseek")
             
-            # Store result in instance-level cache
+            # Store result in disk-based cache
             result = (response_content, {
                 "prompt_tokens": token_usage.prompt_tokens,
                 "completion_tokens": token_usage.completion_tokens,
                 "total_tokens": token_usage.total_tokens
             })
             
-            self._cache[cache_key] = result
+            cache_manager.llm_cache.set(cache_key, result)
             self.logger.debug(f"📦 Cache miss - stored new entry for key: {cache_key[:50]}...")
             
             return result

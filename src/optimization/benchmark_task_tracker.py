@@ -702,6 +702,9 @@ class BenchmarkTaskTrackerUI:
         self.benchmark_progress.set_value(0)
         self.benchmark_status.set_text("Ready to run benchmark")
         
+        # Reset benchmark cancellation state to ensure clean state
+        self.benchmark_cancelled = False
+        
         # Clear log display
         if self.live_log_display:
             self.live_log_display.clear()
