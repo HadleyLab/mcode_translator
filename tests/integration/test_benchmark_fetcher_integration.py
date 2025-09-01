@@ -15,14 +15,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from src.optimization.benchmark_task_tracker import BenchmarkTaskTrackerUI
 from src.pipeline.fetcher import (
-    search_trials, 
-    get_full_study, 
-    calculate_total_studies,
-    _cached_search_trials,
-    _cached_get_full_study,
-    _cached_calculate_total_studies
+    search_trials,
+    get_full_study,
+    calculate_total_studies
 )
-
 
 class TestBenchmarkFetcherIntegration(unittest.TestCase):
     """Integration tests for benchmark task tracker and fetcher components"""
@@ -45,8 +41,8 @@ class TestBenchmarkFetcherIntegration(unittest.TestCase):
 
     @patch('src.pipeline.fetcher.requests.get')
     @patch('src.pipeline.fetcher.Config')
-    def test_benchmark_tracker_uses_fetcher_caching(self, mock_config, mock_requests):
-        """Test that benchmark tracker properly uses fetcher caching"""
+    def test_benchmark_tracker_uses_fetcher_without_caching(self, mock_config, mock_requests):
+        """Test that benchmark tracker works with fetcher without caching"""
         # Mock the config
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0
@@ -63,14 +59,14 @@ class TestBenchmarkFetcherIntegration(unittest.TestCase):
         }
         mock_requests.return_value = mock_response
         
-        # Test that the fetcher functions used by benchmark tracker are properly cached
+        # Test that the fetcher functions used by benchmark tracker work without caching
         # First call should make an API request
-        result1 = search_trials("cancer", max_results=10, use_cache=True)
+        result1 = search_trials("cancer", max_results=10)
         self.assertEqual(mock_requests.call_count, 1)
         
-        # Second call with same parameters should use cache
-        result2 = search_trials("cancer", max_results=10, use_cache=True)
-        self.assertEqual(mock_requests.call_count, 1)  # Should still be 1
+        # Second call with same parameters should make another API request (no caching)
+        result2 = search_trials("cancer", max_results=10)
+        self.assertEqual(mock_requests.call_count, 2)  # Should be 2 now
         
         # Results should be the same
         self.assertEqual(result1, result2)
@@ -112,18 +108,18 @@ class TestBenchmarkFetcherIntegration(unittest.TestCase):
         }
         mock_requests.return_value = mock_response
         
-        # Test search trials caching
-        result1 = _cached_search_trials("cancer", "", 10, "None")
+        # Test search trials (no caching)
+        result1 = search_trials("cancer", max_results=10)
         first_call_count = mock_requests.call_count
         
-        # Call again with same parameters
-        result2 = _cached_search_trials("cancer", "", 10, "None")
+        # Call again with same parameters - should make another API call (no caching)
+        result2 = search_trials("cancer", max_results=10)
         
-        # Should not have made another API call
-        self.assertEqual(mock_requests.call_count, first_call_count)
+        # Should have made another API call
+        self.assertEqual(mock_requests.call_count, first_call_count + 1)
         self.assertEqual(result1, result2)
         
-        # Test get full study caching
+        # Test get full study (no caching)
         mock_response.json.return_value = {
             "protocolSection": {
                 "identificationModule": {
@@ -133,14 +129,14 @@ class TestBenchmarkFetcherIntegration(unittest.TestCase):
             }
         }
         
-        result3 = _cached_get_full_study("NCT12345678")
+        result3 = get_full_study("NCT12345678")
         second_call_count = mock_requests.call_count
         
-        # Call again with same parameters
-        result4 = _cached_get_full_study("NCT12345678")
+        # Call again with same parameters - should make another API call (no caching)
+        result4 = get_full_study("NCT12345678")
         
-        # Should not have made another API call
-        self.assertEqual(mock_requests.call_count, second_call_count)
+        # Should have made another API call
+        self.assertEqual(mock_requests.call_count, second_call_count + 1)
         self.assertEqual(result3, result4)
 
     def test_benchmark_tracker_initialization_with_fetcher(self):

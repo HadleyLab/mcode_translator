@@ -1,10 +1,8 @@
 import re
 from typing import List, Dict, Any, Optional, Tuple
-import diskcache
+from functools import lru_cache
 from src.utils.logging_config import Loggable
 
-# Initialize disk cache
-cache = diskcache.Cache('./cache/code_extraction_cache')
 class CodeExtractionModule(Loggable):
     """
     Code Extraction Module for mCODE Translator
@@ -551,10 +549,9 @@ class CodeExtractionModule(Loggable):
         
         return mapped_codes
     
-    @cache.memoize()
-    def _cached_process_text(self, input_text: str, entities_str: str) -> Dict[str, Any]:
+    def _process_text(self, input_text: str, entities_str: str) -> Dict[str, Any]:
         """
-        Cached process any input text and extract medical codes with enhanced error handling
+        Process any input text and extract medical codes with enhanced error handling
         
         Args:
             input_text: Text to process for code extraction
@@ -648,31 +645,24 @@ class CodeExtractionModule(Loggable):
         return result
 
 
-    def process_text(self, input_text: str, entities: List[Dict[str, Any]] = None, cache_key: Optional[str] = None, use_cache: bool = True) -> Dict[str, Any]:
+    def process_text(self, input_text: str, entities: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Process any input text and extract medical codes with enhanced error handling
         
         Args:
             input_text: Text to process for code extraction
             entities: Optional pre-identified entities
-            cache_key: Optional cache key for results (deprecated, use use_cache instead)
-            use_cache: Whether to use caching (default: True)
             
         Returns:
             Dictionary containing extracted codes and metadata, or error information
         """
-        # Convert entities to string for caching
+        # Convert entities to string for processing
         import json
         entities_str = json.dumps(entities) if entities else ""
         
-        # Call the cached function if caching is enabled
-        if use_cache:
-            self.logger.info(f"process_text: Using cached processing for input_text='{input_text[:50]}...'")
-            return self._cached_process_text(input_text, entities_str)
-        else:
-            # Create a temporary version without caching
-            self.logger.info(f"process_text: Performing uncached processing for input_text='{input_text[:50]}...'")
-            return self._cached_process_text.__wrapped__(input_text, entities_str)
+        # Call the processing function directly without caching
+        self.logger.info(f"process_text: Processing input_text='{input_text[:50]}...'")
+        return self._process_text(input_text, entities_str)
 
 # Example usage (commented out to prevent runtime errors)
 # Uncomment and modify the following lines for testing:

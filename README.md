@@ -10,6 +10,7 @@ The mCODE Translator is a sophisticated system that processes clinical trial eli
 - **Patient-Trial Matching**: Interactive web application for matching patient profiles to clinical trials
 - **Prompt Optimization Framework**: Advanced prompt engineering for improved extraction accuracy
 - **Source Provenance Tracking**: Comprehensive tracking of extraction sources and confidence scores
+- **API Response Caching**: Disk-based caching for improved performance and reduced API calls
 
 ## Quick Start
 
@@ -300,28 +301,62 @@ See [`CHANGELOG.md`](CHANGELOG.md) for recent changes and updates.
 
 ## Caching System
 
-The project now uses disk-based caching with `diskcache` instead of `@lru_cache` for persistent caching between program runs.
+The project now includes a custom disk-based caching system for API responses and LLM calls to improve performance and reduce API calls.
+
+### Cache Implementation
+
+The caching system uses a custom `@cache_api_response` decorator and direct cache access for LLM calls:
+
+- **Custom Cache Decorator**: [`src/utils/cache_decorator.py`](src/utils/cache_decorator.py) - Disk-based caching with TTL support
+- **Automatic Caching**: Applied to key API functions in [`src/pipeline/fetcher.py`](src/pipeline/fetcher.py)
+- **LLM Caching**: Built-in caching for all LLM API calls in [`src/pipeline/strict_llm_base.py`](src/pipeline/strict_llm_base.py)
+- **Cache Management**: Built-in cache statistics and clearing functionality
+
+### Cached Functions
+
+The following functions in [`src/pipeline/fetcher.py`](src/pipeline/fetcher.py) are automatically cached:
+
+- `search_trials()` - Cached for 1 hour (3600 seconds)
+- `get_full_study()` - Cached for 24 hours (86400 seconds)
+- `calculate_total_studies()` - Cached for 1 hour (3600 seconds)
+
+### LLM Caching
+
+All LLM API calls through the [`StrictLLMBase`](src/pipeline/strict_llm_base.py:52) class are automatically cached:
+
+- **Cache Key Generation**: Deterministic cache keys based on prompt content and model parameters
+- **Cache Storage**: Disk-based storage in `./.llm_cache/` directory
+- **Cache TTL**: 24 hours by default
+- **Cache Isolation**: Separate cache instances for different model configurations
 
 ### Cache Locations
 
-- **Fetcher Cache**: `./cache/fetcher_cache/` - Caches ClinicalTrials.gov API responses
-- **Code Extraction Cache**: `./cache/code_extraction_cache/` - Caches code extraction results
+- **API Cache**: `./.api_cache/` - Caches ClinicalTrials.gov API responses with JSON serialization
+- **LLM Cache**: `./.llm_cache/` - Caches LLM API responses with JSON serialization
 
-### Cache Debugging
+### Cache Management
 
-See [`CACHE_DEBUGGING.md`](CACHE_DEBUGGING.md) for detailed information on inspecting and managing caches during development.
+The system provides utilities for cache management:
 
-### Debugging Tool
+```python
+from src.utils.cache_decorator import get_cache_stats, clear_api_cache
 
-A debugging tool is available at [`cache_debug.py`](cache_debug.py) for inspecting cache contents:
+# Get cache statistics
+stats = get_cache_stats()
+print(f"Cached items: {stats['cached_items']}")
+
+# Clear all cached data
+clear_api_cache()
+```
+
+### Cache Demo
+
+A demonstration script is available to show the caching functionality in action:
 
 ```bash
-# Show cache statistics
-python cache_debug.py stats
+# Run cache functionality demo
+python demo_cache_functionality.py
 
-# List cache keys
-python cache_debug.py list fetcher_cache
-
-# Clear caches
-python cache_debug.py clear
+# Run LLM cache test
+python test_llm_caching.py
 ```

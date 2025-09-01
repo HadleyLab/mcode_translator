@@ -63,4 +63,4 @@ config.json
 *.log
 cache/
 .spacy/
-</content>
+</content>.llm_cache/

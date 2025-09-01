@@ -153,8 +153,7 @@ class PatientMatcherApp(Loggable):
                 search_term,
                 fields=None,  # Use default fields from fetcher.py
                 max_results=10,
-                page_token=self.page_token,
-                use_cache=True
+                page_token=self.page_token
             )
             
             # Handle both old and new API response formats
@@ -725,8 +724,7 @@ class PatientMatcherApp(Loggable):
                     search_term,
                     fields=None,
                     max_results=10,
-                    page_token=self.page_token,
-                    use_cache=True
+                    page_token=self.page_token
                 )
                 
                 if 'nextPageToken' in results:

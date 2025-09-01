@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from utils.logging_config import Loggable
 from utils.config import Config
 from utils.token_tracker import TokenUsage, extract_token_usage_from_response, global_token_tracker
-from utils.cache_manager import cache_manager
+from utils.cache_decorator import APICache
 
 
 class LLMConfigurationError(Exception):
@@ -48,6 +48,17 @@ class LLMCallMetrics:
     total_tokens: Optional[int] = None
     success: bool = True
     error_type: Optional[str] = None
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'duration': self.duration,
+            'prompt_tokens': self.prompt_tokens,
+            'completion_tokens': self.completion_tokens,
+            'total_tokens': self.total_tokens,
+            'success': self.success,
+            'error_type': self.error_type
+        }
 
 
 class StrictLLMBase(Loggable, ABC):
@@ -104,6 +115,9 @@ class StrictLLMBase(Loggable, ABC):
         
         # Initialize OpenAI client
         self.client = self._initialize_openai_client()
+        
+        # Initialize LLM cache
+        self.llm_cache = APICache(".llm_cache")
         
         self.logger.info(f"✅ Strict LLM Base initialized successfully with model: {self.model_name}")
     
@@ -164,6 +178,22 @@ class StrictLLMBase(Loggable, ABC):
         Raises:
             LLMExecutionError: If API call fails
         """
+        # Try to get cached result first
+        cached_result = self.llm_cache.get_by_key(cache_key_data)
+        if cached_result is not None:
+            self.logger.info(f"✅ LLM API call CACHED for {self.model_name}")
+            # Convert metrics dict back to LLMCallMetrics object
+            metrics_dict = cached_result['metrics']
+            metrics = LLMCallMetrics(
+                duration=metrics_dict['duration'],
+                prompt_tokens=metrics_dict['prompt_tokens'],
+                completion_tokens=metrics_dict['completion_tokens'],
+                total_tokens=metrics_dict['total_tokens'],
+                success=metrics_dict['success'],
+                error_type=metrics_dict['error_type']
+            )
+            return cached_result['response_content'], metrics
+        
         metrics = LLMCallMetrics(duration=0.0)
         start_time = time.time()
         
@@ -171,41 +201,38 @@ class StrictLLMBase(Loggable, ABC):
             self.logger.info(f"🚀 Starting LLM API call to {self.model_name}...")
             self.logger.debug(f"LLM Request - Model: {self.model_name}, Temperature: {self.temperature}, Max Tokens: {self.max_tokens}")
             
-            # Create a comprehensive cache data structure that includes all parameters
-            # We include instance-specific parameters to ensure cache isolation
-            complete_cache_data = {
-                "model": self.model_name,
-                "temperature": self.temperature,
-                "max_tokens": self.max_tokens,
-                "response_format": self.response_format,
-                "messages": messages,
-                **cache_key_data  # Include the original cache key data
-            }
+            # Make the actual LLM call
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=messages,
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                response_format=self.response_format
+            )
             
-            # Generate a complete cache key that includes all parameters
-            complete_cache_key = json.dumps(complete_cache_data, sort_keys=True)
+            if not response.choices or not response.choices[0].message.content:
+                raise LLMExecutionError("Empty LLM response received")
             
-            # Call the cached LLM method with just the complete cache key
-            response_content, token_usage_dict = self._cached_llm_call(complete_cache_key)
+            response_content = response.choices[0].message.content
+            
+            # Capture token usage metrics
+            token_usage = extract_token_usage_from_response(response, self.model_name, "deepseek")
             
             end_time = time.time()
             metrics.duration = end_time - start_time
-            
-            # Convert token usage dict back to TokenUsage object
-            token_usage = TokenUsage(
-                prompt_tokens=token_usage_dict["prompt_tokens"],
-                completion_tokens=token_usage_dict["completion_tokens"],
-                total_tokens=token_usage_dict["total_tokens"],
-                model_name=self.model_name,
-                provider_name="deepseek"
-            )
-            
             metrics.prompt_tokens = token_usage.prompt_tokens
             metrics.completion_tokens = token_usage.completion_tokens
             metrics.total_tokens = token_usage.total_tokens
             
             # Track token usage globally
             global_token_tracker.add_usage(token_usage, self.__class__.__name__)
+            
+            # Cache the result
+            cache_data = {
+                'response_content': response_content,
+                'metrics': metrics.to_dict()
+            }
+            self.llm_cache.set_by_key(cache_data, cache_key_data, ttl=86400)
             
             self.logger.info(f"✅ LLM API call completed in {metrics.duration:.2f}s")
             self.logger.info(f"   📊 Token usage - Prompt: {token_usage.prompt_tokens}, Completion: {token_usage.completion_tokens}, Total: {token_usage.total_tokens}")
@@ -240,71 +267,6 @@ class StrictLLMBase(Loggable, ABC):
             metrics.success = False
             metrics.error_type = "unknown_error"
             raise LLMExecutionError(f"Unexpected error during LLM call: {str(e)}")
-    
-    def _cached_llm_call(self, cache_key: str) -> Tuple[str, Dict[str, Any]]:
-        """
-        Disk-based cached LLM call with token usage tracking
-        
-        Args:
-            cache_key: Cache key for the request (contains hash of all parameters)
-        
-        Returns:
-            Tuple of (response_content, token_usage_dict)
-        
-        Raises:
-            LLMExecutionError: If API call fails
-        """
-        # Check disk-based cache first
-        cached_result = cache_manager.llm_cache.get(cache_key)
-        if cached_result is not None:
-            self.logger.debug(f"📦 Cache hit for key: {cache_key[:50]}...")
-            return cached_result
-        
-        # The cache_key contains all the necessary information for the LLM call
-        # We need to parse it to extract all the parameters
-        try:
-            import json
-            cache_data = json.loads(cache_key)
-            
-            # Extract ALL parameters from cache data to ensure cache isolation
-            messages = cache_data["messages"]
-            model_name = cache_data["model"]
-            temperature = cache_data["temperature"]
-            max_tokens = cache_data["max_tokens"]
-            response_format = cache_data["response_format"]
-            
-            # Make the actual LLM call using the parameters from the cache data
-            # This ensures that cached responses match the exact configuration
-            response = self.client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                response_format=response_format
-            )
-            
-            if not response.choices or not response.choices[0].message.content:
-                raise LLMExecutionError("Empty LLM response received")
-            
-            response_content = response.choices[0].message.content
-            
-            # Capture token usage metrics
-            token_usage = extract_token_usage_from_response(response, model_name, "deepseek")
-            
-            # Store result in disk-based cache
-            result = (response_content, {
-                "prompt_tokens": token_usage.prompt_tokens,
-                "completion_tokens": token_usage.completion_tokens,
-                "total_tokens": token_usage.total_tokens
-            })
-            
-            cache_manager.llm_cache.set(cache_key, result)
-            self.logger.debug(f"📦 Cache miss - stored new entry for key: {cache_key[:50]}...")
-            
-            return result
-            
-        except Exception as e:
-            raise LLMExecutionError(f"Failed to process cached LLM call: {str(e)}")
     
     def _initialize_openai_client(self) -> openai.OpenAI:
         """Initialize OpenAI client with validation"""

@@ -33,6 +33,7 @@ from src.optimization.strict_prompt_optimization_framework import (
 from src.utils.prompt_loader import prompt_loader
 from src.utils.model_loader import model_loader
 from src.utils.logging_config import get_logger
+from src.utils.cache_decorator import get_cache_stats, clear_api_cache
 
 
 class BenchmarkTaskTrackerUI:
@@ -69,8 +70,17 @@ class BenchmarkTaskTrackerUI:
         self.validation_results = []
         self.preloaded_validations = []  # Store preloaded validations
         
+        # Queue-based concurrency
+        self.task_queue = asyncio.Queue()
+        self.worker_tasks = []
+        self.completed_tasks = 0
+        self.total_tasks = 0
+        
         # Dark mode
         self.dark_mode = ui.dark_mode()
+        
+        # Cache statistics display
+        self.cache_stats_display = None
         
         # Load libraries and data
         self._load_libraries()
@@ -87,12 +97,14 @@ class BenchmarkTaskTrackerUI:
                 with ui.row().classes('items-center'):
                     ui.button('Toggle Dark Mode', on_click=self._toggle_dark_mode).props('flat color=white')
                     ui.button('Reset', on_click=self._reset_interface).props('flat color=white')
+                    ui.button('Clear Cache', on_click=self._clear_cache).props('flat color=white')
         
         with ui.column().classes('w-full p-4 gap-4'):
             self._setup_benchmark_control_panel()
             self._setup_validation_display()
             self._setup_results_display()
             self._setup_live_logger()
+            self._setup_cache_display()
     
     def _toggle_dark_mode(self):
         """Toggle dark mode"""
@@ -162,6 +174,7 @@ class BenchmarkTaskTrackerUI:
             self._setup_validation_display()
             self._setup_results_display()
             self._setup_live_logger()
+            self._setup_cache_display()
     
     def _setup_benchmark_control_panel(self) -> None:
         """Setup the benchmark control panel"""
@@ -393,7 +406,7 @@ class BenchmarkTaskTrackerUI:
             try:
                 await self._execute_benchmark_async(selected_prompts, selected_models, selected_trials)
             except Exception as e:
-                ui.notify(f"Benchmark failed: {str(e)}", type='negative')
+                ui.run(lambda: ui.notify(f"Benchmark failed: {str(e)}", type='negative'))
                 logging.error(f"Benchmark failed: {str(e)}")
             finally:
                 # Re-enable run button and disable stop button
@@ -408,13 +421,14 @@ class BenchmarkTaskTrackerUI:
         self.benchmark_status.set_text("Benchmark running...")
     
     async def _execute_benchmark_async(self, prompt_keys: List[str], model_keys: List[str], trial_ids: List[str]) -> None:
-        """Execute benchmark asynchronously"""
-        total_combinations = len(prompt_keys) * len(model_keys) * len(trial_ids)
-        current_index = 0
+        """Execute benchmark asynchronously using queue-based concurrency"""
         start_time = time.time()
         
+        # Reset state
         self.benchmark_results = []
         self.validation_results = []  # Clear previous validation results
+        self.completed_tasks = 0
+        self.total_tasks = len(prompt_keys) * len(model_keys) * len(trial_ids)
         self._update_validation_display()  # Update display to show empty state
         
         try:
@@ -456,7 +470,17 @@ class BenchmarkTaskTrackerUI:
                     logging.warning(f"Failed to create API config for {model_key}: {str(e)}")
                     continue
             
-            # Execute benchmarks
+            # Get concurrency level
+            concurrency_level = self.concurrency_selection.value if self.concurrency_selection else 1
+            concurrency_level = int(max(1, min(concurrency_level, 10)))  # Clamp between 1 and 10 and convert to int
+            
+            # Start worker tasks
+            self.worker_tasks = []
+            for i in range(concurrency_level):
+                worker_task = background_tasks.create(self._benchmark_worker(i + 1))
+                self.worker_tasks.append(worker_task)
+            
+            # Add all benchmark tasks to the queue
             for prompt_variant in prompt_variants:
                 for model_key in model_keys:
                     config_name = f"model_{model_key.replace('-', '_').replace('.', '_')}"
@@ -464,11 +488,6 @@ class BenchmarkTaskTrackerUI:
                     for trial_id in trial_ids:
                         if self.benchmark_cancelled:
                             break
-                        
-                        current_index += 1
-                        progress = current_index / total_combinations
-                        self.benchmark_progress.set_value(progress)
-                        self.benchmark_status.set_text(f"Running {current_index}/{total_combinations}")
                         
                         # Get gold standard data
                         expected_entities = []
@@ -478,90 +497,41 @@ class BenchmarkTaskTrackerUI:
                             expected_entities = gold_data.get('expected_extraction', {}).get('entities', [])
                             expected_mappings = gold_data.get('expected_mcode_mappings', {}).get('mapped_elements', [])
                         
-                        try:
-                            # Update preloaded validation status to "Processing"
-                            self._update_preloaded_validation_status(
-                                prompt_variant.name, model_key, trial_id,
-                                'Processing',
-                                'Benchmark in progress...',
-                                '🔄'
-                            )
-                            self._update_validation_display()
-                            
-                            # Run benchmark
-                            result = await run.io_bound(
-                                self.framework.run_benchmark,
-                                prompt_variant_id=prompt_variant.id,
-                                api_config_name=config_name,
-                                test_case_id=trial_id,
-                                pipeline_callback=self._create_pipeline_callback(),
-                                expected_entities=expected_entities,
-                                expected_mappings=expected_mappings,
-                                current_index=current_index,
-                                total_count=total_combinations,
-                                benchmark_start_time=start_time
-                            )
-                            
-                            self.benchmark_results.append(result)
-                            
-                            # Update preloaded validation status with benchmark metrics
-                            self._update_preloaded_validation_status(
-                                prompt_variant.name, model_key, trial_id,
-                                'Success' if result.success else 'Failed',
-                                f"F1={result.f1_score:.3f}, Compliance={result.compliance_score:.2%}" if result.success else result.error_message,
-                                '✅' if result.success else '❌',
-                                f"{result.precision:.3f}" if result.success else '-',
-                                f"{result.recall:.3f}" if result.success else '-',
-                                f"{result.f1_score:.3f}" if result.success else '-',
-                                f"{result.duration_ms:.1f}" if result.success else '-',
-                                f"{result.token_usage}" if result.success else '-'
-                            )
-                            
-                            # Log result
-                            self.live_log_display.push(
-                                f"✅ {prompt_variant.name} + {model_key} + {trial_id}: "
-                                f"F1={result.f1_score:.3f}, Compliance={result.compliance_score:.2%}"
-                            )
-                            
-                            # Update validation display
-                            self._update_validation_display()
-                            
-                        except Exception as e:
-                            logging.error(f"Benchmark failed for {prompt_variant.name} + {model_key} + {trial_id}: {str(e)}")
-                            
-                            # Add to validation results
-                            self.validation_results.append({
-                                'prompt': prompt_variant.name,
-                                'model': model_key,
-                                'trial': trial_id,
-                                'status': 'Failed',
-                                'details': str(e)
-                            })
-                            
-                            self.live_log_display.push(
-                                f"❌ {prompt_variant.name} + {model_key} + {trial_id}: Failed - {str(e)}"
-                            )
-                            
-                            # Update preloaded validation status for failed benchmark
-                            self._update_preloaded_validation_status(
-                                prompt_variant.name, model_key, trial_id,
-                                'Failed',
-                                str(e),
-                                '❌'
-                            )
-                            
-                            # Update validation display
-                            self._update_validation_display()
+                        # Add task to queue
+                        task_data = (
+                            prompt_variant,
+                            model_key,
+                            trial_id,
+                            config_name,
+                            expected_entities,
+                            expected_mappings,
+                            start_time
+                        )
+                        await self.task_queue.put(task_data)
                 
                 if self.benchmark_cancelled:
                     break
+            
+            # Wait for all tasks to complete
+            await self.task_queue.join()
+            
+            # Stop workers by sending None sentinel values
+            for _ in range(concurrency_level):
+                await self.task_queue.put(None)
+            
+            # Wait for workers to complete
+            if self.worker_tasks:
+                await asyncio.gather(*self.worker_tasks, return_exceptions=True)
             
             # Display results
             await self._display_benchmark_results()
             
         except Exception as e:
             logging.error(f"Benchmark execution failed: {str(e)}")
-            ui.notify(f"Benchmark execution failed: {str(e)}", type='negative')
+            ui.run(lambda: ui.notify(f"Benchmark execution failed: {str(e)}", type='negative'))
+        finally:
+            # Clean up workers
+            self.worker_tasks = []
     
     def _create_pipeline_callback(self) -> Callable:
         """Create pipeline callback for benchmark execution"""
@@ -613,6 +583,112 @@ class BenchmarkTaskTrackerUI:
             return pipeline.process_clinical_trial(test_data)
         
         return pipeline_callback
+    
+    async def _benchmark_worker(self, worker_id: int) -> None:
+        """Worker task that processes benchmark tasks from the queue"""
+        while True:
+            try:
+                # Get task from queue with timeout to check for cancellation
+                try:
+                    task_data = await asyncio.wait_for(self.task_queue.get(), timeout=1.0)
+                except asyncio.TimeoutError:
+                    # Check if we should stop
+                    if self.benchmark_cancelled:
+                        break
+                    continue
+                
+                if task_data is None:  # Sentinel value to stop worker
+                    break
+                
+                # Process the benchmark task
+                prompt_variant, model_key, trial_id, config_name, expected_entities, expected_mappings, start_time = task_data
+                
+                try:
+                    # Update preloaded validation status to "Processing"
+                    self._update_preloaded_validation_status(
+                        prompt_variant.name, model_key, trial_id,
+                        'Processing',
+                        f'Worker {worker_id} processing...',
+                        '🔄'
+                    )
+                    
+                    # Run benchmark
+                    result = await run.io_bound(
+                        self.framework.run_benchmark,
+                        prompt_variant_id=prompt_variant.id,
+                        api_config_name=config_name,
+                        test_case_id=trial_id,
+                        pipeline_callback=self._create_pipeline_callback(),
+                        expected_entities=expected_entities,
+                        expected_mappings=expected_mappings,
+                        current_index=self.completed_tasks + 1,
+                        total_count=self.total_tasks,
+                        benchmark_start_time=start_time
+                    )
+                    
+                    self.benchmark_results.append(result)
+                    
+                    # Update preloaded validation status with benchmark metrics
+                    self._update_preloaded_validation_status(
+                        prompt_variant.name, model_key, trial_id,
+                        'Success' if result.success else 'Failed',
+                        f"F1={result.f1_score:.3f}, Compliance={result.compliance_score:.2%}" if result.success else result.error_message,
+                        '✅' if result.success else '❌',
+                        f"{result.precision:.3f}" if result.success else '-',
+                        f"{result.recall:.3f}" if result.success else '-',
+                        f"{result.f1_score:.3f}" if result.success else '-',
+                        f"{result.duration_ms:.1f}" if result.success else '-',
+                        f"{result.token_usage}" if result.success else '-'
+                    )
+                    
+                    # Log result
+                    self.live_log_display.push(
+                        f"✅ {prompt_variant.name} + {model_key} + {trial_id}: "
+                        f"F1={result.f1_score:.3f}, Compliance={result.compliance_score:.2%}"
+                    )
+                    
+                except Exception as e:
+                    logging.error(f"Benchmark failed for {prompt_variant.name} + {model_key} + {trial_id}: {str(e)}")
+                    
+                    # Add to validation results
+                    self.validation_results.append({
+                        'prompt': prompt_variant.name,
+                        'model': model_key,
+                        'trial': trial_id,
+                        'status': 'Failed',
+                        'details': str(e)
+                    })
+                    
+                    self.live_log_display.push(
+                        f"❌ {prompt_variant.name} + {model_key} + {trial_id}: Failed - {str(e)}"
+                    )
+                    
+                    # Update preloaded validation status for failed benchmark
+                    self._update_preloaded_validation_status(
+                        prompt_variant.name, model_key, trial_id,
+                        'Failed',
+                        str(e),
+                        '❌'
+                    )
+                
+                # Update progress
+                self.completed_tasks += 1
+                progress = self.completed_tasks / self.total_tasks
+                self.benchmark_progress.set_value(progress)
+                self.benchmark_status.set_text(f"Running {self.completed_tasks}/{self.total_tasks}")
+                
+                # Update validation display
+                self._update_validation_display()
+                
+                # Mark task as done
+                self.task_queue.task_done()
+                
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logging.error(f"Worker {worker_id} error: {str(e)}")
+                if not self.task_queue.empty():
+                    self.task_queue.task_done()
     
     async def _display_benchmark_results(self) -> None:
         """Display benchmark results"""
@@ -683,6 +759,17 @@ class BenchmarkTaskTrackerUI:
         
         self.benchmark_cancelled = True
         self.benchmark_status.set_text("Benchmark stopping...")
+        
+        # Clear the queue to stop processing
+        async def clear_queue():
+            while not self.task_queue.empty():
+                try:
+                    self.task_queue.get_nowait()
+                    self.task_queue.task_done()
+                except asyncio.QueueEmpty:
+                    break
+        
+        background_tasks.create(clear_queue())
         ui.notify("Stopping benchmark execution", type='info')
     
     def _reset_interface(self) -> None:
@@ -693,6 +780,23 @@ class BenchmarkTaskTrackerUI:
             self.is_benchmark_running = False
             self.run_benchmark_button.enable()
             self.stop_benchmark_button.set_visibility(False)
+            
+            # Clear the queue and stop workers
+            async def cleanup():
+                # Clear queue
+                while not self.task_queue.empty():
+                    try:
+                        self.task_queue.get_nowait()
+                        self.task_queue.task_done()
+                    except asyncio.QueueEmpty:
+                        break
+                
+                # Cancel worker tasks
+                for task in self.worker_tasks:
+                    task.cancel()
+                self.worker_tasks = []
+            
+            background_tasks.create(cleanup())
         
         # Clear benchmark results
         self.benchmark_results = []
@@ -725,6 +829,59 @@ class BenchmarkTaskTrackerUI:
         self._load_initial_validations()
         
         ui.notify("Interface reset to initial state", type='positive')
+    
+    def _setup_cache_display(self) -> None:
+        """Setup cache statistics display"""
+        with ui.card().classes('w-full mt-4'):
+            with ui.row().classes('w-full justify-between items-center'):
+                ui.label('Cache Statistics').classes('text-lg font-semibold')
+                ui.button('Refresh', on_click=self._update_cache_display).props('flat size=sm')
+            self.cache_stats_display = ui.markdown().classes('w-full')
+            self._update_cache_display()
+    
+    def _update_cache_display(self) -> None:
+        """Update cache statistics display"""
+        if self.cache_stats_display:
+            stats = get_cache_stats(".llm_cache")
+            self.cache_stats_display.set_content(
+                f"""
+**Cache Directory:** {stats.get('cache_dir', 'N/A')}
+**Cached Items:** {stats.get('cached_items', 0)}
+**Total Size:** {stats.get('total_size_bytes', 0)} bytes
+"""
+            )
+    
+    def _clear_cache(self) -> None:
+        """Clear API cache"""
+        clear_api_cache()
+        self._update_cache_display()
+        ui.notify("API cache cleared", type='positive')
+
+
+class BenchmarkTaskTracker:
+    """Simple benchmark task tracker for cache management and statistics"""
+    
+    def __init__(self):
+        """Initialize the benchmark task tracker"""
+        from src.utils.cache_decorator import get_cache_stats, clear_api_cache
+        self.get_cache_stats = get_cache_stats
+        self.clear_api_cache = clear_api_cache
+    
+    def display_cache_stats(self):
+        """Display cache statistics"""
+        stats = self.get_cache_stats()
+        print("📊 Cache Statistics:")
+        print(f"   Cache Directory: {stats.get('cache_dir', 'N/A')}")
+        print(f"   Cached Items: {stats.get('cached_items', 0)}")
+        print(f"   Total Size: {stats.get('total_size_bytes', 0)} bytes")
+        print(f"   Hits: {stats.get('hits', 0)}")
+        print(f"   Misses: {stats.get('misses', 0)}")
+        print(f"   Total Requests: {stats.get('total_requests', 0)}")
+    
+    def clear_caches(self):
+        """Clear all caches"""
+        self.clear_api_cache()
+        print("✅ All caches cleared")
 
 
 def run_benchmark_task_tracker(port: int = 8089):
