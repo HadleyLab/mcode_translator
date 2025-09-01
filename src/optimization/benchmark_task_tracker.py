@@ -30,10 +30,12 @@ from src.optimization.strict_prompt_optimization_framework import (
 )
 
 # Import utilities
-from src.utils.prompt_loader import prompt_loader
-from src.utils.model_loader import model_loader
-from src.utils.logging_config import get_logger
-from src.utils.cache_decorator import get_cache_stats, clear_api_cache
+from src.utils import (
+    prompt_loader,
+    model_loader,
+    get_logger,
+    UnifiedAPIManager
+)
 
 
 class BenchmarkTaskTrackerUI:
@@ -78,6 +80,9 @@ class BenchmarkTaskTrackerUI:
         
         # Dark mode
         self.dark_mode = ui.dark_mode()
+        
+        # API Manager for caching
+        self.api_manager = UnifiedAPIManager()
         
         # Cache statistics display
         self.cache_stats_display = None
@@ -554,27 +559,30 @@ class BenchmarkTaskTrackerUI:
                     temperature = api_config.temperature
                     max_tokens = api_config.max_tokens
             
-            # Create a NEW pipeline instance for each benchmark run to ensure cache isolation
-            # Pass explicit model configuration if available
-            pipeline = StrictDynamicExtractionPipeline()
-            
-            # If we have explicit model configuration, update the pipeline components
+            # Create a NEW pipeline instance with the correct model configuration
+            # This is the key fix - pass the model configuration to the pipeline constructor
             if model_name:
-                # Update NLP engine configuration
-                pipeline.nlp_engine.model_name = model_name
-                if temperature is not None:
-                    pipeline.nlp_engine.temperature = temperature
-                if max_tokens is not None:
-                    pipeline.nlp_engine.max_tokens = max_tokens
+                # Create pipeline with explicit model configuration for both components
+                pipeline = StrictDynamicExtractionPipeline()
                 
-                # Update LLM mapper configuration
-                pipeline.llm_mapper.model_name = model_name
-                if temperature is not None:
-                    pipeline.llm_mapper.temperature = temperature
-                if max_tokens is not None:
-                    pipeline.llm_mapper.max_tokens = max_tokens
+                # Update both components with the correct model configuration
+                # This is the proper way to configure the pipeline components
+                pipeline.nlp_engine = pipeline.nlp_engine.__class__(
+                    model_name=model_name,
+                    temperature=temperature,
+                    max_tokens=max_tokens
+                )
+                
+                pipeline.llm_mapper = pipeline.llm_mapper.__class__(
+                    model_name=model_name,
+                    temperature=temperature,
+                    max_tokens=max_tokens
+                )
+            else:
+                # Use default configuration
+                pipeline = StrictDynamicExtractionPipeline()
             
-            # Set the prompt content directly on the NLP engine based on prompt type
+            # Set the prompt content directly on the pipeline components based on prompt type
             if variant.prompt_type == PromptType.NLP_EXTRACTION:
                 pipeline.nlp_engine.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
             elif variant.prompt_type == PromptType.MCODE_MAPPING:
@@ -842,18 +850,19 @@ class BenchmarkTaskTrackerUI:
     def _update_cache_display(self) -> None:
         """Update cache statistics display"""
         if self.cache_stats_display:
-            stats = get_cache_stats(".llm_cache")
+            stats = self.api_manager.get_cache_stats()
+            llm_stats = stats.get("llm", {})
             self.cache_stats_display.set_content(
                 f"""
-**Cache Directory:** {stats.get('cache_dir', 'N/A')}
-**Cached Items:** {stats.get('cached_items', 0)}
-**Total Size:** {stats.get('total_size_bytes', 0)} bytes
+**Cache Directory:** {llm_stats.get('cache_dir', 'N/A')}
+**Cached Items:** {llm_stats.get('cached_items', 0)}
+**Total Size:** {llm_stats.get('total_size_bytes', 0)} bytes
 """
             )
     
     def _clear_cache(self) -> None:
         """Clear API cache"""
-        clear_api_cache()
+        self.api_manager.clear_cache()
         self._update_cache_display()
         ui.notify("API cache cleared", type='positive')
 
@@ -863,7 +872,15 @@ class BenchmarkTaskTracker:
     
     def __init__(self):
         """Initialize the benchmark task tracker"""
-        from src.utils.cache_decorator import get_cache_stats, clear_api_cache
+        from src.utils.api_manager import UnifiedAPIManager
+        self.api_manager = UnifiedAPIManager()
+        
+        def get_cache_stats():
+            return self.api_manager.get_cache_stats()
+        
+        def clear_api_cache():
+            self.api_manager.clear_cache()
+        
         self.get_cache_stats = get_cache_stats
         self.clear_api_cache = clear_api_cache
     
