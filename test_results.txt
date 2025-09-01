@@ -1,7 +1,0 @@
-============================= test session starts ==============================
-platform darwin -- Python 3.10.18, pytest-8.4.1, pluggy-1.6.0
-rootdir: /Users/idrdex/Documents/mcode_translator
-plugins: anyio-4.10.0
-collected 102 items
-
-tests/e2e/test_comprehensive_fetcher_functionality.py 

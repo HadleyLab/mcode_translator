@@ -1,8 +1,0 @@
-============================= test session starts ==============================
-platform darwin -- Python 3.10.18, pytest-8.4.1, pluggy-1.6.0
-rootdir: /Users/idrdex/Documents/mcode_translator
-plugins: anyio-4.10.0
-collected 102 items / 2 deselected / 100 selected
-
-tests/e2e/test_fetcher_with_prompt_model_interface.py ..                 [  2%]
-tests/e2e/test_pipeline_simple.py 
