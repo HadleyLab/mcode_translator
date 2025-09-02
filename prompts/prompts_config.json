@@ -4,22 +4,139 @@
       {
         "name": "generic_extraction",
         "prompt_type": "NLP_EXTRACTION",
-        "prompt_file": "nlp_extraction/generic_extraction.txt",
-        "default": true
+        "prompt_file": "nlp_extraction/nlp_extraction_generic.txt",
+        "default": true,
+        "description": "Main extraction prompt for clinical entity recognition"
+      },
+      {
+        "name": "comprehensive_extraction",
+        "prompt_type": "NLP_EXTRACTION",
+        "prompt_file": "nlp_extraction/nlp_extraction_comprehensive.txt",
+        "default": false,
+        "description": "Comprehensive extraction with detailed JSON schema"
+      },
+      {
+        "name": "basic_extraction",
+        "prompt_type": "NLP_EXTRACTION",
+        "prompt_file": "nlp_extraction/nlp_extraction_basic.txt",
+        "default": false,
+        "description": "Basic extraction for optimization framework"
+      },
+      {
+        "name": "minimal_extraction",
+        "prompt_type": "NLP_EXTRACTION",
+        "prompt_file": "nlp_extraction/nlp_extraction_minimal.txt",
+        "default": false,
+        "description": "Minimalist extraction prompt"
+      },
+      {
+        "name": "minimal_extraction_optimization",
+        "prompt_type": "NLP_EXTRACTION",
+        "prompt_file": "nlp_extraction/nlp_extraction_minimal_optimization.txt",
+        "default": false,
+        "description": "Minimal extraction for optimization"
+      },
+      {
+        "name": "structured_extraction",
+        "prompt_type": "NLP_EXTRACTION",
+        "prompt_file": "nlp_extraction/nlp_extraction_structured.txt",
+        "default": false,
+        "description": "Structured extraction with specific formatting"
       }
     ],
     "mcode_mapping": [
       {
         "name": "generic_mapping",
         "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/generic_mapping.txt",
-        "default": true
+        "prompt_file": "mcode_mapping/mcode_mapping_generic.txt",
+        "default": true,
+        "description": "Main mCODE mapping prompt"
       },
+      {
+        "name": "comprehensive_mapping",
+        "prompt_type": "MCODE_MAPPING",
+        "prompt_file": "mcode_mapping/mcode_mapping_comprehensive.txt",
+        "default": false,
+        "description": "Comprehensive mapping for optimization"
+      },
+      {
+        "name": "detailed_mapping",
+        "prompt_type": "MCODE_MAPPING",
+        "prompt_file": "mcode_mapping/mcode_mapping_detailed.txt",
+        "default": false,
+        "description": "Detailed mapping with comprehensive instructions"
+      },
+      {
+        "name": "error_robust_mapping",
+        "prompt_type": "MCODE_MAPPING",
+        "prompt_file": "mcode_mapping/mcode_mapping_error_robust.txt",
+        "default": false,
+        "description": "Error-robust mapping with fallback handling"
+      },
+      {
+        "name": "minimal_mapping",
+        "prompt_type": "MCODE_MAPPING",
+        "prompt_file": "mcode_mapping/mcode_mapping_minimal.txt",
+        "default": false,
+        "description": "Minimal mapping prompt"
+      },
+      {
+        "name": "simple_mapping",
+        "prompt_type": "MCODE_MAPPING",
+        "prompt_file": "mcode_mapping/mcode_mapping_simple.txt",
+        "default": false,
+        "description": "Simple mapping for optimization"
+      },
+      {
+        "name": "standard_mapping",
+        "prompt_type": "MCODE_MAPPING",
+        "prompt_file": "mcode_mapping/mcode_mapping_standard.txt",
+        "default": false,
+        "description": "Standard mCODE mapping"
+      }
+    ],
+    "direct_mcode": [
       {
         "name": "direct_text_to_mcode_mapping",
         "prompt_type": "DIRECT_MCODE",
-        "prompt_file": "direct_mcode/direct_text_to_mcode_mapping.txt",
-        "default": true
+        "prompt_file": "direct_mcode/direct_mcode_direct.txt",
+        "default": true,
+        "description": "Direct text to mCODE mapping"
+      },
+      {
+        "name": "direct_text_to_mcode_mapping_simple",
+        "prompt_type": "DIRECT_MCODE",
+        "prompt_file": "direct_mcode/direct_mcode_simple.txt",
+        "default": false,
+        "description": "Simple direct text to mCODE mapping"
+      },
+      {
+        "name": "direct_text_to_mcode_mapping_comprehensive",
+        "prompt_type": "DIRECT_MCODE",
+        "prompt_file": "direct_mcode/direct_mcode_comprehensive.txt",
+        "default": false,
+        "description": "Comprehensive direct text to mCODE mapping"
+      },
+      {
+        "name": "direct_text_to_mcode_mapping_minimal",
+        "prompt_type": "DIRECT_MCODE",
+        "prompt_file": "direct_mcode/direct_mcode_minimal.txt",
+        "default": false,
+        "description": "Minimal direct text to mCODE mapping"
+      },
+      {
+        "name": "direct_text_to_mcode_mapping_structured",
+        "prompt_type": "DIRECT_MCODE",
+        "prompt_file": "direct_mcode/direct_mcode_structured.txt",
+        "default": false,
+        "description": "Structured direct text to mCODE mapping"
+      },
+      {
+        "name": "direct_text_to_mcode_mapping_optimization",
+        "prompt_type": "DIRECT_MCODE",
+        "prompt_file": "direct_mcode/direct_mcode_optimization.txt",
+        "default": false,
+        "description": "Optimization-focused direct text to mCODE mapping"
       }
     ]
   }

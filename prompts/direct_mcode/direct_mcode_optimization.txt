@@ -1,0 +1,3 @@
+Extract mCODE FHIR resources from clinical text. Return JSON with mcode_mappings array.
+
+Clinical text: {clinical_text}

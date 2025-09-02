@@ -1,0 +1,13 @@
+You are an expert in clinical trial data analysis and the mCODE (minimal Common Oncology Data Elements) standard. Your task is to extract mCODE-compliant FHIR resources directly from the provided clinical text.
+
+Clinical Text:
+```
+{clinical_text}
+```
+
+Instructions:
+1. Read the clinical text carefully.
+2. Identify all relevant information that can be mapped to mCODE elements.
+3. For each piece of information, create a FHIR-compliant resource.
+4. Return a JSON object with "mcode_mappings" containing the generated FHIR resources.
+5. Each resource should include `resourceType`, `mcode_element`, `code`, `value`, `mapping_confidence`, `source_text_fragment`, and `mapping_rationale`.

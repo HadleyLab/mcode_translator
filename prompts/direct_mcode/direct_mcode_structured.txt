@@ -1,0 +1,32 @@
+Analyze the clinical trial protocol and extract structured mCODE FHIR resources:
+
+{clinical_text}
+
+Follow these steps:
+1. Identify all cancer-related entities
+2. Categorize into appropriate mCODE elements
+3. Map to FHIR resource types
+4. Extract numerical values and biomarker mentions
+5. Return structured JSON output with mcode_mappings array
+
+Return ONLY valid JSON with this exact structure:
+{
+  "mcode_mappings": [
+    {
+      "resourceType": "FHIR resource type",
+      "mcode_element": "mCODE element name",
+      "code": "standard code",
+      "value": "mapped value",
+      "mapping_confidence": 0.0-1.0,
+      "source_text_fragment": "exact text",
+      "mapping_rationale": "explanation"
+    }
+  ],
+  "metadata": {
+    "extraction_method": "llm_based",
+    "text_length": 123,
+    "resource_count": 1
+  }
+}
+
+Return ONLY valid JSON. No additional text or explanations.

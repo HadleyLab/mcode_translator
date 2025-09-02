@@ -1,0 +1,39 @@
+**TASK: Extract medical entities from clinical text**
+
+Extract medical entities from the clinical text.
+
+**OUTPUT FORMAT (JSON):**
+{{
+    "entities": [
+        {{
+            "text": "exact text mention",
+            "type": "entity type",
+            "attributes": {{
+                "status": "positive/negative if applicable",
+                "value": "numerical value if available",
+                "unit": "unit if applicable"
+            }},
+            "confidence": 0.0-1.0
+        }}
+    ],
+    "metadata": {{
+        "extraction_method": "llm_based",
+        "entity_count": 0
+    }}
+}}
+
+**ENTITY TYPES:**
+- condition: Diseases, cancer types
+- biomarker: Lab markers, receptor status  
+- demographic: Age, gender, performance status
+- exclusion: Exclusion criteria
+
+**INSTRUCTIONS:**
+1. Extract medical entities mentioned
+2. Capture both positive and negative findings
+3. Include numerical values and units
+4. Preserve exact text mentions
+5. Return ONLY valid JSON
+
+**CLINICAL TEXT:**
+{clinical_text}
