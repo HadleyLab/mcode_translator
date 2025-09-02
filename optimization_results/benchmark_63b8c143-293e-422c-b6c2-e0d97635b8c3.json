@@ -1,0 +1,520 @@
+{
+  "run_id": "63b8c143-293e-422c-b6c2-e0d97635b8c3",
+  "prompt_variant_id": "02b2d4f8-e42f-4b26-85ef-b82318f7b1a8",
+  "api_config_name": "model_gpt_4o_mini",
+  "test_case_id": "breast_cancer_her2_positive",
+  "start_time": "2025-09-01T14:38:54.003097",
+  "end_time": "2025-09-01T14:38:56.226906",
+  "duration_ms": 2203.566789627075,
+  "success": true,
+  "error_message": "",
+  "entities_extracted": 14,
+  "entities_mapped": 14,
+  "extraction_completeness": 0.875,
+  "mapping_accuracy": 0.5454545454545454,
+  "precision": 0.8666666666666667,
+  "recall": 0.8125,
+  "f1_score": 0.8387096774193549,
+  "compliance_score": 1.0,
+  "token_usage": 3913,
+  "extracted_entities": [
+    {
+      "text": "HER2-Positive Breast Cancer",
+      "type": "condition",
+      "attributes": {
+        "status": "positive",
+        "value": "",
+        "unit": "",
+        "temporal_context": ""
+      },
+      "confidence": 1.0,
+      "source_context": {
+        "section": "Conditions",
+        "position": 10,
+        "context_sentence": "Conditions: HER2-Positive Breast Cancer, Metastatic Breast Cancer",
+        "section_name": "conditionsModule",
+        "section_type": "conditions",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "Metastatic Breast Cancer",
+      "type": "condition",
+      "attributes": {
+        "status": "positive",
+        "value": "",
+        "unit": "",
+        "temporal_context": ""
+      },
+      "confidence": 1.0,
+      "source_context": {
+        "section": "Conditions",
+        "position": 36,
+        "context_sentence": "Conditions: HER2-Positive Breast Cancer, Metastatic Breast Cancer",
+        "section_name": "conditionsModule",
+        "section_type": "conditions",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "HER2-positive metastatic breast cancer",
+      "type": "condition",
+      "attributes": {
+        "status": "positive",
+        "value": "",
+        "unit": "",
+        "temporal_context": "current"
+      },
+      "confidence": 0.9,
+      "source_context": {
+        "section": "INCLUSION CRITERIA",
+        "position": 36,
+        "context_sentence": "Histologically confirmed HER2-positive metastatic breast cancer",
+        "section_name": "eligibilityModule",
+        "section_type": "eligibility",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "measurable disease per RECIST 1.1",
+      "type": "condition",
+      "attributes": {
+        "status": "positive",
+        "value": "",
+        "unit": "",
+        "temporal_context": "current"
+      },
+      "confidence": 0.8,
+      "source_context": {
+        "section": "INCLUSION CRITERIA",
+        "position": 78,
+        "context_sentence": "Measurable disease per RECIST 1.1",
+        "section_name": "eligibilityModule",
+        "section_type": "eligibility",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "ECOG performance status 0-1",
+      "type": "demographic",
+      "attributes": {
+        "status": "positive",
+        "value": "0-1",
+        "unit": "",
+        "temporal_context": "current"
+      },
+      "confidence": 0.85,
+      "source_context": {
+        "section": "INCLUSION CRITERIA",
+        "position": 104,
+        "context_sentence": "ECOG performance status 0-1",
+        "section_name": "eligibilityModule",
+        "section_type": "eligibility",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "adequate organ function",
+      "type": "condition",
+      "attributes": {
+        "status": "positive",
+        "value": "",
+        "unit": "",
+        "temporal_context": "current"
+      },
+      "confidence": 0.7,
+      "source_context": {
+        "section": "INCLUSION CRITERIA",
+        "position": 126,
+        "context_sentence": "Adequate organ function",
+        "section_name": "eligibilityModule",
+        "section_type": "eligibility",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "Prior treatment with Trastuzumab Deruxtecan",
+      "type": "exclusion",
+      "attributes": {
+        "status": "negative",
+        "value": "",
+        "unit": "",
+        "temporal_context": "past"
+      },
+      "confidence": 0.9,
+      "source_context": {
+        "section": "EXCLUSION CRITERIA",
+        "position": 36,
+        "context_sentence": "Prior treatment with Trastuzumab Deruxtecan",
+        "section_name": "eligibilityModule",
+        "section_type": "eligibility",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "Active brain metastases",
+      "type": "exclusion",
+      "attributes": {
+        "status": "negative",
+        "value": "",
+        "unit": "",
+        "temporal_context": "current"
+      },
+      "confidence": 0.9,
+      "source_context": {
+        "section": "EXCLUSION CRITERIA",
+        "position": 64,
+        "context_sentence": "Active brain metastases",
+        "section_name": "eligibilityModule",
+        "section_type": "eligibility",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "Pregnancy or breastfeeding",
+      "type": "exclusion",
+      "attributes": {
+        "status": "negative",
+        "value": "",
+        "unit": "",
+        "temporal_context": "current"
+      },
+      "confidence": 0.85,
+      "source_context": {
+        "section": "EXCLUSION CRITERIA",
+        "position": 86,
+        "context_sentence": "Pregnancy or breastfeeding",
+        "section_name": "eligibilityModule",
+        "section_type": "eligibility",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "HER2-positive metastatic breast cancer",
+      "type": "condition",
+      "attributes": {
+        "status": "positive",
+        "value": null,
+        "unit": null,
+        "temporal_context": "current"
+      },
+      "confidence": 0.9,
+      "source_context": {
+        "section": "briefSummary",
+        "position": 66,
+        "context_sentence": "This study evaluates a novel HER2-targeted therapy in patients with HER2-positive metastatic breast cancer who have progressed on prior trastuzumab-based therapy.",
+        "section_name": "descriptionModule",
+        "section_type": "description",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "trastuzumab-based therapy",
+      "type": "medication",
+      "attributes": {
+        "status": "positive",
+        "value": null,
+        "unit": null,
+        "temporal_context": "past"
+      },
+      "confidence": 0.8,
+      "source_context": {
+        "section": "briefSummary",
+        "position": 118,
+        "context_sentence": "This study evaluates a novel HER2-targeted therapy in patients with HER2-positive metastatic breast cancer who have progressed on prior trastuzumab-based therapy.",
+        "section_name": "descriptionModule",
+        "section_type": "description",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "HER2-Positive Breast Cancer",
+      "type": "condition",
+      "attributes": {
+        "status": "positive",
+        "value": "",
+        "unit": "",
+        "temporal_context": ""
+      },
+      "confidence": 0.9,
+      "source_context": {
+        "section": "briefTitle",
+        "position": 0,
+        "context_sentence": "briefTitle: Study of Novel Therapy in HER2-Positive Breast Cancer",
+        "section_name": "identificationModule",
+        "section_type": "identification",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "HER2-Positive Metastatic Breast Cancer",
+      "type": "condition",
+      "attributes": {
+        "status": "positive",
+        "value": "",
+        "unit": "",
+        "temporal_context": ""
+      },
+      "confidence": 0.9,
+      "source_context": {
+        "section": "officialTitle",
+        "position": 0,
+        "context_sentence": "officialTitle: A Phase III Study of Novel Targeted Therapy in HER2-Positive Metastatic Breast Cancer",
+        "section_name": "identificationModule",
+        "section_type": "identification",
+        "document_id": "unknown"
+      }
+    },
+    {
+      "text": "Novel Targeted Therapy",
+      "type": "medication",
+      "attributes": {
+        "status": "positive",
+        "value": "",
+        "unit": "",
+        "temporal_context": ""
+      },
+      "confidence": 0.8,
+      "source_context": {
+        "section": "officialTitle",
+        "position": 36,
+        "context_sentence": "officialTitle: A Phase III Study of Novel Targeted Therapy in HER2-Positive Metastatic Breast Cancer",
+        "section_name": "identificationModule",
+        "section_type": "identification",
+        "document_id": "unknown"
+      }
+    }
+  ],
+  "mcode_mappings": [
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "HER2-Positive Breast Cancer",
+      "mapping_confidence": 1.0,
+      "source_text_fragment": "Entity index 0",
+      "mapping_rationale": "Mapped to CancerCondition as it represents a specific type of breast cancer.",
+      "id": "cee1c0d0-f278-45e6-9c5f-fdc76fa8eb84",
+      "llm_source_text_fragment": "Entity index 0",
+      "source_references": []
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "Metastatic Breast Cancer",
+      "mapping_confidence": 1.0,
+      "source_text_fragment": "Entity index 1",
+      "mapping_rationale": "Mapped to CancerCondition as it indicates a stage of breast cancer that has spread.",
+      "id": "ae4c89af-ea09-4a62-9358-d757e25d16e9",
+      "llm_source_text_fragment": "Entity index 1",
+      "source_references": []
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "HER2-Positive Metastatic Breast Cancer",
+      "mapping_confidence": 0.9,
+      "source_text_fragment": "Entity index 2",
+      "mapping_rationale": "Mapped to CancerCondition as it specifies a subtype of metastatic breast cancer.",
+      "id": "c90f20c8-35b8-4020-851e-67f061349e7b",
+      "llm_source_text_fragment": "Entity index 2",
+      "source_references": []
+    },
+    {
+      "resourceType": "Observation",
+      "mcode_element": "CancerDiseaseStatus",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerdiseasestatus",
+        "display": "CancerDiseaseStatus"
+      },
+      "value": "Measurable Disease",
+      "mapping_confidence": 0.8,
+      "source_text_fragment": "Entity index 3",
+      "mapping_rationale": "Mapped to CancerDiseaseStatus as it indicates the presence of measurable disease per RECIST criteria.",
+      "id": "f1cf24bc-29b8-4c51-9fcb-5c71a2594a49",
+      "llm_source_text_fragment": "Entity index 3",
+      "source_references": []
+    },
+    {
+      "resourceType": "Observation",
+      "mcode_element": "ECOGPerformanceStatus",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "ecogperformancestatus",
+        "display": "ECOGPerformanceStatus"
+      },
+      "value": "0-1",
+      "mapping_confidence": 0.85,
+      "source_text_fragment": "Entity index 4",
+      "mapping_rationale": "Mapped to ECOGPerformanceStatus as it directly corresponds to the performance status score.",
+      "id": "9e76188d-e8ce-4e2f-bbea-f0f4c2b7e1a5",
+      "llm_source_text_fragment": "Entity index 4",
+      "source_references": []
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "Adequate Organ Function",
+      "mapping_confidence": 0.7,
+      "source_text_fragment": "Entity index 5",
+      "mapping_rationale": "Mapped to CancerCondition as it is a general health status but does not fit a specific mCODE element.",
+      "id": "d97c8af3-88ee-478c-9ace-ebb52a387db5",
+      "llm_source_text_fragment": "Entity index 5",
+      "source_references": []
+    },
+    {
+      "resourceType": "MedicationStatement",
+      "mcode_element": "CancerRelatedMedication",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerrelatedmedication",
+        "display": "CancerRelatedMedication"
+      },
+      "value": "Trastuzumab Deruxtecan",
+      "mapping_confidence": 0.9,
+      "source_text_fragment": "Entity index 6",
+      "mapping_rationale": "Mapped to CancerRelatedMedication as it is a specific treatment that is excluded.",
+      "id": "18a5f0fd-4348-4128-a311-0b43ba3437d7",
+      "llm_source_text_fragment": "Entity index 6",
+      "source_references": []
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "Active Brain Metastases",
+      "mapping_confidence": 0.9,
+      "source_text_fragment": "Entity index 7",
+      "mapping_rationale": "Mapped to CancerCondition as it indicates a specific exclusion criterion related to cancer spread.",
+      "id": "f748271a-a103-4d51-9ad1-3335687e51b6",
+      "llm_source_text_fragment": "Entity index 7",
+      "source_references": []
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "Pregnancy or Breastfeeding",
+      "mapping_confidence": 0.85,
+      "source_text_fragment": "Entity index 8",
+      "mapping_rationale": "Mapped to CancerCondition as it is a general health status that affects eligibility.",
+      "id": "ed59cdbe-3136-42bd-9218-4c87fc7d0b8c",
+      "llm_source_text_fragment": "Entity index 8",
+      "source_references": []
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "HER2-Positive Metastatic Breast Cancer",
+      "mapping_confidence": 0.9,
+      "source_text_fragment": "Entity index 9",
+      "mapping_rationale": "Mapped to CancerCondition as it is a repeat mention of a specific cancer type.",
+      "id": "0f1fea35-3f51-47c2-a1e0-a5b241cfc023",
+      "llm_source_text_fragment": "Entity index 9",
+      "source_references": []
+    },
+    {
+      "resourceType": "MedicationStatement",
+      "mcode_element": "CancerRelatedMedication",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerrelatedmedication",
+        "display": "CancerRelatedMedication"
+      },
+      "value": "trastuzumab-based therapy",
+      "mapping_confidence": 0.8,
+      "source_text_fragment": "Entity index 10",
+      "mapping_rationale": "Mapped to CancerRelatedMedication as it refers to a specific treatment.",
+      "id": "3cb51bd1-63ff-40c2-954a-5cca93943642",
+      "llm_source_text_fragment": "Entity index 10",
+      "source_references": []
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "HER2-Positive Breast Cancer",
+      "mapping_confidence": 0.9,
+      "source_text_fragment": "Entity index 11",
+      "mapping_rationale": "Mapped to CancerCondition as it is a repeat mention of a specific cancer type.",
+      "id": "0206092c-9611-4e97-8a36-cc9d69658453",
+      "llm_source_text_fragment": "Entity index 11",
+      "source_references": []
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "HER2-Positive Metastatic Breast Cancer",
+      "mapping_confidence": 0.9,
+      "source_text_fragment": "Entity index 12",
+      "mapping_rationale": "Mapped to CancerCondition as it is a repeat mention of a specific cancer type.",
+      "id": "ea2e3597-1c8b-4c31-a82b-ee347016eae5",
+      "llm_source_text_fragment": "Entity index 12",
+      "source_references": []
+    },
+    {
+      "resourceType": "MedicationStatement",
+      "mcode_element": "CancerRelatedMedication",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerrelatedmedication",
+        "display": "CancerRelatedMedication"
+      },
+      "value": "Novel Targeted Therapy",
+      "mapping_confidence": 0.8,
+      "source_text_fragment": "Entity index 13",
+      "mapping_rationale": "Mapped to CancerRelatedMedication as it refers to a specific treatment.",
+      "id": "cd42a28b-3e24-43ed-8fe3-9b5217fd05a0",
+      "llm_source_text_fragment": "Entity index 13",
+      "source_references": []
+    }
+  ],
+  "validation_results": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "compliance_score": 1.0
+  }
+}

@@ -12,9 +12,18 @@ from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.optimization.benchmark_task_tracker import BenchmarkTaskTrackerUI
-from src.utils.cache_decorator import get_cache_stats, clear_api_cache
+from src.utils.api_manager import UnifiedAPIManager
 from src.pipeline.strict_llm_base import StrictLLMBase
-from src.utils.cache_decorator import APICache
+
+def get_cache_stats():
+    """Get cache statistics from the unified API manager"""
+    api_manager = UnifiedAPIManager()
+    return api_manager.get_cache_stats()
+
+def clear_api_cache():
+    """Clear all API cache using the unified API manager"""
+    api_manager = UnifiedAPIManager()
+    api_manager.clear_cache()
 
 def test_benchmark_caching():
     """Test that benchmark caching is working correctly"""

@@ -1,0 +1,23 @@
+{
+  "run_id": "758a5583-8885-4ee0-b289-fedbfe4c2f06",
+  "prompt_variant_id": "0cec9046-fe12-4e58-9bc8-5a880a4170ba",
+  "api_config_name": "model_gpt_4",
+  "test_case_id": "breast_cancer_her2_positive",
+  "start_time": "2025-09-01T16:18:31.836635",
+  "end_time": "2025-09-01T16:18:34.031174",
+  "duration_ms": 0.0,
+  "success": false,
+  "error_message": "LLM-based extraction failed: API error: Error code: 400 - {'error': {'message': \"Invalid parameter: 'response_format' of type 'json_object' is not supported with this model.\", 'type': 'invalid_request_error', 'param': 'response_format', 'code': None}}",
+  "entities_extracted": 0,
+  "entities_mapped": 0,
+  "extraction_completeness": 0.0,
+  "mapping_accuracy": 0.0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1_score": 0.0,
+  "compliance_score": 0.0,
+  "token_usage": 0,
+  "extracted_entities": [],
+  "mcode_mappings": [],
+  "validation_results": {}
+}

@@ -362,3 +362,12 @@ The benchmark task tracker includes improved cache management features:
 - **Namespace Support**: Separate statistics for different cache namespaces (LLM, ClinicalTrials.gov, etc.)
 
 Cache statistics are displayed in the UI with both individual namespace details and aggregated totals, providing a complete overview of the system's caching status.
+
+## 💡 Prompt Name Display in UI
+
+The `PipelineTaskTrackerUI` now displays the specific prompt key used for each LLM call (NLP Extraction and mCODE Mapping). This provides better visibility into which prompt version is being executed for each task.
+
+- **NLP Extraction Task**: Shows the prompt key used for entity extraction (e.g., `generic_extraction`).
+- **mCODE Mapping Task**: Shows the prompt key used for mapping entities to mCODE (e.g., `generic_mapping`).
+
+This enhancement helps in debugging and verifying that the correct prompt versions are being used in the pipeline.

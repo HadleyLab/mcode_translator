@@ -1,0 +1,23 @@
+{
+  "run_id": "1405ef57-0aa8-43b6-9778-0ce5b6d874b6",
+  "prompt_variant_id": "e7e0ccae-53a6-4091-9866-e3d0ba871c43",
+  "api_config_name": "model_gpt_3_5_turbo",
+  "test_case_id": "breast_cancer_her2_positive",
+  "start_time": "2025-09-01T13:44:12.100043",
+  "end_time": "2025-09-01T13:44:14.555282",
+  "duration_ms": 0.0,
+  "success": false,
+  "error_message": "LLM-based extraction failed: API error: Error code: 400 - {'error': {'message': 'Model Not Exist', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_request_error'}}",
+  "entities_extracted": 0,
+  "entities_mapped": 0,
+  "extraction_completeness": 0.0,
+  "mapping_accuracy": 0.0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1_score": 0.0,
+  "compliance_score": 0.0,
+  "token_usage": 0,
+  "extracted_entities": [],
+  "mcode_mappings": [],
+  "validation_results": {}
+}

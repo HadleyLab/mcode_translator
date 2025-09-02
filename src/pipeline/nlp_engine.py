@@ -10,10 +10,12 @@ from dataclasses import dataclass
 
 from .nlp_base import ProcessingResult, NLPEngine
 from .strict_llm_base import StrictLLMBase, LLMExecutionError, LLMResponseError, LLMCallMetrics
-from src.utils.logging_config import Loggable
-from src.utils.prompt_loader import load_prompt
-from src.utils.config import Config
-from src.utils.token_tracker import global_token_tracker
+from src.utils import (
+    Loggable,
+    load_prompt,
+    Config,
+    global_token_tracker
+)
 
 
 class NLPConfigurationError(Exception):
@@ -49,6 +51,7 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
     
     # Default prompt template - can be overridden by pipeline
     ENTITY_EXTRACTION_PROMPT_TEMPLATE = None
+    prompt_name: Optional[str] = "generic_extraction"
     
 
     def __init__(self,
@@ -181,12 +184,19 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
         Raises:
             LLMExecutionError: If API call fails
         """
+        self.prompt_name = "generic_extraction"
+        if self.ENTITY_EXTRACTION_PROMPT_TEMPLATE:
+            # This is a bit of a hack to get the prompt name from the template.
+            # A better solution would be to store the prompt name when the template is set.
+            if "minimal" in self.ENTITY_EXTRACTION_PROMPT_TEMPLATE:
+                self.prompt_name = "minimal_extraction"
+
         cache_key_data = {
             "prompt": prompt,
             "model": self.model_name,
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
-            "prompt_template": self.ENTITY_EXTRACTION_PROMPT_TEMPLATE or "generic_extraction"
+            "prompt_template": self.ENTITY_EXTRACTION_PROMPT_TEMPLATE or self.prompt_name
         }
         
         messages = [{"role": "user", "content": prompt}]
@@ -414,6 +424,10 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             LLMResponseError: If LLM response parsing fails
         """
         return self.extract_entities(clinical_text, section_context)
+
+    def get_prompt_name(self) -> str:
+        """Returns the name of the prompt being used."""
+        return self.prompt_name
 
 
 # Factory function for backward compatibility (with deprecation warning)

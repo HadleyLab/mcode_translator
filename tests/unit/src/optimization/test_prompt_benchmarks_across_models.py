@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
 from src.pipeline.fetcher import search_trials, get_full_study, calculate_total_studies
 from src.pipeline.strict_llm_base import StrictLLMBase
-from src.utils.cache_decorator import APICache
+from src.utils.api_manager import UnifiedAPIManager
 from src.optimization.benchmark_task_tracker import BenchmarkTaskTracker
 
 def test_api_caching():

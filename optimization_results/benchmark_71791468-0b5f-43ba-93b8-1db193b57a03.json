@@ -1,0 +1,23 @@
+{
+  "run_id": "71791468-0b5f-43ba-93b8-1db193b57a03",
+  "prompt_variant_id": "7dafb655-8e23-4365-9820-8f19b24a5b89",
+  "api_config_name": "model_deepseek_reasoner",
+  "test_case_id": "breast_cancer_her2_positive",
+  "start_time": "2025-09-01T12:44:06.128191",
+  "end_time": "2025-09-01T12:47:35.393880",
+  "duration_ms": 0.0,
+  "success": false,
+  "error_message": "LLM-based extraction failed: Unexpected error during LLM call: Empty LLM response received",
+  "entities_extracted": 0,
+  "entities_mapped": 0,
+  "extraction_completeness": 0.0,
+  "mapping_accuracy": 0.0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1_score": 0.0,
+  "compliance_score": 0.0,
+  "token_usage": 0,
+  "extracted_entities": [],
+  "mcode_mappings": [],
+  "validation_results": {}
+}

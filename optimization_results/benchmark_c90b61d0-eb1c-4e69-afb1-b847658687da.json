@@ -1,0 +1,23 @@
+{
+  "run_id": "c90b61d0-eb1c-4e69-afb1-b847658687da",
+  "prompt_variant_id": "f03653bc-e6c7-4e4a-a507-e9edc01f2622",
+  "api_config_name": "model_gpt_3_5_turbo",
+  "test_case_id": "breast_cancer_her2_positive",
+  "start_time": "2025-09-01T18:11:58.307408",
+  "end_time": "2025-09-01T18:12:00.307697",
+  "duration_ms": 0.0,
+  "success": false,
+  "error_message": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: treatment']",
+  "entities_extracted": 0,
+  "entities_mapped": 0,
+  "extraction_completeness": 0.0,
+  "mapping_accuracy": 0.0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1_score": 0.0,
+  "compliance_score": 0.0,
+  "token_usage": 0,
+  "extracted_entities": [],
+  "mcode_mappings": [],
+  "validation_results": {}
+}

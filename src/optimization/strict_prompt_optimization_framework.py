@@ -15,11 +15,16 @@ import pandas as pd
 from pathlib import Path
 from enum import Enum
 
-from src.utils.logging_config import Loggable, get_logger
-from src.utils.config import Config
-from src.utils.prompt_loader import PromptLoader, prompt_loader
+from src.utils import (
+    Loggable,
+    get_logger,
+    Config,
+    PromptLoader,
+    prompt_loader,
+    model_loader,
+    global_token_tracker
+)
 from src.pipeline.mcode_mapper import StrictMcodeMapper
-from src.utils.token_tracker import global_token_tracker
 
 
 class PromptType(Enum):
@@ -439,18 +444,18 @@ class StrictPromptOptimizationFramework(Loggable):
         """Automatically add all models from the configuration"""
         try:
             config = Config()
-            llm_providers = config.get_llm_providers()
+            model_configs = model_loader.get_all_models()
             
-            for provider in llm_providers:
-                model_name = provider.get('model')
-                if model_name:
+            for model_key, model_config in model_configs.items():
+                try:
                     # Create a unique config name for each model
-                    config_name = f"model_{model_name.replace('-', '_').replace('.', '_')}"
-                    api_config = APIConfig(name=config_name, model=model_name)
+                    config_name = f"model_{model_key.replace('-', '_').replace('.', '_')}"
+                    api_config = APIConfig(name=config_name, model=model_key)
                     self.add_api_config(api_config)
-                    self.logger.info(f"Automatically added model '{model_name}' from configuration")
-                else:
-                    self.logger.warning(f"Skipping provider with no model name: {provider}")
+                    self.logger.info(f"Automatically added model '{model_key}' from configuration")
+                except ValueError as e:
+                    self.logger.warning(f"Failed to create API config for {model_key}: {str(e)}")
+                    continue
         except Exception as e:
             self.logger.error(f"Failed to automatically add models from configuration: {str(e)}")
             raise
@@ -462,8 +467,8 @@ class StrictPromptOptimizationFramework(Loggable):
         try:
             # Test that we can access the configuration values by creating a Config instance
             config_instance = Config()
-            _ = config_instance.get_api_key()
-            _ = config_instance.get_base_url()
+            _ = config_instance.get_api_key(config.model)
+            _ = config_instance.get_base_url(config.model)
             _ = config_instance.get_model_name()
             _ = config_instance.get_temperature()
             _ = config_instance.get_max_tokens()
@@ -790,14 +795,13 @@ class StrictPromptOptimizationFramework(Loggable):
                 error_status = f"❌ [{current_index}/{total_count}]"
                 
                 # Calculate estimated time remaining for error cases too
-                if current_index > 1:
+                if current_index > 1 and benchmark_start_time is not None:
                     avg_time_per_test = (time.time() - benchmark_start_time) / current_index
                     remaining_tests = total_count - current_index
                     remaining_seconds = avg_time_per_test * remaining_tests
                     time_remaining = f" ⏰ ETR: {self._format_time_remaining(remaining_seconds)}"
             
             self.logger.error(f"{error_status} STRICT benchmark FAILED in {result.duration_ms:.2f}ms{time_remaining}: {str(e)}")
-            raise  # Re-raise to fail hard
         
         result.end_time = datetime.now()
         self.benchmark_results.append(result)

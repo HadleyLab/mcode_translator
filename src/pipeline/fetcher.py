@@ -9,14 +9,16 @@ import requests
 from functools import lru_cache
 # Add src directory to path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-from src.utils.config import Config
+from src.utils import Config, get_logger, UnifiedAPIManager
 from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
 from src.pipeline.prompt_model_interface import create_configured_pipeline
-from src.utils.logging_config import get_logger
-from src.utils.cache_decorator import cache_api_response
 
 # Get logger instance
 logger = get_logger(__name__)
+
+# Initialize API manager and cache
+api_manager = UnifiedAPIManager()
+clinical_trials_cache = api_manager.get_cache("clinical_trials")
 
 # ClinicalTrials.gov API field names
 CLINICAL_TRIALS_FIELDS = [
@@ -104,7 +106,6 @@ def _search_trials(search_expr: str, fields_str: str, max_results: int, page_tok
         raise ClinicalTrialsAPIError(f"API request failed: {str(e)}")
 
 
-@cache_api_response(ttl=3600)  # Cache for 1 hour
 def search_trials(search_expr: str, fields=None, max_results: int = 100, page_token: str = None):
     """
     Search for clinical trials matching the expression with pagination support
@@ -125,9 +126,29 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
     fields_str = ','.join(fields) if fields else ""
     page_token_str = page_token if page_token else "None"
     
-    # Call the search function directly without caching
+    # Generate cache key
+    cache_key_data = {
+        "function": "search_trials",
+        "search_expr": search_expr,
+        "fields_str": fields_str,
+        "max_results": max_results,
+        "page_token_str": page_token_str
+    }
+    
+    # Try to get cached result
+    cached_result = clinical_trials_cache.get_by_key(cache_key_data)
+    if cached_result is not None:
+        logger.info("Cache HIT for search_trials")
+        return cached_result
+    
+    # If not cached, call the search function
     logger.info(f"search_trials: Performing search for search_expr='{search_expr}', max_results={max_results}, page_token={page_token}")
-    return _search_trials(search_expr, fields_str, max_results, page_token_str)
+    result = _search_trials(search_expr, fields_str, max_results, page_token_str)
+    
+    # Store result in cache with 1 hour TTL
+    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=3600)
+    
+    return result
 
 
 def _get_full_study(nct_id: str):
@@ -196,13 +217,12 @@ def _get_full_study(nct_id: str):
         raise ClinicalTrialsAPIError(f"API request failed for NCT ID {nct_id}: {str(e)}")
 
 
-@cache_api_response(ttl=86400)  # Cache for 24 hours
 def get_full_study(nct_id: str):
     """
     Get complete study record for a specific trial
     
     Args:
-        nct_id: NCT ID of the clinical trial (e.g., "NCT000")
+        nct_id: NCT ID of the clinical trial (e.g., "NCT00")
         
     Returns:
         Dictionary containing the full study record
@@ -210,9 +230,26 @@ def get_full_study(nct_id: str):
     Raises:
         ClinicalTrialsAPIError: If there's an error with the API request
     """
-    # Call the search function directly without caching
+    # Generate cache key
+    cache_key_data = {
+        "function": "get_full_study",
+        "nct_id": nct_id
+    }
+    
+    # Try to get cached result
+    cached_result = clinical_trials_cache.get_by_key(cache_key_data)
+    if cached_result is not None:
+        logger.info("Cache HIT for get_full_study")
+        return cached_result
+    
+    # If not cached, call the search function
     logger.info(f"get_full_study: Fetching study for NCT ID {nct_id}")
-    return _get_full_study(nct_id)
+    result = _get_full_study(nct_id)
+    
+    # Store result in cache with 24 hour TTL
+    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=86400)
+    
+    return result
 
 
 def get_study_fields():
@@ -631,7 +668,6 @@ def _calculate_total_studies(search_expr: str, fields_str: str, page_size: int):
         raise ClinicalTrialsAPIError(f"API request failed: {str(e)}")
 
 
-@cache_api_response(ttl=3600)  # Cache for 1 hour
 def calculate_total_studies(search_expr: str, fields=None, page_size: int = 100):
     """
     Calculate the total number of studies matching the search expression
@@ -647,9 +683,28 @@ def calculate_total_studies(search_expr: str, fields=None, page_size: int = 100)
     # Convert fields to string for caching
     fields_str = ','.join(fields) if fields else ""
     
-    # Call the calculate function directly without caching
+    # Generate cache key
+    cache_key_data = {
+        "function": "calculate_total_studies",
+        "search_expr": search_expr,
+        "fields_str": fields_str,
+        "page_size": page_size
+    }
+    
+    # Try to get cached result
+    cached_result = clinical_trials_cache.get_by_key(cache_key_data)
+    if cached_result is not None:
+        logger.info("Cache HIT for calculate_total_studies")
+        return cached_result
+    
+    # If not cached, call the calculate function
     logger.info(f"calculate_total_studies: Performing calculation for search_expr='{search_expr}', page_size={page_size}")
-    return _calculate_total_studies(search_expr, fields_str, page_size)
+    result = _calculate_total_studies(search_expr, fields_str, page_size)
+    
+    # Store result in cache with 1 hour TTL
+    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=3600)
+    
+    return result
 
 
 if __name__ == '__main__':

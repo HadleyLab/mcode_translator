@@ -14,7 +14,7 @@ try:
 except ImportError:
     logger.warning("⚠️  python-dotenv not installed, using system environment variables")
 
-from src.utils.logging_config import get_logger, Loggable, setup_logging
+from src.utils import get_logger, Loggable, setup_logging
 import logging
 
 # Setup logging at the start

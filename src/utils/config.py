@@ -101,64 +101,38 @@ class Config:
         """Get clinical trials API base URL"""
         return self.config_data['apis']['clinical_trials']['base_url']
     
-    def get_llm_providers(self) -> List[Dict[str, Any]]:
-        """Get all LLM provider configurations"""
-        return self.config_data['apis']['llm_providers']
-    
-    def get_llm_provider(self, provider_name: Optional[str] = None) -> Dict[str, Any]:
+    def get_api_key(self, model_name: Optional[str] = None) -> str:
         """
-        Get LLM provider configuration by name, or first provider if name not specified
+        Get API key for specified LLM model from environment variables.
         
         Args:
-            provider_name: Optional name of the LLM provider to retrieve
-            
-        Returns:
-            LLM provider configuration dictionary
-            
-        Raises:
-            ConfigurationError: If provider not found or no providers configured
-        """
-        providers = self.get_llm_providers()
-        
-        if not providers:
-            raise ConfigurationError("No LLM providers configured")
-        
-        if provider_name:
-            for provider in providers:
-                if provider.get('name') == provider_name:
-                    return provider
-            raise ConfigurationError(f"LLM provider '{provider_name}' not found")
-        else:
-            # Return first provider if no name specified
-            return providers[0]
-    
-    def get_api_key(self, provider_name: Optional[str] = None) -> str:
-        """
-        Get API key for specified LLM provider from environment variables
-        
-        Args:
-            provider_name: Optional name of the LLM provider
+            model_name: Optional name of the LLM model.
         
         Returns:
-            API key string
-        
+            API key string.
+            
         Raises:
-            ConfigurationError: If API key is missing or invalid
+            ConfigurationError: If API key is missing or invalid.
         """
-        # Get API key from environment variable
-        api_key = os.getenv('DEEPSEEK_API_KEY')
+        model_config = self.get_model_config(model_name)
+        api_key_env_var = model_config.api_key_env_var
+
+        if not api_key_env_var:
+            raise ConfigurationError(f"API key environment variable not configured for model '{model_name}'.")
+
+        api_key = os.getenv(api_key_env_var)
         
         if not api_key or not isinstance(api_key, str) or len(api_key.strip()) < 20:
-            raise ConfigurationError(f"Invalid or missing API key in environment variables for provider '{provider_name}'")
+            raise ConfigurationError(f"Invalid or missing API key in environment variable '{api_key_env_var}' for model '{model_name}'.")
         
         return api_key
     
-    def get_base_url(self, provider_name: Optional[str] = None) -> str:
+    def get_base_url(self, model_name: Optional[str] = None) -> str:
         """
-        Get base URL for specified LLM provider
+        Get base URL for specified LLM model
         
         Args:
-            provider_name: Optional name of the LLM provider
+            model_name: Optional name of the LLM model
             
         Returns:
             Base URL string
@@ -166,20 +140,20 @@ class Config:
         Raises:
             ConfigurationError: If base URL is missing or invalid
         """
-        provider = self.get_llm_provider(provider_name)
-        base_url = provider.get('base_url')
+        model_config = self.get_model_config(model_name)
+        base_url = model_config.base_url
         
         if not base_url or not isinstance(base_url, str):
-            raise ConfigurationError(f"Invalid or missing base URL for provider '{provider.get('name')}'")
+            raise ConfigurationError(f"Invalid or missing base URL for model '{model_name}'")
         
         return base_url
     
-    def get_model_name(self, provider_name: Optional[str] = None) -> str:
+    def get_model_name(self, model_name: Optional[str] = None) -> str:
         """
-        Get model name for specified LLM provider
+        Get model name for specified LLM model
         
         Args:
-            provider_name: Optional name of the LLM provider
+            model_name: Optional name of the LLM model
             
         Returns:
             Model name string
@@ -187,20 +161,20 @@ class Config:
         Raises:
             ConfigurationError: If model name is missing or invalid
         """
-        provider = self.get_llm_provider(provider_name)
-        model_name = provider.get('model')
+        model_config = self.get_model_config(model_name)
+        model_name = model_config.name
         
         if not model_name or not isinstance(model_name, str):
-            raise ConfigurationError(f"Invalid or missing model name for provider '{provider.get('name')}'")
+            raise ConfigurationError(f"Invalid or missing model name for model '{model_name}'")
         
         return model_name
     
-    def get_temperature(self, provider_name: Optional[str] = None) -> float:
+    def get_temperature(self, model_name: Optional[str] = None) -> float:
         """
-        Get temperature for specified LLM provider
+        Get temperature for specified LLM model
         
         Args:
-            provider_name: Optional name of the LLM provider
+            model_name: Optional name of the LLM model
             
         Returns:
             Temperature float
@@ -208,20 +182,20 @@ class Config:
         Raises:
             ConfigurationError: If temperature is missing or invalid
         """
-        provider = self.get_llm_provider(provider_name)
-        temperature = provider.get('temperature')
+        model_config = self.get_model_config(model_name)
+        temperature = model_config.default_parameters.get('temperature')
         
         if temperature is None or not isinstance(temperature, (int, float)):
-            raise ConfigurationError(f"Invalid or missing temperature for provider '{provider.get('name')}'")
+            raise ConfigurationError(f"Invalid or missing temperature for model '{model_name}'")
         
         return float(temperature)
     
-    def get_max_tokens(self, provider_name: Optional[str] = None) -> int:
+    def get_max_tokens(self, model_name: Optional[str] = None) -> int:
         """
-        Get max tokens for specified LLM provider
+        Get max tokens for specified LLM model
         
         Args:
-            provider_name: Optional name of the LLM provider
+            model_name: Optional name of the LLM model
             
         Returns:
             Max tokens integer
@@ -229,11 +203,11 @@ class Config:
         Raises:
             ConfigurationError: If max tokens is missing or invalid
         """
-        provider = self.get_llm_provider(provider_name)
-        max_tokens = provider.get('max_tokens')
+        model_config = self.get_model_config(model_name)
+        max_tokens = model_config.default_parameters.get('max_tokens')
         
         if max_tokens is None or not isinstance(max_tokens, int) or max_tokens <= 0:
-            raise ConfigurationError(f"Invalid or missing max tokens for provider '{provider.get('name')}'")
+            raise ConfigurationError(f"Invalid or missing max tokens for model '{model_name}'")
         
         return max_tokens
     
@@ -245,7 +219,7 @@ class Config:
         """Check if API keys are required"""
         return self.config_data['validation']['require_api_keys']
     
-    def get_model_config(self, model_key: str) -> ModelConfig:
+    def get_model_config(self, model_key: Optional[str]) -> ModelConfig:
         """
         Get model configuration from the file-based model library
         
@@ -258,6 +232,12 @@ class Config:
         Raises:
             ConfigurationError: If model configuration is missing or invalid
         """
+        # If no model_key is provided, use the default model from the model library
+        if model_key is None:
+            model_key = model_loader.get_default_model()
+            if not model_key:
+                raise ConfigurationError("No default model set and no model key provided.")
+
         # STRICT: Load model configuration from file-based model library - throw exception if not found
         return model_loader.get_model(model_key)
     

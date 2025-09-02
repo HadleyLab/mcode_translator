@@ -20,11 +20,11 @@ This guide provides comprehensive documentation for the new file-based model lib
 ### After (File-Based Library)
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Source Code   │    │   ModelLoader   │    │  File Library   │
+│   Source Code   │   ModelLoader   │    │ File Library   │
 │                 │    │                 │
 │  model_loader.  │───▶│   load_model()  │───▶│  models/        │
 │  get_model()    │    │   (cached)      │    │   ├── config.json
-│                 │    │                 │    │   └── json/     │
+│                 │    │                 │   └── json/     │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
@@ -54,37 +54,24 @@ The [`ModelLoader`](../src/utils/model_loader.py) class provides:
 - **Caching**: Loads model configurations once and caches them
 - **Relative Path Handling**: Works across different environments
 - **Error Handling**: Validates model configuration existence
-- **Nested Config Support**: Handles complex configuration structures
+- **Flattened Config Support**: Handles simplified configuration structures
 - **Strict Implementation**: Throws exceptions for missing models rather than providing fallbacks
 
 ### Configuration Schema
 
 ```json
 {
-  "model_library": {
-    "models": {
-      "category": {
-        "subcategory": [
-          {
-            "name": "model_name",
-            "model_type": "MODEL_TYPE",
-            "model_identifier": "model_identifier",
-            "base_url": "https://api.provider.com/v1",
-            "description": "Model description",
-            "version": "1.0.0",
-            "author": "Provider Name",
-            "created_date": "2024-01-15",
-            "status": "production",
-            "default_parameters": {
-              "temperature": 0.1,
-              "max_tokens": 4000
-            },
-            "capabilities": ["capability1", "capability2"],
-            "tags": ["tag1", "tag2"]
-          }
-        ]
-      }
-    }
+  "model_name": {
+    "name": "model_name",
+    "model_type": "MODEL_TYPE",
+    "model_identifier": "model_identifier",
+    "api_key_env_var": "API_KEY_ENV_VAR",
+    "base_url": "https://api.provider.com/v1",
+    "default_parameters": {
+      "temperature": 0.1,
+      "max_tokens": 4000
+    },
+    "default": true
   }
 }
 ```
@@ -97,15 +84,15 @@ Located all hardcoded model configurations across the codebase:
 - [`src/utils/config.py`](../src/utils/config.py)
 
 ### Step 2: Create File Structure
-Organized model configurations into logical categories:
-- `production/` - Production-ready models
-- `experimental/` - Experimental models for testing
+Organized model configurations into a flattened structure:
+- All models are directly accessible by their name as keys
+- Removed complex nested categorization (production/experimental)
 
 ### Step 3: Migrate Content
 Moved all model configuration content from code to JSON files while preserving:
 - Original configuration values and structure
 - Model identifiers and base URLs
-- Default parameters and capabilities
+- Default parameters
 - Intent and purpose of each model
 
 ### Step 4: Update Code References
@@ -174,17 +161,16 @@ configs = [
 ]
 ```
 
-## Model Categories
+## Available Models
 
-### Production Models (6 total)
+### DeepSeek Models
 - **deepseek-coder**: Code generation model
 - **deepseek-chat**: General conversation model
 - **deepseek-reasoner**: Reasoning and problem-solving model
+
+### OpenAI Models
 - **gpt-4**: OpenAI general purpose model
 - **gpt-3.5-turbo**: OpenAI cost-effective general purpose model
-
-### Experimental Models
-- Currently empty, ready for new experimental models
 
 ## Performance Considerations
 
@@ -339,4 +325,4 @@ def test_strict_model_loading():
 
 ## Conclusion
 
-The file-based model library provides a robust, maintainable solution for model configuration management that eliminates technical debt from hardcoded strings while enabling better experimentation, version control, and collaboration across the development team. The strict implementation ensures that all model configurations are accessible and throws exceptions for missing models rather than providing fallbacks, maintaining consistency with the overall mCODE Translator framework's strict infrastructure principles.
+The file-based model library provides a robust, maintainable solution for model configuration management that eliminates technical debt from hardcoded strings while enabling better experimentation, version control, and collaboration across the development team. The strict implementation ensures that all model configurations are accessible and throws exceptions for missing models rather than providing fallbacks, maintaining consistency with the overall mCODE Translator framework's strict infrastructure principles. The flattened structure simplifies model access and reduces complexity in the configuration management system.

@@ -1,0 +1,23 @@
+{
+  "run_id": "35808118-3050-40f1-95bd-29e08066e5fb",
+  "prompt_variant_id": "d1be8465-cbed-4ddd-ac57-215e8f33c5f1",
+  "api_config_name": "model_gpt_4o_mini",
+  "test_case_id": "test_case_1",
+  "start_time": "2025-09-01T13:59:00.540427",
+  "end_time": "2025-09-01T13:59:02.666362",
+  "duration_ms": 0.0,
+  "success": false,
+  "error_message": "LLM-based mapping failed: API error: Error code: 400 - {'error': {'message': 'Model Not Exist', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_request_error'}}",
+  "entities_extracted": 0,
+  "entities_mapped": 0,
+  "extraction_completeness": 0.0,
+  "mapping_accuracy": 0.0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1_score": 0.0,
+  "compliance_score": 0.0,
+  "token_usage": 0,
+  "extracted_entities": [],
+  "mcode_mappings": [],
+  "validation_results": {}
+}

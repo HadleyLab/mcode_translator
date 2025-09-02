@@ -30,12 +30,8 @@ def demo_model_library():
         print(f"    Type: {model_config.model_type}")
         print(f"    Identifier: {model_config.model_identifier}")
         print(f"    Base URL: {model_config.base_url}")
-        print(f"    Description: {model_config.description}")
-        print(f"    Status: {model_config.status}")
         print(f"    Default Temperature: {model_config.default_parameters.get('temperature', 'N/A')}")
         print(f"    Default Max Tokens: {model_config.default_parameters.get('max_tokens', 'N/A')}")
-        print(f"    Capabilities: {', '.join(model_config.capabilities)}")
-        print(f"    Tags: {', '.join(model_config.tags)}")
     
     print("\n" + "=" * 60)
     print("API Config Integration Demo")

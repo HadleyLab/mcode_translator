@@ -10,9 +10,12 @@ from typing import Optional, Dict, Any
 # Add src directory to path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from src.utils.prompt_loader import PromptLoader
-from src.utils.model_loader import ModelLoader, ModelConfig
-from src.utils.config import Config
+from src.utils import (
+    PromptLoader,
+    ModelLoader,
+    ModelConfig,
+    Config
+)
 from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
 from src.pipeline.mcode_mapper import StrictMcodeMapper
 from src.pipeline.nlp_engine import StrictNlpExtractor

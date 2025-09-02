@@ -10,8 +10,18 @@ import json
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from utils.cache_decorator import cache_api_response, get_cache_stats, clear_api_cache
+from utils.api_manager import UnifiedAPIManager
 from pipeline.fetcher import search_trials, get_full_study, calculate_total_studies
+
+def get_cache_stats():
+    """Get cache statistics from the unified API manager"""
+    api_manager = UnifiedAPIManager()
+    return api_manager.get_cache_stats()
+
+def clear_api_cache():
+    """Clear all API cache using the unified API manager"""
+    api_manager = UnifiedAPIManager()
+    api_manager.clear_cache()
 
 def test_cache_decorator():
     """Test the cache decorator implementation"""
@@ -25,23 +35,38 @@ def test_cache_decorator():
     stats = get_cache_stats()
     print(f"📊 Initial cache stats: {stats}")
     
-    # Test the cache decorator with a simple function
-    @cache_api_response(ttl=10)  # 10 seconds TTL
+    # Test the cache with a simple function using UnifiedAPIManager
+    api_manager = UnifiedAPIManager()
+    test_cache = api_manager.get_cache("test")
+    
     def slow_function(x, y):
         """A slow function to test caching"""
         time.sleep(1)  # Simulate slow operation
         return x + y
     
     # First call should take time
+    cache_key_data = {"function": "slow_function", "args": (2, 3)}
+    cached_result = test_cache.get_by_key(cache_key_data)
+    if cached_result is not None:
+        print("❌ Unexpected cache hit before first call")
+        return False
+    
     start_time = time.time()
     result1 = slow_function(2, 3)
     time1 = time.time() - start_time
     print(f"⏱️  First call took {time1:.2f} seconds, result: {result1}")
     
+    # Store result in cache
+    test_cache.set_by_key(result1, cache_key_data, ttl=10)  # 10 seconds TTL
+    
     # Second call should be fast (cached)
     start_time = time.time()
-    result2 = slow_function(2, 3)
+    cached_result = test_cache.get_by_key(cache_key_data)
     time2 = time.time() - start_time
+    if cached_result is not None:
+        result2 = cached_result
+    else:
+        result2 = slow_function(2, 3)
     print(f"⏱️  Second call took {time2:.2f} seconds, result: {result2}")
     
     if time2 < time1 * 0.5:  # Should be much faster
@@ -51,10 +76,19 @@ def test_cache_decorator():
         return False
     
     # Test with different arguments (should not be cached)
+    cache_key_data2 = {"function": "slow_function", "args": (3, 4)}
+    cached_result2 = test_cache.get_by_key(cache_key_data2)
+    if cached_result2 is not None:
+        print("❌ Unexpected cache hit for different arguments")
+        return False
+    
     start_time = time.time()
     result3 = slow_function(3, 4)
     time3 = time.time() - start_time
     print(f"⏱️  Third call (different args) took {time3:.2f} seconds, result: {result3}")
+    
+    # Store result in cache
+    test_cache.set_by_key(result3, cache_key_data2, ttl=10)  # 10 seconds TTL
     
     if time3 > time2 * 2:  # Should be slow again
         print("✅ Cache correctly distinguishes different arguments")

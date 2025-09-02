@@ -10,7 +10,7 @@ import json
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from src.utils.cache_decorator import APICache
+from src.utils.api_manager import UnifiedAPIManager
 from src.pipeline.strict_llm_base import StrictLLMBase
 
 class TestLLM(StrictLLMBase):

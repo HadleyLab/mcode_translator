@@ -11,7 +11,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from pipeline.strict_llm_base import StrictLLMBase
-from utils.cache_decorator import APICache
+from utils.api_manager import UnifiedAPIManager
 
 class TestLLM(StrictLLMBase):
     """Test implementation of StrictLLMBase for testing caching"""
@@ -24,7 +24,8 @@ def test_llm_caching():
     print("🧪 Testing LLM caching...")
     
     # Clear LLM cache first
-    llm_cache = APICache(".llm_cache")
+    api_manager = UnifiedAPIManager()
+    llm_cache = api_manager.get_cache("llm")
     llm_cache.clear()
     print("🗑️  Cleared LLM cache")
     
@@ -46,7 +47,7 @@ def test_llm_caching():
     }
     
     # Check if entry exists in cache (should not)
-    cached_result = llm.llm_cache.get_by_key(cache_key_data)
+    cached_result = llm_cache.get_by_key(cache_key_data)
     if cached_result is not None:
         print("❌ Unexpected cache hit before first call")
         return False
@@ -64,11 +65,11 @@ def test_llm_caching():
         }
     }
     # Store in cache using the LLM's cache
-    llm.llm_cache.set_by_key(test_result, cache_key_data)
+    llm_cache.set_by_key(test_result, cache_key_data)
     print("💾 Stored test result in cache")
     
     # Try to retrieve from cache
-    retrieved_result = llm.llm_cache.get_by_key(cache_key_data)
+    retrieved_result = llm_cache.get_by_key(cache_key_data)
     if retrieved_result is None:
         print("❌ Cache miss after storing entry")
         return False

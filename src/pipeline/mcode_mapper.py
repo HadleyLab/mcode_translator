@@ -62,6 +62,7 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
 
     # Prompt template will be loaded from file-based library
     MCODE_MAPPING_PROMPT_TEMPLATE = None
+    prompt_name: Optional[str] = "generic_mapping"
 
     def __init__(self,
                  model_name: str = None,
@@ -264,6 +265,7 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
             "max_tokens": self.max_tokens,
             "prompt_template": self.MCODE_MAPPING_PROMPT_TEMPLATE or prompt_key
         }
+        self.prompt_name = prompt_key
         
         messages = [{"role": "user", "content": prompt}]
         
@@ -573,6 +575,10 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
             LLMResponseError: If LLM response parsing fails
         """
         return self.map_to_mcode(entities, trial_context, source_references, prompt_key)
+
+    def get_prompt_name(self) -> str:
+        """Returns the name of the prompt being used."""
+        return self.prompt_name
 
 
 # Factory function for backward compatibility (with deprecation warning)

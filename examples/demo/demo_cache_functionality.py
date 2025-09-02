@@ -10,8 +10,18 @@ import json
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from utils.cache_decorator import get_cache_stats, clear_api_cache
+from utils.api_manager import UnifiedAPIManager
 from pipeline.fetcher import search_trials, get_full_study, calculate_total_studies
+
+def get_cache_stats():
+    """Get cache statistics from the unified API manager"""
+    api_manager = UnifiedAPIManager()
+    return api_manager.get_cache_stats()
+
+def clear_api_cache():
+    """Clear all API cache using the unified API manager"""
+    api_manager = UnifiedAPIManager()
+    api_manager.clear_cache()
 
 def demo_cache_functionality():
     """Demonstrate cache functionality"""
@@ -24,7 +34,8 @@ def demo_cache_functionality():
     
     # Show initial cache stats
     stats = get_cache_stats()
-    print(f"📊 Initial cache stats: {stats['cached_items']} items, {stats['total_size_bytes']} bytes")
+    clinical_trials_stats = stats.get("clinical_trials", {})
+    print(f"📊 Initial cache stats: {clinical_trials_stats.get('cached_items', 0)} items, {clinical_trials_stats.get('total_size_bytes', 0)} bytes")
     
     print("\n🔍 Testing search_trials caching...")
     
@@ -74,7 +85,8 @@ def demo_cache_functionality():
     
     # Show final cache stats
     stats = get_cache_stats()
-    print(f"\n📊 Final cache stats: {stats['cached_items']} items, {stats['total_size_bytes']} bytes")
+    clinical_trials_stats = stats.get("clinical_trials", {})
+    print(f"\n📊 Final cache stats: {clinical_trials_stats.get('cached_items', 0)} items, {clinical_trials_stats.get('total_size_bytes', 0)} bytes")
     
     print("\n✨ Cache functionality demo completed successfully!")
 

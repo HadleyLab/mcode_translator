@@ -1,104 +1,91 @@
 {
-  "model_library": {
-    "version": "1.0.0",
-    "created_date": "2025-08-29",
-    "description": "Strict implementation - only working models retained",
-    "models": {
-      "production": {
-        "deepseek": [
-          {
-            "name": "deepseek-coder",
-            "model_type": "CODE_GENERATION",
-            "model_identifier": "deepseek-coder",
-            "base_url": "https://api.deepseek.com/v1",
-            "description": "DeepSeek Coder model for code generation tasks",
-            "version": "1.0.0",
-            "author": "DeepSeek AI",
-            "created_date": "2024-01-15",
-            "status": "production",
-            "default_parameters": {
-              "temperature": 0.1,
-              "max_tokens": 4000
-            },
-            "capabilities": ["code_generation", "structured_output"],
-            "tags": ["deepseek", "coder", "code_generation"]
-          },
-          {
-            "name": "deepseek-chat",
-            "model_type": "GENERAL_CONVERSATION",
-            "model_identifier": "deepseek-chat",
-            "base_url": "https://api.deepseek.com/v1",
-            "description": "DeepSeek Chat model for general conversation tasks",
-            "version": "1.0.0",
-            "author": "DeepSeek AI",
-            "created_date": "2024-08-28",
-            "status": "production",
-            "default_parameters": {
-              "temperature": 0.1,
-              "max_tokens": 4000
-            },
-            "capabilities": ["conversation", "general_purpose"],
-            "tags": ["deepseek", "chat", "general_conversation"]
-          },
-          {
-            "name": "deepseek-reasoner",
-            "model_type": "REASONING_AND_PROBLEM_SOLVING",
-            "model_identifier": "deepseek-reasoner",
-            "base_url": "https://api.deepseek.com/v1",
-            "description": "DeepSeek Reasoner model for reasoning and problem-solving tasks",
-            "version": "1.0.0",
-            "author": "DeepSeek AI",
-            "created_date": "2024-08-28",
-            "status": "production",
-            "default_parameters": {
-              "temperature": 0.1,
-              "max_tokens": 4000
-            },
-            "capabilities": ["reasoning", "problem_solving", "logical_analysis"],
-            "tags": ["deepseek", "reasoner", "reasoning"]
-          }
-        ],
-        "openai": [
-          {
-            "name": "gpt-4",
-            "model_type": "GENERAL_PURPOSE",
-            "model_identifier": "gpt-4",
-            "base_url": "https://api.openai.com/v1",
-            "description": "OpenAI GPT-4 model for general purpose tasks",
-            "version": "1.0.0",
-            "author": "OpenAI",
-            "created_date": "2023-03-14",
-            "status": "production",
-            "default_parameters": {
-              "temperature": 0.1,
-              "max_tokens": 4000
-            },
-            "capabilities": ["general_purpose", "multimodal", "code_generation"],
-            "tags": ["openai", "gpt4", "general_purpose"]
-          },
-          {
-            "name": "gpt-3.5-turbo",
-            "model_type": "GENERAL_PURPOSE",
-            "model_identifier": "gpt-3.5-turbo",
-            "base_url": "https://api.openai.com/v1",
-            "description": "OpenAI GPT-3.5 Turbo model for cost-effective general purpose tasks",
-            "version": "1.0.0",
-            "author": "OpenAI",
-            "created_date": "2023-06-13",
-            "status": "production",
-            "default_parameters": {
-              "temperature": 0.1,
-              "max_tokens": 4000
-            },
-            "capabilities": ["general_purpose", "cost_effective"],
-            "tags": ["openai", "gpt35", "general_purpose", "cost_effective"]
-          }
-        ]
-      },
-      "experimental": {
-        "deepseek": [],
-        "openai": []
-      }
+  "deepseek-coder": {
+    "name": "deepseek-coder",
+    "default": true,
+    "model_type": "CODE_GENERATION",
+    "model_identifier": "deepseek-coder",
+    "api_key_env_var": "DEEPSEEK_API_KEY",
+    "base_url": "https://api.deepseek.com/v1",
+    "default_parameters": {
+      "temperature": 0.1,
+      "max_tokens": 4000
+    }
+  },
+  "deepseek-chat": {
+    "name": "deepseek-chat",
+    "model_type": "GENERAL_CONVERSATION",
+    "model_identifier": "deepseek-chat",
+    "api_key_env_var": "DEEPSEEK_API_KEY",
+    "base_url": "https://api.deepseek.com/v1",
+    "default_parameters": {
+      "temperature": 0.1,
+      "max_tokens": 4000
+    }
+  },
+  "deepseek-reasoner": {
+    "name": "deepseek-reasoner",
+    "model_type": "REASONING_AND_PROBLEM_SOLVING",
+    "model_identifier": "deepseek-reasoner",
+    "api_key_env_var": "DEEPSEEK_API_KEY",
+    "base_url": "https://api.deepseek.com/v1",
+    "default_parameters": {
+      "temperature": 0.1,
+      "max_tokens": 4000
+    }
+  },
+  "gpt-4o": {
+    "name": "gpt-4o",
+    "model_type": "GENERAL_PURPOSE",
+    "model_identifier": "gpt-4o",
+    "api_key_env_var": "OPENAI_API_KEY",
+    "base_url": "https://api.openai.com/v1",
+    "default_parameters": {
+      "temperature": 0.1,
+      "max_tokens": 4000
+    }
+  },
+  "gpt-4o-mini": {
+    "name": "gpt-4o-mini",
+    "model_type": "GENERAL_PURPOSE",
+    "model_identifier": "gpt-4o-mini",
+    "api_key_env_var": "OPENAI_API_KEY",
+    "base_url": "https://api.openai.com/v1",
+    "default_parameters": {
+      "temperature": 0.1,
+      "max_tokens": 4000
+    }
+  },
+  "gpt-4-turbo": {
+    "name": "gpt-4-turbo",
+    "model_type": "GENERAL_PURPOSE",
+    "model_identifier": "gpt-4-turbo",
+    "api_key_env_var": "OPENAI_API_KEY",
+    "base_url": "https://api.openai.com/v1",
+    "default_parameters": {
+      "temperature": 0.1,
+      "max_tokens": 4000
+    }
+  },
+  "gpt-4": {
+    "name": "gpt-4",
+    "model_type": "GENERAL_PURPOSE",
+    "model_identifier": "gpt-4",
+    "api_key_env_var": "OPENAI_API_KEY",
+    "base_url": "https://api.openai.com/v1",
+    "default_parameters": {
+      "temperature": 0.1,
+      "max_tokens": 4000
+    }
+  },
+  "gpt-3.5-turbo": {
+    "name": "gpt-3.5-turbo",
+    "model_type": "GENERAL_PURPOSE",
+    "model_identifier": "gpt-3.5-turbo",
+    "api_key_env_var": "OPENAI_API_KEY",
+    "base_url": "https://api.openai.com/v1",
+    "default_parameters": {
+      "temperature": 0.1,
+      "max_tokens": 4000
     }
   }
 }

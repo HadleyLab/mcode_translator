@@ -18,10 +18,14 @@ import os
 # Add parent directory to path for absolute imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from utils.logging_config import Loggable
-from utils.config import Config
-from utils.token_tracker import TokenUsage, extract_token_usage_from_response, global_token_tracker
-from utils.cache_decorator import APICache
+from src.utils import (
+    Loggable,
+    Config,
+    TokenUsage,
+    extract_token_usage_from_response,
+    global_token_tracker,
+    UnifiedAPIManager
+)
 
 
 class LLMConfigurationError(Exception):
@@ -116,8 +120,9 @@ class StrictLLMBase(Loggable, ABC):
         # Initialize OpenAI client
         self.client = self._initialize_openai_client()
         
-        # Initialize LLM cache
-        self.llm_cache = APICache(".llm_cache")
+        # Initialize LLM cache using UnifiedAPIManager
+        api_manager = UnifiedAPIManager()
+        self.llm_cache = api_manager.get_cache("llm")
         
         self.logger.info(f"✅ Strict LLM Base initialized successfully with model: {self.model_name}")
     
@@ -171,15 +176,19 @@ class StrictLLMBase(Loggable, ABC):
         Args:
             messages: List of message dictionaries for the LLM
             cache_key_data: Data for generating cache key
-            
+        
         Returns:
             Tuple of (response_content, call_metrics)
-            
+        
         Raises:
             LLMExecutionError: If API call fails
         """
+        # Add API key to cache key data to ensure cache isolation by API key
+        cache_key_data_with_api = cache_key_data.copy()
+        cache_key_data_with_api["api_key"] = self.api_key
+        
         # Try to get cached result first
-        cached_result = self.llm_cache.get_by_key(cache_key_data)
+        cached_result = self.llm_cache.get_by_key(cache_key_data_with_api)
         if cached_result is not None:
             self.logger.info(f"✅ LLM API call CACHED for {self.model_name}")
             # Convert metrics dict back to LLMCallMetrics object
@@ -232,7 +241,7 @@ class StrictLLMBase(Loggable, ABC):
                 'response_content': response_content,
                 'metrics': metrics.to_dict()
             }
-            self.llm_cache.set_by_key(cache_data, cache_key_data, ttl=86400)
+            self.llm_cache.set_by_key(cache_data, cache_key_data_with_api, ttl=86400)
             
             self.logger.info(f"✅ LLM API call completed in {metrics.duration:.2f}s")
             self.logger.info(f"   📊 Token usage - Prompt: {token_usage.prompt_tokens}, Completion: {token_usage.completion_tokens}, Total: {token_usage.total_tokens}")

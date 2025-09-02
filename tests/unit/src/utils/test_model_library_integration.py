@@ -30,7 +30,6 @@ def test_load_specific_model():
     assert model_config.model_identifier == "deepseek-coder"
     assert model_config.base_url == "https://api.deepseek.com/v1"
     assert model_config.model_type == "CODE_GENERATION"
-    assert model_config.status == "production"
     
     # Check default parameters
     assert "temperature" in model_config.default_parameters

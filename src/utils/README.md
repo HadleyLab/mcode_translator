@@ -1,110 +1,41 @@
-# Utility Modules Documentation
+# mCODE-Translator Utility Modules
 
-This directory contains utility modules that provide shared functionality across the mCODE Translator framework.
+This directory contains a centralized library of utility modules that provide shared, standardized, and strictly implemented functionality across the mCODE-Translator framework.
 
-## Token Tracking System
+## Centralized `__init__.py`
 
-The token tracking system provides standardized token usage reporting across all LLM calls in the framework. It consists of three main components:
+The `src/utils/__init__.py` file makes this directory a Python package and exposes all key utility classes and functions for easy and consistent importing across the application. This promotes a clear, centralized structure and avoids scattered or redundant utility implementations.
 
-### TokenUsage Dataclass
-A standardized data structure for representing token usage information:
-- `prompt_tokens`: Number of tokens in the prompt
-- `completion_tokens`: Number of tokens in the completion/response
-- `total_tokens`: Total tokens consumed
-- `model_name`: Name of the model used
-- `provider_name`: Name of the provider used
+## Key Modules and Functionality
 
-### TokenTracker Singleton
-A thread-safe singleton class that aggregates token usage across all LLM calls:
-- Maintains running totals of token usage
-- Tracks usage by component (NLP extraction, mCODE mapping, etc.)
-- Provides methods for retrieving and resetting usage data
-- Thread-safe implementation using locks
+### API Manager (`api_manager.py`)
+- **`UnifiedAPIManager`**: A centralized class for managing API response caching. It provides namespace-based separation for different types of cached data (e.g., LLM responses, clinical trial data) to ensure that different parts of the system do not interfere with each other's caches.
+- **`APICache`**: A generic, disk-based cache class that supports time-to-live (TTL) for cache entries.
 
-### Global Token Tracker
-A singleton instance of TokenTracker that is used throughout the framework:
-- Automatically imported and used by all LLM components
-- Resets at the beginning of each processing operation
-- Captures aggregate usage for reporting in results
+### Configuration (`config.py`)
+- **`Config`**: A strict, centralized configuration management class that loads settings from `config.json`. It acts as a single source of truth for all configuration values and raises a `ConfigurationError` if any required settings are missing or invalid.
 
-### Integration with LLM Components
-The token tracking system is integrated with:
-- `StrictLLMBase`: Base class that extracts token usage from LLM responses
-- `StrictNlpExtractor`: NLP engine that tracks extraction token usage
-- `StrictMcodeMapper`: mCODE mapper that tracks mapping token usage
-- `StrictDynamicExtractionPipeline`: Pipeline that aggregates and reports token usage
+### Logging (`logging_config.py`)
+- **`get_logger`**: A factory function for creating standardized, colored logger instances.
+- **`setup_logging`**: A centralized function to configure the root logger for the application.
+- **`Loggable`**: A base class that provides a logger instance to subclasses, ensuring consistent logging behavior.
 
-### Usage Example
-```python
-from src.utils.token_tracker import global_token_tracker
+### Model Loader (`model_loader.py`)
+- **`model_loader`**: A global instance of the `ModelLoader` class, which manages loading LLM model configurations from the file-based model library.
+- **`ModelConfig`**: A dataclass that represents a standardized model configuration.
 
-# Get current aggregate token usage
-current_usage = global_token_tracker.get_total_usage()
+### Prompt Loader (`prompt_loader.py`)
+- **`prompt_loader`**: A global instance of the `PromptLoader` class, which centralizes all LLM prompts, improving maintainability and consistency.
 
-# Reset tracking for a new operation
-global_token_tracker.reset()
+### Token Tracker (`token_tracker.py`)
+- **`global_token_tracker`**: A thread-safe singleton instance for tracking and aggregating token usage across all LLM calls.
+- **`TokenUsage`**: A dataclass for a standardized token usage data structure.
 
-# Add usage from an LLM call
-global_token_tracker.add_usage(token_usage, "nlp_extraction")
-```
+### Feature Utilities (`feature_utils.py`)
+- Provides functions for standardizing the structure of NLP feature extraction results, ensuring consistency across different NLP engines and models.
 
-## Model Library
+### Metrics (`metrics.py`)
+- **`MatchingMetrics`**: A class for tracking and reporting metrics related to patient-trial matching, providing insights into the performance of the matching algorithm.
 
-The model library provides a file-based system for managing LLM model configurations:
-
-### ModelLoader Class
-A utility class for loading model configurations from the file-based model library:
-- Loads model configurations from JSON files
-- Caches configurations for performance
-- Provides validation and error handling
-- Supports nested configuration structures
-
-### ModelConfig Dataclass
-A standardized data structure for representing model configurations:
-- `name`: Unique identifier for the model
-- `model_type`: Category of the model (e.g., CODE_GENERATION, GENERAL_CONVERSATION)
-- `model_identifier`: Actual model identifier used by the provider
-- `base_url`: API endpoint for the model
-- `description`: Brief description of the model's purpose
-- `default_parameters`: Default parameters for the model
-- `capabilities`: List of capabilities the model provides
-- And other metadata fields
-
-### Integration with Configuration Management
-The model library integrates with the unified configuration system:
-- `Config.get_model_config()`: Get model configuration from the library
-- `Config.get_all_model_configs()`: Get all model configurations
-- `Config.reload_model_configs()`: Reload model configurations from disk
-
-### Usage Example
-```python
-from src.utils.model_loader import load_model
-from src.utils.config import Config
-
-# Load a specific model configuration
-model_config = load_model("deepseek-coder")
-print(f"Model: {model_config.model_identifier}")
-print(f"Base URL: {model_config.base_url}")
-
-# Access through Config class
-config = Config()
-model_config = config.get_model_config("deepseek-coder")
-
-# Get default parameters
-temperature = model_config.default_parameters.get('temperature', 0.1)
-max_tokens = model_config.default_parameters.get('max_tokens', 4000)
-```
-
-## Other Utilities
-
-### Logging Configuration
-Standardized logging setup with colored output and consistent formatting.
-
-### Configuration Management
-Unified configuration management that loads settings from config.json and validates them.
-
-### Cache Manager
-Thread-safe caching system for storing and retrieving LLM responses to reduce API calls and improve performance.
-
-### Prompt Loader
-File-based prompt library system that centralizes all LLM prompts and eliminates hardcoded strings.
+### Pattern Configuration (`pattern_config.py`)
+- A centralized module that contains all regular expression patterns used for pattern matching in clinical text, organized by category for better maintainability.

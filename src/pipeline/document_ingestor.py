@@ -2,7 +2,7 @@ import json
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 import re
-from src.utils.logging_config import Loggable
+from src.utils.logging_config import Loggable, logging
 
 @dataclass
 class DocumentSection:
@@ -21,6 +21,8 @@ class DocumentIngestor(Loggable):
     
     def __init__(self):
         super().__init__()
+        # Set logger to DEBUG level for troubleshooting
+        self.logger.setLevel(logging.DEBUG)
         self.supported_sections = {
             'protocolSection': {
                 'designModule': 'design',
@@ -49,13 +51,17 @@ class DocumentIngestor(Loggable):
         position = 0
         
         # Extract protocol section (main content)
+        self.logger.debug(f"Trial data keys: {list(trial_data.keys())}")
         protocol_section = trial_data.get('protocolSection', {})
+        self.logger.debug(f"Protocol section keys: {list(protocol_section.keys())}")
         
         # Process each module in protocol section
         for module_name, section_type in self.supported_sections['protocolSection'].items():
             module_data = protocol_section.get(module_name, {})
+            self.logger.debug(f"Processing module {module_name}: {bool(module_data)}")
             if module_data:
                 section_content = self._extract_module_content(module_data, module_name)
+                self.logger.debug(f"Section content length for {module_name}: {len(section_content)}")
                 if section_content:
                     sections.append(DocumentSection(
                         name=module_name,

@@ -11,7 +11,12 @@ import json
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from pipeline.strict_llm_base import StrictLLMBase
-from utils.cache_decorator import APICache, get_cache_stats
+from utils.api_manager import UnifiedAPIManager
+
+def get_cache_stats():
+    """Get cache statistics from the unified API manager"""
+    api_manager = UnifiedAPIManager()
+    return api_manager.get_cache_stats()
 
 class DemoLLM(StrictLLMBase):
     """Demo implementation of StrictLLMBase for showing caching"""
@@ -25,13 +30,15 @@ def demo_llm_caching():
     print("=" * 50)
     
     # Clear LLM cache first
-    llm_cache = APICache(".llm_cache")
+    api_manager = UnifiedAPIManager()
+    llm_cache = api_manager.get_cache("llm")
     llm_cache.clear()
     print("🗑️  Cleared LLM cache")
     
     # Show initial cache stats
     stats = get_cache_stats()
-    print(f"📊 Initial cache stats: {stats['cached_items']} items, {stats['total_size_bytes']} bytes")
+    llm_stats = stats.get("llm", {})
+    print(f"📊 Initial cache stats: {llm_stats.get('cached_items', 0)} items, {llm_stats.get('total_size_bytes', 0)} bytes")
     
     # Create demo LLM instance
     llm = DemoLLM(
@@ -67,9 +74,8 @@ def demo_llm_caching():
             'error_type': None
         }
     }
-    
     # Store in cache
-    llm.llm_cache.set_by_key(test_result, cache_key_data)
+    llm_cache.set_by_key(test_result, cache_key_data)
     time1 = time.time() - start_time
     print(f"   Took {time1:.2f} seconds (simulated)")
     print(f"   Stored result in cache")
@@ -78,9 +84,10 @@ def demo_llm_caching():
     print("⏱️  Second LLM call (cached)...")
     start_time = time.time()
     # Try to retrieve from cache
-    cached_result = llm.llm_cache.get_by_key(cache_key_data)
+    cached_result = llm_cache.get_by_key(cache_key_data)
     time2 = time.time() - start_time
     print(f"   Took {time2:.4f} seconds (cached)")
+    
     
     
     if cached_result is not None:
@@ -92,7 +99,8 @@ def demo_llm_caching():
     
     # Show cache stats
     stats = get_cache_stats()
-    print(f"\n📊 Final cache stats: {stats['cached_items']} items, {stats['total_size_bytes']} bytes")
+    llm_stats = stats.get("llm", {})
+    print(f"\n📊 Final cache stats: {llm_stats.get('cached_items', 0)} items, {llm_stats.get('total_size_bytes', 0)} bytes")
     
     print("\n✨ LLM caching demo completed successfully!")
     return True
