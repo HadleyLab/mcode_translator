@@ -65,7 +65,7 @@ class LLMCallTask:
 
 @dataclass
 class PipelineTask:
-    """Represents a complete pipeline task with two LLM call sub-tasks"""
+    """Represents a complete pipeline task with two LLM call sub-tasks and benchmarking capabilities"""
     id: str
     status: TaskStatus = TaskStatus.PENDING
     start_time: Optional[float] = None
@@ -77,6 +77,9 @@ class PipelineTask:
     pipeline_type: str = "NLP to mCODE"  # Store the pipeline type used for this task
     test_case_name: str = "unknown"  # Store the test case name for display
     prompt_info: Optional[Dict[str, str]] = None  # Store prompt information for display
+    pipeline_result: Optional[Dict[str, Any]] = None  # Store the pipeline processing result
+    gold_standard_data: Optional[Dict[str, Any]] = None  # Store gold standard data for validation
+    benchmark_metrics: Optional[Dict[str, float]] = None  # Store benchmarking metrics
 
     def __post_init__(self):
         """Initialize sub-tasks if not provided"""
@@ -84,6 +87,8 @@ class PipelineTask:
             self.nlp_extraction = LLMCallTask(name="NLP Extraction")
         if not self.mcode_mapping:
             self.mcode_mapping = LLMCallTask(name="mCODE Mapping")
+        if not self.benchmark_metrics:
+            self.benchmark_metrics = {}
 
     @property
     def duration(self) -> Optional[float]:
@@ -119,6 +124,7 @@ class PipelineTaskTrackerUI:
         
         # Sample data
         self.sample_trial_data = self._load_sample_data()
+        self.gold_standard_data = self._load_gold_standard_data()
         
         # Prompt loader
         self.prompt_loader = PromptLoader()
@@ -135,6 +141,7 @@ class PipelineTaskTrackerUI:
         self.direct_mcode_prompt_selector = None
         self.concurrency_selector = None
         self.max_workers = 5  # Default to 5 workers
+        self.enable_validation = True  # Enable gold standard validation by default
         
         # Setup UI
         self._setup_ui()
@@ -160,6 +167,22 @@ class PipelineTaskTrackerUI:
             logger.error(f"Failed to load sample trial data: {e}")
             return None
     
+    def _load_gold_standard_data(self) -> Optional[Dict[str, Any]]:
+        """Load gold standard data for validation"""
+        try:
+            gold_file = Path("examples/breast_cancer_data/breast_cancer_her2_positive.gold.json")
+            if gold_file.exists():
+                with open(gold_file, 'r') as f:
+                    data = json.load(f)
+                    logger.info("Successfully loaded gold standard data")
+                    return data
+            else:
+                logger.warning("Gold standard data file not found")
+                return None
+        except Exception as e:
+            logger.error(f"Failed to load gold standard data: {e}")
+            return None
+
     def _load_available_prompts(self) -> Dict[str, Dict[str, Any]]:
         """Load all available prompts from the prompt loader"""
         try:
@@ -169,6 +192,139 @@ class PipelineTaskTrackerUI:
         except Exception as e:
             logger.error(f"Failed to load available prompts: {e}")
             return {}
+
+    def _validate_pipeline_result(self, task: PipelineTask) -> Dict[str, float]:
+        """Validate pipeline result against gold standard data"""
+        if not task.pipeline_result or not task.gold_standard_data:
+            return {}
+        
+        try:
+            # Extract mCODE mappings from pipeline result
+            pipeline_mappings = task.pipeline_result.get('mcode_mappings', [])
+            
+            # Extract gold standard mappings
+            gold_mappings = task.gold_standard_data.get('mcode_mappings', [])
+            
+            # Calculate validation metrics
+            metrics = self._calculate_validation_metrics(pipeline_mappings, gold_mappings)
+            
+            # Store metrics in task
+            task.benchmark_metrics.update(metrics)
+            
+            logger.info(f"Validation completed for task {task.id}: {metrics}")
+            return metrics
+            
+        except Exception as e:
+            logger.error(f"Validation failed for task {task.id}: {e}")
+            return {}
+
+    def _calculate_validation_metrics(self, pipeline_mappings: List[Dict], gold_mappings: List[Dict]) -> Dict[str, float]:
+        """Calculate precision, recall, and F1-score for mCODE mappings"""
+        if not pipeline_mappings or not gold_mappings:
+            return {'precision': 0.0, 'recall': 0.0, 'f1_score': 0.0}
+        
+        # Convert to sets of simplified representations for comparison
+        pipeline_set = self._simplify_mappings(pipeline_mappings)
+        gold_set = self._simplify_mappings(gold_mappings)
+        
+        # Calculate true positives, false positives, false negatives
+        true_positives = len(pipeline_set.intersection(gold_set))
+        false_positives = len(pipeline_set - gold_set)
+        false_negatives = len(gold_set - pipeline_set)
+        
+        # Calculate precision, recall, F1-score
+        precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0.0
+        recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0.0
+        f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+        
+        return {
+            'precision': round(precision, 3),
+            'recall': round(recall, 3),
+            'f1_score': round(f1_score, 3),
+            'true_positives': true_positives,
+            'false_positives': false_positives,
+            'false_negatives': false_negatives,
+            'total_pipeline': len(pipeline_mappings),
+            'total_gold': len(gold_mappings)
+        }
+
+    def _simplify_mappings(self, mappings: List[Dict]) -> set:
+        """Simplify mCODE mappings for comparison by focusing on key elements"""
+        simplified = set()
+        for mapping in mappings:
+            # Create a simplified representation focusing on key elements
+            key_parts = []
+            
+            # Include resource type if available
+            if mapping.get('resourceType'):
+                key_parts.append(f"resourceType:{mapping['resourceType']}")
+            
+            # Include code if available
+            if mapping.get('code'):
+                code = mapping['code']
+                if isinstance(code, dict):
+                    if code.get('coding'):
+                        for coding in code['coding']:
+                            if coding.get('code'):
+                                key_parts.append(f"code:{coding['code']}")
+                            if coding.get('system'):
+                                key_parts.append(f"system:{coding['system']}")
+                elif isinstance(code, str):
+                    key_parts.append(f"code:{code}")
+            
+            # Include value if available
+            if mapping.get('valueString'):
+                key_parts.append(f"value:{mapping['valueString']}")
+            elif mapping.get('valueCodeableConcept'):
+                value_cc = mapping['valueCodeableConcept']
+                if value_cc.get('coding'):
+                    for coding in value_cc['coding']:
+                        if coding.get('code'):
+                            key_parts.append(f"value_code:{coding['code']}")
+            
+            # Sort and join to create a consistent representation
+            key_parts.sort()
+            simplified.add(tuple(key_parts))
+        
+        return simplified
+
+    def _calculate_benchmark_metrics(self, task: PipelineTask):
+        """Calculate benchmarking metrics for the pipeline task"""
+        if not task.start_time or not task.end_time:
+            return
+        
+        # Calculate total processing time
+        total_time = task.end_time - task.start_time
+        task.benchmark_metrics['total_processing_time'] = round(total_time, 3)
+        
+        # Calculate individual LLM call times
+        if task.nlp_extraction and task.nlp_extraction.duration:
+            task.benchmark_metrics['nlp_extraction_time'] = round(task.nlp_extraction.duration, 3)
+        
+        if task.mcode_mapping and task.mcode_mapping.duration:
+            task.benchmark_metrics['mcode_mapping_time'] = round(task.mcode_mapping.duration, 3)
+        
+        # Calculate total token usage
+        total_tokens = 0
+        prompt_tokens = 0
+        completion_tokens = 0
+        
+        if task.nlp_extraction and task.nlp_extraction.token_usage:
+            total_tokens += task.nlp_extraction.token_usage.get('total_tokens', 0)
+            prompt_tokens += task.nlp_extraction.token_usage.get('prompt_tokens', 0)
+            completion_tokens += task.nlp_extraction.token_usage.get('completion_tokens', 0)
+        
+        if task.mcode_mapping and task.mcode_mapping.token_usage:
+            total_tokens += task.mcode_mapping.token_usage.get('total_tokens', 0)
+            prompt_tokens += task.mcode_mapping.token_usage.get('prompt_tokens', 0)
+            completion_tokens += task.mcode_mapping.token_usage.get('completion_tokens', 0)
+        
+        if total_tokens > 0:
+            task.benchmark_metrics['total_tokens'] = total_tokens
+            task.benchmark_metrics['prompt_tokens'] = prompt_tokens
+            task.benchmark_metrics['completion_tokens'] = completion_tokens
+        
+        logger.info(f"Benchmark metrics calculated for task {task.id}: {task.benchmark_metrics}")
     
     def _setup_ui(self):
         """Setup the main UI layout"""
@@ -211,6 +367,49 @@ class PipelineTaskTrackerUI:
                 ).props('icon=play_arrow color=positive')
 
                 self.status_label = ui.label('Ready').classes('self-center ml-4')
+            
+            # Test case loading controls
+            with ui.row().classes('w-full gap-2 items-end mt-4'):
+                ui.label('Test Case Loading:').classes('text-sm font-semibold')
+                
+                # Test case path input
+                ui.label('Test Case Path:').classes('text-sm self-center')
+                self.test_case_path_input = ui.input(
+                    value='examples/breast_cancer_data/breast_cancer_her2_positive.trial.json',
+                    label='Test Case File',
+                    placeholder='Path to test case JSON file'
+                ).classes('w-64')
+                
+                # Load test case button
+                ui.button(
+                    'Load Test Case',
+                    on_click=self._load_test_case_from_ui
+                ).props('icon=file_download')
+            
+            # Gold standard validation controls
+            with ui.row().classes('w-full gap-2 items-end mt-4'):
+                ui.label('Gold Standard Validation:').classes('text-sm font-semibold')
+                
+                # Gold standard path input
+                ui.label('Gold Standard Path:').classes('text-sm self-center')
+                self.gold_standard_path_input = ui.input(
+                    value='examples/breast_cancer_data/breast_cancer_her2_positive.gold.json',
+                    label='Gold Standard File',
+                    placeholder='Path to gold standard JSON file'
+                ).classes('w-64')
+                
+                # Enable validation checkbox
+                self.enable_validation_checkbox = ui.checkbox(
+                    'Enable Validation',
+                    value=True,
+                    on_change=lambda e: setattr(self, 'enable_validation', e.value)
+                ).classes('self-center')
+                
+                # Load gold standard button
+                ui.button(
+                    'Load Gold Standard',
+                    on_click=self._load_gold_standard_from_ui
+                ).props('icon=file_download')
             
             # Prompt selectors (initially hidden)
             with ui.column().classes('w-full mt-4 gap-2').bind_visibility_from(self.pipeline_selector, 'value'):
@@ -360,6 +559,18 @@ class PipelineTaskTrackerUI:
                 if task.duration:
                     status_text += f" ({task.duration:.2f}s)"
                     
+                # Add validation status if available - make it more prominent
+                if task.status == TaskStatus.SUCCESS and task.benchmark_metrics:
+                    metrics = task.benchmark_metrics
+                    if 'f1_score' in metrics:
+                        f1_score = metrics['f1_score']
+                        if f1_score >= 0.8:
+                            status_text += f" ✓ F1: {f1_score:.3f}"
+                        elif f1_score >= 0.5:
+                            status_text += f" ⚠ F1: {f1_score:.3f}"
+                        else:
+                            status_text += f" ✗ F1: {f1_score:.3f}"
+                    
                 ui.label(status_text).classes(f'text-{status_color}-600 font-medium')
             
             # Additional trial information
@@ -386,6 +597,86 @@ class PipelineTaskTrackerUI:
                 else:
                     self._create_subtask_row(task.nlp_extraction)
                     self._create_subtask_row(task.mcode_mapping)
+                
+                # Validation results if available - make more prominent
+                if task.status == TaskStatus.SUCCESS and task.benchmark_metrics:
+                    metrics = task.benchmark_metrics
+                    if 'precision' in metrics and 'recall' in metrics and 'f1_score' in metrics:
+                        # Add validation summary badge to main card
+                        with ui.row().classes('w-full items-center gap-2 mt-2'):
+                            ui.label('Validation:').classes('text-sm font-semibold')
+                            
+                            # Color-coded validation badge
+                            f1_score = metrics['f1_score']
+                            if f1_score >= 0.8:
+                                badge_color = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                badge_text = f"Excellent (F1: {f1_score:.3f})"
+                            elif f1_score >= 0.5:
+                                badge_color = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                badge_text = f"Good (F1: {f1_score:.3f})"
+                            else:
+                                badge_color = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                badge_text = f"Poor (F1: {f1_score:.3f})"
+                            
+                            ui.label(badge_text).classes(f'text-xs px-2 py-1 rounded-full {badge_color}')
+                        
+                        # Detailed validation metrics
+                        with ui.card().classes('w-full bg-blue-50 dark:bg-blue-900 mt-2 border-l-4 border-blue-500'):
+                            ui.label('Validation Results').classes('font-semibold mb-2 text-blue-800 dark:text-blue-200')
+                            
+                            # Main metrics in a prominent row
+                            with ui.row().classes('w-full justify-between text-sm font-medium'):
+                                ui.label(f'Precision: {metrics["precision"]:.3f}').classes('text-blue-700 dark:text-blue-300')
+                                ui.label(f'Recall: {metrics["recall"]:.3f}').classes('text-blue-700 dark:text-blue-300')
+                                ui.label(f'F1-Score: {metrics["f1_score"]:.3f}').classes('text-blue-700 dark:text-blue-300')
+                            
+                            # Detailed counts
+                            with ui.row().classes('w-full justify-between text-sm text-gray-600 dark:text-gray-400 mt-2'):
+                                ui.label(f'True Positives: {metrics.get("true_positives", 0)}')
+                                ui.label(f'False Positives: {metrics.get("false_positives", 0)}')
+                                ui.label(f'False Negatives: {metrics.get("false_negatives", 0)}')
+                            
+                            # Totals
+                            with ui.row().classes('w-full justify-between text-sm text-gray-600 dark:text-gray-400 mt-1'):
+                                ui.label(f'Pipeline Mappings: {metrics.get("total_pipeline", 0)}')
+                                ui.label(f'Gold Mappings: {metrics.get("total_gold", 0)}')
+                            
+                            # Validation status message
+                            if f1_score >= 0.8:
+                                ui.label('✓ Validation: Excellent match with gold standard').classes('text-green-600 dark:text-green-400 text-xs mt-2')
+                            elif f1_score >= 0.5:
+                                ui.label('⚠ Validation: Good match with gold standard').classes('text-yellow-600 dark:text-yellow-400 text-xs mt-2')
+                            else:
+                                ui.label('✗ Validation: Poor match with gold standard').classes('text-red-600 dark:text-red-400 text-xs mt-2')
+                
+                # Benchmarking metrics if available
+                if task.status == TaskStatus.SUCCESS and task.benchmark_metrics:
+                    with ui.card().classes('w-full bg-green-50 dark:bg-green-900 mt-2'):
+                        ui.label('Benchmarking Metrics').classes('font-semibold mb-2')
+                        
+                        metrics = task.benchmark_metrics
+                        
+                        # Processing time metrics
+                        if 'total_processing_time' in metrics:
+                            with ui.row().classes('w-full justify-between text-sm'):
+                                ui.label(f'Total Processing Time: {metrics["total_processing_time"]:.3f}s')
+                                
+                        if 'nlp_extraction_time' in metrics:
+                            ui.label(f'NLP Extraction Time: {metrics["nlp_extraction_time"]:.3f}s').classes('text-sm text-gray-600 dark:text-gray-400')
+                            
+                        if 'mcode_mapping_time' in metrics:
+                            ui.label(f'mCODE Mapping Time: {metrics["mcode_mapping_time"]:.3f}s').classes('text-sm text-gray-600 dark:text-gray-400')
+                        
+                        # Token usage metrics
+                        if 'total_tokens' in metrics:
+                            with ui.row().classes('w-full justify-between text-sm mt-2'):
+                                ui.label(f'Total Tokens: {metrics["total_tokens"]}')
+                                
+                        if 'prompt_tokens' in metrics:
+                            ui.label(f'Prompt Tokens: {metrics["prompt_tokens"]}').classes('text-sm text-gray-600 dark:text-gray-400')
+                            
+                        if 'completion_tokens' in metrics:
+                            ui.label(f'Completion Tokens: {metrics["completion_tokens"]}').classes('text-sm text-gray-600 dark:text-gray-400')
                 
                 # Error message if any
                 if task.error_message:
@@ -436,6 +727,54 @@ class PipelineTaskTrackerUI:
         """Add a notification to be displayed"""
         self.notifications.append({'message': message, 'type': type})
     
+    def _load_gold_standard_from_ui(self):
+        """Load gold standard data from the UI path input"""
+        try:
+            path = self.gold_standard_path_input.value
+            if not path:
+                ui.notify("Please enter a gold standard file path", type='warning')
+                return
+            
+            gold_file = Path(path)
+            if gold_file.exists():
+                with open(gold_file, 'r') as f:
+                    data = json.load(f)
+                    self.gold_standard_data = data
+                    logger.info(f"Successfully loaded gold standard data from {path}")
+                    ui.notify(f"Gold standard data loaded from {path}", type='positive')
+            else:
+                logger.warning(f"Gold standard file not found: {path}")
+                ui.notify(f"Gold standard file not found: {path}", type='warning')
+                
+        except Exception as e:
+            logger.error(f"Failed to load gold standard data: {e}")
+            ui.notify(f"Failed to load gold standard data: {str(e)}", type='negative')
+
+    def _load_test_case_from_ui(self):
+        """Load test case data from the UI path input"""
+        try:
+            path = self.test_case_path_input.value
+            if not path:
+                ui.notify("Please enter a test case file path", type='warning')
+                return
+            
+            test_case_file = Path(path)
+            if test_case_file.exists():
+                with open(test_case_file, 'r') as f:
+                    data = json.load(f)
+                    self.sample_trial_data = data
+                    logger.info(f"Successfully loaded test case data from {path}")
+                    ui.notify(f"Test case data loaded from {path}", type='positive')
+                    # Update UI to reflect the new test case data
+                    self._update_task_list()
+            else:
+                logger.warning(f"Test case file not found: {path}")
+                ui.notify(f"Test case file not found: {path}", type='warning')
+                
+        except Exception as e:
+            logger.error(f"Failed to load test case data: {e}")
+            ui.notify(f"Failed to load test case data: {str(e)}", type='negative')
+
     def _on_pipeline_change(self, event):
         """Handle pipeline selection changes"""
         # This method is called when the pipeline selector changes
@@ -561,6 +900,29 @@ class PipelineTaskTrackerUI:
             # Process the clinical trial
             # We'll wrap the calls to track individual LLM call progress
             result = await self._run_pipeline_with_tracking(pipeline, task)
+            
+            # Store pipeline result for benchmarking and validation
+            task.pipeline_result = result.to_dict() if hasattr(result, 'to_dict') else result
+            
+            # Load gold standard data for this task
+            task.gold_standard_data = self.gold_standard_data
+            
+            # Perform validation if gold standard data is available and validation is enabled
+            if self.enable_validation and task.gold_standard_data:
+                validation_metrics = self._validate_pipeline_result(task)
+                logger.info(f"Validation completed for task {task.id}: {validation_metrics}")
+                # Add validation notification
+                if validation_metrics:
+                    f1_score = validation_metrics.get('f1_score', 0)
+                    if f1_score >= 0.8:
+                        self._add_notification(f"Task {task.id}: Excellent validation (F1: {f1_score:.3f})", 'positive')
+                    elif f1_score >= 0.5:
+                        self._add_notification(f"Task {task.id}: Good validation (F1: {f1_score:.3f})", 'warning')
+                    else:
+                        self._add_notification(f"Task {task.id}: Poor validation (F1: {f1_score:.3f})", 'negative')
+            
+            # Calculate benchmarking metrics (processing time, token usage, etc.)
+            self._calculate_benchmark_metrics(task)
             
             # Update task with result
             task.status = TaskStatus.SUCCESS

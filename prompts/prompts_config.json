@@ -97,42 +97,42 @@
     ],
     "direct_mcode": [
       {
-        "name": "direct_text_to_mcode_mapping",
+        "name": "direct_mcode",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_direct.txt",
         "default": true,
         "description": "Direct text to mCODE mapping"
       },
       {
-        "name": "direct_text_to_mcode_mapping_simple",
+        "name": "direct_mcode_simple",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_simple.txt",
         "default": false,
         "description": "Simple direct text to mCODE mapping"
       },
       {
-        "name": "direct_text_to_mcode_mapping_comprehensive",
+        "name": "direct_mcode_comprehensive",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_comprehensive.txt",
         "default": false,
         "description": "Comprehensive direct text to mCODE mapping"
       },
       {
-        "name": "direct_text_to_mcode_mapping_minimal",
+        "name": "direct_mcode_minimal",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_minimal.txt",
         "default": false,
         "description": "Minimal direct text to mCODE mapping"
       },
       {
-        "name": "direct_text_to_mcode_mapping_structured",
+        "name": "direct_mcode_structured",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_structured.txt",
         "default": false,
         "description": "Structured direct text to mCODE mapping"
       },
       {
-        "name": "direct_text_to_mcode_mapping_optimization",
+        "name": "direct_mcode_optimization",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_optimization.txt",
         "default": false,
