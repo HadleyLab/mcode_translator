@@ -11,6 +11,8 @@ The mCODE Translator is a sophisticated system that processes clinical trial eli
 - **Prompt Optimization Framework**: Advanced prompt engineering for improved extraction accuracy
 - **Source Provenance Tracking**: Comprehensive tracking of extraction sources and confidence scores
 - **API Response Caching**: Disk-based caching for improved performance and reduced API calls
+- **Gold Standard Validation**: Automated validation against expert-annotated gold standard data
+- **Benchmarking System**: Comprehensive performance metrics collection and analysis
 
 ## Quick Start
 
@@ -64,6 +66,9 @@ python mcode-cli.py prompt demo
 
 # Run patient-trial matcher web application
 python mcode-cli.py webapp start
+
+# Run pipeline task tracker with gold standard validation
+python mcode-cli.py pipeline-tracker start
 ```
 
 ### Running the Patient-Trial Matcher Web Application
@@ -75,6 +80,19 @@ python mcode-cli.py webapp start
 The application will be accessible at:
 - http://localhost:8080
 - http://127.0.0.1:8080
+
+### Running the Pipeline Task Tracker with Gold Standard Validation
+
+```bash
+python mcode-cli.py pipeline-tracker start
+```
+
+The pipeline task tracker provides:
+- Real-time validation against gold standard data
+- Precision, recall, and F1-score metrics
+- Benchmarking of processing time and token usage
+- Concurrent task processing with adjustable concurrency
+- Accessible at: http://localhost:8090
 
 ## Project Architecture
 
@@ -108,6 +126,11 @@ The application will be accessible at:
 - **Features**: Real-time search, visualization, matching analysis
 - **Technologies**: NiceGUI, asynchronous processing
 
+#### 7. Pipeline Task Tracker ([`src/optimization/pipeline_task_tracker.py`](src/optimization/pipeline_task_tracker.py))
+- **Purpose**: Track individual pipeline tasks with gold standard validation
+- **Features**: Concurrent task processing, validation metrics (precision/recall/F1), benchmarking
+- **Technologies**: NiceGUI, asyncio queue-based concurrency
+
 ### Strict Framework Implementation
 
 The project uses a **strict framework** approach with no fallbacks:
@@ -118,6 +141,8 @@ The project uses a **strict framework** approach with no fallbacks:
 - **Source Provenance**: Comprehensive tracking of extraction sources
 - **Cache Isolation**: Proper cache separation between different model configurations
 - **Strict JSON Parsing**: No fallbacks or repair mechanisms - valid JSON or exception
+- **Gold Standard Validation**: Automated validation against expert-annotated datasets
+- **Benchmarking Metrics**: Comprehensive performance tracking and analysis
 
 ## Usage Examples
 
@@ -145,6 +170,8 @@ sources = result.source_references
 - **NLP to mCODE Visualization**: Interactive mapping visualization
 - **Matching Analysis**: Biomarker-based compatibility scoring
 - **Source Provenance**: Detailed extraction source tracking
+- **Gold Standard Validation**: Precision, recall, and F1-score metrics
+- **Benchmarking**: Processing time, token usage, and performance metrics
 
 ## Configuration
 
@@ -235,6 +262,16 @@ The strict pipeline demonstrates:
 - **Fast Processing**: ~2-3 seconds per clinical trial
 - **Scalable**: Handles large volumes of clinical data
 - **Reliable**: Consistent results across diverse trial types
+- **Validated Performance**: Gold standard validation with precision, recall, and F1-score metrics
+
+### Gold Standard Validation
+
+The system includes comprehensive gold standard validation capabilities:
+
+- **Precision/Recall/F1 Metrics**: Quantitative validation against expert-annotated datasets
+- **Fuzzy Text Matching**: Advanced text similarity algorithms for robust comparison
+- **Real-time Validation**: Immediate feedback on extraction and mapping accuracy
+- **Color-coded Results**: Visual indicators of validation quality (excellent/good/poor)
 
 ### Token Usage Tracking
 
@@ -245,14 +282,14 @@ The system includes a unified token tracking system that monitors and reports to
 - **Aggregated Reporting**: Provides both per-call and aggregate token usage statistics
 - **Cost Optimization**: Enables detailed cost analysis and optimization opportunities
 
-### Model Library
+### Benchmarking System
 
-The system includes a file-based model library ([`models/models_config.json`](models/models_config.json)) that centralizes all LLM model configurations:
+The system includes comprehensive benchmarking capabilities:
 
-- **Centralized Management**: All model configurations in one location
-- **Version Control**: Track model configuration changes through git
-- **Experimentation**: Easy A/B testing of model configurations
-- **Reusability**: Model configurations can be shared across components
+- **Processing Time Tracking**: End-to-end and per-component timing metrics
+- **Resource Consumption**: Memory and CPU usage monitoring
+- **Performance Analysis**: Comparative analysis across different configurations
+- **Validation Integration**: Combined accuracy and performance metrics
 
 ### Model Library
 
@@ -271,6 +308,7 @@ The system includes an advanced prompt optimization framework ([`src/optimizatio
 - Optimizes extraction patterns
 - Improves mapping accuracy
 - Reduces false positives
+- Validates improvements against gold standard data
 
 ## Contributing
 

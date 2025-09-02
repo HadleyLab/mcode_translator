@@ -1,128 +1,130 @@
-# Pipeline Task Tracker - Design Plan
+# Gold Standard Validation and Benchmarking Integration Plan for Pipeline Task Tracker
 
-## Objective
-Create a new NiceGUI UI application (`pipeline_task_tracker.py`) that focuses on tracking individual pipeline tasks. Each pipeline task consists of two sequential LLM calls:
-1. NLP Entity Extraction (via `StrictNlpExtractor`)
-2. mCODE Mapping (via `StrictMcodeMapper`)
+## Overview
+This document outlines the plan for adding gold standard validation and benchmarking capabilities to the existing pipeline task tracker UI. The integration will enable users to validate pipeline outputs against known gold standard data and collect benchmarking metrics for performance analysis.
 
-The UI should display a hierarchical view of these tasks and their sub-tasks with real-time status updates.
+## Current System Analysis
+The pipeline task tracker currently:
+- Supports two pipeline types: NLP to mCODE and Direct to mCODE
+- Processes clinical trial data through LLM-based extraction and mapping
+- Tracks task status, duration, token usage, and error information
+- Uses a queue-based concurrency model with worker tasks
 
-## Key Features
-1. **Hierarchical Task Display**:
-   - Main view lists pipeline tasks.
-   - Each pipeline task can be expanded to show its two component LLM calls.
-   - Visual indicators for task status (pending, running, success, failed).
+## Gold Standard Data Structure
+The gold standard data contains:
+1. Expected extraction entities with:
+   - Text content
+   - Entity type (condition, demographic, exclusion, medication, treatment)
+   - Attributes with specific values
+   - Confidence scores
+   - Source context information
 
-2. **Real-time Updates**:
-   - UI updates automatically as tasks progress through their stages.
-   - Uses NiceGUI's reactive state management.
+2. Expected mCODE mappings with:
+   - Source entity references
+   - mCODE element types (CancerCondition, CancerDiseaseStatus, etc.)
+   - Mapped values
+   - Confidence scores
+   - Mapping rationale
 
-3. **Task Execution**:
-   - Button to trigger a new pipeline task using sample clinical trial data.
-   - Queue-based execution for managing tasks (though likely simpler than the benchmark tracker).
+## Integration Components
 
-4. **Detailed Information**:
-   - Show start/end times, duration, and any errors for each task/sub-task.
-   - Display token usage if available.
+### 1. Gold Standard Loading Functionality
+- Add method to load gold standard data from JSON files
+- Associate gold standard data with test cases by ID
+- Cache loaded gold standard data for performance
 
-## Architecture Overview
+### 2. Validation Logic
+- Compare pipeline extraction results with expected entities
+- Compare pipeline mCODE mappings with expected mappings
+- Implement fuzzy matching for text comparisons
+- Calculate validation metrics:
+  - Precision, recall, F1-score for entity extraction
+  - Precision, recall, F1-score for mCODE mapping
+  - Compliance score based on mCODE validation rules
 
-### Data Structures
-```python
-from dataclasses import dataclass
-from typing import Optional, List
-from enum import Enum
-import time
+### 3. Benchmarking Metrics Collection
+- Collect performance metrics during pipeline execution:
+  - Processing time for each step
+  - Token usage for LLM calls
+  - Memory usage (if applicable)
+  - Success/failure rates
 
-class TaskStatus(Enum):
-    PENDING = "pending"
-    RUNNING = "running"
-    SUCCESS = "success"
-    FAILED = "failed"
+### 4. UI Updates
+- Add validation results display to task cards
+- Show benchmarking metrics in task details
+- Add summary statistics for validation accuracy
+- Include visual indicators for validation pass/fail status
 
-@dataclass
-class LLMCallTask:
-    name: str  # "NLP Extraction" or "mCODE Mapping"
-    status: TaskStatus = TaskStatus.PENDING
-    start_time: Optional[float] = None
-    end_time: Optional[float] = None
-    error_message: Optional[str] = None
-    token_usage: Optional[dict] = None
+## Implementation Details
 
-    @property
-    def duration(self) -> Optional[float]:
-        if self.start_time and self.end_time:
-            return self.end_time - self.start_time
-        return None
+### Data Classes Extension
+Extend existing data classes to include validation and benchmarking information:
 
-@dataclass
-class PipelineTask:
-    id: str
-    status: TaskStatus = TaskStatus.PENDING
-    start_time: Optional[float] = None
-    end_time: Optional[float] = None
-    nlp_extraction: LLMCallTask
-    mcode_mapping: LLMCallTask
-    error_message: Optional[str] = None
+1. `LLMCallTask`:
+   - Add validation metrics (precision, recall, F1-score)
+   - Add compliance score
+   - Add validation pass/fail status
 
-    def __post_init__(self):
-        if not self.nlp_extraction:
-            self.nlp_extraction = LLMCallTask(name="NLP Extraction")
-        if not self.mcode_mapping:
-            self.mcode_mapping = LLMCallTask(name="mCODE Mapping")
+2. `PipelineTask`:
+   - Add validation results aggregation
+   - Add benchmarking metrics collection
+   - Add reference to gold standard data
 
-    @property
-    def duration(self) -> Optional[float]:
-        if self.start_time and self.end_time:
-            return self.end_time - self.start_time
-        return None
-```
+### Validation Logic Implementation
+1. Entity Extraction Validation:
+   - Compare extracted entities with expected entities
+   - Use fuzzy text matching to handle variations
+   - Calculate precision, recall, F1-score
 
-### UI Components
-1. **Main Layout**:
-   - Header with title and dark mode toggle.
-   - Control panel with "Run Pipeline Task" button.
-   - Task list display area.
+2. mCODE Mapping Validation:
+   - Compare mCODE mappings with expected mappings
+   - Match on mCODE element type and value
+   - Calculate precision, recall, F1-score
 
-2. **Task List Item**:
-   - Collapsible card for each pipeline task.
-   - Summary view showing task ID, overall status, and duration.
-   - Expanded view showing details of `nlp_extraction` and `mcode_mapping` sub-tasks.
+3. Compliance Validation:
+   - Validate mCODE mappings against mCODE standards
+   - Calculate compliance score
 
-3. **Task Execution Logic**:
-   - A simple queue (e.g., Python list or `asyncio.Queue`) to hold tasks.
-   - A single background worker (similar to benchmark tracker) to process tasks sequentially.
-   - The worker will:
-     - Pick a task from the queue.
-     - Update task status to RUNNING.
-     - Create a `StrictDynamicExtractionPipeline` instance.
-     - Call `process_clinical_trial`, but with hooks or wrappers to update sub-task statuses.
-     - Update task status to SUCCESS or FAILED based on result.
-     - Handle any exceptions and update error messages.
+### UI Enhancements
+1. Task Card Updates:
+   - Add validation status indicator
+   - Display key metrics (F1-score, compliance)
+   - Show pass/fail status with color coding
 
-### Implementation Approach
-1. **File Structure**:
-   - `src/optimization/pipeline_task_tracker.py`: Main application file.
+2. Task Details Expansion:
+   - Add validation results section
+   - Show detailed comparison of expected vs actual
+   - Display benchmarking metrics (time, tokens)
 
-2. **NiceGUI Features**:
-   - Use `ui.card`, `ui.expansion`, `ui.label`, `ui.button`, `ui.icon` for UI elements.
-   - Use `ui.timer` for periodic UI refreshes if needed, or rely on reactive updates.
-   - Use `background_tasks.create` for the worker task.
-   - Use `ui.notify` for user feedback.
+3. Summary Dashboard:
+   - Add validation accuracy metrics
+   - Show benchmarking statistics
+   - Include trend analysis over time
 
-3. **Integration with Pipeline**:
-   - Import `StrictDynamicExtractionPipeline` from `src.pipeline.strict_dynamic_extraction_pipeline`.
-   - Use a fixed sample clinical trial data file (e.g., from `examples/breast_cancer_data`).
-   - When executing a task, instantiate the pipeline and call `process_clinical_trial`.
+## Integration with Existing Components
+The implementation will leverage existing components where possible:
+- Use the `StrictMcodeMapper` for mCODE validation
+- Integrate with the `StrictPromptOptimizationFramework` for metrics calculation
+- Reuse UI components from the benchmark task tracker where applicable
 
-4. **Status Tracking**:
-   - Modify the execution flow to track when each LLM call starts and ends.
-   - This might require slight modifications to how the pipeline is called or adding logging points.
-   - Alternatively, we can infer the stages by wrapping the specific method calls within the worker.
+## Testing Strategy
+1. Unit tests for validation logic
+2. Integration tests with sample gold standard data
+3. UI tests for new display components
+4. Performance tests for benchmarking metrics collection
 
-## Next Steps
-1. Create the `pipeline_task_tracker.py` file (this will require switching to Code mode).
-2. Implement the data structures.
-3. Implement the NiceGUI UI layout.
-4. Implement the task execution logic with the background worker.
-5. Test with sample data.
+## Rollout Plan
+1. Implement gold standard loading functionality
+2. Add validation logic to pipeline processing
+3. Extend data classes with validation fields
+4. Update UI to display validation results
+5. Add benchmarking metrics collection
+6. Implement summary dashboard components
+7. Conduct comprehensive testing
+8. Document new features
+
+## Expected Benefits
+- Improved quality assurance through automated validation
+- Performance benchmarking for pipeline optimization
+- Better visibility into pipeline accuracy and reliability
+- Data-driven insights for prompt and model improvements

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 ### Added
+- **Gold Standard Validation System**: Comprehensive validation framework for pipeline results
+  - Precision, recall, and F1-score metrics calculation
+  - Fuzzy text matching with fuzzywuzzy (85% threshold) and difflib SequenceMatcher (0.8 threshold)
+  - Tuple comparison for mCODE mapping validation
+  - Color-coded validation badges in UI (green/red/yellow)
+- **Benchmarking Metrics Collection**: Performance monitoring system
+  - Processing time tracking (total, per-task, per-engine)
+  - Token usage monitoring across LLM providers
+  - CPU and memory usage monitoring
+  - Real-time metrics display in pipeline task tracker UI
 - Unified token tracking system for standardized token usage reporting across all LLM providers
 - File-based model library for centralized LLM model configuration management
 - Made LLM the default NLP engine in ExtractionPipeline
