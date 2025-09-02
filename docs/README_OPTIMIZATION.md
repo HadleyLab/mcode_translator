@@ -35,24 +35,27 @@ python src/optimization/benchmark_task_tracker.py
 ## 🏗️ Architecture
 
 ### Key Components
-- **StrictPromptOptimizationFramework**: Main orchestrator class
-- **APIConfig**: API endpoint configurations with rate limiting
-- **PromptVariant**: Versioned prompt templates with metadata
-- **BenchmarkResult**: Structured performance measurement storage
-- **BenchmarkTaskTracker**: Standalone benchmarking execution
-- **StrictLLMBase**: Foundation for LLM operations with cache isolation
+- **ProcessingPipeline**: Abstract base class for all pipelines.
+- **NlpExtractionToMcodeMappingPipeline**: A two-step pipeline that first extracts NLP entities from clinical text and then maps those entities to the mCODE standard.
+- **McodePipeline**: A single-step pipeline that maps clinical text directly to mCODE entities.
+- **StrictLLMBase**: Foundation for LLM operations with cache isolation.
+- **StrictNlpExtractor**: Strict NLP extraction component.
+- **StrictMcodeMapper**: Strict mCODE mapping component.
+- **BenchmarkTaskTracker**: Standalone benchmarking execution.
 
 ### File Structure
 ```
 src/optimization/
-├── strict_prompt_optimization_framework.py  # Core framework logic
 ├── benchmark_task_tracker.py         # Standalone benchmarking execution
 └── __init__.py
 
 src/pipeline/
+├── processing_pipeline.py            # Abstract base class for pipelines
+├── nlp_extraction_to_mcode_mapping_pipeline.py # Two-step pipeline
+├── mcode_pipeline.py                 # Single-step pipeline
 ├── strict_llm_base.py                # LLM foundation with cache isolation
-├── strict_nlp_extractor.py          # Strict NLP extraction component
-└── strict_dynamic_extraction_pipeline.py # Main processing pipeline
+├── nlp_engine.py                     # Strict NLP extraction component
+└── mcode_mapper.py                   # Strict mCODE mapping component
 
 tests/unit/test_optimization_framework.py        # Comprehensive test harness
 docs/prompt_optimization_framework.md # Detailed documentation

@@ -62,7 +62,7 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
 
     # Prompt template will be loaded from file-based library
     MCODE_MAPPING_PROMPT_TEMPLATE = None
-    prompt_name: Optional[str] = "generic_mapping"
+    prompt_name: Optional[str] = None
 
     def __init__(self,
                  model_name: str = None,
@@ -107,16 +107,18 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
                         'native-hawaiian-or-other-pacific-islander', 'white', 'other', 'unknown']
             }
 
-            # Initialize prompt loader and load mapping prompt
+            # Initialize prompt loader - don't load prompt template here
+            # Prompt template will be set by pipeline or via prompt_key parameter
             self.prompt_loader = PromptLoader()
-            self.MCODE_MAPPING_PROMPT_TEMPLATE = self.prompt_loader.get_prompt("generic_mapping")
+            self.MCODE_MAPPING_PROMPT_TEMPLATE = None
 
             self.logger.info("✅ Strict MCode Mapper initialized successfully")
             self.logger.info(f"   🤖 Model: {final_model_name}")
             self.logger.info(f"   🌡️  Temperature: {final_temperature}")
             self.logger.info(f"   📏 Max tokens: {final_max_tokens}")
-            # Use prompt key instead of full prompt template for cleaner logging
-            self.logger.info(f"   📝 Prompt key: generic_mapping")
+            # Log that mapper is initialized without a prompt template
+            # Prompt will be loaded dynamically based on pipeline configuration
+            self.logger.info("   📝 Prompt: Will be loaded dynamically from pipeline configuration")
             
         except Exception as e:
             raise MCodeConfigurationError(f"Failed to initialize StrictMcodeMapper: {str(e)}")
@@ -124,7 +126,8 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
     def map_to_mcode(self, entities: List[Dict[str, Any]],
                     trial_context: Dict[str, Any] = None,
                     source_references: List[SourceReference] = None,
-                    prompt_key: str = "generic_mapping") -> Dict[str, Any]:
+                    prompt_key: str = "generic_mapping",
+                    clinical_text: str = None) -> Dict[str, Any]:
         """
         Map extracted entities to mCODE elements using LLM with strict error handling
         
@@ -144,7 +147,7 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
             LLMResponseError: If LLM response parsing fails
         """
         # Validate input with strict error handling
-        self._validate_entities(entities)
+        self._validate_entities(entities, clinical_text)
         
         try:
             self.logger.info("🗺️  Starting mCODE mapping process...")
@@ -156,32 +159,28 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
             
             self.logger.info("   📋 Preparing prompt for LLM mapping...")
             
-            # Use custom prompt template if set, otherwise load from library
+            # Use custom prompt template if set by pipeline, otherwise load from library using prompt_key
             if self.MCODE_MAPPING_PROMPT_TEMPLATE:
                 prompt_template = self.MCODE_MAPPING_PROMPT_TEMPLATE
-                self.logger.info("   📝 Using custom mapping prompt template")
+                self.logger.info("   📝 Using pipeline-configured mapping prompt template")
             else:
-                # Load the appropriate prompt template from library
+                # Load the appropriate prompt template from library using prompt_key parameter
                 prompt_template = self.prompt_loader.get_prompt(prompt_key)
                 self.logger.info(f"   📝 Using prompt from library: {prompt_key}")
+                # Cache the loaded template for potential reuse
+                self.MCODE_MAPPING_PROMPT_TEMPLATE = prompt_template
             
             # Determine which placeholders the template expects
             format_kwargs = {}
             if "{extracted_entities_json}" in prompt_template:
                 format_kwargs["extracted_entities_json"] = entities_json
-            elif "{entities_json}" in prompt_template:
+            if "{entities_json}" in prompt_template:
                 format_kwargs["entities_json"] = entities_json
-            else:
-                # Default to extracted_entities_json if no matching placeholder found
-                format_kwargs["extracted_entities_json"] = entities_json
             
             if "{clinical_text}" in prompt_template:
-                format_kwargs["clinical_text"] = context_json
-            elif "{trial_context}" in prompt_template:
+                format_kwargs["clinical_text"] = clinical_text or context_json
+            if "{trial_context}" in prompt_template:
                 format_kwargs["trial_context"] = context_json
-            else:
-                # Default to clinical_text if no matching placeholder found
-                format_kwargs["clinical_text"] = context_json
             
             # Format the prompt with the appropriate placeholders
             prompt = prompt_template.format(**format_kwargs)
@@ -224,26 +223,22 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
         except Exception as e:
             raise MCodeMappingError(f"Unexpected error during mapping: {str(e)}")
     
-    def _validate_entities(self, entities: List[Dict[str, Any]]) -> None:
+    def _validate_entities(self, entities: List[Dict[str, Any]], clinical_text: str = None) -> None:
         """Validate entities with strict error handling"""
         if entities is None:
-            raise ValueError("Entities cannot be None")
-        
-        if not isinstance(entities, list):
+            # For direct text-to-mcode, entities can be None
+            if clinical_text is None:
+                raise ValueError("Entities and clinical_text cannot both be None")
+        elif not isinstance(entities, list):
             raise ValueError("Entities must be a list")
-        
-        # Allow empty list (no entities to map) - this is valid, not an error
-        if len(entities) == 0:
-            self.logger.info("Empty entities list provided for mapping - no entities to process")
-            return
-        
-        # Validate each entity has basic structure
-        for i, entity in enumerate(entities):
-            if not isinstance(entity, dict):
-                raise ValueError(f"Entity at index {i} must be a dictionary")
-            
-            if 'text' not in entity or not entity['text']:
-                raise ValueError(f"Entity at index {i} must have a 'text' field")
+        elif len(entities) > 0:
+            # Validate each entity has basic structure
+            for i, entity in enumerate(entities):
+                if not isinstance(entity, dict):
+                    raise ValueError(f"Entity at index {i} must be a dictionary")
+                
+                if 'text' not in entity or not entity['text']:
+                    raise ValueError(f"Entity at index {i} must have a 'text' field")
     
     def _call_llm_mapping(self, prompt: str, prompt_key: str = "generic_mapping") -> Tuple[str, 'LLMCallMetrics']:
         """

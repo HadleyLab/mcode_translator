@@ -23,7 +23,8 @@ class PromptLoader:
     # Strict placeholder requirements by prompt type
     PROMPT_REQUIREMENTS = {
         "NLP_EXTRACTION": ["{clinical_text}"],
-        "MCODE_MAPPING": ["{entities_json}", "{trial_context}"]
+        "MCODE_MAPPING": ["{entities_json}", "{trial_context}"],
+        "DIRECT_MCODE": ["{clinical_text}"]
     }
     
     # Expected JSON response structures by prompt type
@@ -41,6 +42,13 @@ class PromptLoader:
                 "mcode_mappings": "array"
             },
             "error_message": "MCode mapping prompts must produce JSON with 'mcode_mappings' array field"
+        },
+        "DIRECT_MCODE": {
+            "required_fields": ["mcode_mappings"],
+            "field_types": {
+                "mcode_mappings": "array"
+            },
+            "error_message": "Direct MCode mapping prompts must produce JSON with 'mcode_mappings' array field"
         }
     }
     
@@ -57,17 +65,16 @@ class PromptLoader:
             with open(self.prompts_config_path, 'r') as f:
                 config_data = json.load(f)
             
-            # Extract the nested prompt library structure
-            if "prompt_library" in config_data and "prompts" in config_data["prompt_library"]:
-                prompts_config = config_data["prompt_library"]["prompts"]
+            # Handle the new flat structure: { "prompts": { "category": [prompt1, prompt2, ...] } }
+            if "prompts" in config_data:
+                prompts_config = config_data["prompts"]
                 flattened_config = {}
                 
-                # Flatten the nested structure
-                for category, subcategories in prompts_config.items():
-                    for subcategory, prompt_list in subcategories.items():
-                        for prompt_info in prompt_list:
-                            prompt_name = prompt_info["name"]
-                            flattened_config[prompt_name] = prompt_info
+                # Iterate through categories and their prompt lists
+                for category, prompt_list in prompts_config.items():
+                    for prompt_info in prompt_list:
+                        prompt_name = prompt_info["name"]
+                        flattened_config[prompt_name] = prompt_info
                 
                 return flattened_config
             else:
