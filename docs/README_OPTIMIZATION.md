@@ -351,3 +351,14 @@ Part of the mCODE Translator project. See the main project [`LICENSE`](LICENSE) 
 ---
 
 **Note**: This framework is designed for systematic prompt optimization and should be used as part of a comprehensive LLM deployment strategy. Always test thoroughly before deploying optimized prompts to production environments.
+
+## 🔄 Cache Management
+
+The benchmark task tracker includes improved cache management features:
+
+- **Cache Statistics Display**: Real-time view of cached items and their sizes
+- **Cache Initialization**: Automatic initialization of all existing cache namespaces
+- **Working Refresh**: Functional refresh button to update cache statistics
+- **Namespace Support**: Separate statistics for different cache namespaces (LLM, ClinicalTrials.gov, etc.)
+
+Cache statistics are displayed in the UI with both individual namespace details and aggregated totals, providing a complete overview of the system's caching status.

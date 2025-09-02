@@ -50,7 +50,7 @@ class BenchmarkTaskTrackerUI:
         self.gold_standard_data = {}
         
         # UI components
-        self.live_log_display = None
+        # self.live_log_display = None  # Removed logger panel
         self.control_panel = None
         self.results_display = None
         self.validation_display = None
@@ -108,7 +108,7 @@ class BenchmarkTaskTrackerUI:
             self._setup_benchmark_control_panel()
             self._setup_validation_display()
             self._setup_results_display()
-            self._setup_live_logger()
+            # self._setup_live_logger()  # Removed logger panel
             self._setup_cache_display()
     
     def _toggle_dark_mode(self):
@@ -178,7 +178,6 @@ class BenchmarkTaskTrackerUI:
                 self._setup_benchmark_control_panel()
             self._setup_validation_display()
             self._setup_results_display()
-            self._setup_live_logger()
             self._setup_cache_display()
     
     def _setup_benchmark_control_panel(self) -> None:
@@ -196,7 +195,7 @@ class BenchmarkTaskTrackerUI:
                     multiple=True,
                     value=list(prompt_options.keys()),  # Select all by default
                     on_change=lambda: self._update_validation_display()
-                ).classes('w-1/3')
+                ).classes('w-1/3').tooltip('Select one or more prompts to benchmark')
                 
                 # Model selection - select all by default
                 model_options = {key: info.get('name', key) for key, info in self.available_models.items()}
@@ -206,7 +205,7 @@ class BenchmarkTaskTrackerUI:
                     multiple=True,
                     value=list(model_options.keys()),  # Select all by default
                     on_change=lambda: self._update_validation_display()
-                ).classes('w-1/3')
+                ).classes('w-1/3').tooltip('Select one or more models to benchmark')
                 
                 # Trial selection - select all by default
                 trial_options = {key: key for key in self.trial_data.keys()}
@@ -216,7 +215,7 @@ class BenchmarkTaskTrackerUI:
                     multiple=True,
                     value=list(trial_options.keys()),  # Select all by default
                     on_change=lambda: self._update_validation_display()
-                ).classes('w-1/3')
+                ).classes('w-1/3').tooltip('Select one or more trials to benchmark')
             
             with ui.row().classes('w-full gap-4 mt-4'):
                 # Metric selection
@@ -226,28 +225,22 @@ class BenchmarkTaskTrackerUI:
                     'recall': 'Recall',
                     'compliance_score': 'Compliance Score'
                 }
-                self.metric_selection = ui.select(metric_options, label='Optimization Metric', value='f1_score').classes('w-1/4')
+                self.metric_selection = ui.select(metric_options, label='Optimization Metric', value='f1_score').classes('w-1/4').tooltip('Select the metric to optimize for')
                 
                 # Top N selection
-                self.top_n_selection = ui.number('Top N Combinations', value=5, min=1, max=20).classes('w-1/4')
+                self.top_n_selection = ui.number('Top N Combinations', value=5, min=1, max=20).classes('w-1/4').tooltip('Select the number of top combinations to display')
                 
                 # Concurrency selection
-                self.concurrency_selection = ui.number('Concurrency Level', value=1, min=1, max=10).classes('w-1/4')
+                self.concurrency_selection = ui.number('Concurrency Level', value=1, min=1, max=10).classes('w-1/4').tooltip('Set the number of concurrent benchmark tasks')
             
             with ui.row().classes('w-full gap-2 mt-4'):
-                self.run_benchmark_button = ui.button('Run Benchmark', on_click=self._run_benchmark).props('icon=play_arrow color=positive')
-                self.stop_benchmark_button = ui.button('Stop Benchmark', on_click=self._stop_benchmark).props('icon=stop color=negative')
+                self.run_benchmark_button = ui.button('Run Benchmark', on_click=self._run_benchmark).props('icon=play_arrow color=positive').tooltip('Start the benchmark process')
+                self.stop_benchmark_button = ui.button('Stop Benchmark', on_click=self._stop_benchmark).props('icon=stop color=negative').tooltip('Stop the benchmark process')
                 self.stop_benchmark_button.set_visibility(False)
                 
                 self.benchmark_status = ui.label('Ready to run benchmark').classes('self-center ml-4')
             
             self.benchmark_progress = ui.linear_progress(0).classes('w-full mt-2')
-    
-    def _setup_live_logger(self) -> None:
-        """Setup live logging display"""
-        with ui.card().classes('w-full mt-4'):
-            ui.label('Live Logging').classes('text-lg font-semibold mb-2')
-            self.live_log_display = ui.log().classes('w-full h-48')
     
     def _setup_validation_display(self) -> None:
         """Setup validation results display"""
@@ -291,7 +284,11 @@ class BenchmarkTaskTrackerUI:
                         'recall': '-',
                         'f1_score': '-',
                         'duration_ms': '-',
-                        'token_usage': '-'
+                        'token_usage': '-',
+                        'log': '🕒 Pending',  # For inline logging
+                        'trial': trial_id,
+                        'detailed_log': '🕒 Pending',  # Detailed logging
+                        'error_message': ''  # Error message for failed tasks
                     })
         
         # Update display with preloaded validations
@@ -300,8 +297,9 @@ class BenchmarkTaskTrackerUI:
     def _update_preloaded_validation_status(self, prompt_name: str, model_name: str, trial_id: str,
                                            status: str, details: str, status_icon: str,
                                            precision: str = '-', recall: str = '-', f1_score: str = '-',
-                                           duration_ms: str = '-', token_usage: str = '-') -> None:
-        """Update the status of a preloaded validation"""
+                                           duration_ms: str = '-', token_usage: str = '-', log: str = '',
+                                           error_message: str = '') -> None:
+        """Update the status of a preloaded validation with detailed logging"""
         for validation in self.preloaded_validations:
             if (validation['prompt'] == prompt_name and
                 validation['model'] == model_name and
@@ -314,6 +312,19 @@ class BenchmarkTaskTrackerUI:
                 validation['f1_score'] = f1_score
                 validation['duration_ms'] = duration_ms
                 validation['token_usage'] = token_usage
+                validation['log'] = log
+                validation['error_message'] = error_message
+                
+                # Update the detailed log with timestamp
+                timestamp = datetime.now().strftime("%H:%M:%S")
+                if status == 'Processing':
+                    validation['detailed_log'] = f"[{timestamp}] 🔄 {log}"
+                elif status == 'Success':
+                    validation['detailed_log'] = f"[{timestamp}] ✅ {log}"
+                elif status == 'Failed':
+                    validation['detailed_log'] = f"[{timestamp}] ❌ {details}\nError: {error_message}"
+                else:
+                    validation['detailed_log'] = f"[{timestamp}] {log}"
                 break
     
     def _auto_run_all_validations(self) -> None:
@@ -363,22 +374,140 @@ class BenchmarkTaskTrackerUI:
                 # Display summary
                 ui.label(f'Showing {len(filtered_results)} validation results').classes('text-sm text-gray-500 mb-2')
                 
-                # Display results in a table with status icons and benchmark fields
+                # Display results in a table with interactive features
                 columns = [
-                    {'name': 'status_icon', 'label': '', 'field': 'status_icon', 'sortable': True},  # Status icon column
+                    {'name': 'status', 'label': 'Status', 'field': 'status', 'sortable': True},
                     {'name': 'prompt', 'label': 'Prompt', 'field': 'prompt', 'sortable': True},
                     {'name': 'model', 'label': 'Model', 'field': 'model', 'sortable': True},
                     {'name': 'trial', 'label': 'Trial', 'field': 'trial', 'sortable': True},
-                    {'name': 'precision', 'label': 'Precision', 'field': 'precision', 'sortable': True},
-                    {'name': 'recall', 'label': 'Recall', 'field': 'recall', 'sortable': True},
-                    {'name': 'f1_score', 'label': 'F1 Score', 'field': 'f1_score', 'sortable': True},
-                    {'name': 'duration_ms', 'label': 'Time (ms)', 'field': 'duration_ms', 'sortable': True},
-                    {'name': 'token_usage', 'label': 'Tokens', 'field': 'token_usage', 'sortable': True},
-                    {'name': 'details', 'label': 'Details', 'field': 'details'}
+                    {'name': 'detailed_log', 'label': 'Detailed Log', 'field': 'detailed_log'},
+                    {'name': 'error_message', 'label': 'Error Message', 'field': 'error_message'}
                 ]
                 
-                ui.table(columns=columns, rows=filtered_results).classes('w-full')
-    
+                
+                table = ui.table(columns=columns, rows=filtered_results).classes('w-full')
+                
+                # Add cell styling for interactive features
+                table.on('row-click', lambda e: None)  # Enable row selection
+                
+                # Add styling for status column with interactive icons
+                with table.add_slot('body-cell-status', '''
+                    <q-td key="status" :props="props">
+                        <div v-if="props.row.status === 'Success'" class="flex items-center">
+                            <q-icon name="check_circle" color="green" size="sm" class="cursor-pointer">
+                                <q-tooltip>
+                                    <div class="font-bold">Task completed successfully</div>
+                                    <div>F1 Score: {{ props.row.f1_score }}</div>
+                                    <div>Precision: {{ props.row.precision }}</div>
+                                    <div>Recall: {{ props.row.recall }}</div>
+                                    <div>Duration: {{ props.row.duration_ms }}ms</div>
+                                    <div>Tokens: {{ props.row.token_usage }}</div>
+                                </q-tooltip>
+                            </q-icon>
+                            <span class="ml-2 text-green-600">Success</span>
+                        </div>
+                        <div v-else-if="props.row.status === 'Failed'" class="flex items-center">
+                            <q-icon name="error" color="red" size="sm" class="cursor-pointer">
+                                <q-tooltip>
+                                    <div class="font-bold">Task failed</div>
+                                    <div>Error: {{ props.row.error_message }}</div>
+                                    <div>Duration: {{ props.row.duration_ms }}ms</div>
+                                    <div>Tokens: {{ props.row.token_usage }}</div>
+                                </q-tooltip>
+                            </q-icon>
+                            <span class="ml-2 text-red-600">Failed</span>
+                        </div>
+                        <div v-else-if="props.row.status === 'Processing'" class="flex items-center">
+                            <q-spinner-dots color="orange" size="sm" class="cursor-pointer">
+                                <q-tooltip>
+                                    <div class="font-bold">Task in progress</div>
+                                    <div>{{ props.row.detailed_log }}</div>
+                                </q-tooltip>
+                            </q-spinner-dots>
+                            <span class="ml-2 text-orange-600">Processing</span>
+                        </div>
+                        <div v-else class="flex items-center">
+                            <q-icon name="pending" color="blue" size="sm" class="cursor-pointer">
+                                <q-tooltip>Task pending</q-tooltip>
+                            </q-icon>
+                            <span class="ml-2 text-blue-600">Pending</span>
+                        </div>
+                    </q-td>
+                '''):
+                    pass
+                
+                # Add detailed view column
+                with table.add_slot('body-cell-prompt', '''
+                    <q-td key="prompt" :props="props">
+                        <div class="flex items-center">
+                            <span>{{ props.row.prompt }}</span>
+                            <q-icon name="visibility" size="sm" class="ml-2 cursor-pointer" @click="showDetails(props.row)">
+                                <q-tooltip>
+                                    <div class="font-bold">Task Details</div>
+                                    <div>Prompt: {{ props.row.prompt }}</div>
+                                    <div>Model: {{ props.row.model }}</div>
+                                    <div>Trial: {{ props.row.trial }}</div>
+                                    <div v-if="props.row.status !== 'Pending' && props.row.status !== 'Processing'">
+                                        <div>F1 Score: {{ props.row.f1_score }}</div>
+                                        <div>Precision: {{ props.row.precision }}</div>
+                                        <div>Recall: {{ props.row.recall }}</div>
+                                        <div>Duration: {{ props.row.duration_ms }}ms</div>
+                                        <div>Tokens: {{ props.row.token_usage }}</div>
+                                    </div>
+                                </q-tooltip>
+                            </q-icon>
+                        </div>
+                    </q-td>
+                '''):
+                    pass
+                
+                # Add model column with additional info
+                with table.add_slot('body-cell-model', '''
+                    <q-td key="model" :props="props">
+                        <div>{{ props.row.model }}</div>
+                    </q-td>
+                '''):
+                    pass
+                
+                # Add trial column
+                with table.add_slot('body-cell-trial', '''
+                    <q-td key="trial" :props="props">
+                        <div>{{ props.row.trial }}</div>
+                    </q-td>
+                '''):
+                    pass
+                
+                # Add detailed log column
+                with table.add_slot('body-cell-detailed_log', '''
+                    <q-td key="detailed_log" :props="props">
+                        <div v-if="props.row.status === 'Processing'" class="text-orange-600">
+                            {{ props.row.detailed_log }}
+                        </div>
+                        <div v-else-if="props.row.status === 'Failed'" class="text-red-600">
+                            {{ props.row.error_message }}
+                        </div>
+                        <div v-else-if="props.row.status === 'Success'" class="text-green-600">
+                            Completed: F1={{ props.row.f1_score }}, Duration={{ props.row.duration_ms }}ms
+                        </div>
+                        <div v-else class="text-blue-600">
+                            {{ props.row.detailed_log }}
+                        </div>
+                    </q-td>
+                '''):
+                    pass
+                
+                # Add error message column
+                with table.add_slot('body-cell-error_message', '''
+                    <q-td key="error_message" :props="props">
+                        <div v-if="props.row.status === 'Failed'" class="text-red-600">
+                            {{ props.row.error_message }}
+                        </div>
+                        <div v-else>
+                            {{ props.row.error_message }}
+                        </div>
+                    </q-td>
+                '''):
+                    pass
     def _setup_results_display(self) -> None:
         """Setup results display area"""
         with ui.card().classes('w-full mt-4'):
@@ -617,7 +746,8 @@ class BenchmarkTaskTrackerUI:
                         prompt_variant.name, model_key, trial_id,
                         'Processing',
                         f'Worker {worker_id} processing...',
-                        '🔄'
+                        '🔄',
+                        log=f'🔄 Worker {worker_id} started processing {prompt_variant.name} with {model_key} on {trial_id}'
                     )
                     
                     # Run benchmark
@@ -646,13 +776,9 @@ class BenchmarkTaskTrackerUI:
                         f"{result.recall:.3f}" if result.success else '-',
                         f"{result.f1_score:.3f}" if result.success else '-',
                         f"{result.duration_ms:.1f}" if result.success else '-',
-                        f"{result.token_usage}" if result.success else '-'
-                    )
-                    
-                    # Log result
-                    self.live_log_display.push(
-                        f"✅ {prompt_variant.name} + {model_key} + {trial_id}: "
-                        f"F1={result.f1_score:.3f}, Compliance={result.compliance_score:.2%}"
+                        f"{result.token_usage}" if result.success else '-',
+                        f"✅ Completed: F1={result.f1_score:.3f}, Compliance={result.compliance_score:.2%}, Duration={result.duration_ms:.1f}ms" if result.success else f"❌ Failed: {result.error_message}",
+                        result.error_message if not result.success else ''
                     )
                     
                 except Exception as e:
@@ -667,16 +793,13 @@ class BenchmarkTaskTrackerUI:
                         'details': str(e)
                     })
                     
-                    self.live_log_display.push(
-                        f"❌ {prompt_variant.name} + {model_key} + {trial_id}: Failed - {str(e)}"
-                    )
-                    
                     # Update preloaded validation status for failed benchmark
                     self._update_preloaded_validation_status(
                         prompt_variant.name, model_key, trial_id,
                         'Failed',
                         str(e),
-                        '❌'
+                        '❌',
+                        error_message=str(e)
                     )
                 
                 # Update progress
@@ -817,10 +940,6 @@ class BenchmarkTaskTrackerUI:
         # Reset benchmark cancellation state to ensure clean state
         self.benchmark_cancelled = False
         
-        # Clear log display
-        if self.live_log_display:
-            self.live_log_display.clear()
-        
         # Clear results display
         if self.results_display:
             self.results_display.clear()
@@ -848,17 +967,65 @@ class BenchmarkTaskTrackerUI:
             self._update_cache_display()
     
     def _update_cache_display(self) -> None:
-        """Update cache statistics display"""
+        """Update cache statistics display with strict, direct handling"""
         if self.cache_stats_display:
-            stats = self.api_manager.get_cache_stats()
-            llm_stats = stats.get("llm", {})
-            self.cache_stats_display.set_content(
-                f"""
-**Cache Directory:** {llm_stats.get('cache_dir', 'N/A')}
-**Cached Items:** {llm_stats.get('cached_items', 0)}
-**Total Size:** {llm_stats.get('total_size_bytes', 0)} bytes
-"""
-            )
+            try:
+                # Initialize caches for existing directories to get accurate stats
+                try:
+                    for item in os.listdir('.api_cache'):
+                        item_path = os.path.join('.api_cache', item)
+                        if os.path.isdir(item_path):
+                            # Initialize the cache for this namespace
+                            self.api_manager.get_cache(item)
+                except Exception:
+                    pass  # Silently ignore errors when initializing caches
+                
+                # Get stats for all namespaces
+                stats = self.api_manager.get_cache_stats()
+                
+                # Strict handling: expect dictionary format with 'total' key and namespace keys
+                if isinstance(stats, dict):
+                    content_lines = []
+                    
+                    # Handle total aggregated stats
+                    if 'total' in stats:
+                        total_stats = stats['total']
+                        cached_items = total_stats.get('cached_items', 0)
+                        total_size_bytes = total_stats.get('total_size_bytes', 0)
+                        
+                        content_lines.append("## Cache Statistics Summary")
+                        content_lines.append(f"**Total Cached Items:** {cached_items}")
+                        content_lines.append(f"**Total Cache Size:** {total_size_bytes} bytes")
+                        
+                        # Add namespaces list if available
+                        if 'namespaces' in total_stats:
+                            content_lines.append(f"**Namespaces:** {', '.join(total_stats['namespaces'])}")
+                        content_lines.append("")
+                    
+                    # Handle namespace-specific stats
+                    for namespace, ns_stats in stats.items():
+                        if namespace != 'total' and isinstance(ns_stats, dict):
+                            namespace_items = ns_stats.get('cached_items', 0)
+                            namespace_size = ns_stats.get('total_size_bytes', 0)
+                            content_lines.append(f"**Namespace '{namespace}':**")
+                            content_lines.append(f"  Items: {namespace_items}")
+                            content_lines.append(f"  Size: {namespace_size} bytes")
+                            content_lines.append("")
+                    
+                    self.cache_stats_display.set_content("\n".join(content_lines))
+                else:
+                    # Unexpected format
+                    self.cache_stats_display.set_content(
+                        f"**Cache Stats Error:** Unexpected format\n"
+                        f"Expected: dict, Got: {type(stats).__name__}\n"
+                        f"Content: {str(stats)[:200]}..."
+                    )
+                
+            except Exception as e:
+                self.cache_stats_display.set_content(
+                    f"**Cache Stats Error:** {str(e)}\n"
+                    f"**Please check if cache directories exist and are accessible.**"
+                )
     
     def _clear_cache(self) -> None:
         """Clear API cache"""
@@ -888,12 +1055,39 @@ class BenchmarkTaskTracker:
         """Display cache statistics"""
         stats = self.get_cache_stats()
         print("📊 Cache Statistics:")
-        print(f"   Cache Directory: {stats.get('cache_dir', 'N/A')}")
-        print(f"   Cached Items: {stats.get('cached_items', 0)}")
-        print(f"   Total Size: {stats.get('total_size_bytes', 0)} bytes")
-        print(f"   Hits: {stats.get('hits', 0)}")
-        print(f"   Misses: {stats.get('misses', 0)}")
-        print(f"   Total Requests: {stats.get('total_requests', 0)}")
+        
+        # Handle different return types from get_cache_stats
+        if isinstance(stats, dict) and 'total' in stats:
+            # This is the structure when cache_namespace=None (all namespaces)
+            total_stats = stats['total']
+            namespace_stats = stats
+            
+            print(f"   Total Cached Items: {total_stats.get('cached_items', 0)}")
+            print(f"   Total Cache Size: {total_stats.get('total_size_bytes', 0)} bytes")
+            print(f"   Namespaces: {', '.join(total_stats.get('namespaces', []))}")
+            print("")
+            print("   Namespace Details:")
+            
+            # Add details for each namespace
+            for namespace, ns_stats in namespace_stats.items():
+                if namespace != 'total' and isinstance(ns_stats, dict):
+                    print(f"     - {namespace}: {ns_stats.get('cached_items', 0)} items, "
+                          f"{ns_stats.get('total_size_bytes', 0)} bytes")
+        
+        elif isinstance(stats, dict) and len(stats) == 1:
+            # This is the structure when a specific namespace is requested
+            namespace, ns_stats = next(iter(stats.items()))
+            if isinstance(ns_stats, dict):
+                print(f"   Namespace: {namespace}")
+                print(f"   Cache Directory: {ns_stats.get('cache_dir', 'N/A')}")
+                print(f"   Cached Items: {ns_stats.get('cached_items', 0)}")
+                print(f"   Total Size: {ns_stats.get('total_size_bytes', 0)} bytes")
+            else:
+                print(f"   Error: Invalid stats format for namespace {namespace}")
+        
+        else:
+            # Fallback for unexpected format
+            print(f"   Raw Stats: {str(stats)}")
     
     def clear_caches(self):
         """Clear all caches"""
