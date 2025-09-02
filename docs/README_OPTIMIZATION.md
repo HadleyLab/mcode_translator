@@ -51,7 +51,7 @@ src/optimization/
 
 src/pipeline/
 ├── processing_pipeline.py            # Abstract base class for pipelines
-├── nlp_extraction_to_mcode_mapping_pipeline.py # Two-step pipeline
+├── nlp_mcode_pipeline.py             # Two-step pipeline
 ├── mcode_pipeline.py                 # Single-step pipeline
 ├── strict_llm_base.py                # LLM foundation with cache isolation
 ├── nlp_engine.py                     # Strict NLP extraction component
@@ -374,3 +374,27 @@ The `PipelineTaskTrackerUI` now displays the specific prompt key used for each L
 - **mCODE Mapping Task**: Shows the prompt key used for mapping entities to mCODE (e.g., `generic_mapping`).
 
 This enhancement helps in debugging and verifying that the correct prompt versions are being used in the pipeline.
+
+## 🚀 Direct to mCODE Pipeline
+
+A new Direct to mCODE pipeline has been implemented that maps clinical trial data directly to mCODE elements without requiring a separate entity extraction step. This pipeline uses a specialized prompt type "DIRECT_MCODE" and can generate more comprehensive mappings by inferring implicit information from the text.
+
+### Key Features
+
+1. **Single-Step Processing**: Processes clinical trial data directly to mCODE mappings
+2. **Inferred Information**: Can capture implicit information from exclusion criteria and other contextual clues
+3. **Comprehensive Coverage**: Generates more specific mCODE elements compared to traditional approaches
+4. **Pipeline Integration**: Fully integrated with the existing prompt configuration system
+
+### Implementation Details
+
+- Added DIRECT_MCODE prompt type validation requirements to PromptLoader
+- Modified StrictMcodeMapper to respect pipeline-level prompt configuration
+- Updated prompt configuration to include direct_text_to_mcode_mapping prompt
+- Created comprehensive test suite with comparison to gold standard mappings
+
+### Performance
+
+In testing with HER2-positive breast cancer trial data, the Direct to mCODE pipeline generated 20 mappings compared to 12 from the traditional approach, representing a 67% increase in captured mCODE elements. The pipeline excels at inferring implicit information and generating more specific mCODE elements while maintaining high compliance scores.
+
+For more details, see the [Direct Pipeline Comparison Report](../direct_pipeline_comparison_report.md).

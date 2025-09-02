@@ -1,10 +1,10 @@
 """
-STRICT Dynamic Extraction Pipeline - No fallbacks, direct integration with NLP engine and mCODE mapper
+NLP Extraction to mCODE Mapping Pipeline - A two-step pipeline that first extracts NLP entities and then maps them to mCODE.
 """
 
 import json
 from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass
+from .processing_pipeline import ProcessingPipeline, StrictPipelineResult
 from .mcode_mapper import StrictMcodeMapper, SourceReference, MCodeMappingError, MCodeConfigurationError
 from .nlp_engine import StrictNlpExtractor, NPLExtractionError, NLPConfigurationError
 from .document_ingestor import DocumentIngestor, DocumentSection
@@ -20,30 +20,15 @@ from src.utils import (
     global_token_tracker
 )
 
-
-@dataclass
-class StrictPipelineResult:
-    """Comprehensive result from strict dynamic extraction pipeline"""
-    extracted_entities: List[Dict[str, Any]]
-    mcode_mappings: List[Dict[str, Any]]
-    source_references: List[SourceReference]
-    validation_results: Dict[str, Any]
-    metadata: Dict[str, Any]
-    original_data: Dict[str, Any]
-    token_usage: Dict[str, int] = None
-    error: Optional[str] = None
-
-
-class StrictDynamicExtractionPipeline(Loggable):
+class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
     """
-    STRICT Dynamic mCODE Extraction Pipeline
-    Direct integration with NLP engine and mCODE mapper - no legacy code extraction
-    No fallbacks, fails hard on invalid configurations
+    A two-step pipeline that first extracts NLP entities from clinical text and then
+    maps those entities to the mCODE standard.
     """
 
     def __init__(self, extraction_prompt_name: str = None, mapping_prompt_name: str = None):
         """
-        Initialize the strict dynamic extraction pipeline
+        Initialize the NLP Extraction to mCODE Mapping Pipeline.
         
         Args:
             extraction_prompt_name: Name of prompt template for entity extraction (from file library)
@@ -412,7 +397,7 @@ if __name__ == "__main__":
     }
     
     # Initialize strict pipeline
-    pipeline = StrictDynamicExtractionPipeline()
+    pipeline = NlpExtractionToMcodeMappingPipeline()
     
     try:
         # Process complete trial

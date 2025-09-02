@@ -1,6 +1,16 @@
 """
 Pipeline Task Tracker - A NiceGUI UI for tracking individual pipeline tasks.
 Each pipeline task consists of two LLM calls: NLP extraction and mCODE mapping.
+
+This implementation uses a queue-based concurrency approach with multiple worker tasks
+to process pipeline tasks concurrently. Tasks are added directly to a queue and
+processed by worker tasks based on the selected concurrency level.
+
+Features:
+- Concurrency control with adjustable number of worker tasks (1-10)
+- Support for different pipeline types (NLP extraction to mCODE mapping and Direct to mCODE)
+- Dynamic prompt selection for each pipeline type
+- Real-time task status tracking and display
 """
 
 import sys
@@ -19,8 +29,11 @@ from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from nicegui import ui, background_tasks, run
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+from src.pipeline.nlp_mcode_pipeline import NlpExtractionToMcodeMappingPipeline
+from src.pipeline.mcode_pipeline import McodePipeline
+from src.pipeline.processing_pipeline import ProcessingPipeline
 from src.utils import get_logger
+from src.utils.prompt_loader import PromptLoader
 
 # Configure logging
 logger = get_logger(__name__)
@@ -61,6 +74,9 @@ class PipelineTask:
     mcode_mapping: LLMCallTask = None
     error_message: Optional[str] = None
     trial_data: Optional[Dict[str, Any]] = None
+    pipeline_type: str = "NLP to mCODE"  # Store the pipeline type used for this task
+    test_case_name: str = "unknown"  # Store the test case name for display
+    prompt_info: Optional[Dict[str, str]] = None  # Store prompt information for display
 
     def __post_init__(self):
         """Initialize sub-tasks if not provided"""
@@ -77,24 +93,48 @@ class PipelineTask:
         return None
 
 class PipelineTaskTrackerUI:
-    """Main UI class for the pipeline task tracker"""
+    """Main UI class for the pipeline task tracker.
+    
+    This class implements a queue-based concurrency approach with multiple worker tasks
+    to process pipeline tasks concurrently. Tasks are added directly to a queue and
+    processed by worker tasks based on the selected concurrency level.
+    
+    The UI provides:
+    - Concurrency control with adjustable number of worker tasks (1-10)
+    - Support for different pipeline types (NLP extraction to mCODE mapping and Direct to mCODE)
+    - Dynamic prompt selection for each pipeline type
+    - Real-time task status tracking and display
+    """
     
     def __init__(self):
         """Initialize the pipeline task tracker UI"""
         # Task management
         self.tasks: List[PipelineTask] = []
-        self.pending_tasks: List[PipelineTask] = []
         self.is_worker_running = False
         self.notifications: List[Dict[str, Any]] = []  # Store notifications to be displayed
         
+        # Queue-based concurrency
+        self.task_queue = asyncio.Queue()
+        self.worker_tasks = []
+        
         # Sample data
         self.sample_trial_data = self._load_sample_data()
+        
+        # Prompt loader
+        self.prompt_loader = PromptLoader()
+        self.available_prompts = self._load_available_prompts()
         
         # UI components
         self.task_list_container = None
         self.run_task_button = None
         self.status_label = None
-        self.notification_container = None  # Container for notifications
+        self.notification_container = None
+        self.pipeline_selector = None
+        self.nlp_prompt_selector = None
+        self.mcode_prompt_selector = None
+        self.direct_mcode_prompt_selector = None
+        self.concurrency_selector = None
+        self.max_workers = 5  # Default to 5 workers
         
         # Setup UI
         self._setup_ui()
@@ -120,6 +160,16 @@ class PipelineTaskTrackerUI:
             logger.error(f"Failed to load sample trial data: {e}")
             return None
     
+    def _load_available_prompts(self) -> Dict[str, Dict[str, Any]]:
+        """Load all available prompts from the prompt loader"""
+        try:
+            prompts = self.prompt_loader.list_available_prompts()
+            logger.info(f"Loaded {len(prompts)} available prompts")
+            return prompts
+        except Exception as e:
+            logger.error(f"Failed to load available prompts: {e}")
+            return {}
+    
     def _setup_ui(self):
         """Setup the main UI layout"""
         with ui.header().classes('bg-primary text-white p-4 items-center'):
@@ -136,13 +186,72 @@ class PipelineTaskTrackerUI:
         with ui.card().classes('w-full'):
             ui.label('Control Panel').classes('text-lg font-semibold mb-4')
             
-            with ui.row().classes('w-full gap-2'):
+            # Pipeline selection
+            with ui.row().classes('w-full gap-2 items-end'):
+                self.pipeline_selector = ui.select(
+                    options=['NLP to mCODE', 'Direct to mCODE'],
+                    value='NLP to mCODE',
+                    label='Select Pipeline',
+                    on_change=self._on_pipeline_change
+                ).classes('w-64')
+                
+                # Concurrency control
+                with ui.column():
+                    ui.label('Concurrency').classes('text-sm text-gray-600')
+                    self.concurrency_selector = ui.select(
+                        options=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                        value=5,
+                        label='Workers',
+                        on_change=lambda e: setattr(self, 'max_workers', int(e.value))
+                    ).classes('w-24')
+                
                 self.run_task_button = ui.button(
-                    'Run Pipeline Task', 
+                    'Run Pipeline Task',
                     on_click=self._run_pipeline_task
                 ).props('icon=play_arrow color=positive')
-                
+
                 self.status_label = ui.label('Ready').classes('self-center ml-4')
+            
+            # Prompt selectors (initially hidden)
+            with ui.column().classes('w-full mt-4 gap-2').bind_visibility_from(self.pipeline_selector, 'value'):
+                # NLP Extraction prompts (for NLP to mCODE pipeline)
+                with ui.row().classes('w-full gap-2 items-end').bind_visibility_from(
+                    self.pipeline_selector, 'value', backward=lambda x: x == 'NLP to mCODE'):
+                    ui.label('NLP Extraction Prompt:').classes('text-sm self-center')
+                    nlp_extraction_prompts = [
+                        name for name, info in self.available_prompts.items()
+                        if info.get('prompt_type') == 'NLP_EXTRACTION'
+                    ]
+                    self.nlp_prompt_selector = ui.select(
+                        options=nlp_extraction_prompts,
+                        value='generic_extraction' if 'generic_extraction' in nlp_extraction_prompts else nlp_extraction_prompts[0] if nlp_extraction_prompts else '',
+                        label='Extraction Prompt'
+                    ).classes('w-48')
+                    
+                    ui.label('mCODE Mapping Prompt:').classes('text-sm self-center')
+                    mcode_mapping_prompts = [
+                        name for name, info in self.available_prompts.items()
+                        if info.get('prompt_type') == 'MCODE_MAPPING'
+                    ]
+                    self.mcode_prompt_selector = ui.select(
+                        options=mcode_mapping_prompts,
+                        value='generic_mapping' if 'generic_mapping' in mcode_mapping_prompts else mcode_mapping_prompts[0] if mcode_mapping_prompts else '',
+                        label='Mapping Prompt'
+                    ).classes('w-48')
+                
+                # Direct mCODE prompts (for Direct to mCODE pipeline)
+                with ui.row().classes('w-full gap-2 items-end').bind_visibility_from(
+                    self.pipeline_selector, 'value', backward=lambda x: x == 'Direct to mCODE'):
+                    ui.label('Direct mCODE Prompt:').classes('text-sm self-center')
+                    direct_mcode_prompts = [
+                        name for name, info in self.available_prompts.items()
+                        if info.get('prompt_type') == 'DIRECT_MCODE'
+                    ]
+                    self.direct_mcode_prompt_selector = ui.select(
+                        options=direct_mcode_prompts,
+                        value='direct_text_to_mcode_mapping' if 'direct_text_to_mcode_mapping' in direct_mcode_prompts else direct_mcode_prompts[0] if direct_mcode_prompts else '',
+                        label='Direct Mapping Prompt'
+                    ).classes('w-48')
     
     def _setup_task_list(self):
         """Setup the task list display area"""
@@ -153,30 +262,50 @@ class PipelineTaskTrackerUI:
             self._update_task_list()
     
     def _run_pipeline_task(self):
-        """Create and queue a new pipeline task"""
+        """Create and queue a new pipeline task.
+        
+        This method creates a new pipeline task with the selected configuration
+        and adds it directly to the processing queue for concurrent execution.
+        """
         if not self.sample_trial_data:
             ui.notify("No sample data available", type='warning')
             return
             
-        # Extract the correct trial data structure
+        # Extract the correct trial data structure and test case name
         trial_data = self.sample_trial_data
+        test_case_name = "unknown"
         if trial_data and "test_cases" in trial_data:
             test_cases = trial_data["test_cases"]
             if test_cases:
-                # Get the first test case data
+                # Get the first test case data and name
                 first_test_case_key = list(test_cases.keys())[0]
+                test_case_name = first_test_case_key
                 trial_data = test_cases[first_test_case_key]
         
         # Create a new pipeline task
         task_id = str(uuid.uuid4())[:8]
+        prompt_info = {}
+        if self.pipeline_selector.value == 'Direct to mCODE':
+            prompt_info = {
+                'direct_prompt': self.direct_mcode_prompt_selector.value
+            }
+        else:
+            prompt_info = {
+                'extraction_prompt': self.nlp_prompt_selector.value,
+                'mapping_prompt': self.mcode_prompt_selector.value
+            }
+        
         task = PipelineTask(
             id=task_id,
-            trial_data=trial_data
+            trial_data=trial_data,
+            pipeline_type=self.pipeline_selector.value,
+            test_case_name=test_case_name,
+            prompt_info=prompt_info
         )
         
-        # Add to pending tasks
-        self.pending_tasks.append(task)
+        # Add to tasks list and directly to queue
         self.tasks.append(task)
+        background_tasks.create(self._add_task_to_queue_async(task))
         
         # Update UI
         self._update_task_list()
@@ -200,17 +329,23 @@ class PipelineTaskTrackerUI:
     
     def _create_task_card(self, task: PipelineTask):
         """Create a card for a pipeline task"""
-        # Get test case information
-        test_case_name = "unknown"
-        if task.trial_data and "test_cases" in task.trial_data:
-            test_cases = task.trial_data["test_cases"]
-            if test_cases:
-                test_case_name = list(test_cases.keys())[0]  # Get first test case name
+        # Use the stored test case name
+        test_case_name = task.test_case_name
+        
+        # Extract additional information from trial data
+        nct_id = "N/A"
+        brief_title = "N/A"
+        if task.trial_data and "protocolSection" in task.trial_data:
+            protocol_section = task.trial_data["protocolSection"]
+            if "identificationModule" in protocol_section:
+                identification_module = protocol_section["identificationModule"]
+                nct_id = identification_module.get("nctId", "N/A")
+                brief_title = identification_module.get("briefTitle", "N/A")
         
         with ui.card().classes('w-full'):
             # Main task header
-            with ui.row().classes('w-full justify-between items-center'):
-                ui.label(f'Task {task.id}').classes('text-lg font-semibold')
+            with ui.row().classes('w-full justify-between items-center flex-wrap'):
+                ui.label(f'{task.pipeline_type} - Task {task.id}').classes('text-lg font-semibold')
                 ui.label(f'Test Case: {test_case_name}').classes('text-sm text-gray-500')
                 
                 # Status indicator
@@ -227,13 +362,30 @@ class PipelineTaskTrackerUI:
                     
                 ui.label(status_text).classes(f'text-{status_color}-600 font-medium')
             
+            # Additional trial information
+            if nct_id != "N/A" or brief_title != "N/A":
+                with ui.row().classes('w-full text-sm text-gray-600 dark:text-gray-400'):
+                    if nct_id != "N/A":
+                        ui.label(f'NCT ID: {nct_id}').classes('mr-4')
+                    if brief_title != "N/A":
+                        ui.label(f'Title: {brief_title}').classes('truncate')
+            
             # Expandable details
             with ui.expansion('Details', icon='info').classes('w-full'):
-                # NLP Extraction task
-                self._create_subtask_row(task.nlp_extraction)
+                # Pipeline information
+                with ui.row().classes('w-full text-sm text-gray-600 dark:text-gray-400 mb-2'):
+                    if task.pipeline_type == 'Direct to mCODE' and hasattr(task, 'prompt_info'):
+                        ui.label(f'Prompt: {task.prompt_info.get("direct_prompt", "N/A")}')
+                    elif hasattr(task, 'prompt_info'):
+                        ui.label(f'Extraction Prompt: {task.prompt_info.get("extraction_prompt", "N/A")}')
+                        ui.label(f'Mapping Prompt: {task.prompt_info.get("mapping_prompt", "N/A")}')
                 
-                # mCODE Mapping task
-                self._create_subtask_row(task.mcode_mapping)
+                # Sub-tasks
+                if task.pipeline_type == 'Direct to mCODE':
+                    self._create_subtask_row(task.mcode_mapping)
+                else:
+                    self._create_subtask_row(task.nlp_extraction)
+                    self._create_subtask_row(task.mcode_mapping)
                 
                 # Error message if any
                 if task.error_message:
@@ -284,26 +436,104 @@ class PipelineTaskTrackerUI:
         """Add a notification to be displayed"""
         self.notifications.append({'message': message, 'type': type})
     
+    def _on_pipeline_change(self, event):
+        """Handle pipeline selection changes"""
+        # This method is called when the pipeline selector changes
+        # The UI visibility is handled by the bind_visibility_from bindings
+        pass
+    
+    async def _add_task_to_queue_async(self, task: PipelineTask):
+        """Add a task to the queue asynchronously"""
+        await self.task_queue.put(task)
+        logger.info(f"Added task {task.id} to queue")
+    
     def _start_worker(self):
-        """Start the background worker task"""
+        """Start the background worker tasks based on concurrency level.
+        
+        This method creates multiple worker tasks that process pipeline tasks
+        from the queue concurrently based on the selected concurrency level.
+        """
         if not self.is_worker_running:
             self.is_worker_running = True
-            background_tasks.create(self._worker())
-            logger.info("Pipeline task worker started")
+            # Start worker tasks based on concurrency level
+            concurrency_level = self.max_workers
+            self.worker_tasks = []
+            for i in range(concurrency_level):
+                worker_task = background_tasks.create(self._pipeline_worker(i + 1))
+                self.worker_tasks.append(worker_task)
+            
+            logger.info(f"Pipeline task workers started with {concurrency_level} workers")
     
-    async def _worker(self):
-        """Background worker that processes pipeline tasks"""
-        logger.info("Pipeline task worker running")
+    async def _pipeline_worker(self, worker_id: int):
+        """Worker task that processes pipeline tasks from the queue.
         
+        This worker continuously pulls tasks from the queue and processes them.
+        Multiple workers run concurrently based on the selected concurrency level.
+        """
         while self.is_worker_running:
-            # Check for pending tasks
-            if self.pending_tasks:
-                task = self.pending_tasks.pop(0)
-                await self._process_pipeline_task(task)
-                self._update_task_list()
-            else:
-                # Wait a bit before checking again
-                await asyncio.sleep(0.5)
+            try:
+                # Get task from queue with timeout to check for cancellation
+                try:
+                    task = await asyncio.wait_for(self.task_queue.get(), timeout=1.0)
+                except asyncio.TimeoutError:
+                    # Check if we should stop
+                    if not self.is_worker_running:
+                        break
+                    continue
+                
+                if task is None:  # Sentinel value to stop worker
+                    break
+                
+                # Process the pipeline task
+                try:
+                    await self._process_pipeline_task_wrapper(task)
+                except Exception as e:
+                    logger.error(f"Worker {worker_id} failed to process task {task.id}: {str(e)}")
+                finally:
+                    # Mark task as done
+                    self.task_queue.task_done()
+                    
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Worker {worker_id} error: {str(e)}")
+                if not self.task_queue.empty():
+                    self.task_queue.task_done()
+    
+    
+    async def _process_pipeline_task_wrapper(self, task: PipelineTask):
+        """Wrapper to process a pipeline task and handle UI updates"""
+        try:
+            await self._process_pipeline_task(task)
+        except Exception as e:
+            logger.error(f"Error processing task {task.id}: {e}")
+        finally:
+            # Ensure UI is updated after task completion
+            self._update_task_list()
+    
+    def _stop_workers(self):
+        """Stop all worker tasks"""
+        self.is_worker_running = False
+        
+        # Clear the queue to stop processing
+        async def clear_queue():
+            while not self.task_queue.empty():
+                try:
+                    self.task_queue.get_nowait()
+                    self.task_queue.task_done()
+                except asyncio.QueueEmpty:
+                    break
+        
+        # Send None sentinel values to stop workers
+        async def stop_workers():
+            concurrency_level = self.max_workers
+            for _ in range(concurrency_level):
+                await self.task_queue.put(None)
+        
+        background_tasks.create(clear_queue())
+        background_tasks.create(stop_workers())
+        
+        logger.info("Pipeline task workers stopped")
     
     async def _process_pipeline_task(self, task: PipelineTask):
         """Process a single pipeline task"""
@@ -312,11 +542,21 @@ class PipelineTaskTrackerUI:
         # Update task status
         task.status = TaskStatus.RUNNING
         task.start_time = asyncio.get_event_loop().time()
-        self.status_label.set_text(f"Running task {task.id}")
+        if self.status_label:
+            self.status_label.set_text(f"Running task {task.id}")
         
         try:
-            # Create pipeline instance
-            pipeline = StrictDynamicExtractionPipeline()
+            # Create pipeline instance with selected prompts
+            if self.pipeline_selector.value == 'Direct to mCODE':
+                prompt_name = self.direct_mcode_prompt_selector.value
+                pipeline = McodePipeline(prompt_name=prompt_name)
+            else:
+                extraction_prompt = self.nlp_prompt_selector.value
+                mapping_prompt = self.mcode_prompt_selector.value
+                pipeline = NlpExtractionToMcodeMappingPipeline(
+                    extraction_prompt_name=extraction_prompt,
+                    mapping_prompt_name=mapping_prompt
+                )
             
             # Process the clinical trial
             # We'll wrap the calls to track individual LLM call progress
@@ -325,7 +565,6 @@ class PipelineTaskTrackerUI:
             # Update task with result
             task.status = TaskStatus.SUCCESS
             task.end_time = asyncio.get_event_loop().time()
-            self.status_label.set_text(f"Task {task.id} completed successfully")
             self._add_notification(f"Task {task.id} completed", 'positive')
             logger.info(f"Pipeline task {task.id} completed successfully")
             
@@ -334,25 +573,49 @@ class PipelineTaskTrackerUI:
             task.status = TaskStatus.FAILED
             task.error_message = str(e)
             task.end_time = asyncio.get_event_loop().time()
-            self.status_label.set_text(f"Task {task.id} failed")
             self._add_notification(f"Task {task.id} failed: {str(e)}", 'negative')
             logger.error(f"Pipeline task {task.id} failed: {e}")
     
-    async def _run_pipeline_with_tracking(self, pipeline: StrictDynamicExtractionPipeline, task: PipelineTask):
+    async def _run_pipeline_with_tracking(self, pipeline: 'ProcessingPipeline', task: PipelineTask):
         """Run pipeline with tracking of individual LLM calls"""
         # Get model and prompt information
-        model_name = pipeline.nlp_engine.model_name
-        temperature = pipeline.nlp_engine.temperature
-        max_tokens = pipeline.nlp_engine.max_tokens
+        if isinstance(pipeline, NlpExtractionToMcodeMappingPipeline):
+            model_name = pipeline.nlp_engine.model_name
+            temperature = pipeline.nlp_engine.temperature
+            max_tokens = pipeline.nlp_engine.max_tokens
+        elif isinstance(pipeline, McodePipeline):
+            model_name = pipeline.llm_mapper.model_name
+            temperature = pipeline.llm_mapper.temperature
+            max_tokens = pipeline.llm_mapper.max_tokens
+        else:
+            model_name = "unknown"
+            temperature = "unknown"
+            max_tokens = "unknown"
         
         # Get more detailed prompt information
-        extraction_prompt = pipeline.nlp_engine.get_prompt_name()
-        mapping_prompt = pipeline.llm_mapper.get_prompt_name()
+        if isinstance(pipeline, NlpExtractionToMcodeMappingPipeline):
+            extraction_prompt = pipeline.nlp_engine.get_prompt_name()
+            mapping_prompt = pipeline.llm_mapper.get_prompt_name()
+        elif isinstance(pipeline, McodePipeline):
+            extraction_prompt = "N/A"
+            mapping_prompt = pipeline.llm_mapper.get_prompt_name()
+        else:
+            extraction_prompt = "N/A"
+            mapping_prompt = "N/A"
         
-        # Update NLP extraction task with detailed information
-        task.nlp_extraction.status = TaskStatus.RUNNING
-        task.nlp_extraction.start_time = asyncio.get_event_loop().time()
-        task.nlp_extraction.details = f"Extracting entities using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={extraction_prompt})..."
+        # Update task details based on pipeline type
+        if isinstance(pipeline, McodePipeline):
+            task.mcode_mapping.name = "Direct to mCODE"
+            task.mcode_mapping.status = TaskStatus.RUNNING
+            task.mcode_mapping.start_time = asyncio.get_event_loop().time()
+            task.mcode_mapping.details = f"Mapping text to mCODE using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={mapping_prompt})..."
+            task.nlp_extraction.details = "Not applicable for this pipeline"
+            task.nlp_extraction.status = TaskStatus.SUCCESS
+        else:
+            task.nlp_extraction.status = TaskStatus.RUNNING
+            task.nlp_extraction.start_time = asyncio.get_event_loop().time()
+            task.nlp_extraction.details = f"Extracting entities using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={extraction_prompt})..."
+        
         self._update_task_list()
         
         try:
@@ -362,29 +625,24 @@ class PipelineTaskTrackerUI:
                 task.trial_data
             )
             
-            # Update NLP extraction completion
-            task.nlp_extraction.status = TaskStatus.SUCCESS
-            task.nlp_extraction.end_time = asyncio.get_event_loop().time()
-            task.nlp_extraction.details = f"Extracted {len(result.extracted_entities)} entities using {model_name} with prompt '{extraction_prompt}'"
-            
-            # Get token usage if available
-            if result.metadata and 'token_usage' in result.metadata:
-                task.nlp_extraction.token_usage = result.metadata['token_usage']
-            
-            # Update mCODE mapping task with detailed information
-            task.mcode_mapping.status = TaskStatus.RUNNING
-            task.mcode_mapping.start_time = asyncio.get_event_loop().time()
-            task.mcode_mapping.details = f"Mapping entities to mCODE using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={mapping_prompt})..."
-            self._update_task_list()
-            
-            # Update mCODE mapping completion (this is part of the same pipeline call)
-            task.mcode_mapping.status = TaskStatus.SUCCESS
-            task.mcode_mapping.end_time = asyncio.get_event_loop().time()
-            task.mcode_mapping.details = f"Mapped {len(result.mcode_mappings)} mCODE elements using {model_name} with prompt '{mapping_prompt}'"
-            
-            # Get token usage for mapping if available
-            if result.metadata and 'token_usage' in result.metadata:
-                task.mcode_mapping.token_usage = result.metadata['token_usage']
+            if result:
+                if isinstance(pipeline, NlpExtractionToMcodeMappingPipeline):
+                    task.nlp_extraction.status = TaskStatus.SUCCESS
+                    task.nlp_extraction.end_time = asyncio.get_event_loop().time()
+                    task.nlp_extraction.details = f"Extracted {len(result.extracted_entities)} entities using {model_name} with prompt '{extraction_prompt}'"
+                    if result.metadata and 'token_usage' in result.metadata:
+                        task.nlp_extraction.token_usage = result.metadata['token_usage']
+
+                    task.mcode_mapping.status = TaskStatus.RUNNING
+                    task.mcode_mapping.start_time = asyncio.get_event_loop().time()
+                    task.mcode_mapping.details = f"Mapping entities to mCODE using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={mapping_prompt})..."
+                    self._update_task_list()
+
+                task.mcode_mapping.status = TaskStatus.SUCCESS
+                task.mcode_mapping.end_time = asyncio.get_event_loop().time()
+                task.mcode_mapping.details = f"Mapped {len(result.mcode_mappings)} mCODE elements using {model_name} with prompt '{mapping_prompt}'"
+                if result.metadata and 'token_usage' in result.metadata:
+                    task.mcode_mapping.token_usage = result.metadata['token_usage']
             
             return result
             
