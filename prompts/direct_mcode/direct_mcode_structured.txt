@@ -9,24 +9,34 @@ Follow these steps:
 4. Extract numerical values and biomarker mentions
 5. Return structured JSON output with mcode_mappings array
 
-Return ONLY valid JSON with this exact structure:
-{
+**REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
+```json
+{{
   "mcode_mappings": [
-    {
+    {{
       "resourceType": "FHIR resource type",
       "mcode_element": "mCODE element name",
-      "code": "standard code",
+      "code": {{
+        "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
+        "code": "standard code from appropriate terminology",
+        "display": "human readable name of the code"
+      }},
       "value": "mapped value",
       "mapping_confidence": 0.0-1.0,
       "source_text_fragment": "exact text",
       "mapping_rationale": "explanation"
-    }
+    }}
   ],
-  "metadata": {
+  "metadata": {{
     "extraction_method": "llm_based",
     "text_length": 123,
     "resource_count": 1
-  }
-}
+  }}
+}}
+```
 
-Return ONLY valid JSON. No additional text or explanations.
+**CRITICAL INSTRUCTIONS:**
+1. Return ONLY valid JSON, no additional text
+2. Ensure all JSON is valid and parseable
+3. Properly escape any special characters within string values
+4. Do not include any text outside of the JSON structure

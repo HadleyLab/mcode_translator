@@ -65,6 +65,7 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
     prompt_name: Optional[str] = None
 
     def __init__(self,
+                 prompt_name: str = "generic_mapping",
                  model_name: str = None,
                  temperature: float = None,
                  max_tokens: int = None):
@@ -110,15 +111,15 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
             # Initialize prompt loader - don't load prompt template here
             # Prompt template will be set by pipeline or via prompt_key parameter
             self.prompt_loader = PromptLoader()
-            self.MCODE_MAPPING_PROMPT_TEMPLATE = None
+            self.prompt_name = prompt_name
+            self.MCODE_MAPPING_PROMPT_TEMPLATE = self.prompt_loader.get_prompt(self.prompt_name)
 
             self.logger.info("✅ Strict MCode Mapper initialized successfully")
             self.logger.info(f"   🤖 Model: {final_model_name}")
             self.logger.info(f"   🌡️  Temperature: {final_temperature}")
             self.logger.info(f"   📏 Max tokens: {final_max_tokens}")
             # Log that mapper is initialized without a prompt template
-            # Prompt will be loaded dynamically based on pipeline configuration
-            self.logger.info("   📝 Prompt: Will be loaded dynamically from pipeline configuration")
+            self.logger.info(f"   📝 Prompt: {self.prompt_name}")
             
         except Exception as e:
             raise MCodeConfigurationError(f"Failed to initialize StrictMcodeMapper: {str(e)}")
@@ -159,16 +160,8 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
             
             self.logger.info("   📋 Preparing prompt for LLM mapping...")
             
-            # Use custom prompt template if set by pipeline, otherwise load from library using prompt_key
-            if self.MCODE_MAPPING_PROMPT_TEMPLATE:
-                prompt_template = self.MCODE_MAPPING_PROMPT_TEMPLATE
-                self.logger.info("   📝 Using pipeline-configured mapping prompt template")
-            else:
-                # Load the appropriate prompt template from library using prompt_key parameter
-                prompt_template = self.prompt_loader.get_prompt(prompt_key)
-                self.logger.info(f"   📝 Using prompt from library: {prompt_key}")
-                # Cache the loaded template for potential reuse
-                self.MCODE_MAPPING_PROMPT_TEMPLATE = prompt_template
+            prompt_template = self.MCODE_MAPPING_PROMPT_TEMPLATE
+            self.logger.info(f"   📝 Using prompt template: {self.prompt_name}")
             
             # Determine which placeholders the template expects
             format_kwargs = {}
@@ -258,9 +251,8 @@ class StrictMcodeMapper(StrictLLMBase, Loggable):
             "model": self.model_name,
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
-            "prompt_template": self.MCODE_MAPPING_PROMPT_TEMPLATE or prompt_key
+            "prompt_template": self.prompt_name
         }
-        self.prompt_name = prompt_key
         
         messages = [{"role": "user", "content": prompt}]
         

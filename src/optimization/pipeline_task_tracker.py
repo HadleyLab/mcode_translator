@@ -200,7 +200,7 @@ class PipelineTaskTrackerUI:
         
         try:
             # Extract mCODE mappings from pipeline result
-            pipeline_mappings = task.pipeline_result.get('mcode_mappings', [])
+            pipeline_mappings = task.pipeline_result.mcode_mappings if task.pipeline_result else []
             
             # Extract gold standard mappings
             gold_mappings = task.gold_standard_data.get('mcode_mappings', [])
@@ -585,11 +585,12 @@ class PipelineTaskTrackerUI:
             with ui.expansion('Details', icon='info').classes('w-full'):
                 # Pipeline information
                 with ui.row().classes('w-full text-sm text-gray-600 dark:text-gray-400 mb-2'):
-                    if task.pipeline_type == 'Direct to mCODE' and hasattr(task, 'prompt_info'):
-                        ui.label(f'Prompt: {task.prompt_info.get("direct_prompt", "N/A")}')
-                    elif hasattr(task, 'prompt_info'):
-                        ui.label(f'Extraction Prompt: {task.prompt_info.get("extraction_prompt", "N/A")}')
-                        ui.label(f'Mapping Prompt: {task.prompt_info.get("mapping_prompt", "N/A")}')
+                    if task.prompt_info:
+                        if task.pipeline_type == 'Direct to mCODE':
+                            ui.label(f'Prompt: {task.prompt_info.get("direct_prompt", "N/A")}')
+                        else:
+                            ui.label(f'Extraction Prompt: {task.prompt_info.get("extraction_prompt", "N/A")}')
+                            ui.label(f'Mapping Prompt: {task.prompt_info.get("mapping_prompt", "N/A")}')
                 
                 # Sub-tasks
                 if task.pipeline_type == 'Direct to mCODE':
@@ -956,11 +957,11 @@ class PipelineTaskTrackerUI:
         
         # Get more detailed prompt information
         if isinstance(pipeline, NlpExtractionToMcodeMappingPipeline):
-            extraction_prompt = pipeline.nlp_engine.get_prompt_name()
-            mapping_prompt = pipeline.llm_mapper.get_prompt_name()
+            extraction_prompt = pipeline.extraction_prompt_name
+            mapping_prompt = pipeline.mapping_prompt_name
         elif isinstance(pipeline, McodePipeline):
             extraction_prompt = "N/A"
-            mapping_prompt = pipeline.llm_mapper.get_prompt_name()
+            mapping_prompt = pipeline.prompt_name
         else:
             extraction_prompt = "N/A"
             mapping_prompt = "N/A"
@@ -991,18 +992,18 @@ class PipelineTaskTrackerUI:
                 if isinstance(pipeline, NlpExtractionToMcodeMappingPipeline):
                     task.nlp_extraction.status = TaskStatus.SUCCESS
                     task.nlp_extraction.end_time = asyncio.get_event_loop().time()
-                    task.nlp_extraction.details = f"Extracted {len(result.extracted_entities)} entities using {model_name} with prompt '{extraction_prompt}'"
+                    task.nlp_extraction.details = f"Extracted {len(result.extracted_entities)} entities using {model_name} with prompt '{pipeline.extraction_prompt_name}'"
                     if result.metadata and 'token_usage' in result.metadata:
                         task.nlp_extraction.token_usage = result.metadata['token_usage']
 
                     task.mcode_mapping.status = TaskStatus.RUNNING
                     task.mcode_mapping.start_time = asyncio.get_event_loop().time()
-                    task.mcode_mapping.details = f"Mapping entities to mCODE using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={mapping_prompt})..."
+                    task.mcode_mapping.details = f"Mapping entities to mCODE using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={pipeline.mapping_prompt_name})..."
                     self._update_task_list()
 
                 task.mcode_mapping.status = TaskStatus.SUCCESS
                 task.mcode_mapping.end_time = asyncio.get_event_loop().time()
-                task.mcode_mapping.details = f"Mapped {len(result.mcode_mappings)} mCODE elements using {model_name} with prompt '{mapping_prompt}'"
+                task.mcode_mapping.details = f"Mapped {len(result.mcode_mappings)} mCODE elements using {model_name} with prompt '{pipeline.prompt_name if isinstance(pipeline, McodePipeline) else pipeline.mapping_prompt_name}'"
                 if result.metadata and 'token_usage' in result.metadata:
                     task.mcode_mapping.token_usage = result.metadata['token_usage']
             

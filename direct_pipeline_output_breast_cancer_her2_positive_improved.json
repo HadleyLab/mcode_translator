@@ -1,0 +1,281 @@
+{
+  "mcode_mappings": [
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "HER2-positive breast cancer",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "HER2-positive breast cancer is a specific subtype of breast cancer that maps to SNOMED CT code 254837009 for malignant neoplasm of breast with HER2 status specified",
+      "id": "b514ffad-29e6-4b22-8c17-fb7e0c3d915f"
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "Metastatic breast cancer",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Metastatic breast cancer indicates cancer that has spread beyond the primary site, mapping to SNOMED CT code 315004001 for secondary malignant neoplasm",
+      "id": "8f191de2-580a-465a-8e01-af94390b48cd"
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "metastatic",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Text describes metastatic breast cancer diagnosis, mapped to SNOMED CT code for malignant neoplasm of breast with metastatic status",
+      "id": "1aa3616d-24d1-46ea-b5cf-6fb2d7aae8b6"
+    },
+    {
+      "resourceType": "Observation",
+      "mcode_element": "GenomicVariant",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "genomicvariant",
+        "display": "GenomicVariant"
+      },
+      "value": "positive",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "HER2-positive biomarker status identified, mapped to HGNC gene symbol ERBB2 with positive result",
+      "id": "826bd667-1ac0-46a5-87a3-0852ec818e16"
+    },
+    {
+      "resourceType": "Observation",
+      "mcode_element": "ECOGPerformanceStatus",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "ecogperformancestatus",
+        "display": "ECOGPerformanceStatus"
+      },
+      "value": "0-1",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "ECOG performance status score range 0-1 specified, mapped to LOINC code for ECOG performance status",
+      "id": "631f8b5e-b73a-4832-ae8d-56d1aa70a7c2"
+    },
+    {
+      "resourceType": "MedicationStatement",
+      "mcode_element": "CancerRelatedMedication",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerrelatedmedication",
+        "display": "CancerRelatedMedication"
+      },
+      "value": "not administered",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Trastuzumab deruxtecan mentioned as prior treatment exclusion, mapped to RxNorm code with not administered status",
+      "id": "02eea3a4-ae71-4788-b419-5e05273e3cf2"
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "active",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Active brain metastases mentioned as exclusion criterion, mapped to SNOMED CT code for metastasis to brain with active status",
+      "id": "12f9580e-4cf1-4698-be4c-a3d0b1f4992c"
+    },
+    {
+      "resourceType": "Observation",
+      "mcode_element": "CancerDiseaseStatus",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerdiseasestatus",
+        "display": "CancerDiseaseStatus"
+      },
+      "value": "metastatic",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Metastatic disease status indicated, mapped to SNOMED CT code for metastatic condition",
+      "id": "e580ac38-3403-4342-8ec1-2bd21c9b2e1d"
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "metastatic breast cancer",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Text explicitly mentions metastatic breast cancer, which maps to ICD-10-CM code for malignant neoplasm of breast with metastasis",
+      "id": "91ee6b77-c786-417a-bb69-b6a9afeda7dc"
+    },
+    {
+      "resourceType": "Observation",
+      "mcode_element": "GenomicVariant",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "genomicvariant",
+        "display": "GenomicVariant"
+      },
+      "value": "HER2-positive",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "HER2-positive status indicates ERBB2 (HER2) gene amplification/overexpression, mapped to HGNC gene symbol ERBB2",
+      "id": "0811645f-398b-43cb-91c8-2be1d0f28e7d"
+    },
+    {
+      "resourceType": "MedicationStatement",
+      "mcode_element": "CancerRelatedMedication",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerrelatedmedication",
+        "display": "CancerRelatedMedication"
+      },
+      "value": "trastuzumab-based therapy",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Trastuzumab is a HER2-targeted therapy mentioned as prior treatment, mapped to RxNorm code for trastuzumab",
+      "id": "32fc348e-77c5-4789-84dd-28917ecc7429"
+    },
+    {
+      "resourceType": "MedicationStatement",
+      "mcode_element": "CancerRelatedMedication",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerrelatedmedication",
+        "display": "CancerRelatedMedication"
+      },
+      "value": "HER2-targeted therapy",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "General category of HER2-targeted therapy mentioned as the novel treatment being evaluated",
+      "id": "ec1a4e13-41a5-48be-8970-8702f15fc975"
+    },
+    {
+      "resourceType": "Observation",
+      "mcode_element": "CancerDiseaseStatus",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerdiseasestatus",
+        "display": "CancerDiseaseStatus"
+      },
+      "value": "progressed",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Text indicates disease progression on prior therapy, mapped to SNOMED CT code for disease progression",
+      "id": "2938e2a5-8edc-4f81-9019-eac69c9a0d55"
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "HER2-positive breast cancer",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Text explicitly states 'HER2-Positive Breast Cancer' which maps to SNOMED CT code for malignant neoplasm of breast with HER2-positive subtype",
+      "id": "89d6113f-1e66-48d6-9a78-2f27cea0efa9"
+    },
+    {
+      "resourceType": "Condition",
+      "mcode_element": "CancerCondition",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancercondition",
+        "display": "CancerCondition"
+      },
+      "value": "Metastatic breast cancer",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Text specifies 'Metastatic Breast Cancer' indicating cancer has spread beyond primary site",
+      "id": "fa1cbeca-9b2d-4b75-bd1c-97c5793afa4e"
+    },
+    {
+      "resourceType": "Observation",
+      "mcode_element": "GenomicVariant",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "genomicvariant",
+        "display": "GenomicVariant"
+      },
+      "value": "HER2-positive",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "HER2-positive biomarker status indicates ERBB2 gene amplification/overexpression, mapped to HGNC gene symbol ERBB2",
+      "id": "a7ed0e60-81fd-4557-a7e0-d1032ffd0d42"
+    },
+    {
+      "resourceType": "Procedure",
+      "mcode_element": "CancerRelatedProcedure",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerrelatedprocedure",
+        "display": "CancerRelatedProcedure"
+      },
+      "value": "Clinical trial participation",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Clinical trial participation involves evaluation procedures and therapeutic interventions, mapped as cancer-related procedure",
+      "id": "40114d58-0be2-4070-ab11-9920e50418e3"
+    },
+    {
+      "resourceType": "MedicationStatement",
+      "mcode_element": "CancerRelatedMedication",
+      "code": {
+        "system": "http://hl7.org/fhir/us/mcode",
+        "code": "cancerrelatedmedication",
+        "display": "CancerRelatedMedication"
+      },
+      "value": "Novel targeted therapy",
+      "mapping_confidence": 0.0,
+      "source_text_fragment": "Entity index unknown",
+      "mapping_rationale": "Text mentions 'Novel Targeted Therapy' which is a cancer-related medication, though specific drug not identified",
+      "id": "8abd187c-4e6f-45e8-9352-ab2451fd2761"
+    }
+  ],
+  "metadata": {
+    "pipeline_version": "mcode_pipeline_v1",
+    "engine_type": "LLM",
+    "entities_count": 0,
+    "mapped_count": 18,
+    "compliance_score": 1.0,
+    "token_usage": {
+      "prompt_tokens": 822,
+      "completion_tokens": 720,
+      "total_tokens": 1542
+    },
+    "aggregate_token_usage": {
+      "prompt_tokens": 2486,
+      "completion_tokens": 2267,
+      "total_tokens": 4753,
+      "model_name": "deepseek-coder",
+      "provider_name": "deepseek"
+    }
+  },
+  "validation_results": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "compliance_score": 1.0
+  }
+}

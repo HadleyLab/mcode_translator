@@ -137,6 +137,13 @@
         "prompt_file": "direct_mcode/direct_mcode_optimization.txt",
         "default": false,
         "description": "Optimization-focused direct text to mCODE mapping"
+      },
+      {
+        "name": "direct_mcode_improved",
+        "prompt_type": "DIRECT_MCODE",
+        "prompt_file": "direct_mcode/direct_mcode_improved.txt",
+        "default": false,
+        "description": "Improved direct text to mCODE mapping with better JSON structure"
       }
     ]
   }

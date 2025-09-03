@@ -16,6 +16,8 @@ from src.utils import (
     Config,
     global_token_tracker
 )
+from src.utils.prompt_loader import PromptLoader
+from src.utils.prompt_loader import PromptLoader
 
 
 class NLPConfigurationError(Exception):
@@ -55,6 +57,7 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
     
 
     def __init__(self,
+                 prompt_name: str = "generic_extraction",
                  model_name: str = None,
                  temperature: float = None,
                  max_tokens: int = None):
@@ -92,6 +95,10 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             # Initialize Loggable
             Loggable.__init__(self)
             
+            self.prompt_loader = PromptLoader()
+            self.prompt_name = prompt_name
+            self.ENTITY_EXTRACTION_PROMPT_TEMPLATE = self.prompt_loader.get_prompt(self.prompt_name)
+            
             self.logger.info("✅ Strict NLP Extractor initialized successfully")
             self.logger.info(f"   🤖 Model: {final_model_name}")
             self.logger.info(f"   🌡️  Temperature: {final_temperature}")
@@ -123,15 +130,9 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
         try:
             self.logger.info("🔍 Starting entity extraction...")
             
-            # Use custom prompt template if set, otherwise load from library
-            if self.ENTITY_EXTRACTION_PROMPT_TEMPLATE:
-                # Format the template with clinical text
-                prompt = self.ENTITY_EXTRACTION_PROMPT_TEMPLATE.format(clinical_text=clinical_text)
-                self.logger.info("   📝 Using custom prompt template")
-            else:
-                # Fallback to loading from file-based library
-                prompt = load_prompt("generic_extraction", clinical_text=clinical_text)
-                self.logger.info("   📝 Using generic extraction prompt from library")
+            # Format the template with clinical text
+            prompt = self.ENTITY_EXTRACTION_PROMPT_TEMPLATE.format(clinical_text=clinical_text)
+            self.logger.info(f"   📝 Using prompt template: {self.prompt_name}")
             
             # Call LLM for entity extraction
             self.logger.info("🤖 Calling LLM for entity extraction...")
@@ -184,19 +185,12 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
         Raises:
             LLMExecutionError: If API call fails
         """
-        self.prompt_name = "generic_extraction"
-        if self.ENTITY_EXTRACTION_PROMPT_TEMPLATE:
-            # This is a bit of a hack to get the prompt name from the template.
-            # A better solution would be to store the prompt name when the template is set.
-            if "minimal" in self.ENTITY_EXTRACTION_PROMPT_TEMPLATE:
-                self.prompt_name = "minimal_extraction"
-
         cache_key_data = {
             "prompt": prompt,
             "model": self.model_name,
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
-            "prompt_template": self.ENTITY_EXTRACTION_PROMPT_TEMPLATE or self.prompt_name
+            "prompt_template": self.prompt_name
         }
         
         messages = [{"role": "user", "content": prompt}]
