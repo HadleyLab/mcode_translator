@@ -25,7 +25,7 @@ class McodePipeline(ProcessingPipeline, Loggable):
     A single-step pipeline that maps clinical text directly to mCODE entities.
     """
 
-    def __init__(self, prompt_name: str = None):
+    def __init__(self, prompt_name: str = "direct_mcode"):
         """
         Initialize the mCODE pipeline.
 
@@ -33,27 +33,12 @@ class McodePipeline(ProcessingPipeline, Loggable):
             prompt_name: Name of the prompt template for mCODE mapping.
         """
         super().__init__()
-        self.prompt_loader = PromptLoader()
+        self.prompt_name = prompt_name
         self.document_ingestor = DocumentIngestor()
         try:
-            self.llm_mapper = StrictMcodeMapper()
-            if prompt_name:
-                self._set_mapping_prompt(prompt_name)
+            self.llm_mapper = StrictMcodeMapper(prompt_name=self.prompt_name)
         except MCodeConfigurationError as e:
             raise ValueError(f"Failed to initialize StrictMcodeMapper: {str(e)}")
-
-    def _set_mapping_prompt(self, prompt_name: str) -> None:
-        """Set custom mapping prompt from file library - STRICT validation"""
-        if not prompt_name or not isinstance(prompt_name, str):
-            raise ValueError("Mapping prompt name must be a non-empty string")
-        
-        template = self.prompt_loader.get_prompt(prompt_name)
-        
-        if "{clinical_text}" not in template:
-            raise ValueError(f"Mapping prompt '{prompt_name}' must contain '{{clinical_text}}' placeholder")
-        
-        self.llm_mapper.MCODE_MAPPING_PROMPT_TEMPLATE = template
-        self.logger.info(f"Custom mapping prompt '{prompt_name}' set successfully")
 
     def process_clinical_trial(self, trial_data: Dict[str, Any]) -> StrictPipelineResult:
         """

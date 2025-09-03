@@ -26,63 +26,24 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
     maps those entities to the mCODE standard.
     """
 
-    def __init__(self, extraction_prompt_name: str = None, mapping_prompt_name: str = None):
+    def __init__(self, extraction_prompt_name: str = "generic_extraction", mapping_prompt_name: str = "generic_mapping"):
         """
         Initialize the NLP Extraction to mCODE Mapping Pipeline.
-        
+
         Args:
-            extraction_prompt_name: Name of prompt template for entity extraction (from file library)
-            mapping_prompt_name: Name of prompt template for mCODE mapping (from file library)
+            extraction_prompt_name: Name of the prompt template for entity extraction.
+            mapping_prompt_name: Name of the prompt template for mCODE mapping.
         """
         super().__init__()
-        
-        # Initialize prompt loader
-        self.prompt_loader = PromptLoader()
-        
-        # Initialize components with strict validation
+        self.extraction_prompt_name = extraction_prompt_name
+        self.mapping_prompt_name = mapping_prompt_name
+
         self.document_ingestor = DocumentIngestor()
-        
-        # Initialize NLP engine with custom prompt template if provided
         try:
-            self.nlp_engine = StrictNlpExtractor()
-            if extraction_prompt_name:
-                self._set_extraction_prompt(extraction_prompt_name)
-        except NLPConfigurationError as e:
-            raise ValueError(f"Failed to initialize StrictNlpExtractor: {str(e)}")
-        
-        # Initialize mCODE mapper with custom prompt template if provided
-        try:
-            self.llm_mapper = StrictMcodeMapper()
-            if mapping_prompt_name:
-                self._set_mapping_prompt(mapping_prompt_name)
-        except MCodeConfigurationError as e:
-            raise ValueError(f"Failed to initialize StrictMcodeMapper: {str(e)}")
-    
-    def _set_extraction_prompt(self, prompt_name: str) -> None:
-        """Set custom extraction prompt from file library - STRICT validation"""
-        if not prompt_name or not isinstance(prompt_name, str):
-            raise ValueError("Extraction prompt name must be a non-empty string")
-        
-        template = self.prompt_loader.get_prompt(prompt_name)
-        
-        if "{clinical_text}" not in template:
-            raise ValueError(f"Extraction prompt '{prompt_name}' must contain '{{clinical_text}}' placeholder")
-        
-        self.nlp_engine.ENTITY_EXTRACTION_PROMPT_TEMPLATE = template
-        self.logger.info(f"Custom extraction prompt '{prompt_name}' set successfully")
-    
-    def _set_mapping_prompt(self, prompt_name: str) -> None:
-        """Set custom mapping prompt from file library - STRICT validation"""
-        if not prompt_name or not isinstance(prompt_name, str):
-            raise ValueError("Mapping prompt name must be a non-empty string")
-        
-        template = self.prompt_loader.get_prompt(prompt_name)
-        
-        if "{entities_json}" not in template or "{trial_context}" not in template:
-            raise ValueError(f"Mapping prompt '{prompt_name}' must contain '{{entities_json}}' and '{{trial_context}}' placeholders")
-        
-        self.llm_mapper.MCODE_MAPPING_PROMPT_TEMPLATE = template
-        self.logger.info(f"Custom mapping prompt '{prompt_name}' set successfully")
+            self.nlp_engine = StrictNlpExtractor(prompt_name=self.extraction_prompt_name)
+            self.llm_mapper = StrictMcodeMapper(prompt_name=self.mapping_prompt_name)
+        except (NLPConfigurationError, MCodeConfigurationError) as e:
+            raise ValueError(f"Failed to initialize pipeline components: {str(e)}")
     
     def process_clinical_text(self, clinical_text: str, context: Dict[str, Any] = None) -> StrictPipelineResult:
         """

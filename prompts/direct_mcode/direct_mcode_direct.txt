@@ -13,3 +13,35 @@ Instructions:
 3.  For each piece of information, create a FHIR-compliant resource (e.g., Condition, Observation, MedicationStatement, Procedure, GenomicVariant, Patient).
 4.  The output must be a single JSON object with a key "mcode_mappings" which contains a list of the generated FHIR resources.
 5.  Each resource should include `resourceType`, `mcode_element`, `code`, `value`, `mapping_confidence`, `source_text_fragment`, and `mapping_rationale`.
+
+**REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
+```json
+{{
+  "mcode_mappings": [
+    {{
+      "resourceType": "FHIR resource type (e.g., Condition, Observation, MedicationStatement, Procedure, GenomicVariant, Patient)",
+      "mcode_element": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
+      "code": {{
+        "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
+        "code": "standard code from appropriate terminology",
+        "display": "human readable name of the code"
+      }},
+      "value": "mapped value according to mCODE value sets",
+      "mapping_confidence": 0.0-1.0,
+      "source_text_fragment": "exact text from clinical text that was mapped",
+      "mapping_rationale": "brief explanation of mapping decision"
+    }}
+  ],
+  "metadata": {{
+    "extraction_method": "llm_based",
+    "text_length": 123,
+    "resource_count": 10
+  }}
+}}
+```
+
+**CRITICAL INSTRUCTIONS:**
+1. Return ONLY valid JSON, no additional text
+2. Ensure all JSON is valid and parseable
+3. Properly escape any special characters within string values
+4. Do not include any text outside of the JSON structure
