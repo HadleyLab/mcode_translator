@@ -97,7 +97,7 @@ def create_test_pipeline_result():
                 "entity_count": 2
             }
         },
-        "Mcode_mappings": {
+        "mcode_mappings": {
             "mapped_elements": [
                 {
                     "source_entity_index": 0,
@@ -142,7 +142,7 @@ def calculate_validation_metrics(pipeline_result, gold_standard_case):
     f1_extraction = 2 * (precision_extraction * recall_extraction) / (precision_extraction + recall_extraction) if (precision_extraction + recall_extraction) > 0 else 0.0
     
     # Extract mappings for comparison - compare both Mcode_element AND value
-    pipeline_mappings = [(mapping["Mcode_element"], mapping["value"]) for mapping in pipeline_result["Mcode_mappings"]["mapped_elements"]]
+    pipeline_mappings = [(mapping["Mcode_element"], mapping["value"]) for mapping in pipeline_result["mcode_mappings"]["mapped_elements"]]
     gold_mappings = [(mapping["Mcode_element"], mapping["value"]) for mapping in gold_standard_case["expected_mcode_mappings"]["mapped_elements"]]
     
     # Calculate mapping metrics

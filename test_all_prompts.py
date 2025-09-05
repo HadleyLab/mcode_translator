@@ -134,10 +134,10 @@ def calculate_metrics(result: Any, gold_standard: Dict[str, Any]) -> Dict[str, f
     """Calculate precision, recall, and F1-score against gold standard"""
     try:
         # Extract mappings from result
-        if hasattr(result, 'Mcode_mappings'):
+        if hasattr(result, 'mcode_mappings'):
             actual_mappings = result.mcode_mappings
-        elif isinstance(result, dict) and 'Mcode_mappings' in result:
-            actual_mappings = result['Mcode_mappings']
+        elif isinstance(result, dict) and 'mcode_mappings' in result:
+            actual_mappings = result['mcode_mappings']
         else:
             actual_mappings = []
         

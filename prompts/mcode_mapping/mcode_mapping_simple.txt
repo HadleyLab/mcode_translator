@@ -5,7 +5,7 @@ Trial Context: {trial_context}
 
 Return JSON with this exact structure:
 {{
-    "Mcode_mappings": [
+    "mcode_mappings": [
         {{
             "source_entity_index": 0,
             "Mcode_element": "Mcode element name",

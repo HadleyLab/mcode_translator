@@ -90,7 +90,7 @@ class NlpMcodePipeline(ProcessingPipeline, Loggable):
             # Step 3: Prepare result
             return PipelineResult(
                 extracted_entities=entities,
-                Mcode_mappings=mapping_result['mapped_elements'],
+                mcode_mappings=mapping_result['mapped_elements'],
                 source_references=mapping_result.get('source_references', []),
                 validation_results=mapping_result['validation_results'],
                 metadata={
@@ -219,7 +219,7 @@ class NlpMcodePipeline(ProcessingPipeline, Loggable):
             # Step 4: Prepare comprehensive result
             return PipelineResult(
                 extracted_entities=all_entities,
-                Mcode_mappings=mapping_result['mapped_elements'],
+                mcode_mappings=mapping_result['mapped_elements'],
                 source_references=mapping_result.get('source_references', []),
                 validation_results=mapping_result['validation_results'],
                 metadata={

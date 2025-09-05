@@ -10,7 +10,7 @@ from pathlib import Path
 # Add the project root to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from src.utils.model_loader import load_model, model_loader
+from src.utils import load_model, model_loader
 from src.utils.config import Config
 from src.optimization.prompt_optimization_framework import APIConfig
 

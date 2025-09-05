@@ -389,7 +389,7 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
             
             result['McodeResults'] = {
                 'extracted_entities': pipeline_result.extracted_entities,
-                'Mcode_mappings': pipeline_result.mcode_mappings,
+                'mcode_mappings': pipeline_result.mcode_mappings,
                 'source_references': pipeline_result.source_references,
                 'validation': pipeline_result.validation_results,
                 'metadata': pipeline_result.metadata,
@@ -530,7 +530,7 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
                             
                             result['McodeResults'] = {
                                 'extracted_entities': pipeline_result.extracted_entities,
-                                'Mcode_mappings': pipeline_result.mcode_mappings,
+                                'mcode_mappings': pipeline_result.mcode_mappings,
                                 'source_references': pipeline_result.source_references,
                                 'validation': pipeline_result.validation_results,
                                 'metadata': pipeline_result.metadata,

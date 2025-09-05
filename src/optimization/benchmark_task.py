@@ -6,15 +6,7 @@ import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Any
-
-
-class TaskStatus(Enum):
-    """Enumeration of possible task states"""
-    PENDING = "pending"
-    RUNNING = "running"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    FAILED = "failed"
+from src.shared.types import TaskStatus
 
 
 class TaskPriority(Enum):

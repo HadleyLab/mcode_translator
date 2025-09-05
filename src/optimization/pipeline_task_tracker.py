@@ -38,12 +38,6 @@ from src.utils.prompt_loader import PromptLoader
 # Configure logging
 logger = get_logger(__name__)
 
-class TaskStatus(Enum):
-    """Enumeration for task statuses"""
-    PENDING = "pending"
-    RUNNING = "running"
-    SUCCESS = "success"
-    FAILED = "failed"
 
 @dataclass
 class LLMCallTask:
@@ -63,7 +57,8 @@ class LLMCallTask:
             return self.end_time - self.start_time
         return None
 
-from src.optimization.benchmark_task import BenchmarkTask, TaskStatus, TaskPriority
+from src.optimization.benchmark_task import BenchmarkTask, TaskPriority
+from src.shared.types import TaskStatus
 
 @dataclass
 class PipelineTask(BenchmarkTask):
@@ -190,8 +185,28 @@ class PipelineTaskTrackerUI:
             # Extract Mcode mappings from pipeline result
             pipeline_mappings = task.pipeline_result.mcode_mappings if task.pipeline_result else []
             
-            # Extract gold standard mappings
-            gold_mappings = task.gold_standard_data.get('Mcode_mappings', [])
+            # Extract gold standard mappings - correct path based on gold standard structure
+            # Gold standard structure: gold_standard.breast_cancer_her2_positive.expected_mcode_mappings.mapped_elements
+            gold_mappings = []
+            if task.gold_standard_data:
+                # Try multiple possible paths to extract gold mappings
+                if 'gold_standard' in task.gold_standard_data:
+                    gold_standard = task.gold_standard_data['gold_standard']
+                    # Handle nested structure with test case name
+                    for test_case_name, test_case_data in gold_standard.items():
+                        if 'expected_mcode_mappings' in test_case_data:
+                            mappings_data = test_case_data['expected_mcode_mappings']
+                            if 'mapped_elements' in mappings_data:
+                                gold_mappings = mappings_data['mapped_elements']
+                                break
+                # Fallback: try direct access if nested structure not found
+                if not gold_mappings and 'expected_mcode_mappings' in task.gold_standard_data:
+                    mappings_data = task.gold_standard_data['expected_mcode_mappings']
+                    if 'mapped_elements' in mappings_data:
+                        gold_mappings = mappings_data['mapped_elements']
+                # Final fallback: direct mcode_mappings key (old format)
+                if not gold_mappings:
+                    gold_mappings = task.gold_standard_data.get('mcode_mappings', [])
             
             # Calculate validation metrics
             metrics = self._calculate_validation_metrics(pipeline_mappings, gold_mappings)

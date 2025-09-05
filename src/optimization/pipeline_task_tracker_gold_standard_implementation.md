@@ -112,7 +112,7 @@ def _perform_validation(self, task: PipelineTask, result: Any,
             self._calculate_extraction_metrics(task.nlp_extraction, result.extracted_entities, expected_entities)
         
         # Calculate mapping metrics
-        if expected_mappings and hasattr(result, 'Mcode_mappings'):
+        if expected_mappings and hasattr(result, 'mcode_mappings'):
             self._calculate_mapping_metrics(task.mcode_mapping, result.mcode_mappings, expected_mappings)
             
     except Exception as e:

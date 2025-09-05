@@ -315,8 +315,8 @@ class GoldStandardTester:
             # Validate pipeline result structure
             if not hasattr(result, 'extracted_entities'):
                 raise ValueError("Pipeline result missing extracted_entities attribute")
-            if not hasattr(result, 'Mcode_mappings'):
-                raise ValueError("Pipeline result missing Mcode_mappings attribute")
+            if not hasattr(result, 'mcode_mappings'):
+                raise ValueError("Pipeline result missing mcode_mappings attribute")
             
             # Extract results from PipelineResult object
             extraction_result = {

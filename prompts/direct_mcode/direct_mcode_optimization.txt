@@ -1,11 +1,11 @@
-Extract Mcode FHIR resources from clinical text. Return JSON with Mcode_mappings array.
+Extract Mcode FHIR resources from clinical text. Return JSON with mcode_mappings array.
 
 Clinical text: {clinical_text}
 
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
 ```json
 {{
-  "Mcode_mappings": [
+  "mcode_mappings": [
     {{
       "resourceType": "FHIR resource type",
       "Mcode_element": "Mcode element name",

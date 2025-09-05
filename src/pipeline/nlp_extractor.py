@@ -248,7 +248,7 @@ class NlpLlm(NlpBase, LlmBase):
             
             return ProcessingResult(
                 features=features,
-                Mcode_mappings={},
+                mcode_mappings={},
                 metadata=parsed.get('metadata', {}),
                 entities=processed_entities,
                 error=None

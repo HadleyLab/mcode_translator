@@ -11,7 +11,7 @@ from typing import List, Optional
 class PipelineResult:
     """Comprehensive result from a processing pipeline"""
     extracted_entities: List[Dict[str, Any]]
-    Mcode_mappings: List[Dict[str, Any]]
+    mcode_mappings: List[Dict[str, Any]]
     source_references: List[Any] 
     validation_results: Dict[str, Any]
     metadata: Dict[str, Any]

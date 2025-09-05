@@ -81,7 +81,7 @@ def test_model_token_usage(model_name):
         "extraction_token_usage": extraction_token_usage,
         "aggregate_token_usage": aggregate_token_usage,
         "entities_extracted": len(result.extracted_entities),
-        "Mcode_mappings": len(result.mcode_mappings)
+        "mcode_mappings": len(result.mcode_mappings)
     }
 
 def main():
@@ -108,7 +108,7 @@ def main():
                 logger.info(f"\n📊 Results for {model_name}:")
                 logger.info(f"  Duration: {model_result['duration_seconds']:.2f} seconds")
                 logger.info(f"  Entities extracted: {model_result['entities_extracted']}")
-                logger.info(f"  Mcode mappings: {model_result['Mcode_mappings']}")
+                logger.info(f"  Mcode mappings: {model_result['mcode_mappings']}")
                 logger.info(f"  Total tokens: {model_result['aggregate_token_usage'].get('total_tokens', 0)}")
                 logger.info(f"  Prompt tokens: {model_result['aggregate_token_usage'].get('prompt_tokens', 0)}")
                 logger.info(f"  Completion tokens: {model_result['aggregate_token_usage'].get('completion_tokens', 0)}")

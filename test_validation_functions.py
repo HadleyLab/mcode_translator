@@ -91,7 +91,7 @@ def create_test_pipeline_result():
                 "entity_count": 2
             }
         },
-        "Mcode_mappings": {
+        "mcode_mappings": {
             "mapped_elements": [
                 {
                     "source_entity_index": 0,
@@ -181,7 +181,7 @@ def _calculate_validation_metrics(pipeline_result, gold_standard_case):
                 _fuzzy_text_match(actual_mapping["value"], expected_mapping["value"]))
     
     mapping_metrics = _calculate_precision_recall_f1(
-        pipeline_result["Mcode_mappings"]["mapped_elements"],
+        pipeline_result["mcode_mappings"]["mapped_elements"],
         gold_standard_case["expected_mcode_mappings"]["mapped_elements"],
         _mapping_match_func
     )

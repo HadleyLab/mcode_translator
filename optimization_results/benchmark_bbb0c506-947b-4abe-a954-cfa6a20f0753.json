@@ -18,7 +18,7 @@
   "compliance_score": 0.0,
   "token_usage": 695,
   "extracted_entities": [],
-  "Mcode_mappings": [],
+  "mcode_mappings": [],
   "validation_results": {
     "valid": false,
     "errors": [

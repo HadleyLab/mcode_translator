@@ -28,11 +28,11 @@ setup_logging(logging.INFO)
 logger = get_logger(__name__)
 
 # Import pipeline components
-from src.pipeline.nlp_extraction_to_mcode_mapping_pipeline import NlpMcodePipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
 from pipeline.nlp_extractor import NlpLlm
 from src.pipeline.mcode_mapper import McodeMapper
 from src.utils.prompt_loader import PromptLoader, load_prompt
-from src.utils.model_loader import ModelLoader, load_model
+from src.utils import ModelLoader, load_model
 
 # Import optimization framework
 from src.optimization.prompt_optimization_framework import (
@@ -324,8 +324,8 @@ class GoldStandardTester:
             # Validate pipeline result structure
             if not hasattr(result, 'extracted_entities'):
                 raise ValueError("Pipeline result missing extracted_entities attribute")
-            if not hasattr(result, 'Mcode_mappings'):
-                raise ValueError("Pipeline result missing Mcode_mappings attribute")
+            if not hasattr(result, 'mcode_mappings'):
+                raise ValueError("Pipeline result missing mcode_mappings attribute")
             
             # Extract results from PipelineResult object
             extraction_result = {

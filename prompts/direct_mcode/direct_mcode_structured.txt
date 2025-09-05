@@ -7,12 +7,12 @@ Follow these steps:
 2. Categorize into appropriate Mcode elements
 3. Map to FHIR resource types
 4. Extract numerical values and biomarker mentions
-5. Return structured JSON output with Mcode_mappings array
+5. Return structured JSON output with mcode_mappings array
 
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
 ```json
 {{
-  "Mcode_mappings": [
+  "mcode_mappings": [
     {{
       "resourceType": "FHIR resource type",
       "Mcode_element": "Mcode element name",
