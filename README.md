@@ -108,7 +108,7 @@ The pipeline task tracker provides:
 - **Features**: Pattern-based extraction, confidence scoring, strict validation
 - **Key Classes**: `NlpLlm`
 
-#### 3. NLP Extraction to Mcode Mapping Pipeline ([`src/pipeline/nlp_extraction_to_mcode_mapping_pipeline.py`](src/pipeline/nlp_extraction_to_mcode_mapping_pipeline.py:33))
+#### 3. NLP Extraction to Mcode Mapping Pipeline ([`src/pipeline/nlp_mcode_pipeline.py`](src/pipeline/nlp_mcode_pipeline.py:33))
 - **Purpose**: Main processing pipeline for clinical trial data
 - **Features**: LLM-based entity extraction, Mcode mapping, source provenance tracking
 - **Key Classes**: `NlpMcodePipeline`, `PipelineResult`

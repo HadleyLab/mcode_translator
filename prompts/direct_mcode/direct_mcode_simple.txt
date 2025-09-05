@@ -9,13 +9,13 @@ Instructions:
 1. Read the clinical text carefully.
 2. Identify all relevant information that can be mapped to Mcode elements.
 3. For each piece of information, create a FHIR-compliant resource.
-4. Return a JSON object with "Mcode_mappings" containing the generated FHIR resources.
+4. Return a JSON object with "mcode_mappings" containing the generated FHIR resources.
 5. Each resource should include `resourceType`, `Mcode_element`, `code`, `value`, `mapping_confidence`, `source_text_fragment`, and `mapping_rationale`.
 
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
 ```json
 {{
-  "Mcode_mappings": [
+  "mcode_mappings": [
     {{
       "resourceType": "FHIR resource type (e.g., Condition, Observation, MedicationStatement, Procedure, GenomicVariant, Patient)",
       "Mcode_element": "Mcode element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",

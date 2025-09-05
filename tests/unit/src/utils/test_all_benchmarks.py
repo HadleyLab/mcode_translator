@@ -11,7 +11,7 @@ def test_benchmark_file(benchmark_file, gold_data):
     with open(benchmark_file, 'r') as f:
         benchmark_data = json.load(f)
     
-    extracted_mappings = benchmark_data.get('Mcode_mappings', [])
+    extracted_mappings = benchmark_data.get('mcode_mappings', [])
     expected_mappings = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']
     
     # Test the fixed metric calculation logic

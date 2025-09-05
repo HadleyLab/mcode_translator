@@ -96,7 +96,7 @@ def main():
             # Save result to file for inspection
             output_file = Path("direct_pipeline_output_breast_cancer_her2_positive_improved.json")
             output_data = {
-                'Mcode_mappings': mappings,
+                'mcode_mappings': mappings,
                 'metadata': result['result'].metadata,
                 'validation_results': result['result'].validation_results
             }

@@ -11,7 +11,7 @@ Clinical Text:
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
 ```json
 {{
-  "Mcode_mappings": [
+  "mcode_mappings": [
     {{
       "resourceType": "FHIR resource type (e.g., Condition, Observation, MedicationStatement, Procedure, GenomicVariant, Patient)",
       "Mcode_element": "Mcode element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",

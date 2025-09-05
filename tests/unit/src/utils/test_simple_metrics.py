@@ -30,7 +30,7 @@ def test_simple_metrics():
         gold_data = json.load(f)
     
     # Get extracted and expected data
-    extracted_mappings = benchmark_data.get('Mcode_mappings', [])
+    extracted_mappings = benchmark_data.get('mcode_mappings', [])
     expected_mappings = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']
     
     print(f"📊 Extracted mappings: {len(extracted_mappings)}")

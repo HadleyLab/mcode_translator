@@ -51,10 +51,10 @@ def test_mcode_validation():
     
     # Test with the benchmark result data
     extracted_entities = benchmark_data.get('extracted_entities', [])
-    Mcode_mappings = benchmark_data.get('Mcode_mappings', [])
+    mcode_mappings = benchmark_data.get('mcode_mappings', [])
     
     print(f"\nBenchmark extracted entities: {len(extracted_entities)}")
-    print(f"Benchmark Mcode mappings: {len(Mcode_mappings)}")
+    print(f"Benchmark Mcode mappings: {len(mcode_mappings)}")
     
     # Convert benchmark entities to Mcode format
     benchmark_mcode = framework._convert_entities_to_mcode(extracted_entities)

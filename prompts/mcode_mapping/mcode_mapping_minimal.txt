@@ -4,7 +4,7 @@ Map extracted clinical entities to Mcode data elements.
 
 **OUTPUT FORMAT (JSON):**
 {{
-    "Mcode_mappings": [
+    "mcode_mappings": [
         {{
             "source_entity_index": 0,
             "Mcode_element": "Mcode element name",

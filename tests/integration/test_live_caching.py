@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'src'))
 
 from src.utils.api_manager import UnifiedAPIManager, APICache
-from src.utils.model_loader import ModelLoader
+from src.utils import ModelLoader
 from src.utils.prompt_loader import PromptLoader
 from src.utils.config import Config
 from src.pipeline.llm_base import LlmBase

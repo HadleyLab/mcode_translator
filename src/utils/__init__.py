@@ -36,7 +36,7 @@ directory.
 from .api_manager import UnifiedAPIManager
 from .config import Config, ConfigurationError
 from .logging_config import get_logger, setup_logging, Loggable
-from .model_loader import model_loader, ModelConfig, load_model, reload_models_config
+from .model_loader import ModelLoader, model_loader, ModelConfig, load_model, reload_models_config
 from .prompt_loader import PromptLoader, prompt_loader, load_prompt, reload_prompts_config
 from .token_tracker import global_token_tracker, TokenUsage, extract_token_usage_from_response
 from .feature_utils import standardize_features, standardize_biomarkers, standardize_variants
@@ -65,6 +65,7 @@ __all__ = [
     "setup_logging",
     "Loggable",
     # Model Loader
+    "ModelLoader",
     "model_loader",
     "ModelConfig",
     "load_model",

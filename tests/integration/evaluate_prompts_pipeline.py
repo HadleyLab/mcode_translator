@@ -372,7 +372,7 @@ def calculate_gold_standard_metrics(pipeline_result) -> Dict[str, float]:
         
         # Get actual results from pipeline
         actual_entities = pipeline_result.extracted_entities if hasattr(pipeline_result, 'extracted_entities') else []
-        actual_mappings = pipeline_result.mcode_mappings if hasattr(pipeline_result, 'Mcode_mappings') else []
+        actual_mappings = pipeline_result.mcode_mappings if hasattr(pipeline_result, 'mcode_mappings') else []
         
         # Calculate extraction metrics
         extracted_texts = {e.get('text', '').lower().strip() for e in actual_entities if e.get('text')}

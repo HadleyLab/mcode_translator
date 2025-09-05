@@ -2,7 +2,7 @@
 Advanced Task Tracker - Simplified implementation using pure NiceGUI events, binding, and state management.
 """
 
-__all__ = ['Task', 'TaskStatus', 'TaskPriority', 'AdvancedTaskTrackerUI']
+__all__ = ['Task', 'TaskPriority', 'AdvancedTaskTrackerUI']
 
 import asyncio
 import random
@@ -13,15 +13,9 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 from nicegui import ui, run, background_tasks
+from src.shared.types import TaskStatus
 
 
-class TaskStatus(Enum):
-    """Enumeration of possible task states"""
-    PENDING = "pending"
-    RUNNING = "running"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    FAILED = "failed"
 
 
 class TaskPriority(Enum):

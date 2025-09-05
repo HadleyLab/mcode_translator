@@ -29,7 +29,7 @@ from src.optimization.prompt_optimization_framework import (
 )
 
 from src.utils.prompt_loader import prompt_loader
-from src.utils.model_loader import model_loader
+from src.utils import model_loader
 
 
 class ModernOptimizationUI:

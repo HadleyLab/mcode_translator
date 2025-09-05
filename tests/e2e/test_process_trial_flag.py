@@ -56,8 +56,8 @@ def test_process_trial_flag():
                     Mcode_results = data['McodeResults']
                     if 'extracted_entities' in Mcode_results:
                         print(f"📊 Extracted {len(Mcode_results['extracted_entities'])} entities")
-                    if 'Mcode_mappings' in Mcode_results:
-                        print(f"🗺️  Mapped {len(Mcode_results['Mcode_mappings'])} Mcode elements")
+                    if 'mcode_mappings' in Mcode_results:
+                        print(f"🗺️  Mapped {len(Mcode_results['mcode_mappings'])} Mcode elements")
                 else:
                     print("⚠️  No Mcode results found in output")
             except json.JSONDecodeError:

@@ -245,7 +245,7 @@ def test_validation_with_gold_standard():
     mapping_file = "test_results/mapping_results.json"
     with open(mapping_file, 'w') as f:
         json.dump({
-            "Mcode_mappings": result.mcode_mappings,
+            "mcode_mappings": result.mcode_mappings,
             "metadata": {
                 "mapping_method": "llm_based",
                 "mapped_count": len(result.mcode_mappings),

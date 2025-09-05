@@ -64,7 +64,7 @@ def test_direct_mcode_pipeline(trial_data):
     
     # Basic validation
     assert result is not None, "Pipeline should produce a result."
-    assert "Mcode_mappings" in result.__dict__, "Result should have 'Mcode_mappings' attribute."
+    assert "mcode_mappings" in result.__dict__, "Result should have 'mcode_mappings' attribute."
     
     # Check that we have some mappings
     generated_mappings = result.mcode_mappings

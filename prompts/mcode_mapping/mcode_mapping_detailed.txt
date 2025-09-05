@@ -30,7 +30,7 @@ You are an expert clinical data mapper. Map the extracted medical entities to ap
 
 **REQUIRED OUTPUT FORMAT (Pure JSON):**
 {{
- "Mcode_mappings": [
+ "mcode_mappings": [
     {{
       "source_entity_index": 0,
       "Mcode_element": "Mcode element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",

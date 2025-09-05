@@ -285,7 +285,7 @@ class McodeMapper(LlmBase, Loggable):
             # Validate required structure
             self._validate_mapping_response_structure(parsed)
             
-            mapped_elements = parsed['Mcode_mappings']
+            mapped_elements = parsed['mcode_mappings']
             
             if not isinstance(mapped_elements, list):
                 raise LlmResponseError("'mapped_elements' must be an array")
@@ -325,11 +325,11 @@ class McodeMapper(LlmBase, Loggable):
         if not isinstance(parsed_response, dict):
             raise LlmResponseError("LLM response must be a JSON object")
         
-        if 'Mcode_mappings' not in parsed_response:
-            raise LlmResponseError("Missing 'Mcode_mappings' field in LLM response")
+        if 'mcode_mappings' not in parsed_response:
+            raise LlmResponseError("Missing 'mcode_mappings' field in LLM response")
         
         # Validate each mapping has required Mcode_element field
-        for mapping in parsed_response['Mcode_mappings']:
+        for mapping in parsed_response['mcode_mappings']:
             if 'Mcode_element' not in mapping:
                 raise LlmResponseError("Each mapping must contain 'Mcode_element' field")
     

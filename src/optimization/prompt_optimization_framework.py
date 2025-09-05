@@ -25,6 +25,7 @@ from src.utils import (
     global_token_tracker
 )
 from src.pipeline.mcode_mapper import McodeMapper
+from src.shared.benchmark_result import BenchmarkResult
 
 
 class PromptType(Enum):
@@ -113,313 +114,6 @@ class PromptVariant:
             raise ValueError(f"Failed to load prompt '{self.prompt_key}' for variant '{self.name}': {str(e)}")
 
 
-@dataclass
-class BenchmarkResult:
-    """Results from a single benchmark run"""
-    run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    prompt_variant_id: str = ""
-    api_config_name: str = ""
-    test_case_id: str = ""
-    pipeline_type: str = ""  # Type of pipeline used (McodePipeline or NlpMcodePipeline)
-    start_time: datetime = field(default_factory=datetime.now)
-    end_time: Optional[datetime] = None
-    duration_ms: float = 0.0
-    success: bool = False
-    error_message: str = ""
-    
-    # Performance metrics
-    entities_extracted: int = 0
-    entities_mapped: int = 0
-    extraction_completeness: float = 0.0
-    mapping_accuracy: float = 0.0
-    precision: float = 0.0
-    recall: float = 0.0
-    f1_score: float = 0.0
-    compliance_score: float = 0.0
-    token_usage: int = 0
-    
-    # Raw results
-    extracted_entities: List[Dict[str, Any]] = field(default_factory=list)
-    Mcode_mappings: List[Dict[str, Any]] = field(default_factory=list)
-    validation_results: Dict[str, Any] = field(default_factory=dict)
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            'run_id': self.run_id,
-            'prompt_variant_id': self.prompt_variant_id,
-            'api_config_name': self.api_config_name,
-            'test_case_id': self.test_case_id,
-            'pipeline_type': self.pipeline_type,
-            'start_time': self.start_time.isoformat(),
-            'end_time': self.end_time.isoformat() if self.end_time else None,
-            'duration_ms': self.duration_ms,
-            'success': self.success,
-            'error_message': self.error_message,
-            'entities_extracted': self.entities_extracted,
-            'entities_mapped': self.entities_mapped,
-            'extraction_completeness': self.extraction_completeness,
-            'mapping_accuracy': self.mapping_accuracy,
-            'precision': self.precision,
-            'recall': self.recall,
-            'f1_score': self.f1_score,
-            'compliance_score': self.compliance_score,
-            'token_usage': self.token_usage,
-            # Include raw results for validation recalculation
-            'extracted_entities': self.extracted_entities,
-            'Mcode_mappings': self.mcode_mappings,
-            'validation_results': self.validation_results
-        }
-    
-    def calculate_metrics(self, expected_entities: List[Dict[str, Any]] = None,
-                         expected_mappings: List[Dict[str, Any]] = None,
-                         framework: 'PromptOptimizationFramework' = None) -> None:
-        """Calculate performance metrics based on results using gold standard validation"""
-        framework.logger.debug("calculate_metrics method called")
-        if not self.success:
-            framework.logger.debug("self.success is False, returning early")
-            return
-        
-        # Debug logging to understand why mapping validation is not being executed
-        framework.logger.debug(f"calculate_metrics called with expected_entities={bool(expected_entities)}, expected_mappings={bool(expected_mappings)}")
-        if expected_entities:
-            framework.logger.debug(f"expected_entities length: {len(expected_entities)}")
-        if expected_mappings:
-            framework.logger.debug(f"expected_mappings length: {len(expected_mappings)}")
-        
-        # Basic counts
-        self.entities_extracted = len(self.extracted_entities)
-        self.entities_mapped = len(self.mcode_mappings)
-        
-        # Calculate completeness (if expected entities provided)
-        if expected_entities:
-            expected_count = len(expected_entities)
-            if expected_count > 0:
-                self.extraction_completeness = self.entities_extracted / expected_count
-        
-        # Use validation results from Mcode mapping
-        if self.validation_results:
-            self.compliance_score = self.validation_results.get('compliance_score', 0.0)
-        
-        # Calculate extraction metrics using text-based matching for NLP entities
-        framework.logger.debug(f"Extraction validation: expected_entities={bool(expected_entities)}, extracted_entities={bool(self.extracted_entities)}, len={len(self.extracted_entities)}")
-        framework.logger.debug(f"Before extraction validation: expected_entities is None: {expected_entities is None}")
-        framework.logger.debug(f"Before extraction validation: self.extracted_entities is None: {self.extracted_entities is None}")
-        framework.logger.debug(f"Before extraction validation: expected_entities bool: {bool(expected_entities)}")
-        framework.logger.debug(f"Before extraction validation: self.extracted_entities bool: {bool(self.extracted_entities)}")
-        if expected_entities and self.extracted_entities:
-            framework.logger.debug(f"Calculating extraction metrics with {len(self.extracted_entities)} extracted and {len(expected_entities)} expected entities")
-            # Use fuzzy text matching for extraction metrics to handle different text representations
-            true_positives_ext, false_positives_ext, false_negatives_ext = BenchmarkResult._calculate_fuzzy_text_matches(
-                self.extracted_entities, expected_entities, framework
-            )
-            
-            self.precision = true_positives_ext / (true_positives_ext + false_positives_ext) if (true_positives_ext + false_positives_ext) > 0 else 0
-            self.recall = true_positives_ext / (true_positives_ext + false_negatives_ext) if (true_positives_ext + false_negatives_ext) > 0 else 0
-            self.f1_score = 2 * (self.precision * self.recall) / (self.precision + self.recall) if (self.precision + self.recall) > 0 else 0
-            
-        # DEBUG: Log validation details to help diagnose 0.000 scores for extraction
-        # Trigger debug logging if any key metric is 0.0 to catch edge cases
-        # Moved outside the if block to catch cases where validation condition fails
-        if (self.f1_score == 0.0 or self.precision == 0.0 or self.recall == 0.0):
-            framework.logger.warning(f"⚠️  Extraction validation debug - Zero metrics detected")
-            framework.logger.warning(f"   F1={self.f1_score:.6f}, Precision={self.precision:.6f}, Recall={self.recall:.6f}")
-            framework.logger.warning(f"   Extracted entities: {len(self.extracted_entities)}")
-            framework.logger.warning(f"   Expected entities: {len(expected_entities) if expected_entities else 0}")
-            
-            if expected_entities and self.extracted_entities:
-                true_positives_ext, false_positives_ext, false_negatives_ext = BenchmarkResult._calculate_fuzzy_text_matches(
-                    self.extracted_entities, expected_entities, framework, debug=True
-                )
-                
-                framework.logger.warning(f"   True positives: {true_positives_ext}")
-                framework.logger.warning(f"   False positives: {false_positives_ext}")
-                framework.logger.warning(f"   False negatives: {false_negatives_ext}")
-                
-                # Log detailed text comparison using exact matching for comparison
-                extracted_texts = set(entity.get('text', '') for entity in self.extracted_entities)
-                expected_texts = set(entity.get('text', '') for entity in expected_entities)
-                exact_true_positives = len(extracted_texts & expected_texts)
-                
-                framework.logger.warning(f"   Exact text matches: {exact_true_positives}")
-                framework.logger.warning(f"   Fuzzy text matches: {true_positives_ext}")
-                framework.logger.warning(f"   Improvement with fuzzy matching: {true_positives_ext - exact_true_positives}")
-            else:
-                framework.logger.warning(f"   Validation condition failed: expected_entities={bool(expected_entities)}, extracted_entities={bool(self.extracted_entities)}")
-        
-        # Calculate mapping accuracy using Mcode-based matching for Mcode elements
-        framework.logger.debug(f"Mapping validation: expected_mappings={bool(expected_mappings)}, Mcode_mappings={bool(self.mcode_mappings)}, len={len(self.mcode_mappings) if self.mcode_mappings else 0}")
-        framework.logger.debug(f"Mapping validation: expected_mappings type={type(expected_mappings)}, Mcode_mappings type={type(self.mcode_mappings)}")
-        framework.logger.debug(f"Mapping validation: expected_mappings value={expected_mappings}, Mcode_mappings value={self.mcode_mappings}")
-        framework.logger.debug(f"Mapping validation: expected_mappings is None: {expected_mappings is None}")
-        framework.logger.debug(f"Mapping validation: self.mcode_mappings is None: {self.mcode_mappings is None}")
-        framework.logger.debug(f"Mapping validation: expected_mappings bool: {bool(expected_mappings)}")
-        framework.logger.debug(f"Mapping validation: self.mcode_mappings bool: {bool(self.mcode_mappings)}")
-        if expected_mappings and self.mcode_mappings:
-            framework.logger.debug(f"Calculating mapping metrics with {len(self.mcode_mappings)} mapped and {len(expected_mappings)} expected mappings")
-            # Use Mcode-based matching for mapping metrics (compare Mcode_element + value tuples)
-            # Case-insensitive matching for both Mcode_element and values to handle case differences
-            actual_mappings = set((m.get('Mcode_element', '').lower(), m.get('value', '').lower()) for m in self.mcode_mappings)
-            expected_mappings_set = set((m.get('Mcode_element', '').lower(), m.get('value', '').lower()) for m in expected_mappings)
-            
-            # Debug logging to understand what's happening
-            framework.logger.debug(f"Mapping validation debug info:")
-            framework.logger.debug(f"  Actual mappings count: {len(actual_mappings)}")
-            framework.logger.debug(f"  Expected mappings count: {len(expected_mappings_set)}")
-            
-            # Show some examples of both sets
-            actual_list = list(actual_mappings)
-            expected_list = list(expected_mappings_set)
-            framework.logger.debug(f"  Sample actual mappings: {actual_list[:5]}")
-            framework.logger.debug(f"  Sample expected mappings: {expected_list[:5]}")
-            
-            # Calculate intersection and differences
-            intersection = actual_mappings & expected_mappings_set
-            false_positives = actual_mappings - expected_mappings_set
-            false_negatives = expected_mappings_set - actual_mappings
-            
-            framework.logger.debug(f"  Intersection count: {len(intersection)}")
-            framework.logger.debug(f"  False positives count: {len(false_positives)}")
-            framework.logger.debug(f"  False negatives count: {len(false_negatives)}")
-            
-            # Show some examples of intersection if it exists
-            if intersection:
-                framework.logger.debug(f"  Sample intersection: {list(intersection)[:5]}")
-            
-            true_positives_map = len(intersection)
-            false_positives_map = len(false_positives)
-            false_negatives_map = len(false_negatives)
-            
-            mapping_precision = true_positives_map / (true_positives_map + false_positives_map) if (true_positives_map + false_positives_map) > 0 else 0
-            mapping_recall = true_positives_map / (true_positives_map + false_negatives_map) if (true_positives_map + false_negatives_map) > 0 else 0
-            
-            self.mapping_accuracy = 2 * (mapping_precision * mapping_recall) / (mapping_precision + mapping_recall) if (mapping_precision + mapping_recall) > 0 else 0
-            
-            framework.logger.debug(f"  Mapping accuracy calculation: precision={mapping_precision:.3f}, recall={mapping_recall:.3f}, accuracy={self.mapping_accuracy:.3f}")
-            
-        # DEBUG: Log validation details to help diagnose 0.000 scores
-        # Trigger debug logging if any key metric is 0.0 to catch edge cases
-        # Moved outside the if block to catch cases where validation condition fails
-        if (self.f1_score == 0.0 or self.precision == 0.0 or self.recall == 0.0 or
-            self.mapping_accuracy == 0.0):
-            framework.logger.warning(f"⚠️  Validation debug - Zero metrics detected")
-            framework.logger.warning(f"   F1={self.f1_score:.6f}, Precision={self.precision:.6f}, Recall={self.recall:.6f}, Mapping={self.mapping_accuracy:.6f}")
-            framework.logger.warning(f"   Actual mappings: {len(self.mcode_mappings)}")
-            framework.logger.warning(f"   Expected mappings: {len(expected_mappings) if expected_mappings else 0}")
-            
-            if expected_mappings and self.mcode_mappings:
-                # Use case-insensitive matching for both Mcode_element and values in debug logging as well
-                actual_mappings = set((m.get('Mcode_element', '').lower(), m.get('value', '').lower()) for m in self.mcode_mappings)
-                expected_mappings_set = set((m.get('Mcode_element', '').lower(), m.get('value', '').lower()) for m in expected_mappings)
-                
-                true_positives_map = len(actual_mappings & expected_mappings_set)
-                false_positives_map = len(actual_mappings - expected_mappings_set)
-                false_negatives_map = len(expected_mappings_set - actual_mappings)
-                
-                framework.logger.warning(f"   Mapping intersection: {len(actual_mappings & expected_mappings_set)}")
-                framework.logger.warning(f"   Actual only: {len(actual_mappings - expected_mappings_set)}")
-                framework.logger.warning(f"   Expected only: {len(expected_mappings_set - actual_mappings)}")
-                
-                if actual_mappings and expected_mappings_set:
-                    framework.logger.warning(f"   Actual mappings: {sorted(list(actual_mappings))[:5]}")
-                    framework.logger.warning(f"   Expected mappings: {sorted(list(expected_mappings_set))[:5]}")
-            else:
-                framework.logger.warning(f"   Mapping validation condition failed: expected_mappings={bool(expected_mappings)}, Mcode_mappings={bool(self.mcode_mappings)}")
-
-
-    @staticmethod
-    def _calculate_fuzzy_text_matches(extracted_entities: List[Dict[str, Any]],
-                                    expected_entities: List[Dict[str, Any]],
-                                    framework: 'PromptOptimizationFramework' = None,
-                                    debug: bool = False) -> Tuple[int, int, int]:
-        """
-        Calculate text matches using fuzzy matching to handle different text representations
-        
-        Returns:
-            Tuple of (true_positives, false_positives, false_negatives)
-        """
-        extracted_texts = [entity.get('text', '') for entity in extracted_entities]
-        expected_texts = [entity.get('text', '') for entity in expected_entities]
-        
-        # Track matches
-        matched_extracted = set()
-        matched_expected = set()
-        
-        # First pass: exact matches
-        for i, extracted_text in enumerate(extracted_texts):
-            for j, expected_text in enumerate(expected_texts):
-                if extracted_text == expected_text:
-                    matched_extracted.add(i)
-                    matched_expected.add(j)
-                    if debug and framework:
-                        framework.logger.warning(f"   ✅ Exact match: '{extracted_text}' -> '{expected_text}'")
-        
-        # Second pass: fuzzy matches for remaining entities
-        for i, extracted_text in enumerate(extracted_texts):
-            if i in matched_extracted:
-                continue
-                
-            for j, expected_text in enumerate(expected_texts):
-                if j in matched_expected:
-                    continue
-                
-                # Check if extracted text contains expected text (partial match)
-                if expected_text.lower() in extracted_text.lower():
-                    matched_extracted.add(i)
-                    matched_expected.add(j)
-                    if debug and framework:
-                        framework.logger.warning(f"   ✅ Partial match: '{extracted_text}' contains '{expected_text}'")
-                    continue
-                
-                # Check if expected text contains extracted text (partial match)
-                if extracted_text.lower() in expected_text.lower():
-                    matched_extracted.add(i)
-                    matched_expected.add(j)
-                    if debug and framework:
-                        framework.logger.warning(f"   ✅ Partial match: '{expected_text}' contains '{extracted_text}'")
-                    continue
-                
-                # Check for combined entities (e.g., "Pregnancy or breastfeeding" should match both)
-                combined_match = False
-                if " or " in extracted_text.lower():
-                    parts = [part.strip() for part in extracted_text.lower().split(" or ")]
-                    if expected_text.lower() in parts:
-                        matched_extracted.add(i)
-                        matched_expected.add(j)
-                        combined_match = True
-                        if debug and framework:
-                            framework.logger.warning(f"   ✅ Combined entity match: '{extracted_text}' contains '{expected_text}'")
-                
-                if not combined_match and " or " in expected_text.lower():
-                    parts = [part.strip() for part in expected_text.lower().split(" or ")]
-                    if extracted_text.lower() in parts:
-                        matched_extracted.add(i)
-                        matched_expected.add(j)
-                        if debug and framework:
-                            framework.logger.warning(f"   ✅ Combined entity match: '{expected_text}' contains '{extracted_text}'")
-        
-        # Calculate metrics
-        true_positives = len(matched_expected)
-        false_positives = len(extracted_entities) - len(matched_extracted)
-        false_negatives = len(expected_entities) - len(matched_expected)
-        
-        if debug and framework:
-            framework.logger.warning(f"   Total extracted: {len(extracted_entities)}")
-            framework.logger.warning(f"   Total expected: {len(expected_entities)}")
-            framework.logger.warning(f"   Matched extracted: {len(matched_extracted)}")
-            framework.logger.warning(f"   Matched expected: {len(matched_expected)}")
-            framework.logger.warning(f"   Unmatched extracted: {false_positives}")
-            framework.logger.warning(f"   Unmatched expected: {false_negatives}")
-            
-            # Log some unmatched examples for debugging
-            unmatched_extracted = [extracted_texts[i] for i in range(len(extracted_texts)) if i not in matched_extracted]
-            unmatched_expected = [expected_texts[j] for j in range(len(expected_texts)) if j not in matched_expected]
-            
-            if unmatched_extracted:
-                framework.logger.warning(f"   Unmatched extracted examples: {unmatched_extracted[:3]}")
-            if unmatched_expected:
-                framework.logger.warning(f"   Unmatched expected examples: {unmatched_expected[:3]}")
-        
-        return true_positives, false_positives, false_negatives
 
 class PromptOptimizationFramework(Loggable):
     """STRICT framework - no fallbacks, fails hard on invalid configs
@@ -618,7 +312,7 @@ class PromptOptimizationFramework(Loggable):
                 result.extracted_entities = pipeline_result.extracted_entities
                 result.entities_extracted = len(pipeline_result.extracted_entities)
             
-            if hasattr(pipeline_result, 'Mcode_mappings'):
+            if hasattr(pipeline_result, 'mcode_mappings'):
                 result.mcode_mappings = pipeline_result.mcode_mappings
                 result.entities_mapped = len(pipeline_result.mcode_mappings)
             
@@ -735,10 +429,10 @@ class PromptOptimizationFramework(Loggable):
                 result.extracted_entities = pipeline_result.extracted_entities
                 result.entities_extracted = len(pipeline_result.extracted_entities)
             
-            if hasattr(pipeline_result, 'Mcode_mappings'):
+            if hasattr(pipeline_result, 'mcode_mappings'):
                 result.mcode_mappings = pipeline_result.mcode_mappings
                 result.entities_mapped = len(pipeline_result.mcode_mappings)
-                self.logger.debug(f"Set Mcode_mappings: {len(result.mcode_mappings)} mappings")
+                self.logger.debug(f"Set mcode_mappings: {len(result.mcode_mappings)} mappings")
             
             if hasattr(pipeline_result, 'validation_results'):
                 result.validation_results = pipeline_result.validation_results
@@ -749,8 +443,8 @@ class PromptOptimizationFramework(Loggable):
                 if token_usage:
                     result.token_usage = token_usage.get('total_tokens', 0)
             
-            # Also capture token usage from Mcode_mappings
-            if hasattr(result, 'Mcode_mappings') and result.mcode_mappings:
+            # Also capture token usage from mcode_mappings
+            if hasattr(result, 'mcode_mappings') and result.mcode_mappings:
                 for mapping in result.mcode_mappings:
                     if 'metadata' in mapping and 'token_usage' in mapping['metadata']:
                         token_usage = mapping['metadata']['token_usage']
@@ -858,7 +552,7 @@ class PromptOptimizationFramework(Loggable):
                 
                 # Load raw results for validation recalculation
                 result.extracted_entities = result_data.get('extracted_entities', [])
-                result.mcode_mappings = result_data.get('Mcode_mappings', [])
+                result.mcode_mappings = result_data.get('mcode_mappings', [])
                 result.validation_results = result_data.get('validation_results', {})
                 
                 self.benchmark_results.append(result)
@@ -1162,7 +856,7 @@ class PromptOptimizationFramework(Loggable):
         if not model_found:
             # Check if it's a valid model in our model library
             try:
-                from src.utils.model_loader import model_loader
+                from src.utils import model_loader
                 all_models = model_loader.get_all_models()
                 if model_name not in all_models:
                     raise ValueError(f"Model '{model_name}' not found in model library")
@@ -1200,7 +894,7 @@ class PromptOptimizationFramework(Loggable):
         
         # Reload the model loader to reflect the changes
         try:
-            from src.utils.model_loader import reload_models_config
+            from src.utils import reload_models_config
             reload_models_config()
         except Exception as e:
             self.logger.warning(f"Failed to reload model configuration: {str(e)}")
@@ -1413,11 +1107,11 @@ class PromptOptimizationFramework(Loggable):
                 result.entities_extracted = len(pipeline_result.extracted_entities)
                 _log_with_callback(f"   📊 Extracted {result.entities_extracted} entities")
             
-            if hasattr(pipeline_result, 'Mcode_mappings'):
+            if hasattr(pipeline_result, 'mcode_mappings'):
                 result.mcode_mappings = pipeline_result.mcode_mappings
                 result.entities_mapped = len(pipeline_result.mcode_mappings)
                 _log_with_callback(f"   🗺️  Mapped {result.entities_mapped} Mcode elements")
-                self.logger.debug(f"Set Mcode_mappings: {len(result.mcode_mappings)} mappings")
+                self.logger.debug(f"Set mcode_mappings: {len(result.mcode_mappings)} mappings")
             
             if hasattr(pipeline_result, 'validation_results'):
                 result.validation_results = pipeline_result.validation_results
@@ -1430,8 +1124,8 @@ class PromptOptimizationFramework(Loggable):
                     result.token_usage = token_usage.get('total_tokens', 0)
                     _log_with_callback(f"   📝 Token usage: {result.token_usage} tokens")
             
-            # Also capture token usage from Mcode_mappings
-            if hasattr(result, 'Mcode_mappings') and result.mcode_mappings:
+            # Also capture token usage from mcode_mappings
+            if hasattr(result, 'mcode_mappings') and result.mcode_mappings:
                 for mapping in result.mcode_mappings:
                     if 'metadata' in mapping and 'token_usage' in mapping['metadata']:
                         token_usage = mapping['metadata']['token_usage']

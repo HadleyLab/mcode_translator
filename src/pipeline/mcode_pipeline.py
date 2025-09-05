@@ -90,7 +90,7 @@ class McodePipeline(ProcessingPipeline, Loggable):
 
             return PipelineResult(
                 extracted_entities=[],
-                Mcode_mappings=all_mappings,
+                mcode_mappings=all_mappings,
                 source_references=source_references,
                 validation_results=validation_results,
                 metadata={

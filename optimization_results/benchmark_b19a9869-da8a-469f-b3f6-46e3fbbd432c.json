@@ -437,7 +437,7 @@
       }
     }
   ],
-  "Mcode_mappings": [
+  "mcode_mappings": [
     {
       "resourceType": "Condition",
       "Mcode_element": "CancerCondition",
