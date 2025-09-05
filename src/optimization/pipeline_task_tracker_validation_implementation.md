@@ -12,7 +12,7 @@ Add validation metrics fields to the `LLMCallTask` data class:
 @dataclass
 class LLMCallTask:
     """Represents a single LLM call task (extraction or mapping)"""
-    name: str  # "NLP Extraction" or "mCODE Mapping"
+    name: str  # "NLP Extraction" or "Mcode Mapping"
     status: TaskStatus = TaskStatus.PENDING
     start_time: Optional[float] = None
     end_time: Optional[float] = None
@@ -48,13 +48,13 @@ def _perform_validation(self, task: PipelineTask, result: Any,
             self._calculate_extraction_metrics(task.nlp_extraction, result.extracted_entities, expected_entities)
         
         # Calculate mapping metrics
-        if expected_mappings and hasattr(result, 'mcode_mappings'):
+        if expected_mappings and hasattr(result, 'Mcode_mappings'):
             self._calculate_mapping_metrics(task.mcode_mapping, result.mcode_mappings, expected_mappings)
             
         # Calculate compliance score from validation results
         if hasattr(result, 'validation_results'):
             task.mcode_mapping.compliance_score = result.validation_results.get('compliance_score', 0.0)
-            if task.pipeline_type == 'Direct to mCODE':
+            if task.pipeline_type == 'Direct to Mcode':
                 task.nlp_extraction.compliance_score = result.validation_results.get('compliance_score', 0.0)
             
     except Exception as e:
@@ -87,11 +87,11 @@ def _calculate_extraction_metrics(self, subtask: LLMCallTask, actual_entities: L
 
 def _calculate_mapping_metrics(self, subtask: LLMCallTask, actual_mappings: List[Dict[str, Any]], 
                               expected_mappings: List[Dict[str, Any]]) -> None:
-    """Calculate mapping metrics using mCODE element matching"""
+    """Calculate mapping metrics using Mcode element matching"""
     try:
-        # Create sets of (mcode_element, value) tuples for comparison
-        actual_tuples = set((m.get('mcode_element', '').lower(), m.get('value', '').lower()) for m in actual_mappings)
-        expected_tuples = set((m.get('mcode_element', '').lower(), m.get('value', '').lower()) for m in expected_mappings)
+        # Create sets of (Mcode_element, value) tuples for comparison
+        actual_tuples = set((m.get('Mcode_element', '').lower(), m.get('value', '').lower()) for m in actual_mappings)
+        expected_tuples = set((m.get('Mcode_element', '').lower(), m.get('value', '').lower()) for m in expected_mappings)
         
         # Calculate precision, recall, F1-score
         true_positives = len(actual_tuples & expected_tuples)
@@ -203,13 +203,13 @@ async def _process_pipeline_task(self, task: PipelineTask):
             expected_mappings = gold_data.get('expected_mcode_mappings', {}).get('mapped_elements', [])
         
         # Create pipeline instance with selected prompts
-        if self.pipeline_selector.value == 'Direct to mCODE':
+        if self.pipeline_selector.value == 'Direct to Mcode':
             prompt_name = self.direct_mcode_prompt_selector.value
             pipeline = McodePipeline(prompt_name=prompt_name)
         else:
             extraction_prompt = self.nlp_prompt_selector.value
             mapping_prompt = self.mcode_prompt_selector.value
-            pipeline = NlpExtractionToMcodeMappingPipeline(
+            pipeline = NlpMcodePipeline(
                 extraction_prompt_name=extraction_prompt,
                 mapping_prompt_name=mapping_prompt
             )
@@ -248,10 +248,10 @@ async def _run_pipeline_with_tracking(self, pipeline: 'ProcessingPipeline', task
     
     # Update task details based on pipeline type
     if isinstance(pipeline, McodePipeline):
-        task.mcode_mapping.name = "Direct to mCODE"
+        task.mcode_mapping.name = "Direct to Mcode"
         task.mcode_mapping.status = TaskStatus.RUNNING
         task.mcode_mapping.start_time = asyncio.get_event_loop().time()
-        task.mcode_mapping.details = f"Mapping text to mCODE using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={mapping_prompt})..."
+        task.mcode_mapping.details = f"Mapping text to Mcode using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={mapping_prompt})..."
         task.nlp_extraction.details = "Not applicable for this pipeline"
         task.nlp_extraction.status = TaskStatus.SUCCESS
     else:
@@ -269,7 +269,7 @@ async def _run_pipeline_with_tracking(self, pipeline: 'ProcessingPipeline', task
         )
         
         if result:
-            if isinstance(pipeline, NlpExtractionToMcodeMappingPipeline):
+            if isinstance(pipeline, NlpMcodePipeline):
                 task.nlp_extraction.status = TaskStatus.SUCCESS
                 task.nlp_extraction.end_time = asyncio.get_event_loop().time()
                 task.nlp_extraction.details = f"Extracted {len(result.extracted_entities)} entities using {model_name} with prompt '{extraction_prompt}'"
@@ -278,12 +278,12 @@ async def _run_pipeline_with_tracking(self, pipeline: 'ProcessingPipeline', task
 
                 task.mcode_mapping.status = TaskStatus.RUNNING
                 task.mcode_mapping.start_time = asyncio.get_event_loop().time()
-                task.mcode_mapping.details = f"Mapping entities to mCODE using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={mapping_prompt})..."
+                task.mcode_mapping.details = f"Mapping entities to Mcode using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={mapping_prompt})..."
                 self._update_task_list()
 
             task.mcode_mapping.status = TaskStatus.SUCCESS
             task.mcode_mapping.end_time = asyncio.get_event_loop().time()
-            task.mcode_mapping.details = f"Mapped {len(result.mcode_mappings)} mCODE elements using {model_name} with prompt '{mapping_prompt}'"
+            task.mcode_mapping.details = f"Mapped {len(result.mcode_mappings)} Mcode elements using {model_name} with prompt '{mapping_prompt}'"
             if result.metadata and 'token_usage' in result.metadata:
                 task.mcode_mapping.token_usage = result.metadata['token_usage']
         
@@ -306,7 +306,7 @@ async def _run_pipeline_with_tracking(self, pipeline: 'ProcessingPipeline', task
 ## Testing Plan
 1. Verify validation logic correctly calculates metrics with sample data
 2. Test fuzzy text matching with various text variations
-3. Confirm mCODE element matching works with case-insensitive comparisons
+3. Confirm Mcode element matching works with case-insensitive comparisons
 4. Validate error handling for missing or malformed validation data
 5. Test performance impact of validation calculations
 

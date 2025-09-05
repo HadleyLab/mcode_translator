@@ -1,6 +1,6 @@
-**TASK: Map clinical entities to mCODE elements**
+**TASK: Map clinical entities to Mcode elements**
 
-You are an expert clinical data mapper. Map the extracted medical entities to appropriate mCODE (Minimal Common Oncology Data Elements) resources.
+You are an expert clinical data mapper. Map the extracted medical entities to appropriate Mcode (Minimal Common Oncology Data Elements) resources.
 
 **INPUT ENTITIES:**
 {entities_json}
@@ -8,7 +8,7 @@ You are an expert clinical data mapper. Map the extracted medical entities to ap
 **TRIAL CONTEXT:**
 {trial_context}
 
-**MCODE RESOURCE TYPES TO MAP TO:**
+**Mcode RESOURCE TYPES TO MAP TO:**
 - Condition: Diseases, disorders, cancer types
 - Observation: Biomarkers, lab results, findings
 - MedicationStatement: Medications, treatments
@@ -19,7 +19,7 @@ You are an expert clinical data mapper. Map the extracted medical entities to ap
 **REQUIREMENTS:**
 - Be robust to missing or incomplete data
 - Use appropriate default values where needed
-- Validate against mCODE schema
+- Validate against Mcode schema
 - Provide clear error messages for invalid mappings
 - Maintain data provenance
 - Use standard coding systems (LOINC for labs, SNOMEDCT for conditions, ICD10CM for diagnoses)
@@ -28,29 +28,29 @@ You are an expert clinical data mapper. Map the extracted medical entities to ap
 - For biomarkers, include status (positive/negative/equivocal) and value if available
 
 **REQUIRED OUTPUT FORMAT (Pure JSON):**
-{
-  "mcode_mappings": [
-    {
+{{
+ "Mcode_mappings": [
+    {{
       "source_entity_index": 0,
-      "mcode_element": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
-      "value": "mapped value according to mCODE value sets",
+      "Mcode_element": "Mcode element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
+      "value": "mapped value according to Mcode value sets",
       "confidence": 0.0-1.0,
       "mapping_rationale": "brief explanation of mapping decision"
-    }
+    }}
   ],
   "unmapped_entities": [
-    {
+    {{
       "entity_index": 0,
-      "reason": "why entity could not be mapped to mCODE"
-    }
+      "reason": "why entity could not be mapped to Mcode"
+    }}
   ],
-  "metadata": {
+  "metadata": {{
     "mapping_method": "llm_based",
     "total_entities": 10,
     "mapped_count": 8,
     "unmapped_count": 2
-  }
-}
+  }}
+}}
 
 **CRITICAL:**
 - Maintain semantic accuracy - don't invent information not present in source

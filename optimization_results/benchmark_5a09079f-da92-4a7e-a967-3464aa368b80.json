@@ -513,419 +513,419 @@
       }
     }
   ],
-  "mcode_mappings": [
+  "Mcode_mappings": [
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "HER2-Positive Breast Cancer",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 0",
-      "mapping_rationale": "Cancer diagnosis entity mapped to mCODE CancerCondition",
+      "mapping_rationale": "Cancer diagnosis entity mapped to Mcode CancerCondition",
       "id": "a19c1a6f-b8bd-4056-ba28-ed3c222a5c96",
       "llm_source_text_fragment": "Entity index 0",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Metastatic Breast Cancer",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 1",
-      "mapping_rationale": "Cancer diagnosis entity mapped to mCODE CancerCondition",
+      "mapping_rationale": "Cancer diagnosis entity mapped to Mcode CancerCondition",
       "id": "de0f01ad-a76f-46ae-ab2b-73976fb5b9f6",
       "llm_source_text_fragment": "Entity index 1",
       "source_references": []
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "GenomicVariant",
+      "Mcode_element": "GenomicVariant",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "genomicvariant",
         "display": "GenomicVariant"
       },
       "value": "HER2-Positive",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 2",
-      "mapping_rationale": "Biomarker entity mapped to mCODE GenomicVariant",
+      "mapping_rationale": "Biomarker entity mapped to Mcode GenomicVariant",
       "id": "97fc3308-fe7e-4c0d-b3a7-27d9b6c8b5da",
       "llm_source_text_fragment": "Entity index 2",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Histologically confirmed HER2-positive metastatic breast cancer",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 3",
-      "mapping_rationale": "Cancer diagnosis entity mapped to mCODE CancerCondition",
+      "mapping_rationale": "Cancer diagnosis entity mapped to Mcode CancerCondition",
       "id": "8b94f788-cba6-467e-aedb-39457cd55f98",
       "llm_source_text_fragment": "Entity index 3",
       "source_references": []
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "GenomicVariant",
+      "Mcode_element": "GenomicVariant",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "genomicvariant",
         "display": "GenomicVariant"
       },
       "value": "HER2-positive",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 4",
-      "mapping_rationale": "Biomarker entity mapped to mCODE GenomicVariant",
+      "mapping_rationale": "Biomarker entity mapped to Mcode GenomicVariant",
       "id": "d5cd9ce0-1d2a-4e88-a322-a065e38203ed",
       "llm_source_text_fragment": "Entity index 4",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Measurable disease per RECIST 1.1",
       "mapping_confidence": 0.8,
       "source_text_fragment": "Entity index 5",
-      "mapping_rationale": "Cancer-related condition entity mapped to mCODE CancerCondition with lower confidence due to measurement context",
+      "mapping_rationale": "Cancer-related condition entity mapped to Mcode CancerCondition with lower confidence due to measurement context",
       "id": "9576501a-6266-42d4-903c-3be81d708e2a",
       "llm_source_text_fragment": "Entity index 5",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "RECIST 1.1",
       "mapping_confidence": 0.7,
       "source_text_fragment": "Entity index 6",
-      "mapping_rationale": "Procedure related to cancer assessment mapped to mCODE CancerCondition with moderate confidence",
+      "mapping_rationale": "Procedure related to cancer assessment mapped to Mcode CancerCondition with moderate confidence",
       "id": "2aca18f3-28f1-4887-8254-870450e28d58",
       "llm_source_text_fragment": "Entity index 6",
       "source_references": []
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "ECOGPerformanceStatus",
+      "Mcode_element": "ECOGPerformanceStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "ecogperformancestatus",
         "display": "ECOGPerformanceStatus"
       },
       "value": "0-1",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 7",
-      "mapping_rationale": "ECOG performance status directly mapped to mCODE ECOGPerformanceStatus",
+      "mapping_rationale": "ECOG performance status directly mapped to Mcode ECOGPerformanceStatus",
       "id": "3742cf9d-03cf-446e-b0df-3ead68664e1c",
       "llm_source_text_fragment": "Entity index 7",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Adequate organ function",
       "mapping_confidence": 0.6,
       "source_text_fragment": "Entity index 8",
-      "mapping_rationale": "General condition entity mapped to mCODE CancerCondition with low confidence as it's not cancer-specific",
+      "mapping_rationale": "General condition entity mapped to Mcode CancerCondition with low confidence as it's not cancer-specific",
       "id": "47005341-2a04-40a4-9b8a-2581316da273",
       "llm_source_text_fragment": "Entity index 8",
       "source_references": []
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },
       "value": "Trastuzumab Deruxtecan",
       "mapping_confidence": 0.9,
       "source_text_fragment": "Entity index 9",
-      "mapping_rationale": "Cancer medication entity mapped to mCODE CancerRelatedMedication with high confidence",
+      "mapping_rationale": "Cancer medication entity mapped to Mcode CancerRelatedMedication with high confidence",
       "id": "a05be91d-ff04-4351-9be9-5f50d7193dc7",
       "llm_source_text_fragment": "Entity index 9",
       "source_references": []
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },
       "value": "Trastuzumab Deruxtecan",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 10",
-      "mapping_rationale": "Medication entity mapped to mCODE CancerRelatedMedication",
+      "mapping_rationale": "Medication entity mapped to Mcode CancerRelatedMedication",
       "id": "58b517d8-8242-46ef-a84c-73cd9deb57ac",
       "llm_source_text_fragment": "Entity index 10",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Active brain metastases",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 11",
-      "mapping_rationale": "Cancer diagnosis entity mapped to mCODE CancerCondition",
+      "mapping_rationale": "Cancer diagnosis entity mapped to Mcode CancerCondition",
       "id": "c0255d21-6d79-4315-b236-9a4c38ae4ec4",
       "llm_source_text_fragment": "Entity index 11",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Pregnancy or breastfeeding",
       "mapping_confidence": 0.5,
       "source_text_fragment": "Entity index 12",
-      "mapping_rationale": "General condition entity mapped to mCODE CancerCondition with low confidence as it's not cancer-specific",
+      "mapping_rationale": "General condition entity mapped to Mcode CancerCondition with low confidence as it's not cancer-specific",
       "id": "0c2cb76b-1197-405c-842e-12858072af89",
       "llm_source_text_fragment": "Entity index 12",
       "source_references": []
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },
       "value": "HER2-targeted therapy",
       "mapping_confidence": 0.9,
       "source_text_fragment": "Entity index 13",
-      "mapping_rationale": "Cancer medication entity mapped to mCODE CancerRelatedMedication",
+      "mapping_rationale": "Cancer medication entity mapped to Mcode CancerRelatedMedication",
       "id": "d871be0e-62ce-4ea5-b1b6-9ddc29e5f135",
       "llm_source_text_fragment": "Entity index 13",
       "source_references": []
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "GenomicVariant",
+      "Mcode_element": "GenomicVariant",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "genomicvariant",
         "display": "GenomicVariant"
       },
       "value": "HER2-positive",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 14",
-      "mapping_rationale": "Biomarker entity mapped to mCODE GenomicVariant",
+      "mapping_rationale": "Biomarker entity mapped to Mcode GenomicVariant",
       "id": "594a91b9-dcbe-4a0e-88fc-3849dbd8b4a0",
       "llm_source_text_fragment": "Entity index 14",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "metastatic breast cancer",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 15",
-      "mapping_rationale": "Cancer diagnosis entity mapped to mCODE CancerCondition",
+      "mapping_rationale": "Cancer diagnosis entity mapped to Mcode CancerCondition",
       "id": "48b6c0a8-9f31-47fd-b4ad-075d4a58c2c2",
       "llm_source_text_fragment": "Entity index 15",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "progressed",
       "mapping_confidence": 0.8,
       "source_text_fragment": "Entity index 16",
-      "mapping_rationale": "Cancer progression entity mapped to mCODE CancerCondition with high confidence",
+      "mapping_rationale": "Cancer progression entity mapped to Mcode CancerCondition with high confidence",
       "id": "4f4618d8-16a1-49b8-854b-49abf7aa5219",
       "llm_source_text_fragment": "Entity index 16",
       "source_references": []
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },
       "value": "trastuzumab-based therapy",
       "mapping_confidence": 0.9,
       "source_text_fragment": "Entity index 17",
-      "mapping_rationale": "Cancer medication entity mapped to mCODE CancerRelatedMedication",
+      "mapping_rationale": "Cancer medication entity mapped to Mcode CancerRelatedMedication",
       "id": "1b12b008-ca21-42d1-9d37-4eb9cfb6f3fe",
       "llm_source_text_fragment": "Entity index 17",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "HER2-Positive Breast Cancer",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 18",
-      "mapping_rationale": "Cancer diagnosis entity mapped to mCODE CancerCondition",
+      "mapping_rationale": "Cancer diagnosis entity mapped to Mcode CancerCondition",
       "id": "74e28480-18ef-43ff-a965-c897c1481e5d",
       "llm_source_text_fragment": "Entity index 18",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "HER2-Positive Metastatic Breast Cancer",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 19",
-      "mapping_rationale": "Cancer diagnosis entity mapped to mCODE CancerCondition",
+      "mapping_rationale": "Cancer diagnosis entity mapped to Mcode CancerCondition",
       "id": "442cf8e9-e857-4639-b883-48d0f95b79f5",
       "llm_source_text_fragment": "Entity index 19",
       "source_references": []
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "GenomicVariant",
+      "Mcode_element": "GenomicVariant",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "genomicvariant",
         "display": "GenomicVariant"
       },
       "value": "HER2-Positive",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 20",
-      "mapping_rationale": "Biomarker entity mapped to mCODE GenomicVariant",
+      "mapping_rationale": "Biomarker entity mapped to Mcode GenomicVariant",
       "id": "037112bf-660a-4b28-841b-3daa7a466e02",
       "llm_source_text_fragment": "Entity index 20",
       "source_references": []
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "GenomicVariant",
+      "Mcode_element": "GenomicVariant",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "genomicvariant",
         "display": "GenomicVariant"
       },
       "value": "HER2-Positive",
       "mapping_confidence": 1.0,
       "source_text_fragment": "Entity index 21",
-      "mapping_rationale": "Biomarker entity mapped to mCODE GenomicVariant",
+      "mapping_rationale": "Biomarker entity mapped to Mcode GenomicVariant",
       "id": "e26b0b38-69c4-4dd6-9462-46f4c9a2b958",
       "llm_source_text_fragment": "Entity index 21",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Metastatic",
       "mapping_confidence": 0.9,
       "source_text_fragment": "Entity index 22",
-      "mapping_rationale": "Cancer stage entity mapped to mCODE CancerCondition with high confidence",
+      "mapping_rationale": "Cancer stage entity mapped to Mcode CancerCondition with high confidence",
       "id": "8b5c9cc4-ed74-4234-93bc-2798f322ee60",
       "llm_source_text_fragment": "Entity index 22",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Phase III",
       "mapping_confidence": 0.6,
       "source_text_fragment": "Entity index 23",
-      "mapping_rationale": "Trial phase entity mapped to mCODE CancerCondition with low confidence as it's trial metadata",
+      "mapping_rationale": "Trial phase entity mapped to Mcode CancerCondition with low confidence as it's trial metadata",
       "id": "dffa184e-223c-4e3b-b891-583b5a9e2bb9",
       "llm_source_text_fragment": "Entity index 23",
       "source_references": []
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },
       "value": "Novel Therapy",
       "mapping_confidence": 0.9,
       "source_text_fragment": "Entity index 24",
-      "mapping_rationale": "Cancer medication entity mapped to mCODE CancerRelatedMedication",
+      "mapping_rationale": "Cancer medication entity mapped to Mcode CancerRelatedMedication",
       "id": "439c11a1-2d5e-4207-b5b2-4dcbbbd43405",
       "llm_source_text_fragment": "Entity index 24",
       "source_references": []
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },
       "value": "Novel Targeted Therapy",
       "mapping_confidence": 0.9,
       "source_text_fragment": "Entity index 25",
-      "mapping_rationale": "Cancer medication entity mapped to mCODE CancerRelatedMedication",
+      "mapping_rationale": "Cancer medication entity mapped to Mcode CancerRelatedMedication",
       "id": "c2c3d3e5-2b72-464a-bee5-36ecf79c1c9f",
       "llm_source_text_fragment": "Entity index 25",
       "source_references": []

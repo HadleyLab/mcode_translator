@@ -399,131 +399,131 @@
       }
     }
   ],
-  "mcode_mappings": [
+  "Mcode_mappings": [
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "HER2-Positive Breast Cancer",
       "mapping_confidence": 0.95,
       "source_text_fragment": "Entity index 0",
-      "mapping_rationale": "The entity 'HER2-Positive Breast Cancer' is a specific type of cancer diagnosis, which maps directly to the mCODE element CancerCondition.",
+      "mapping_rationale": "The entity 'HER2-Positive Breast Cancer' is a specific type of cancer diagnosis, which maps directly to the Mcode element CancerCondition.",
       "id": "8a7a726f-2f63-4ae8-8b6d-c4a8621a731d",
       "llm_source_text_fragment": "Entity index 0",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Metastatic Breast Cancer",
       "mapping_confidence": 0.95,
       "source_text_fragment": "Entity index 1",
-      "mapping_rationale": "The entity 'Metastatic Breast Cancer' is a specific type of cancer diagnosis, which maps directly to the mCODE element CancerCondition.",
+      "mapping_rationale": "The entity 'Metastatic Breast Cancer' is a specific type of cancer diagnosis, which maps directly to the Mcode element CancerCondition.",
       "id": "c80a6d39-4069-4e5f-8107-e403b8e7babb",
       "llm_source_text_fragment": "Entity index 1",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "HER2-positive metastatic breast cancer",
       "mapping_confidence": 0.95,
       "source_text_fragment": "Entity index 2",
-      "mapping_rationale": "The entity 'HER2-positive metastatic breast cancer' is a specific type of cancer diagnosis, which maps directly to the mCODE element CancerCondition.",
+      "mapping_rationale": "The entity 'HER2-positive metastatic breast cancer' is a specific type of cancer diagnosis, which maps directly to the Mcode element CancerCondition.",
       "id": "d2621f1d-4cc8-456d-b825-2b1bed696010",
       "llm_source_text_fragment": "Entity index 2",
       "source_references": []
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "ECOGPerformanceStatus",
+      "Mcode_element": "ECOGPerformanceStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "ecogperformancestatus",
         "display": "ECOGPerformanceStatus"
       },
       "value": "0-1",
       "mapping_confidence": 0.9,
       "source_text_fragment": "Entity index 5",
-      "mapping_rationale": "The entity 'ECOG performance status 0-1' directly corresponds to the mCODE element ECOGPerformanceStatus, which captures performance scores.",
+      "mapping_rationale": "The entity 'ECOG performance status 0-1' directly corresponds to the Mcode element ECOGPerformanceStatus, which captures performance scores.",
       "id": "62625133-6048-4500-a1cc-b948380124da",
       "llm_source_text_fragment": "Entity index 5",
       "source_references": []
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },
       "value": "Trastuzumab Deruxtecan",
       "mapping_confidence": 0.9,
       "source_text_fragment": "Entity index 7",
-      "mapping_rationale": "The entity 'Trastuzumab Deruxtecan' is a medication used in cancer treatment, mapping to the mCODE element CancerRelatedMedication.",
+      "mapping_rationale": "The entity 'Trastuzumab Deruxtecan' is a medication used in cancer treatment, mapping to the Mcode element CancerRelatedMedication.",
       "id": "a4cdd483-25a8-4f74-b6c8-4b9e3c955ca4",
       "llm_source_text_fragment": "Entity index 7",
       "source_references": []
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },
       "value": "trastuzumab-based therapy",
       "mapping_confidence": 0.9,
       "source_text_fragment": "Entity index 12",
-      "mapping_rationale": "The entity 'trastuzumab-based therapy' is a medication regimen used in cancer treatment, mapping to the mCODE element CancerRelatedMedication.",
+      "mapping_rationale": "The entity 'trastuzumab-based therapy' is a medication regimen used in cancer treatment, mapping to the Mcode element CancerRelatedMedication.",
       "id": "4c93e5c3-a0ec-4c64-a62d-0e4763914a98",
       "llm_source_text_fragment": "Entity index 12",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "HER2-Positive Breast Cancer",
       "mapping_confidence": 0.95,
       "source_text_fragment": "Entity index 13",
-      "mapping_rationale": "The entity 'HER2-Positive Breast Cancer' is a specific type of cancer diagnosis, which maps directly to the mCODE element CancerCondition.",
+      "mapping_rationale": "The entity 'HER2-Positive Breast Cancer' is a specific type of cancer diagnosis, which maps directly to the Mcode element CancerCondition.",
       "id": "18e7473a-40d3-4dc0-bcb7-b9ed189d59b8",
       "llm_source_text_fragment": "Entity index 13",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "HER2-Positive Metastatic Breast Cancer",
       "mapping_confidence": 0.95,
       "source_text_fragment": "Entity index 14",
-      "mapping_rationale": "The entity 'HER2-Positive Metastatic Breast Cancer' is a specific type of cancer diagnosis, which maps directly to the mCODE element CancerCondition.",
+      "mapping_rationale": "The entity 'HER2-Positive Metastatic Breast Cancer' is a specific type of cancer diagnosis, which maps directly to the Mcode element CancerCondition.",
       "id": "60bd2a76-820b-4c6a-bab6-87d81aaa18f2",
       "llm_source_text_fragment": "Entity index 14",
       "source_references": []

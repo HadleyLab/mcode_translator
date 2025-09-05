@@ -1,6 +1,6 @@
 # Contribution Guidelines
 
-We welcome contributions to improve the mCODE Translator! Please follow these guidelines:
+We welcome contributions to improve the Mcode Translator! Please follow these guidelines:
 
 ## Development Setup
 

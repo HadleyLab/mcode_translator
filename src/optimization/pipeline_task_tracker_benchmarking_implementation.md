@@ -12,7 +12,7 @@ Add benchmarking metrics fields to the data classes:
 @dataclass
 class LLMCallTask:
     """Represents a single LLM call task (extraction or mapping)"""
-    name: str  # "NLP Extraction" or "mCODE Mapping"
+    name: str  # "NLP Extraction" or "Mcode Mapping"
     status: TaskStatus = TaskStatus.PENDING
     start_time: Optional[float] = None
     end_time: Optional[float] = None
@@ -44,10 +44,10 @@ class PipelineTask:
     start_time: Optional[float] = None
     end_time: Optional[float] = None
     nlp_extraction: LLMCallTask = None
-    mcode_mapping: LLMCallTask = None
+    Mcode_mapping: LLMCallTask = None
     error_message: Optional[str] = None
     trial_data: Optional[Dict[str, Any]] = None
-    pipeline_type: str = "NLP to mCODE"  # Store the pipeline type used for this task
+    pipeline_type: str = "NLP to Mcode"  # Store the pipeline type used for this task
     test_case_name: str = "unknown"  # Store the test case name for display
     prompt_info: Optional[Dict[str, str]] = None  # Store prompt information for display
     
@@ -60,7 +60,7 @@ class PipelineTask:
         if not self.nlp_extraction:
             self.nlp_extraction = LLMCallTask(name="NLP Extraction")
         if not self.mcode_mapping:
-            self.mcode_mapping = LLMCallTask(name="mCODE Mapping")
+            self.mcode_mapping = LLMCallTask(name="Mcode Mapping")
     
     @property
     def duration(self) -> Optional[float]:
@@ -95,7 +95,7 @@ def _collect_benchmarking_metrics(self, task: PipelineTask, result: Any) -> None
         if task.nlp_extraction and task.nlp_extraction.token_usage:
             total_tokens += task.nlp_extraction.token_usage.get('total_tokens', 0)
         
-        # From mcode_mapping
+        # From Mcode_mapping
         if task.mcode_mapping and task.mcode_mapping.token_usage:
             total_tokens += task.mcode_mapping.token_usage.get('total_tokens', 0)
         
@@ -165,13 +165,13 @@ async def _process_pipeline_task(self, task: PipelineTask):
             expected_mappings = gold_data.get('expected_mcode_mappings', {}).get('mapped_elements', [])
         
         # Create pipeline instance with selected prompts
-        if self.pipeline_selector.value == 'Direct to mCODE':
+        if self.pipeline_selector.value == 'Direct to Mcode':
             prompt_name = self.direct_mcode_prompt_selector.value
             pipeline = McodePipeline(prompt_name=prompt_name)
         else:
             extraction_prompt = self.nlp_prompt_selector.value
             mapping_prompt = self.mcode_prompt_selector.value
-            pipeline = NlpExtractionToMcodeMappingPipeline(
+            pipeline = NlpMcodePipeline(
                 extraction_prompt_name=extraction_prompt,
                 mapping_prompt_name=mapping_prompt
             )

@@ -1,20 +1,20 @@
 # Model Configuration Fix Summary
 
 ## Problem Description
-The MCODE Translator optimization framework was failing with the error:
+The Mcode Translator optimization framework was failing with the error:
 ```
 ValueError: Model key 'model_deepseek_coder' not found in config
 ```
 
-This occurred because the [`APIConfig.__init__()`](src/optimization/strict_prompt_optimization_framework.py:35) method was incorrectly using the config name (e.g., "model_deepseek_coder") instead of the actual model name (e.g., "deepseek-coder") when calling [`config.get_model_config()`](src/optimization/strict_prompt_optimization_framework.py:42).
+This occurred because the [`APIConfig.__init__()`](src/optimization/prompt_optimization_framework.py:35) method was incorrectly using the config name (e.g., "model_deepseek_coder") instead of the actual model name (e.g., "deepseek-coder") when calling [`config.get_model_config()`](src/optimization/prompt_optimization_framework.py:42).
 
 ## Root Cause Analysis
 1. **Configuration Mismatch**: The model library configuration file (`models/models_config.json`) contains models with keys like "deepseek-coder"
-2. **Incorrect Parameter Usage**: The [`APIConfig.__init__()`](src/optimization/strict_prompt_optimization_framework.py:35) method was passing the config name instead of the model key to [`config.get_model_config()`](src/optimization/strict_prompt_optimization_framework.py:42)
+2. **Incorrect Parameter Usage**: The [`APIConfig.__init__()`](src/optimization/prompt_optimization_framework.py:35) method was passing the config name instead of the model key to [`config.get_model_config()`](src/optimization/prompt_optimization_framework.py:42)
 3. **Legacy Code Pattern**: The original code was using a pattern that worked with hardcoded configurations but failed with the new file-based model library
 
 ## Solution Implemented
-Modified the [`APIConfig.__init__()`](src/optimization/strict_prompt_optimization_framework.py:35) method in `src/optimization/strict_prompt_optimization_framework.py`:
+Modified the [`APIConfig.__init__()`](src/optimization/prompt_optimization_framework.py:35) method in `src/optimization/prompt_optimization_framework.py`:
 
 ```python
 def __init__(self, name: str, model: Optional[str] = None):
@@ -34,28 +34,28 @@ def __init__(self, name: str, model: Optional[str] = None):
 ```
 
 ## Key Changes
-1. **Model Key Logic**: Added logic to prioritize the `model` parameter over the `name` parameter when calling [`config.get_model_config()`](src/optimization/strict_prompt_optimization_framework.py:42)
+1. **Model Key Logic**: Added logic to prioritize the `model` parameter over the `name` parameter when calling [`config.get_model_config()`](src/optimization/prompt_optimization_framework.py:42)
 2. **Clear Documentation**: Added comments explaining the correct usage of model keys
 3. **Backward Compatibility**: Maintained compatibility with existing code by falling back to the name parameter
 
 ## Verification
 The fix was verified by running the optimization command:
 ```bash
-source activate mcode_translator && python mcode-optimize.py run --test-cases tests/data/test_cases/multi_cancer.json --gold-standard tests/data/gold_standard/multi_cancer.json --output results
+source activate mcode_translator && python Mcode-optimize.py run --test-cases tests/data/test_cases/multi_cancer.json --gold-standard tests/data/gold_standard/multi_cancer.json --output results
 ```
 
 ### Results
 - ✅ **Success**: Benchmark completed successfully with `"success": true`
 - ✅ **Model Configuration**: Correctly using `"api_config_name": "model_deepseek_coder"` 
 - ✅ **Performance**: 100% compliance score (`"compliance_score": 1.0`)
-- ✅ **Entity Processing**: Extracted 45 entities and mapped 33 mCODE elements
+- ✅ **Entity Processing**: Extracted 45 entities and mapped 33 Mcode elements
 - ✅ **Token Tracking**: Proper token usage tracking with 10,578 total tokens
 
 ## Impact
 This fix resolves the core model configuration issue that was preventing the optimization framework from running. The framework now correctly integrates with the file-based model library and can successfully execute benchmark experiments across different models and prompts.
 
 ## Related Components Updated
-1. **Optimization Framework**: Fixed the core [`APIConfig`](src/optimization/strict_prompt_optimization_framework.py:32) class
+1. **Optimization Framework**: Fixed the core [`APIConfig`](src/optimization/prompt_optimization_framework.py:32) class
 2. **CLI Integration**: Verified the new unified CLI works with the fix
 3. **Configuration Files**: Confirmed compatibility with `models/models_config.json`
 

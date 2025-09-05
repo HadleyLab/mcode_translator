@@ -25,12 +25,12 @@ This document describes the implementation of the **Strict Prompt Optimization F
 ## Files Created/Modified
 
 ### New Files
-- [`src/optimization/strict_prompt_optimization_framework.py`](src/optimization/strict_prompt_optimization_framework.py) - Core strict framework
+- [`src/optimization/prompt_optimization_framework.py`](src/optimization/prompt_optimization_framework.py) - Core strict framework
 - [`examples/config/valid_api_configs.json`](examples/config/valid_api_configs.json) - Example valid config
 - [`tests/unit/test_strict_framework.py`](tests/unit/test_strict_framework.py) - Validation tests
 
 ### Modified Files
-- [`src/optimization/strict_prompt_optimization_framework.py`](src/optimization/strict_prompt_optimization_framework.py) - Enhanced validation logic
+- [`src/optimization/prompt_optimization_framework.py`](src/optimization/prompt_optimization_framework.py) - Enhanced validation logic
 
 ## Validation Patterns Detected
 
@@ -62,7 +62,7 @@ The strict framework detects and rejects the following placeholder patterns:
 
 ### 1. Running the Strict Demo
 ```bash
-python mcode-cli.py optimization demo
+python Mcode-cli.py optimization demo
 ```
 
 **Expected Behavior**: Fails immediately if any API configuration contains placeholder keys.
@@ -124,7 +124,7 @@ To fix this:
 To migrate from the original framework to the strict version:
 
 1. Replace all placeholder API keys with real credentials
-2. Update imports from `prompt_optimization_framework` to `strict_prompt_optimization_framework`
+2. Update imports from `prompt_optimization_framework` to `prompt_optimization_framework`
 3. Remove any fallback/retry logic from your code
 4. Handle validation exceptions appropriately
 

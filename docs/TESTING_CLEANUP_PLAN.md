@@ -1,7 +1,7 @@
 # Testing Cleanup Plan
 
 ## Overview
-This document outlines the plan for cleaning up the testing infrastructure in the mCODE Translator project by:
+This document outlines the plan for cleaning up the testing infrastructure in the Mcode Translator project by:
 1. Moving bare tests to proper pytest infrastructure
 2. Removing legacy or obsolete code and data files
 3. Consolidating redundant or duplicate files
@@ -33,7 +33,7 @@ These files should be moved to the proper pytest infrastructure in `tests/` dire
 ### Files to Remove (Obsolete/Legacy)
 These files appear to be obsolete or legacy and should be removed:
 
-1. `mcode-cli.py` - Appears to be an older version, replaced by `mcode-cli.py` in root
+1. `Mcode-cli.py` - Appears to be an older version, replaced by `Mcode-cli.py` in root
 2. Any duplicate or redundant test files
 
 ## Directory Restructuring
@@ -56,7 +56,7 @@ These files appear to be obsolete or legacy and should be removed:
 ├── debug_validation.py
 ├── evaluate_prompts_pipeline.py
 ├── strict_validation_test.py
-├── mcode-cli.py
+├── Mcode-cli.py
 ├── tests/
 │   ├── __init__.py
 │   ├── test_combined_functionality.py
@@ -117,7 +117,7 @@ These files appear to be obsolete or legacy and should be removed:
 2. Ensure all tests can still import required modules
 
 ### Step 4: Remove Obsolete Files
-1. Remove `mcode-cli.py` from root (duplicate)
+1. Remove `Mcode-cli.py` from root (duplicate)
 2. Remove any other truly obsolete files
 
 ### Step 5: Update Documentation

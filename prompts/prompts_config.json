@@ -44,55 +44,55 @@
         "description": "Structured extraction with specific formatting"
       }
     ],
-    "mcode_mapping": [
+    "Mcode_mapping": [
       {
         "name": "generic_mapping",
         "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_generic.txt",
+        "prompt_file": "Mcode_mapping/Mcode_mapping_generic.txt",
         "default": true,
-        "description": "Main mCODE mapping prompt"
+        "description": "Main Mcode mapping prompt"
       },
       {
         "name": "comprehensive_mapping",
         "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_comprehensive.txt",
+        "prompt_file": "Mcode_mapping/Mcode_mapping_comprehensive.txt",
         "default": false,
         "description": "Comprehensive mapping for optimization"
       },
       {
         "name": "detailed_mapping",
         "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_detailed.txt",
+        "prompt_file": "Mcode_mapping/Mcode_mapping_detailed.txt",
         "default": false,
         "description": "Detailed mapping with comprehensive instructions"
       },
       {
         "name": "error_robust_mapping",
         "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_error_robust.txt",
+        "prompt_file": "Mcode_mapping/Mcode_mapping_error_robust.txt",
         "default": false,
         "description": "Error-robust mapping with fallback handling"
       },
       {
         "name": "minimal_mapping",
         "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_minimal.txt",
+        "prompt_file": "Mcode_mapping/Mcode_mapping_minimal.txt",
         "default": false,
         "description": "Minimal mapping prompt"
       },
       {
         "name": "simple_mapping",
         "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_simple.txt",
+        "prompt_file": "Mcode_mapping/Mcode_mapping_simple.txt",
         "default": false,
         "description": "Simple mapping for optimization"
       },
       {
         "name": "standard_mapping",
         "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_standard.txt",
+        "prompt_file": "Mcode_mapping/Mcode_mapping_standard.txt",
         "default": false,
-        "description": "Standard mCODE mapping"
+        "description": "Standard Mcode mapping"
       }
     ],
     "direct_mcode": [
@@ -101,49 +101,49 @@
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_direct.txt",
         "default": true,
-        "description": "Direct text to mCODE mapping"
+        "description": "Direct text to Mcode mapping"
       },
       {
         "name": "direct_mcode_simple",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_simple.txt",
         "default": false,
-        "description": "Simple direct text to mCODE mapping"
+        "description": "Simple direct text to Mcode mapping"
       },
       {
         "name": "direct_mcode_comprehensive",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_comprehensive.txt",
         "default": false,
-        "description": "Comprehensive direct text to mCODE mapping"
+        "description": "Comprehensive direct text to Mcode mapping"
       },
       {
         "name": "direct_mcode_minimal",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_minimal.txt",
         "default": false,
-        "description": "Minimal direct text to mCODE mapping"
+        "description": "Minimal direct text to Mcode mapping"
       },
       {
         "name": "direct_mcode_structured",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_structured.txt",
         "default": false,
-        "description": "Structured direct text to mCODE mapping"
+        "description": "Structured direct text to Mcode mapping"
       },
       {
         "name": "direct_mcode_optimization",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_optimization.txt",
         "default": false,
-        "description": "Optimization-focused direct text to mCODE mapping"
+        "description": "Optimization-focused direct text to Mcode mapping"
       },
       {
         "name": "direct_mcode_improved",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_improved.txt",
         "default": false,
-        "description": "Improved direct text to mCODE mapping with better JSON structure"
+        "description": "Improved direct text to Mcode mapping with better JSON structure"
       }
     ]
   }

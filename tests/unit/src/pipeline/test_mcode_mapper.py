@@ -4,12 +4,12 @@ import os
 from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
-from src.pipeline.mcode_mapper import StrictMcodeMapper
+from src.pipeline.mcode_mapper import McodeMapper
 
-class TestStrictMcodeMapper(unittest.TestCase):
+class TestMcodeMapper(unittest.TestCase):
 
     def setUp(self):
-        self.mapper = StrictMcodeMapper()
+        self.mapper = McodeMapper()
 
     def test_initialization(self):
         self.assertIsNotNone(self.mapper)
@@ -21,11 +21,11 @@ class TestStrictMcodeMapper(unittest.TestCase):
         nlp_entities = [{"text": "ER Positive", "type": "Biomarker"}]
         
         # Mocking the LLM call
-        self.mapper.llm_client.chat.completions.create = MagicMock(return_value=MagicMock(choices=[MagicMock(message=MagicMock(content='{"mcode": "some_mcode"}'))]))
+        self.mapper.llm_client.chat.completions.create = MagicMock(return_value=MagicMock(choices=[MagicMock(message=MagicMock(content='{"Mcode": "some_mcode"}'))]))
 
         result = self.mapper.map_to_mcode(nlp_entities)
-        self.assertIn("mcode", result)
-        self.assertEqual(result["mcode"], "some_mcode")
+        self.assertIn("Mcode", result)
+        self.assertEqual(result["Mcode"], "some_mcode")
 
 if __name__ == '__main__':
     unittest.main()

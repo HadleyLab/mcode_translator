@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides a comprehensive overview of the significant improvements made to the mCODE Translator framework, focusing on three major areas:
+This document provides a comprehensive overview of the significant improvements made to the Mcode Translator framework, focusing on three major areas:
 
 1. **Unified Token Tracking System**: Standardized token usage reporting across all LLM providers
 2. **File-Based Model Library**: Centralized management of LLM model configurations
@@ -29,9 +29,9 @@ Implement a standardized token usage tracking system that works across all LLM p
 - **Thread Safety**: Implements thread-safe singleton pattern for concurrent operations
 
 #### Integration Points
-- `StrictLLMBase`: Base class that extracts token usage from LLM responses
-- `StrictNlpExtractor`: NLP engine that tracks extraction token usage
-- `StrictMcodeMapper`: mCODE mapper that tracks mapping token usage
+- `LlmBase`: Base class that extracts token usage from LLM responses
+- `NlpLlm`: NLP engine that tracks extraction token usage
+- `McodeMapper`: Mcode mapper that tracks mapping token usage
 - `StrictDynamicExtractionPipeline`: Pipeline that aggregates and reports token usage
 
 ### Results
@@ -68,7 +68,7 @@ Replace hardcoded model configurations with a file-based system that centralizes
 #### Integration Points
 - `Config` class: Unified access to model configurations
 - `APIConfig` class: Integration with existing API configuration system
-- `StrictPromptOptimizationFramework`: Support for model-specific optimization
+- `PromptOptimizationFramework`: Support for model-specific optimization
 
 ### Results
 - Successfully migrated all hardcoded model configurations to file-based system
@@ -96,9 +96,9 @@ Improve the system's ability to monitor and analyze performance across all compo
 - **Historical Analysis**: Enables trend analysis and performance comparisons over time
 
 #### Integration Points
-- All LLM components: `StrictLLMBase`, `StrictNlpExtractor`, `StrictMcodeMapper`
+- All LLM components: `LlmBase`, `NlpLlm`, `McodeMapper`
 - Pipeline components: `StrictDynamicExtractionPipeline`
-- Optimization framework: `StrictPromptOptimizationFramework`
+- Optimization framework: `PromptOptimizationFramework`
 
 ### Results
 - Comprehensive performance monitoring across all system components
@@ -169,7 +169,7 @@ All new functionality has been thoroughly tested:
 
 ## Conclusion
 
-The comprehensive system improvements have successfully modernized the mCODE Translator framework with:
+The comprehensive system improvements have successfully modernized the Mcode Translator framework with:
 
 1. **Unified Token Tracking**: Standardized, cross-provider token usage reporting
 2. **File-Based Model Library**: Centralized, maintainable model configuration management

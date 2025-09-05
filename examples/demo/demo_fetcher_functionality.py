@@ -29,7 +29,7 @@ def demo_fetcher_functionality():
         # Create a configured pipeline
         print("🏗️  Creating configured pipeline...")
         pipeline = create_configured_pipeline()
-        print(f"✅ Pipeline created with model: {getattr(pipeline.nlp_engine, 'model_name', 'Unknown')}")
+        print(f"✅ Pipeline created with model: {getattr(pipeline.nlp_extractor, 'model_name', 'Unknown')}")
         
         # Fetch a trial
         print("🔍 Fetching trial NCT06965361...")
@@ -46,9 +46,9 @@ def demo_fetcher_functionality():
         print(f"   🆔 NCT ID: {nct_id}")
         print(f"   📋 Title: {title[:100]}{'...' if len(title) > 100 else ''}")
         
-        # Process with NLP extraction and mCODE mapping
-        print("\n🧬 Processing trial with NLP extraction and mCODE mapping...")
-        print("   This will extract entities and map them to mCODE elements")
+        # Process with NLP extraction and Mcode mapping
+        print("\n🧬 Processing trial with NLP extraction and Mcode mapping...")
+        print("   This will extract entities and map them to Mcode elements")
         print("   Using the new strict dynamic extraction pipeline")
         
         # This would normally be called from the fetcher with --process-trial flag

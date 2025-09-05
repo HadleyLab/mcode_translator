@@ -15,7 +15,7 @@ This document outlines the design for a unified API manager that will handle cac
    - Provides methods for getting/setting cache entries by key
    - Has both function-based and key-based caching interfaces
 
-2. **LLM Cache** (`src/pipeline/strict_llm_base.py`):
+2. **LLM Cache** (`src/pipeline/llm_base.py`):
    - Uses APICache with a different cache directory: `.llm_cache`
    - Specifically designed for LLM API responses
    - Stores both response content and metrics

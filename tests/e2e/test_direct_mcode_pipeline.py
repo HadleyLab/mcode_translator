@@ -50,7 +50,7 @@ logger.info(f"Prepared {len(test_data)} test cases.")
 @pytest.mark.parametrize("trial_data", test_data)
 def test_direct_mcode_pipeline(trial_data):
     """
-    Test the Direct to mCODE pipeline with various cancer trial data.
+    Test the Direct to Mcode pipeline with various cancer trial data.
     """
     logger.info(f"Testing with trial: {trial_data['id']}")
 
@@ -64,11 +64,11 @@ def test_direct_mcode_pipeline(trial_data):
     
     # Basic validation
     assert result is not None, "Pipeline should produce a result."
-    assert "mcode_mappings" in result.__dict__, "Result should have 'mcode_mappings' attribute."
+    assert "Mcode_mappings" in result.__dict__, "Result should have 'Mcode_mappings' attribute."
     
     # Check that we have some mappings
     generated_mappings = result.mcode_mappings
-    assert len(generated_mappings) > 0, "Pipeline should generate at least one mCODE mapping"
+    assert len(generated_mappings) > 0, "Pipeline should generate at least one Mcode mapping"
     
     logger.info(f"Generated mappings: {len(generated_mappings)}")
     

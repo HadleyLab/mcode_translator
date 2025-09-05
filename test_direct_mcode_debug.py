@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Debug script to understand what's happening with the direct mCODE prompt.
+Debug script to understand what's happening with the direct Mcode prompt.
 """
 
 import sys
@@ -15,7 +15,7 @@ sys.path.insert(0, str(project_root))
 
 from src.pipeline.mcode_pipeline import McodePipeline
 from src.utils.logging_config import setup_logging
-from src.pipeline.strict_llm_base import StrictLLMBase
+from src.pipeline.llm_base import LlmBase
 
 # Setup logging
 setup_logging()

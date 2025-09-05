@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MCODE Translator - Unified Command Line Interface
+Mcode Translator - Unified Command Line Interface
 
 STRICT implementation that consolidates all runner scripts into a single CLI
 with comprehensive prompt library integration and strict validation.
@@ -29,8 +29,8 @@ logger = get_logger(__name__)
 
 # Import pipeline components
 from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
-from src.pipeline.nlp_engine import StrictNlpExtractor
-from src.pipeline.mcode_mapper import StrictMcodeMapper
+from pipeline.nlp_extractor import NlpLlm
+from src.pipeline.mcode_mapper import McodeMapper
 from src.utils.prompt_loader import PromptLoader, load_prompt
 
 
@@ -240,7 +240,7 @@ class GoldStandardTester:
         }
     
     def _calculate_mapping_metrics(self, actual: List[Dict], expected: List[Dict]) -> Dict[str, float]:
-        """Calculate metrics for mCODE mapping using semantic similarity"""
+        """Calculate metrics for Mcode mapping using semantic similarity"""
         # Debug: Check what types we're getting in helper method
         logger.info(f"DEBUG: _calculate_mapping_metrics called with actual type: {type(actual)}, expected type: {type(expected)}")
         
@@ -315,8 +315,8 @@ class GoldStandardTester:
             # Validate pipeline result structure
             if not hasattr(result, 'extracted_entities'):
                 raise ValueError("Pipeline result missing extracted_entities attribute")
-            if not hasattr(result, 'mcode_mappings'):
-                raise ValueError("Pipeline result missing mcode_mappings attribute")
+            if not hasattr(result, 'Mcode_mappings'):
+                raise ValueError("Pipeline result missing Mcode_mappings attribute")
             
             # Extract results from PipelineResult object
             extraction_result = {
@@ -464,7 +464,7 @@ class PromptManager:
 # CLI Command Groups
 @click.group()
 def cli():
-    """MCODE Translator - Unified Command Line Interface"""
+    """Mcode Translator - Unified Command Line Interface"""
     pass
 
 
@@ -500,7 +500,7 @@ def benchmark():
               help='Path to gold standard validation JSON file')
 @click.option('--output', type=click.Path(), help='Save detailed validation results to file')
 def gold_standard(test_cases, gold_standard, output):
-    """Validate MCODE extraction and mapping against gold standard using all test cases"""
+    """Validate Mcode extraction and mapping against gold standard using all test cases"""
     logger.info("🧪 Starting STRICT Gold Standard Validation")
     logger.info("=" * 60)
     
@@ -1062,7 +1062,7 @@ def requirements(config):
         
         logger.info("💡 Usage examples:")
         logger.info("  - NLP_EXTRACTION: Extract entities from clinical text")
-        logger.info("  - MCODE_MAPPING: Map extracted entities to mCODE FHIR standard")
+        logger.info("  - MCODE_MAPPING: Map extracted entities to Mcode FHIR standard")
         logger.info("")
         logger.info("⚠️  Prompts missing required placeholders will generate warnings")
         
@@ -1099,8 +1099,8 @@ def benchmark(test_cases, gold_standard, prompt_config, api_configs, output, opt
     
     try:
         # Import optimization framework
-        from src.optimization.strict_prompt_optimization_framework import (
-            StrictPromptOptimizationFramework, PromptVariant, APIConfig, PromptType
+        from src.optimization.prompt_optimization_framework import (
+            PromptOptimizationFramework, PromptVariant, APIConfig, PromptType
         )
         
         # Load test cases
@@ -1122,7 +1122,7 @@ def benchmark(test_cases, gold_standard, prompt_config, api_configs, output, opt
         config_data = StrictValidator.load_json_file(config_path, "Unified configuration file")
         
         # Create optimization framework
-        framework = StrictPromptOptimizationFramework(results_dir=output)
+        framework = PromptOptimizationFramework(results_dir=output)
         
         # Add API configuration using the unified Config class
         # The framework will automatically use the unified configuration

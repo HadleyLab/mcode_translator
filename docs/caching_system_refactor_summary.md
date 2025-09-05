@@ -14,7 +14,7 @@ This document summarizes the refactoring of the caching system to create a unifi
 
 ### 2. Updated Benchmark System
 
-- Modified `src/pipeline/strict_llm_base.py` to use the new `UnifiedAPIManager`
+- Modified `src/pipeline/llm_base.py` to use the new `UnifiedAPIManager`
 - Replaced direct `APICache` instantiation with `UnifiedAPIManager` usage
 - Maintained the same caching interface to minimize disruption
 
@@ -122,7 +122,7 @@ The unified API manager provides statistics for all cache namespaces:
 
 If issues are encountered with the new caching system:
 
-1. Revert changes to `src/pipeline/strict_llm_base.py`
+1. Revert changes to `src/pipeline/llm_base.py`
 2. Revert changes to `src/pipeline/fetcher.py`
 3. Restore the original `src/utils/cache_decorator.py` file
 4. Revert changes to demo and test files

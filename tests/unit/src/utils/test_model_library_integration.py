@@ -84,7 +84,7 @@ def test_config_model_integration():
 
 def test_api_config_model_integration():
     """Test integration between APIConfig and model library"""
-    from src.optimization.strict_prompt_optimization_framework import APIConfig
+    from src.optimization.prompt_optimization_framework import APIConfig
     
     # Test creating APIConfig with model from library
     api_config = APIConfig(name="deepseek-coder")

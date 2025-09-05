@@ -18,11 +18,11 @@
   "compliance_score": 0.0,
   "token_usage": 695,
   "extracted_entities": [],
-  "mcode_mappings": [],
+  "Mcode_mappings": [],
   "validation_results": {
     "valid": false,
     "errors": [
-      "No mCODE elements mapped"
+      "No Mcode elements mapped"
     ],
     "warnings": [],
     "compliance_score": 0.0

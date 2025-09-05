@@ -16,7 +16,7 @@ project_root = Path(__file__).resolve().parent
 sys.path.insert(0, str(project_root))
 
 from src.utils.prompt_loader import PromptLoader
-from src.pipeline.nlp_mcode_pipeline import NlpExtractionToMcodeMappingPipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
 from src.pipeline.mcode_pipeline import McodePipeline
 from src.utils.logging_config import setup_logging
 
@@ -72,12 +72,12 @@ def get_all_prompts() -> Dict[str, List[str]]:
 
 def run_nlp_to_mcode_pipeline(extraction_prompt: str, mapping_prompt: str, 
                              test_case: Dict[str, Any]) -> Dict[str, Any]:
-    """Run the NLP to mCODE pipeline with specific prompts"""
+    """Run the NLP to Mcode pipeline with specific prompts"""
     try:
-        logger.info(f"Running NLP to mCODE pipeline with extraction='{extraction_prompt}', mapping='{mapping_prompt}'")
+        logger.info(f"Running NLP to Mcode pipeline with extraction='{extraction_prompt}', mapping='{mapping_prompt}'")
         
         # Initialize pipeline
-        pipeline = NlpExtractionToMcodeMappingPipeline(
+        pipeline = NlpMcodePipeline(
             extraction_prompt_name=extraction_prompt,
             mapping_prompt_name=mapping_prompt
         )
@@ -103,9 +103,9 @@ def run_nlp_to_mcode_pipeline(extraction_prompt: str, mapping_prompt: str,
         }
 
 def run_direct_mcode_pipeline(prompt: str, test_case: Dict[str, Any]) -> Dict[str, Any]:
-    """Run the Direct to mCODE pipeline with specific prompt"""
+    """Run the Direct to Mcode pipeline with specific prompt"""
     try:
-        logger.info(f"Running Direct to mCODE pipeline with prompt='{prompt}'")
+        logger.info(f"Running Direct to Mcode pipeline with prompt='{prompt}'")
         
         # Initialize pipeline
         pipeline = McodePipeline(prompt_name=prompt)
@@ -134,10 +134,10 @@ def calculate_metrics(result: Any, gold_standard: Dict[str, Any]) -> Dict[str, f
     """Calculate precision, recall, and F1-score against gold standard"""
     try:
         # Extract mappings from result
-        if hasattr(result, 'mcode_mappings'):
+        if hasattr(result, 'Mcode_mappings'):
             actual_mappings = result.mcode_mappings
-        elif isinstance(result, dict) and 'mcode_mappings' in result:
-            actual_mappings = result['mcode_mappings']
+        elif isinstance(result, dict) and 'Mcode_mappings' in result:
+            actual_mappings = result['Mcode_mappings']
         else:
             actual_mappings = []
         
@@ -158,9 +158,9 @@ def calculate_metrics(result: Any, gold_standard: Dict[str, Any]) -> Dict[str, f
             if mapping.get('element_name'):
                 key_parts.append(f"element_name:{mapping['element_name']}")
             
-            # Include mcode element if available (from gold standard)
-            if mapping.get('mcode_element'):
-                key_parts.append(f"mcode_element:{mapping['mcode_element']}")
+            # Include Mcode element if available (from gold standard)
+            if mapping.get('Mcode_element'):
+                key_parts.append(f"Mcode_element:{mapping['Mcode_element']}")
             
             # Include code if available
             if mapping.get('code'):
@@ -221,8 +221,8 @@ def test_all_prompt_combinations(test_case: Dict[str, Any], gold_standard: Dict[
     prompt_groups = get_all_prompts()
     results = []
     
-    # Test NLP to mCODE pipeline combinations
-    logger.info("Testing NLP to mCODE pipeline combinations...")
+    # Test NLP to Mcode pipeline combinations
+    logger.info("Testing NLP to Mcode pipeline combinations...")
     for extraction_prompt in prompt_groups['NLP_EXTRACTION']:
         for mapping_prompt in prompt_groups['MCODE_MAPPING']:
             # Run pipeline
@@ -235,7 +235,7 @@ def test_all_prompt_combinations(test_case: Dict[str, Any], gold_standard: Dict[
             
             # Store result
             results.append({
-                'pipeline_type': 'NLP to mCODE',
+                'pipeline_type': 'NLP to Mcode',
                 'extraction_prompt': extraction_prompt,
                 'mapping_prompt': mapping_prompt,
                 'direct_prompt': None,
@@ -245,8 +245,8 @@ def test_all_prompt_combinations(test_case: Dict[str, Any], gold_standard: Dict[
                 'metrics': metrics
             })
     
-    # Test Direct to mCODE pipeline
-    logger.info("Testing Direct to mCODE pipeline...")
+    # Test Direct to Mcode pipeline
+    logger.info("Testing Direct to Mcode pipeline...")
     for direct_prompt in prompt_groups['DIRECT_MCODE']:
         # Run pipeline
         pipeline_result = run_direct_mcode_pipeline(direct_prompt, test_case)
@@ -258,7 +258,7 @@ def test_all_prompt_combinations(test_case: Dict[str, Any], gold_standard: Dict[
         
         # Store result
         results.append({
-            'pipeline_type': 'Direct to mCODE',
+            'pipeline_type': 'Direct to Mcode',
             'extraction_prompt': None,
             'mapping_prompt': None,
             'direct_prompt': direct_prompt,
@@ -290,11 +290,11 @@ def generate_report(results: List[Dict[str, Any]]) -> str:
     report.append("")
     
     # Group results by pipeline type
-    nlp_results = [r for r in results if r['pipeline_type'] == 'NLP to mCODE']
-    direct_results = [r for r in results if r['pipeline_type'] == 'Direct to mCODE']
+    nlp_results = [r for r in results if r['pipeline_type'] == 'NLP to Mcode']
+    direct_results = [r for r in results if r['pipeline_type'] == 'Direct to Mcode']
     
-    report.append(f"NLP to mCODE tests: {len(nlp_results)}")
-    report.append(f"Direct to mCODE tests: {len(direct_results)}")
+    report.append(f"NLP to Mcode tests: {len(nlp_results)}")
+    report.append(f"Direct to Mcode tests: {len(direct_results)}")
     report.append("")
     
     # Show failed tests
@@ -303,7 +303,7 @@ def generate_report(results: List[Dict[str, Any]]) -> str:
         report.append("## Failed Tests")
         report.append("")
         for result in failed_results:
-            if result['pipeline_type'] == 'NLP to mCODE':
+            if result['pipeline_type'] == 'NLP to Mcode':
                 report.append(f"- **NLP Pipeline**: Extraction='{result['extraction_prompt']}', Mapping='{result['mapping_prompt']}'")
             else:
                 report.append(f"- **Direct Pipeline**: Prompt='{result['direct_prompt']}'")
@@ -329,7 +329,7 @@ def generate_report(results: List[Dict[str, Any]]) -> str:
             recall = metrics.get('recall', 0)
             exec_time = result['execution_time']
             
-            if result['pipeline_type'] == 'NLP to mCODE':
+            if result['pipeline_type'] == 'NLP to Mcode':
                 prompt_info = f"Ext:{result['extraction_prompt']} / Map:{result['mapping_prompt']}"
             else:
                 prompt_info = f"Direct:{result['direct_prompt']}"
@@ -348,7 +348,7 @@ def generate_report(results: List[Dict[str, Any]]) -> str:
             metrics = result['metrics']
             f1 = metrics.get('f1_score', 0)
             
-            if result['pipeline_type'] == 'NLP to mCODE':
+            if result['pipeline_type'] == 'NLP to Mcode':
                 report.append(f"{i}. **NLP Pipeline**: Extraction='{result['extraction_prompt']}', Mapping='{result['mapping_prompt']}' (F1: {f1:.3f})")
             else:
                 report.append(f"{i}. **Direct Pipeline**: Prompt='{result['direct_prompt']}' (F1: {f1:.3f})")

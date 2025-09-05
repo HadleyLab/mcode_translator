@@ -35,7 +35,7 @@ def test_clinical_text_processing():
         result = pipeline.process_clinical_text(clinical_text)
         logger.info(f"✅ Clinical text processing successful!")
         logger.info(f"Extracted {len(result.extracted_entities)} entities")
-        logger.info(f"Mapped {len(result.mcode_mappings)} mCODE elements")
+        logger.info(f"Mapped {len(result.mcode_mappings)} Mcode elements")
         
         # Show some sample results
         if result.extracted_entities:
@@ -44,7 +44,7 @@ def test_clinical_text_processing():
                 logger.info(f"  - {entity.get('entity_type', 'N/A')}: {entity.get('text', 'N/A')}")
         
         if result.mcode_mappings:
-            logger.info("Sample mCODE mappings:")
+            logger.info("Sample Mcode mappings:")
             for mapping in result.mcode_mappings[:3]:
                 logger.info(f"  - {mapping.get('resourceType', 'N/A')}: {mapping.get('element_name', 'N/A')}")
                 
@@ -103,7 +103,7 @@ def test_clinical_trial_processing():
         result = pipeline.process_clinical_trial(trial_data)
         logger.info(f"✅ Clinical trial processing successful!")
         logger.info(f"Extracted {len(result.extracted_entities)} entities")
-        logger.info(f"Mapped {len(result.mcode_mappings)} mCODE elements")
+        logger.info(f"Mapped {len(result.mcode_mappings)} Mcode elements")
         logger.info(f"Compliance score: {result.validation_results.get('compliance_score', 'N/A')}")
         
         return True
@@ -139,7 +139,7 @@ def test_eligibility_criteria_processing():
         result = pipeline.process_eligibility_criteria(criteria_text)
         logger.info(f"✅ Eligibility criteria processing successful!")
         logger.info(f"Extracted {len(result.extracted_entities)} entities")
-        logger.info(f"Mapped {len(result.mcode_mappings)} mCODE elements")
+        logger.info(f"Mapped {len(result.mcode_mappings)} Mcode elements")
         
         return True
         
@@ -155,7 +155,7 @@ def test_custom_prompts():
         # Initialize with custom prompts
         pipeline = StrictDynamicExtractionPipeline(
             extraction_prompt_name="nlp_extraction/comprehensive_extraction",
-            mapping_prompt_name="mcode_mapping/comprehensive_mapping"
+            mapping_prompt_name="Mcode_mapping/comprehensive_mapping"
         )
         
         clinical_text = "Patient with metastatic breast cancer, HER2 positive, ECOG 1"

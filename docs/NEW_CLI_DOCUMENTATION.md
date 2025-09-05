@@ -1,14 +1,14 @@
-# MCODE Optimize CLI - Comprehensive Documentation
+# Mcode Optimize CLI - Comprehensive Documentation
 
 ## Overview
 
-The `mcode-optimize.py` CLI provides a unified interface for prompt and model optimization with the ability to set the best performing combinations as defaults in their respective libraries. This replaces the older `mcode-cli.py` for optimization tasks.
+The `Mcode-optimize.py` CLI provides a unified interface for prompt and model optimization with the ability to set the best performing combinations as defaults in their respective libraries. This replaces the older `Mcode-cli.py` for optimization tasks.
 
 ## Installation and Setup
 
 ```bash
 # Make the script executable
-chmod +x mcode-optimize.py
+chmod +x Mcode-optimize.py
 
 # Install dependencies
 pip install -r requirements.txt
@@ -24,7 +24,7 @@ cp .env.example .env
 
 ```bash
 # Run optimization across all prompts and models
-python mcode-optimize.py run \
+python Mcode-optimize.py run \
   --test-cases tests/data/test_cases/clinical.json \
   --gold-standard tests/data/gold_standard/multi_cancer.json \
   --prompt-config prompts/prompts_config.json \
@@ -51,16 +51,16 @@ python mcode-optimize.py run \
 
 ```bash
 # Set specific prompt as default
-python mcode-optimize.py set-default \
+python Mcode-optimize.py set-default \
   --prompt-type NLP_EXTRACTION \
   --prompt-name comprehensive_extraction
 
 # Set specific model as default
-python mcode-optimize.py set-default \
+python Mcode-optimize.py set-default \
   --model-name gpt-4-turbo
 
 # Set defaults based on best results from optimization
-python mcode-optimize.py set-default \
+python Mcode-optimize.py set-default \
   --from-results \
   --results-dir optimization_results \
   --metric f1_score
@@ -78,20 +78,20 @@ python mcode-optimize.py set-default \
 
 ```bash
 # View results in table format
-python mcode-optimize.py view-results \
+python Mcode-optimize.py view-results \
   --results-dir optimization_results \
   --metric f1_score \
   --top-n 10 \
   --format table
 
 # Export results to JSON
-python mcode-optimize.py view-results \
+python Mcode-optimize.py view-results \
   --results-dir optimization_results \
   --format json \
   --export results.json
 
 # Export results to CSV
-python mcode-optimize.py view-results \
+python Mcode-optimize.py view-results \
   --results-dir optimization_results \
   --format csv \
   --export results.csv
@@ -108,16 +108,16 @@ python mcode-optimize.py view-results \
 
 ```bash
 # List all prompts
-python mcode-optimize.py list-prompts
+python Mcode-optimize.py list-prompts
 
 # List only extraction prompts
-python mcode-optimize.py list-prompts --type NLP_EXTRACTION
+python Mcode-optimize.py list-prompts --type NLP_EXTRACTION
 
 # List only production prompts
-python mcode-optimize.py list-prompts --status production
+python Mcode-optimize.py list-prompts --status production
 
 # List only default prompts
-python mcode-optimize.py list-prompts --default-only
+python Mcode-optimize.py list-prompts --default-only
 ```
 
 **Options:**
@@ -130,13 +130,13 @@ python mcode-optimize.py list-prompts --default-only
 
 ```bash
 # Show raw prompt content
-python mcode-optimize.py show-prompt comprehensive_extraction
+python Mcode-optimize.py show-prompt comprehensive_extraction
 
 # Show formatted prompt with examples
-python mcode-optimize.py show-prompt comprehensive_extraction --format
+python Mcode-optimize.py show-prompt comprehensive_extraction --format
 
 # Show prompt requirements
-python mcode-optimize.py show-prompt comprehensive_extraction --requirements
+python Mcode-optimize.py show-prompt comprehensive_extraction --requirements
 ```
 
 **Options:**
@@ -148,16 +148,16 @@ python mcode-optimize.py show-prompt comprehensive_extraction --requirements
 
 ```bash
 # List all models
-python mcode-optimize.py list-models
+python Mcode-optimize.py list-models
 
 # List models by type
-python mcode-optimize.py list-models --type openai
+python Mcode-optimize.py list-models --type openai
 
 # List only production models
-python mcode-optimize.py list-models --status production
+python Mcode-optimize.py list-models --status production
 
 # List only default models
-python mcode-optimize.py list-models --default-only
+python Mcode-optimize.py list-models --default-only
 ```
 
 **Options:**
@@ -170,7 +170,7 @@ python mcode-optimize.py list-models --default-only
 
 ```bash
 # Show model configuration
-python mcode-optimize.py show-model gpt-4-turbo
+python Mcode-optimize.py show-model gpt-4-turbo
 ```
 
 **Options:**
@@ -182,7 +182,7 @@ python mcode-optimize.py show-model gpt-4-turbo
 
 ```bash
 # Step 1: Run full optimization
-python mcode-optimize.py run \
+python Mcode-optimize.py run \
   --test-cases tests/data/test_cases/clinical.json \
   --gold-standard tests/data/gold_standard/multi_cancer.json \
   --output optimization_results_2024 \
@@ -190,13 +190,13 @@ python mcode-optimize.py run \
   --top-n 10
 
 # Step 2: View results
-python mcode-optimize.py view-results \
+python Mcode-optimize.py view-results \
   --results-dir optimization_results_2024 \
   --metric f1_score \
   --top-n 5
 
 # Step 3: Set best performing combination as defaults
-python mcode-optimize.py set-default \
+python Mcode-optimize.py set-default \
   --from-results \
   --results-dir optimization_results_2024 \
   --metric f1_score
@@ -206,14 +206,14 @@ python mcode-optimize.py set-default \
 
 ```bash
 # Test a specific prompt against all test cases
-python mcode-optimize.py run \
+python Mcode-optimize.py run \
   --test-cases tests/data/test_cases/clinical.json \
   --gold-standard tests/data/gold_standard/multi_cancer.json \
   --output prompt_test_results \
   --metric precision
 
 # View detailed results for the prompt test
-python mcode-optimize.py view-results \
+python Mcode-optimize.py view-results \
   --results-dir prompt_test_results \
   --format json \
   --export prompt_performance.json
@@ -223,14 +223,14 @@ python mcode-optimize.py view-results \
 
 ```bash
 # Compare different models with the same prompt
-python mcode-optimize.py run \
+python Mcode-optimize.py run \
   --test-cases tests/data/test_cases/clinical.json \
   --gold-standard tests/data/gold_standard/multi_cancer.json \
   --output model_comparison \
   --metric recall
 
 # Analyze model performance
-python mcode-optimize.py view-results \
+python Mcode-optimize.py view-results \
   --results-dir model_comparison \
   --metric recall \
   --top-n 15
@@ -240,7 +240,7 @@ python mcode-optimize.py view-results \
 
 ```bash
 # Run optimization with specific prompts only
-python mcode-optimize.py run \
+python Mcode-optimize.py run \
   --test-cases tests/data/test_cases/clinical.json \
   --gold-standard tests/data/gold_standard/multi_cancer.json \
   --output filtered_prompt_results \
@@ -248,14 +248,14 @@ python mcode-optimize.py run \
   --prompt-filter standard_mapping
 
 # Run optimization with specific prompt types only
-python mcode-optimize.py run \
+python Mcode-optimize.py run \
   --test-cases tests/data/test_cases/clinical.json \
   --gold-standard tests/data/gold_standard/multi_cancer.json \
   --output extraction_only_results \
   --prompt-type-filter NLP_EXTRACTION
 
 # Run optimization with specific models only
-python mcode-optimize.py run \
+python Mcode-optimize.py run \
   --test-cases tests/data/test_cases/clinical.json \
   --gold-standard tests/data/gold_standard/multi_cancer.json \
   --output filtered_model_results \
@@ -263,14 +263,14 @@ python mcode-optimize.py run \
   --model-filter claude
 
 # Run optimization with specific model types only
-python mcode-optimize.py run \
+python Mcode-optimize.py run \
   --test-cases tests/data/test_cases/clinical.json \
   --gold-standard tests/data/gold_standard/multi_cancer.json \
   --output openai_only_results \
   --model-type-filter openai
 
 # Combine prompt and model filters
-python mcode-optimize.py run \
+python Mcode-optimize.py run \
   --test-cases tests/data/test_cases/clinical.json \
   --gold-standard tests/data/gold_standard/multi_cancer.json \
   --output combined_filter_results \
@@ -310,19 +310,19 @@ Enable debug logging for detailed troubleshooting:
 
 ```bash
 export LOG_LEVEL=DEBUG
-python mcode-optimize.py run --test-cases ... --gold-standard ...
+python Mcode-optimize.py run --test-cases ... --gold-standard ...
 ```
 
-## Migration from mcode-cli.py
+## Migration from Mcode-cli.py
 
-The new `mcode-optimize.py` replaces the optimization functionality in `mcode-cli.py`. Key differences:
+The new `Mcode-optimize.py` replaces the optimization functionality in `Mcode-cli.py`. Key differences:
 
 1. **Unified interface**: All optimization commands in one place
 2. **Model integration**: Support for model library integration
 3. **Default management**: Built-in support for setting defaults
 4. **Enhanced reporting**: More detailed performance analysis
 
-For validation and testing tasks, continue using `mcode-cli.py validate` commands.
+For validation and testing tasks, continue using `Mcode-cli.py validate` commands.
 
 ## Support
 

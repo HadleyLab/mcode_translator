@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Token Tracking System is a unified framework for standardized token usage reporting across all LLM calls in the mCODE Translator. It provides cross-provider compatibility, detailed metrics collection, and accurate aggregation for cost analysis and performance optimization.
+The Token Tracking System is a unified framework for standardized token usage reporting across all LLM calls in the Mcode Translator. It provides cross-provider compatibility, detailed metrics collection, and accurate aggregation for cost analysis and performance optimization.
 
 ## Architecture
 
@@ -73,7 +73,7 @@ class TokenTracker:
 
 ### Integration with LLM Components
 
-The token tracking system is integrated with all LLM components through the `StrictLLMBase` class. The system now uses `functools.lru_cache` for caching instead of a custom cache manager:
+The token tracking system is integrated with all LLM components through the `LlmBase` class. The system now uses `functools.lru_cache` for caching instead of a custom cache manager:
 
 ```python
 def _call_llm_api(self, messages: List[Dict[str, str]],
@@ -156,11 +156,11 @@ print(f"Total tokens used: {aggregate_usage.total_tokens}")
 ### Component-specific Tracking
 ```python
 # Get usage for specific components
-nlp_usage = global_token_tracker.get_component_usage("StrictNlpExtractor")
-mapper_usage = global_token_tracker.get_component_usage("StrictMcodeMapper")
+nlp_usage = global_token_tracker.get_component_usage("NlpLlm")
+mapper_usage = global_token_tracker.get_component_usage("McodeMapper")
 
 print(f"NLP extraction tokens: {nlp_usage.total_tokens}")
-print(f"mCODE mapping tokens: {mapper_usage.total_tokens}")
+print(f"Mcode mapping tokens: {mapper_usage.total_tokens}")
 ```
 
 ## Testing and Validation
@@ -211,4 +211,4 @@ DeepSeek Reasoner  3,595      575.8s    4         2
 
 ## Conclusion
 
-The Token Tracking System provides a robust, standardized approach to monitoring LLM token consumption across the mCODE Translator framework. Its cross-provider compatibility, detailed metrics collection, and seamless integration make it an essential tool for performance optimization and cost management.
+The Token Tracking System provides a robust, standardized approach to monitoring LLM token consumption across the Mcode Translator framework. Its cross-provider compatibility, detailed metrics collection, and seamless integration make it an essential tool for performance optimization and cost management.

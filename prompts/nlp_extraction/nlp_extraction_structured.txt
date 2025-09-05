@@ -10,30 +10,30 @@ Follow these steps:
 5. Return structured JSON output with entities array
 
 Return ONLY valid JSON with this exact structure:
-{
+{{
   "entities": [
-    {
+    {{
       "text": "exact text mention",
       "type": "entity type",
-      "attributes": {
+      "attributes": {{
         "status": "positive/negative/equivocal if applicable",
         "value": "numerical value if available",
         "unit": "unit if applicable"
-      },
+      }},
       "confidence": 0.0-1.0,
-      "source_context": {
+      "source_context": {{
         "section": "document section",
         "position": "approximate position",
         "context_sentence": "full sentence"
-      }
-    }
+      }}
+    }}
   ],
   "relationships": [],
-  "metadata": {
+  "metadata": {{
     "extraction_method": "llm_based",
     "text_length": 123,
     "entity_count": 1
-  }
-}
+  }}
+}}
 
 Return ONLY valid JSON. No additional text or explanations.

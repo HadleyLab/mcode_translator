@@ -37,18 +37,18 @@ class PromptLoader:
             "error_message": "NLP extraction prompts must produce JSON with 'entities' array field"
         },
         "MCODE_MAPPING": {
-            "required_fields": ["mcode_mappings"],
+            "required_fields": ["Mcode_mappings"],
             "field_types": {
-                "mcode_mappings": "array"
+                "Mcode_mappings": "array"
             },
-            "error_message": "MCode mapping prompts must produce JSON with 'mcode_mappings' array field"
+            "error_message": "Mcode mapping prompts must produce JSON with 'Mcode_mappings' array field"
         },
         "DIRECT_MCODE": {
-            "required_fields": ["mcode_mappings"],
+            "required_fields": ["Mcode_mappings"],
             "field_types": {
-                "mcode_mappings": "array"
+                "Mcode_mappings": "array"
             },
-            "error_message": "Direct MCode mapping prompts must produce JSON with 'mcode_mappings' array field"
+            "error_message": "Direct Mcode mapping prompts must produce JSON with 'Mcode_mappings' array field"
         }
     }
     

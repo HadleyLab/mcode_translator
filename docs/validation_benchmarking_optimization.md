@@ -1,10 +1,10 @@
-# Validation, Benchmarking, and Optimization in mCODE Translator
+# Validation, Benchmarking, and Optimization in Mcode Translator
 
-This document explains the three core concepts that drive continuous improvement in the mCODE Translator framework: validation, benchmarking, and optimization.
+This document explains the three core concepts that drive continuous improvement in the Mcode Translator framework: validation, benchmarking, and optimization.
 
 ## Overview
 
-The mCODE Translator framework employs a systematic approach to ensure correctness, measure performance, and continuously improve its clinical NLP and mCODE mapping capabilities. These three interconnected processes form a cycle of continuous improvement:
+The Mcode Translator framework employs a systematic approach to ensure correctness, measure performance, and continuously improve its clinical NLP and Mcode mapping capabilities. These three interconnected processes form a cycle of continuous improvement:
 
 1. **Validation** ensures we're building the right thing
 2. **Benchmarking** measures how well we're building it
@@ -15,15 +15,15 @@ The mCODE Translator framework employs a systematic approach to ensure correctne
 ### Purpose
 Validation is the process of verifying that the system produces correct, compliant, and expected outputs according to established standards and reference datasets.
 
-### In mCODE Translator Context
+### In Mcode Translator Context
 
 #### Entity Extraction Validation
 - **Gold Standard Comparison**: Extracted entities are compared against expert-annotated gold standard datasets
 - **Entity Matching**: Uses fuzzy text matching to handle variations in entity representation
 - **Type Validation**: Ensures extracted entities have correct types (condition, medication, biomarker, etc.)
 
-#### mCODE Mapping Validation
-- **Standard Compliance**: Verifies that mapped mCODE elements comply with the mCODE FHIR implementation guide
+#### Mcode Mapping Validation
+- **Standard Compliance**: Verifies that mapped Mcode elements comply with the Mcode FHIR implementation guide
 - **Required Field Checking**: Ensures all mandatory fields are present and correctly populated
 - **Value Set Validation**: Confirms that coded values are from approved value sets
 
@@ -45,8 +45,8 @@ Expected Extraction:
   - Entity: "HER2-positive metastatic breast cancer" (type: condition)
   - Entity: "HER2-positive" (type: biomarker)
 Expected Mapping:
-  - mCODE Element: CancerCondition with value "HER2-positive breast cancer"
-  - mCODE Element: GenomicVariant with value "HER2-positive"
+  - Mcode Element: CancerCondition with value "HER2-positive breast cancer"
+  - Mcode Element: GenomicVariant with value "HER2-positive"
 Validation Result: 100% compliance if all expected elements are correctly extracted and mapped
 ```
 
@@ -55,7 +55,7 @@ Validation Result: 100% compliance if all expected elements are correctly extrac
 ### Purpose
 Benchmarking is the systematic measurement and quantification of system performance across multiple dimensions including accuracy, speed, and resource consumption.
 
-### In mCODE Translator Context
+### In Mcode Translator Context
 
 #### Performance Metrics
 - **Processing Time**: End-to-end time to process clinical documents
@@ -66,7 +66,7 @@ Benchmarking is the systematic measurement and quantification of system performa
 - **Precision**: Proportion of extracted entities that are correct
 - **Recall**: Proportion of expected entities that are extracted
 - **F1-Score**: Harmonic mean of precision and recall
-- **Mapping Accuracy**: Correctness of mCODE element mappings
+- **Mapping Accuracy**: Correctness of Mcode element mappings
 
 #### Resource Consumption
 - **Token Usage**: Input, output, and total tokens consumed by LLM calls
@@ -105,7 +105,7 @@ Prompt Comparison:
 ### Purpose
 Optimization is the iterative process of improving system performance by identifying and implementing enhancements based on validation results and benchmarking data.
 
-### In mCODE Translator Context
+### In Mcode Translator Context
 
 #### Prompt Optimization
 - **Template Refinement**: Iteratively improving prompt wording and structure
@@ -129,7 +129,7 @@ Optimization is the iterative process of improving system performance by identif
 - **Parallel Processing**: Leveraging concurrent LLM calls where appropriate
 
 ### Optimization Framework
-The mCODE Translator includes a comprehensive optimization framework that automates the process:
+The Mcode Translator includes a comprehensive optimization framework that automates the process:
 
 #### Automated Experimentation
 - **Multi-Dimensional Testing**: Simultaneously tests prompts, models, and parameters
@@ -199,7 +199,7 @@ The framework includes automated tools for each phase:
 #### Validation Automation
 - **Gold Standard Loading**: Automatic loading of JSON-based gold standard data from `gold_standard/` directory
 - **Fuzzy Text Matching**: Uses fuzzywuzzy ratio (85% threshold) and difflib SequenceMatcher (0.8 threshold) for flexible entity matching
-- **Tuple Comparison**: Validates mCODE mappings by comparing expected vs actual tuples
+- **Tuple Comparison**: Validates Mcode mappings by comparing expected vs actual tuples
 - **Precision/Recall/F1 Calculation**: Automated computation of validation metrics
 - **Continuous Compliance Monitoring**: Real-time validation during pipeline execution
 - **Regression Detection**: Alerts for performance degradation
@@ -231,7 +231,7 @@ gold_standard/
 │   ├── trial_1.json         # Individual trial validation data
 │   └── trial_2.json
 ├── entity_extraction/       # Entity extraction validation sets
-└── mcode_mapping/           # mCODE mapping validation sets
+└── Mcode_mapping/           # Mcode mapping validation sets
 ```
 
 #### Gold Standard JSON Format
@@ -258,7 +258,7 @@ gold_standard/
 #### Validation Algorithms
 - **Fuzzy Text Matching**: Uses fuzzywuzzy ratio with 85% similarity threshold
 - **Sequence Matching**: Uses difflib SequenceMatcher with 0.8 ratio threshold
-- **Tuple Comparison**: Validates mCODE mappings using exact tuple matching
+- **Tuple Comparison**: Validates Mcode mappings using exact tuple matching
 
 #### Metrics Calculation
 ```python
@@ -349,6 +349,6 @@ python -m src.optimization.pipeline_task_tracker \
 
 ## Conclusion
 
-Validation, benchmarking, and optimization form the foundation of continuous improvement in the mCODE Translator framework. By systematically ensuring correctness, measuring performance, and implementing targeted enhancements, the system maintains high quality while continuously evolving to meet changing requirements and leverage new capabilities.
+Validation, benchmarking, and optimization form the foundation of continuous improvement in the Mcode Translator framework. By systematically ensuring correctness, measuring performance, and implementing targeted enhancements, the system maintains high quality while continuously evolving to meet changing requirements and leverage new capabilities.
 
 The integrated approach ensures that improvements in one area support and reinforce improvements in others, creating a virtuous cycle of enhancement that drives the framework toward optimal performance and accuracy.

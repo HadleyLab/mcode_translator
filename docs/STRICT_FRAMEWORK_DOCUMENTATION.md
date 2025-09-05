@@ -18,15 +18,15 @@ The STRICT (STRICT Requirements for Immediate Correction and Testing) framework 
 graph TD
     A[Clinical Trial Data] --> B[StrictDynamicExtractionPipeline]
     B --> C[NLP Extraction Phase]
-    C --> D[StrictNlpExtractor]
+    C --> D[NlpLlm]
     D --> E[LLM-Based Entity Extraction]
     E --> F[Extracted Entities]
-    F --> G[mCODE Mapping Phase]
-    G --> H[StrictMcodeMapper]
-    H --> I[LLM-Based mCODE Mapping]
-    I --> J[Mapped mCODE Elements]
+    F --> G[Mcode Mapping Phase]
+    G --> H[McodeMapper]
+    H --> I[LLM-Based Mcode Mapping]
+    I --> J[Mapped Mcode Elements]
     J --> K[Benchmarking Against Gold Standard]
-    K --> L[StrictPromptOptimizationFramework]
+    K --> L[PromptOptimizationFramework]
     L --> M[Performance Metrics]
     M --> N[Optimization Results]
     
@@ -41,9 +41,9 @@ graph TD
 ### Data Flow Description
 
 1. **Input**: Clinical trial data is fed into the `StrictDynamicExtractionPipeline`.
-2. **NLP Extraction**: The pipeline processes the data through the `StrictNlpExtractor`, which uses LLM-based entity extraction to identify medical entities.
-3. **mCODE Mapping**: The extracted entities are then mapped to mCODE elements using the `StrictMcodeMapper`, which also uses LLM-based mapping.
-4. **Benchmarking**: The results are benchmarked against gold standard data using the `StrictPromptOptimizationFramework` to generate performance metrics.
+2. **NLP Extraction**: The pipeline processes the data through the `NlpLlm`, which uses LLM-based entity extraction to identify medical entities.
+3. **Mcode Mapping**: The extracted entities are then mapped to Mcode elements using the `McodeMapper`, which also uses LLM-based mapping.
+4. **Benchmarking**: The results are benchmarked against gold standard data using the `PromptOptimizationFramework` to generate performance metrics.
 5. **Optimization**: The performance metrics are used to optimize the system, with results fed back into the prompt library and configuration files.
 
 ## Strict Interface Definitions
@@ -78,9 +78,9 @@ The NLP extraction phase expects the following data structure:
 }
 ```
 
-### mCODE Mapping Interface
+### Mcode Mapping Interface
 
-The mCODE mapping phase expects the following data structure for extracted entities:
+The Mcode mapping phase expects the following data structure for extracted entities:
 
 ```json
 {
@@ -127,7 +127,7 @@ The benchmarking phase expects the following data structure for gold standard da
       "expected_mcode_mappings": {
         "mapped_elements": [
           {
-            "mcode_element": "string",
+            "Mcode_element": "string",
             "value": "string",
             "confidence": "number",
             "mapping_rationale": "string"

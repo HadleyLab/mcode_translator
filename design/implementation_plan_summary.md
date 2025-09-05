@@ -1,10 +1,10 @@
-# MCODE Translator - Default Prompt Functionality and Unified CLI Implementation Plan
+# Mcode Translator - Default Prompt Functionality and Unified CLI Implementation Plan
 
 ## Project Overview
-This document summarizes the implementation plan for adding default prompt functionality to the MCODE Translator system and creating a new unified command-line interface that will obsolete the current `mcode-cli.py`.
+This document summarizes the implementation plan for adding default prompt functionality to the Mcode Translator system and creating a new unified command-line interface that will obsolete the current `Mcode-cli.py`.
 
 ## Key Objectives
-1. Enable setting and using default prompts for NLP extraction and MCODE mapping
+1. Enable setting and using default prompts for NLP extraction and Mcode mapping
 2. Create a new unified CLI with comprehensive optimization capabilities
 3. Allow full optimization across all prompts and models
 4. Provide functionality to set the best performing prompts as defaults in the prompts library
@@ -16,7 +16,7 @@ This document summarizes the implementation plan for adding default prompt funct
 - **Status**: Complete
 - **Key Features**:
   - Add `default` field to prompt configuration
-  - Enhance `StrictPromptOptimizationFramework` with methods to set and save default prompts
+  - Enhance `PromptOptimizationFramework` with methods to set and save default prompts
   - Update `PromptLoader` to recognize and load default prompts
   - Add UI elements to manage default prompts
 
@@ -37,7 +37,7 @@ This document summarizes the implementation plan for adding default prompt funct
 - ✅ Designed new unified CLI
 
 ### Phase 2: Framework Enhancements (In Progress)
-- ✅ Add methods to `StrictPromptOptimizationFramework` to set and save default prompts
+- ✅ Add methods to `PromptOptimizationFramework` to set and save default prompts
 
 ### Phase 3: UI Implementation (Pending)
 - ⬜ Modify `OptimizationUI` to display and manage default prompts
@@ -74,16 +74,16 @@ This document summarizes the implementation plan for adding default prompt funct
 ### New CLI Commands
 ```
 # Run full optimization
-mcode-optimize run --test-cases data/test_cases.json --gold-standard data/gold_standard.json --output results/
+Mcode-optimize run --test-cases data/test_cases.json --gold-standard data/gold_standard.json --output results/
 
 # Set best prompt as default
-mcode-optimize set-default --from-results --metric f1_score
+Mcode-optimize set-default --from-results --metric f1_score
 
 # View optimization results
-mcode-optimize view-results --metric f1_score --top-n 10
+Mcode-optimize view-results --metric f1_score --top-n 10
 
 # List prompts
-mcode-optimize list-prompts --default-only
+Mcode-optimize list-prompts --default-only
 ```
 
 ## Implementation Timeline

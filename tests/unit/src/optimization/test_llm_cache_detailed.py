@@ -11,9 +11,9 @@ import json
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.utils.api_manager import UnifiedAPIManager
-from src.pipeline.strict_llm_base import StrictLLMBase
+from src.pipeline.llm_base import LlmBase
 
-class TestLLM(StrictLLMBase):
+class TestLLM(LlmBase):
     """Test LLM implementation"""
     
     def process_request(self, *args, **kwargs):

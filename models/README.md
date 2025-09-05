@@ -1,6 +1,6 @@
 # Model Library
 
-This directory contains the file-based model library that centralizes all LLM model configurations for the mCODE Translator framework.
+This directory contains the file-based model library that centralizes all LLM model configurations for the Mcode Translator framework.
 
 ## Overview
 

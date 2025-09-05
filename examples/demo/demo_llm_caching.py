@@ -10,7 +10,7 @@ import json
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from pipeline.strict_llm_base import StrictLLMBase
+from pipeline.llm_base import LlmBase
 from utils.api_manager import UnifiedAPIManager
 
 def get_cache_stats():
@@ -18,8 +18,8 @@ def get_cache_stats():
     api_manager = UnifiedAPIManager()
     return api_manager.get_cache_stats()
 
-class DemoLLM(StrictLLMBase):
-    """Demo implementation of StrictLLMBase for showing caching"""
+class DemoLLM(LlmBase):
+    """Demo implementation of LlmBase for showing caching"""
     
     def process_request(self, *args, **kwargs):
         return {"demo": "response"}

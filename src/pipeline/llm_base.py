@@ -1,5 +1,5 @@
 """
-STRICT Base LLM Engine - Shared foundation for StrictNlpExtractor and StrictMcodeMapper
+STRICT Base LLM Engine - Shared foundation for NlpLlm and McodeMapper
 No fallbacks, explicit error handling, and strict initialization validation
 """
 
@@ -7,6 +7,7 @@ import json
 import re
 import time
 import hashlib
+import logging
 from typing import Dict, List, Any, Optional, Tuple, Union
 import openai
 from abc import ABC, abstractmethod
@@ -26,19 +27,20 @@ from src.utils import (
     global_token_tracker,
     UnifiedAPIManager
 )
+from src.optimization.benchmark_task import BenchmarkTask
 
 
-class LLMConfigurationError(Exception):
+class LlmConfigurationError(Exception):
     """Exception raised for LLM configuration issues"""
     pass
 
 
-class LLMExecutionError(Exception):
+class LlmExecutionError(Exception):
     """Exception raised for LLM execution failures"""
     pass
 
 
-class LLMResponseError(Exception):
+class LlmResponseError(Exception):
     """Exception raised for LLM response parsing issues"""
     pass
 
@@ -65,9 +67,9 @@ class LLMCallMetrics:
         }
 
 
-class StrictLLMBase(Loggable, ABC):
+class LlmBase(Loggable, ABC):
     """
-    STRICT Base LLM Engine for shared functionality between NLP extractor and MCode mapper
+    STRICT Base LLM Engine for shared functionality between NLP extractor and Mcode mapper
     Implements strict error handling, no fallbacks, and explicit configuration validation
     """
     
@@ -75,73 +77,79 @@ class StrictLLMBase(Loggable, ABC):
                  model_name: Optional[str] = None,
                  temperature: Optional[float] = None,
                  max_tokens: Optional[int] = None,
-                 response_format: Dict[str, Any] = None):
+                 response_format: Dict[str, Any] = None,
+                 task_id: Optional[str] = None):
         """
-        Initialize strict LLM base with explicit configuration validation
-        
+        Initialize strict LLM base with explicit configuration validation.
+
         Args:
-            model_name: LLM model name to use
-            temperature: Temperature for generation
-            max_tokens: Maximum tokens for response
-            response_format: Response format specification
-            
+            model_name: LLM model name to use.
+            temperature: Temperature for generation.
+            max_tokens: Maximum tokens for response.
+            response_format: Response format specification.
+            task_id: Optional task ID for associating with a BenchmarkTask.
+
         Raises:
-            LLMConfigurationError: If required configuration is missing or invalid
+            LlmConfigurationError: If required configuration is missing or invalid.
         """
         super().__init__()
-        
+        self.task_id = task_id
+        if self.task_id:
+            self.log_handler = self.TaskLogHandler(self.task_id)
+            self.logger.addHandler(self.log_handler)
+
         # Load configuration from unified config
         config = Config()
-        
+
         # Set model name - use provided or default from config
         if model_name:
             self.model_name = self._validate_model_name(model_name)
         else:
             self.model_name = config.get_model_name()
-        
+
         # Set temperature - use provided or default from config
         if temperature is not None:
             self.temperature = self._validate_temperature(temperature)
         else:
             self.temperature = config.get_temperature(self.model_name)
-        
+
         # Set max tokens - use provided or default from config
         if max_tokens is not None:
             self.max_tokens = self._validate_max_tokens(max_tokens)
         else:
             self.max_tokens = config.get_max_tokens(self.model_name)
-        
+
         self.response_format = response_format
-        
+
         # Load and validate API configuration
         self.api_key = self._load_and_validate_api_key()
         self.base_url = self._load_and_validate_base_url()
-        
+
         # Initialize OpenAI client
         self.client = self._initialize_openai_client()
-        
+
         # Initialize LLM cache using UnifiedAPIManager
         api_manager = UnifiedAPIManager()
         self.llm_cache = api_manager.get_cache("llm")
-        
+
         self.logger.info(f"✅ Strict LLM Base initialized successfully with model: {self.model_name}")
     
     def _validate_model_name(self, model_name: str) -> str:
         """Validate model name is non-empty string"""
         if not model_name or not isinstance(model_name, str):
-            raise LLMConfigurationError("Model name must be a non-empty string")
+            raise LlmConfigurationError("Model name must be a non-empty string")
         return model_name
     
     def _validate_temperature(self, temperature: float) -> float:
         """Validate temperature is within valid range"""
         if not isinstance(temperature, (int, float)) or temperature < 0 or temperature > 2:
-            raise LLMConfigurationError("Temperature must be a float between 0 and 2")
+            raise LlmConfigurationError("Temperature must be a float between 0 and 2")
         return float(temperature)
     
     def _validate_max_tokens(self, max_tokens: int) -> int:
         """Validate max tokens is positive integer"""
         if not isinstance(max_tokens, int) or max_tokens <= 0:
-            raise LLMConfigurationError("Max tokens must be a positive integer")
+            raise LlmConfigurationError("Max tokens must be a positive integer")
         return max_tokens
     
     def _load_and_validate_api_key(self) -> str:
@@ -151,7 +159,7 @@ class StrictLLMBase(Loggable, ABC):
             api_key = config.get_api_key(self.model_name)
             return api_key
         except Exception as e:
-            raise LLMConfigurationError(f"Failed to load API key: {str(e)}")
+            raise LlmConfigurationError(f"Failed to load API key: {str(e)}")
     
     def _load_and_validate_base_url(self) -> str:
         """Load and validate base URL with explicit error handling"""
@@ -161,11 +169,11 @@ class StrictLLMBase(Loggable, ABC):
             
             # Validate URL format
             if not re.match(r'^https?://', base_url):
-                raise LLMConfigurationError(f"Base URL must start with http:// or https://: {base_url}")
+                raise LlmConfigurationError(f"Base URL must start with http:// or https://: {base_url}")
             
             return base_url
         except Exception as e:
-            raise LLMConfigurationError(f"Failed to load base URL: {str(e)}")
+            raise LlmConfigurationError(f"Failed to load base URL: {str(e)}")
     
     def _call_llm_api(self,
                      messages: List[Dict[str, str]],
@@ -181,7 +189,7 @@ class StrictLLMBase(Loggable, ABC):
             Tuple of (response_content, call_metrics)
         
         Raises:
-            LLMExecutionError: If API call fails
+            LlmExecutionError: If API call fails
         """
         # Add API key to cache key data to ensure cache isolation by API key
         cache_key_data_with_api = cache_key_data.copy()
@@ -220,7 +228,7 @@ class StrictLLMBase(Loggable, ABC):
             )
             
             if not response.choices or not response.choices[0].message.content:
-                raise LLMExecutionError("Empty LLM response received")
+                raise LlmExecutionError("Empty LLM response received")
             
             response_content = response.choices[0].message.content
             
@@ -241,7 +249,7 @@ class StrictLLMBase(Loggable, ABC):
                 'response_content': response_content,
                 'metrics': metrics.to_dict()
             }
-            self.llm_cache.set_by_key(cache_data, cache_key_data_with_api, ttl=86400)
+            self.llm_cache.set_by_key(cache_data, cache_key_data_with_api, ttl=None)
             
             self.logger.info(f"✅ LLM API call completed in {metrics.duration:.2f}s")
             self.logger.info(f"   📊 Token usage - Prompt: {token_usage.prompt_tokens}, Completion: {token_usage.completion_tokens}, Total: {token_usage.total_tokens}")
@@ -254,28 +262,28 @@ class StrictLLMBase(Loggable, ABC):
             metrics.duration = end_time - start_time
             metrics.success = False
             metrics.error_type = "connection_error"
-            raise LLMExecutionError(f"API connection failed: {str(e)}")
+            raise LlmExecutionError(f"API connection failed: {str(e)}")
             
         except openai.APIError as e:
             end_time = time.time()
             metrics.duration = end_time - start_time
             metrics.success = False
             metrics.error_type = "api_error"
-            raise LLMExecutionError(f"API error: {str(e)}")
+            raise LlmExecutionError(f"API error: {str(e)}")
             
         except openai.RateLimitError as e:
             end_time = time.time()
             metrics.duration = end_time - start_time
             metrics.success = False
             metrics.error_type = "rate_limit"
-            raise LLMExecutionError(f"Rate limit exceeded: {str(e)}")
+            raise LlmExecutionError(f"Rate limit exceeded: {str(e)}")
             
         except Exception as e:
             end_time = time.time()
             metrics.duration = end_time - start_time
             metrics.success = False
             metrics.error_type = "unknown_error"
-            raise LLMExecutionError(f"Unexpected error during LLM call: {str(e)}")
+            raise LlmExecutionError(f"Unexpected error during LLM call: {str(e)}")
     
     def _initialize_openai_client(self) -> openai.OpenAI:
         """Initialize OpenAI client with validation"""
@@ -297,7 +305,7 @@ class StrictLLMBase(Loggable, ABC):
             
             return client
         except Exception as e:
-            raise LLMConfigurationError(f"Failed to initialize OpenAI client: {str(e)}")
+            raise LlmConfigurationError(f"Failed to initialize OpenAI client: {str(e)}")
     
     def _generate_cache_key(self, prompt_data: Dict[str, Any]) -> str:
         """
@@ -314,7 +322,7 @@ class StrictLLMBase(Loggable, ABC):
             sorted_data = json.dumps(prompt_data, sort_keys=True)
             return hashlib.md5(sorted_data.encode()).hexdigest()
         except Exception as e:
-            raise LLMExecutionError(f"Failed to generate cache key: {str(e)}")
+            raise LlmExecutionError(f"Failed to generate cache key: {str(e)}")
     
     def _parse_and_validate_json_response(self, response_text: str) -> Dict[str, Any]:
         """
@@ -327,7 +335,7 @@ class StrictLLMBase(Loggable, ABC):
             Parsed JSON dictionary
             
         Raises:
-            LLMResponseError: If JSON parsing fails or response is invalid
+            LlmResponseError: If JSON parsing fails or response is invalid
         """
         # Log the raw response for debugging
         self.logger.debug(f"Raw LLM response: {repr(response_text[:500])}")
@@ -338,7 +346,7 @@ class StrictLLMBase(Loggable, ABC):
             
             # Validate that parsed result is a dictionary
             if not isinstance(parsed, dict):
-                raise LLMResponseError(f"Parsed JSON must be a dictionary, got {type(parsed).__name__}")
+                raise LlmResponseError(f"Parsed JSON must be a dictionary, got {type(parsed).__name__}")
             
             # Check for truncation patterns that indicate max_tokens limit reached
             self._check_for_truncation(response_text, parsed)
@@ -349,13 +357,13 @@ class StrictLLMBase(Loggable, ABC):
         except json.JSONDecodeError as e:
             # Check if this looks like a truncated JSON response due to max_tokens limit
             if self._is_truncated_json(response_text):
-                raise LLMResponseError(
+                raise LlmResponseError(
                     f"JSON response appears truncated due to max_tokens limit ({self.max_tokens}). "
                     f"Increase max_tokens parameter to allow complete JSON responses. "
                     f"Error: {str(e)}"
                 )
             else:
-                raise LLMResponseError(
+                raise LlmResponseError(
                     f"Failed to parse LLM response as valid JSON. "
                     f"Expected well-formed JSON but got malformed response. "
                     f"Error: {str(e)}"
@@ -404,7 +412,7 @@ class StrictLLMBase(Loggable, ABC):
             parsed_json: Parsed JSON dictionary
             
         Raises:
-            LLMResponseError: If truncation is detected and user should be alerted
+            LlmResponseError: If truncation is detected and user should be alerted
         """
         # Check if we have common truncation patterns in the parsed structure
         text = response_text.strip()
@@ -428,3 +436,14 @@ class StrictLLMBase(Loggable, ABC):
     def process_request(self, *args, **kwargs) -> Any:
         """Abstract method for processing requests - must be implemented by subclasses"""
         pass
+
+    class TaskLogHandler(logging.Handler):
+        def __init__(self, task_id):
+            super().__init__()
+            self.task_id = task_id
+
+        def emit(self, record):
+            log_entry = self.format(record)
+            task = BenchmarkTask.get_task(self.task_id)
+            if task:
+                task.add_log(log_entry)

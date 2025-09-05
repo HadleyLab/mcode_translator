@@ -1,6 +1,6 @@
-# mCODE-Translator Utility Modules
+# Mcode-Translator Utility Modules
 
-This directory contains a centralized library of utility modules that provide shared, standardized, and strictly implemented functionality across the mCODE-Translator framework.
+This directory contains a centralized library of utility modules that provide shared, standardized, and strictly implemented functionality across the Mcode-Translator framework.
 
 ## Centralized `__init__.py`
 

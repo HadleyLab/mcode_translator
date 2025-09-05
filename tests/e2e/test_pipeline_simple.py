@@ -64,7 +64,7 @@ def test_pipeline_simple():
         
         # Display results
         logger.info(f"📊 Extracted entities: {len(result.extracted_entities)}")
-        logger.info(f"📊 Mapped mCODE elements: {len(result.mcode_mappings)}")
+        logger.info(f"📊 Mapped Mcode elements: {len(result.mcode_mappings)}")
         logger.info(f"📊 Validation valid: {result.validation_results['valid']}")
         logger.info(f"📊 Compliance score: {result.validation_results['compliance_score']}")
         
@@ -76,7 +76,7 @@ def test_pipeline_simple():
         
         # Show some sample mappings
         if result.mcode_mappings:
-            logger.info("\n🔍 Sample mCODE mappings:")
+            logger.info("\n🔍 Sample Mcode mappings:")
             for i, mapping in enumerate(result.mcode_mappings[:3]):
                 logger.info(f"  {i+1}. {mapping.get('resourceType', 'Unknown')}: {mapping.get('element_name', 'No name')}")
         

@@ -58,13 +58,13 @@ async def _process_pipeline_task(self, task: PipelineTask):
             expected_mappings = gold_data.get('expected_mcode_mappings', {}).get('mapped_elements', [])
         
         # Create pipeline instance with selected prompts
-        if self.pipeline_selector.value == 'Direct to mCODE':
+        if self.pipeline_selector.value == 'Direct to Mcode':
             prompt_name = self.direct_mcode_prompt_selector.value
             pipeline = McodePipeline(prompt_name=prompt_name)
         else:
             extraction_prompt = self.nlp_prompt_selector.value
             mapping_prompt = self.mcode_prompt_selector.value
-            pipeline = NlpExtractionToMcodeMappingPipeline(
+            pipeline = NlpMcodePipeline(
                 extraction_prompt_name=extraction_prompt,
                 mapping_prompt_name=mapping_prompt
             )
@@ -112,7 +112,7 @@ def _perform_validation(self, task: PipelineTask, result: Any,
             self._calculate_extraction_metrics(task.nlp_extraction, result.extracted_entities, expected_entities)
         
         # Calculate mapping metrics
-        if expected_mappings and hasattr(result, 'mcode_mappings'):
+        if expected_mappings and hasattr(result, 'Mcode_mappings'):
             self._calculate_mapping_metrics(task.mcode_mapping, result.mcode_mappings, expected_mappings)
             
     except Exception as e:
@@ -148,11 +148,11 @@ def _calculate_extraction_metrics(self, subtask: LLMCallTask, actual_entities: L
 
 def _calculate_mapping_metrics(self, subtask: LLMCallTask, actual_mappings: List[Dict[str, Any]], 
                               expected_mappings: List[Dict[str, Any]]) -> None:
-    """Calculate mapping metrics using mCODE element matching"""
+    """Calculate mapping metrics using Mcode element matching"""
     try:
-        # Create sets of (mcode_element, value) tuples for comparison
-        actual_tuples = set((m.get('mcode_element', ''), m.get('value', '')) for m in actual_mappings)
-        expected_tuples = set((m.get('mcode_element', ''), m.get('value', '')) for m in expected_mappings)
+        # Create sets of (Mcode_element, value) tuples for comparison
+        actual_tuples = set((m.get('Mcode_element', ''), m.get('value', '')) for m in actual_mappings)
+        expected_tuples = set((m.get('Mcode_element', ''), m.get('value', '')) for m in expected_mappings)
         
         # Calculate precision, recall, F1-score
         true_positives = len(actual_tuples & expected_tuples)
@@ -181,7 +181,7 @@ Add validation metrics fields to the `LLMCallTask` data class:
 @dataclass
 class LLMCallTask:
     """Represents a single LLM call task (extraction or mapping)"""
-    name: str  # "NLP Extraction" or "mCODE Mapping"
+    name: str  # "NLP Extraction" or "Mcode Mapping"
     status: TaskStatus = TaskStatus.PENDING
     start_time: Optional[float] = None
     end_time: Optional[float] = None

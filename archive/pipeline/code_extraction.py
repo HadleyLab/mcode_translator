@@ -5,7 +5,7 @@ from src.utils.logging_config import Loggable
 
 class CodeExtractionModule(Loggable):
     """
-    Code Extraction Module for mCODE Translator
+    Code Extraction Module for Mcode Translator
     Identifies and validates medical codes (ICD-10-CM, CPT, LOINC, RxNorm) from clinical trial eligibility criteria
     """
     
@@ -39,7 +39,7 @@ class CodeExtractionModule(Loggable):
             'RxNorm': ['123456', '789012', '345678', '987654', '456789']
         }
         
-        # Sample mCODE required codes
+        # Sample Mcode required codes
         self.mcode_required_codes = {
             'ICD10CM': ['C50.911', 'C34.90'],
             'CPT': ['12345', '67890']
@@ -298,16 +298,16 @@ class CodeExtractionModule(Loggable):
     
     def validate_mcode_compliance(self, code: str, system: str) -> bool:
         """
-        Validate that a code is mCODE compliant
+        Validate that a code is Mcode compliant
         
         Args:
             code: Code to validate
             system: Coding system
             
         Returns:
-            True if code is mCODE compliant, False otherwise
+            True if code is Mcode compliant, False otherwise
         """
-        # Check if code is part of mCODE required or recommended codes
+        # Check if code is part of Mcode required or recommended codes
         if system in self.mcode_required_codes:
             return code in self.mcode_required_codes[system]
         
@@ -367,8 +367,8 @@ class CodeExtractionModule(Loggable):
         if code_info.get('validated', True):  # Default to validated
             confidence += 0.2
         
-        # Increase for mCODE compliance
-        if code_info.get('validation', {}).get('mcode_compliant', False):
+        # Increase for Mcode compliance
+        if code_info.get('validation', {}).get('Mcode_compliant', False):
             confidence += 0.1
         
         # Decrease for potentially ambiguous terms
@@ -596,7 +596,7 @@ class CodeExtractionModule(Loggable):
                         code['validation'] = {
                             'format_valid': self.validate_code_format(code['code'], system.replace('-', '')),
                             'exists': self.validate_code_existence(code['code'], system.replace('-', '')),
-                            'mcode_compliant': self.validate_mcode_compliance(code['code'], system.replace('-', ''))
+                            'Mcode_compliant': self.validate_mcode_compliance(code['code'], system.replace('-', ''))
                         }
                     except Exception as e:
                         self.logger.error(f"Validation failed for code {code['code']}: {str(e)}")

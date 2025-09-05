@@ -11,11 +11,11 @@ import time
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from pipeline.strict_llm_base import StrictLLMBase
+from pipeline.llm_base import LlmBase
 from utils.cache_manager import cache_manager
 
-class TestLLM(StrictLLMBase):
-    """Test implementation of StrictLLMBase for testing caching"""
+class TestLLM(LlmBase):
+    """Test implementation of LlmBase for testing caching"""
     
     def process_request(self, *args, **kwargs):
         return {"test": "response"}

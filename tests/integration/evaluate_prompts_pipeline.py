@@ -140,63 +140,63 @@ SAMPLE_GOLD_STANDARD = {
                 "mapped_elements": [
                     {
                         "source_entity_index": 0,
-                        "mcode_element": "Patient",
+                        "Mcode_element": "Patient",
                         "value": "45-year-old",
                         "confidence": 0.9,
                         "mapping_rationale": "Patient age demographic"
                     },
                     {
                         "source_entity_index": 1,
-                        "mcode_element": "Patient",
+                        "Mcode_element": "Patient",
                         "value": "female",
                         "confidence": 0.95,
                         "mapping_rationale": "Patient gender demographic"
                     },
                     {
                         "source_entity_index": 2,
-                        "mcode_element": "CancerCondition",
+                        "Mcode_element": "CancerCondition",
                         "value": "HER2-positive metastatic breast cancer",
                         "confidence": 0.95,
                         "mapping_rationale": "Primary cancer diagnosis with biomarker status"
                     },
                     {
                         "source_entity_index": 3,
-                        "mcode_element": "ECOGPerformanceStatus",
+                        "Mcode_element": "ECOGPerformanceStatus",
                         "value": "1",
                         "confidence": 0.9,
                         "mapping_rationale": "ECOG performance status score"
                     },
                     {
                         "source_entity_index": 4,
-                        "mcode_element": "Observation",
+                        "Mcode_element": "Observation",
                         "value": "ER-negative",
                         "confidence": 0.9,
                         "mapping_rationale": "Estrogen receptor biomarker status"
                     },
                     {
                         "source_entity_index": 5,
-                        "mcode_element": "Observation",
+                        "Mcode_element": "Observation",
                         "value": "PR-negative",
                         "confidence": 0.9,
                         "mapping_rationale": "Progesterone receptor biomarker status"
                     },
                     {
                         "source_entity_index": 6,
-                        "mcode_element": "Observation",
+                        "Mcode_element": "Observation",
                         "value": "HER2-positive",
                         "confidence": 0.95,
                         "mapping_rationale": "HER2 biomarker status"
                     },
                     {
                         "source_entity_index": 8,
-                        "mcode_element": "CancerCondition",
+                        "Mcode_element": "CancerCondition",
                         "value": "Liver metastases",
                         "confidence": 0.9,
                         "mapping_rationale": "Metastatic cancer site"
                     },
                     {
                         "source_entity_index": 9,
-                        "mcode_element": "Observation",
+                        "Mcode_element": "Observation",
                         "value": "2.5 cm lesion",
                         "confidence": 0.85,
                         "mapping_rationale": "Tumor measurement observation"
@@ -205,7 +205,7 @@ SAMPLE_GOLD_STANDARD = {
                 "unmapped_entities": [
                     {
                         "entity_index": 7,
-                        "reason": "Exclusion criteria - absence of cardiac disease is not a mCODE oncology element for current condition"
+                        "reason": "Exclusion criteria - absence of cardiac disease is not a Mcode oncology element for current condition"
                     }
                 ],
                 "metadata": {
@@ -372,7 +372,7 @@ def calculate_gold_standard_metrics(pipeline_result) -> Dict[str, float]:
         
         # Get actual results from pipeline
         actual_entities = pipeline_result.extracted_entities if hasattr(pipeline_result, 'extracted_entities') else []
-        actual_mappings = pipeline_result.mcode_mappings if hasattr(pipeline_result, 'mcode_mappings') else []
+        actual_mappings = pipeline_result.mcode_mappings if hasattr(pipeline_result, 'Mcode_mappings') else []
         
         # Calculate extraction metrics
         extracted_texts = {e.get('text', '').lower().strip() for e in actual_entities if e.get('text')}
@@ -388,7 +388,7 @@ def calculate_gold_standard_metrics(pipeline_result) -> Dict[str, float]:
         
         # Calculate mapping metrics
         actual_mcode_elements = {m.get('element_name', '').lower().strip() for m in actual_mappings if m.get('element_name')}
-        expected_mcode_elements = {m.get('mcode_element', '').lower().strip() for m in expected_mappings if m.get('mcode_element')}
+        expected_mcode_elements = {m.get('Mcode_element', '').lower().strip() for m in expected_mappings if m.get('Mcode_element')}
         
         true_positives_map = len(actual_mcode_elements & expected_mcode_elements)
         false_positives_map = len(actual_mcode_elements - expected_mcode_elements)

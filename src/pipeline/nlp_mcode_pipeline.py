@@ -1,12 +1,12 @@
 """
-NLP Extraction to mCODE Mapping Pipeline - A two-step pipeline that first extracts NLP entities and then maps them to mCODE.
+NLP Extraction to Mcode Mapping Pipeline - A two-step pipeline that first extracts NLP entities and then maps them to Mcode.
 """
 
 import json
 from typing import Dict, List, Any, Optional, Tuple
-from .processing_pipeline import ProcessingPipeline, StrictPipelineResult
-from .mcode_mapper import StrictMcodeMapper, SourceReference, MCodeMappingError, MCodeConfigurationError
-from .nlp_engine import StrictNlpExtractor, NPLExtractionError, NLPConfigurationError
+from .pipeline_base import ProcessingPipeline, PipelineResult
+from .mcode_mapper import McodeMapper, SourceReference, McodeMappingError, McodeConfigurationError
+from .nlp_extractor import NlpLlm, NlpExtractionError, NlpConfigurationError
 from .document_ingestor import DocumentIngestor, DocumentSection
 import sys
 import os
@@ -20,19 +20,19 @@ from src.utils import (
     global_token_tracker
 )
 
-class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
+class NlpMcodePipeline(ProcessingPipeline, Loggable):
     """
     A two-step pipeline that first extracts NLP entities from clinical text and then
-    maps those entities to the mCODE standard.
+    maps those entities to the Mcode standard.
     """
 
     def __init__(self, extraction_prompt_name: str = "generic_extraction", mapping_prompt_name: str = "generic_mapping"):
         """
-        Initialize the NLP Extraction to mCODE Mapping Pipeline.
+        Initialize the NLP Extraction to Mcode Mapping Pipeline.
 
         Args:
             extraction_prompt_name: Name of the prompt template for entity extraction.
-            mapping_prompt_name: Name of the prompt template for mCODE mapping.
+            mapping_prompt_name: Name of the prompt template for Mcode mapping.
         """
         super().__init__()
         self.extraction_prompt_name = extraction_prompt_name
@@ -40,21 +40,22 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
 
         self.document_ingestor = DocumentIngestor()
         try:
-            self.nlp_engine = StrictNlpExtractor(prompt_name=self.extraction_prompt_name)
-            self.llm_mapper = StrictMcodeMapper(prompt_name=self.mapping_prompt_name)
-        except (NLPConfigurationError, MCodeConfigurationError) as e:
+            self.nlp_extractor = NlpLlm(prompt_name=self.extraction_prompt_name)
+            self.llm_mapper = McodeMapper(prompt_name=self.mapping_prompt_name)
+        except (NlpConfigurationError, McodeConfigurationError) as e:
             raise ValueError(f"Failed to initialize pipeline components: {str(e)}")
     
-    def process_clinical_text(self, clinical_text: str, context: Dict[str, Any] = None) -> StrictPipelineResult:
+    def process_clinical_text(self, clinical_text: str, context: Dict[str, Any] = None, task_id: Optional[str] = None) -> PipelineResult:
         """
         ATOMIC processor for clinical text - the most fundamental processing unit
         
         Args:
             clinical_text: Raw clinical text to process
             context: Optional context about the text source (section name, type, position, etc.)
+            task_id: Optional task ID for associating with a BenchmarkTask
             
         Returns:
-            StrictPipelineResult with extracted entities and mCODE mappings
+            PipelineResult with extracted entities and Mcode mappings
         """
         try:
             self.logger.info("🧬 Processing clinical text with ATOMIC processor")
@@ -66,7 +67,7 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
             global_token_tracker.reset()
             
             # Step 1: Extract entities from clinical text
-            extraction_result = self.nlp_engine.extract_entities(
+            extraction_result = self.nlp_extractor.extract_entities(
                 clinical_text,
                 section_context=context
             )
@@ -80,16 +81,16 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
                 type_summary = ", ".join([f"{count} {etype}" for etype, count in entity_types.items()])
                 self.logger.info(f"   📊 Entity types: {type_summary}")
             
-            # Step 2: Map entities to mCODE elements
+            # Step 2: Map entities to Mcode elements
             mapping_result = self.llm_mapper.map_to_mcode(
                 entities=entities,
                 trial_context=context or {}
             )
             
             # Step 3: Prepare result
-            return StrictPipelineResult(
+            return PipelineResult(
                 extracted_entities=entities,
-                mcode_mappings=mapping_result['mapped_elements'],
+                Mcode_mappings=mapping_result['mapped_elements'],
                 source_references=mapping_result.get('source_references', []),
                 validation_results=mapping_result['validation_results'],
                 metadata={
@@ -106,22 +107,23 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
                 error=None
             )
             
-        except (NPLExtractionError, MCodeMappingError, ValueError) as e:
+        except (NlpExtractionError, McodeMappingError, ValueError) as e:
             self.logger.error(f"ATOMIC clinical text processing FAILED: {str(e)}")
             raise  # Re-raise the exception for proper error handling
         except Exception as e:
             self.logger.error(f"Unexpected error in ATOMIC clinical text processing: {str(e)}")
             raise RuntimeError(f"Unexpected pipeline error: {str(e)}")
     
-    def process_clinical_trial(self, trial_data: Dict[str, Any]) -> StrictPipelineResult:
+    def process_clinical_trial(self, trial_data: Dict[str, Any], task_id: Optional[str] = None) -> PipelineResult:
         """
         Process complete clinical trial data through the strict pipeline
         
         Args:
             trial_data: Raw clinical trial data from API or source
+            task_id: Optional task ID for associating with a BenchmarkTask
             
         Returns:
-            StrictPipelineResult with extracted entities, mCODE mappings, and source tracking
+            PipelineResult with extracted entities, Mcode mappings, and source tracking
         """
         try:
             self.logger.info("🚀 Starting STRICT clinical trial processing")
@@ -166,7 +168,7 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
                     'position': section.position
                 }
                 
-                section_result = self.process_clinical_text(section.content, section_context)
+                section_result = self.process_clinical_text(section.content, section_context, task_id=task_id)
                 section_entities = len(section_result.extracted_entities)
                 all_entities.extend(section_result.extracted_entities)
                 total_entities += section_entities
@@ -200,8 +202,8 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
                 type_summary = ", ".join([f"{count} {etype}" for etype, count in entity_types.items()])
                 self.logger.info(f"   📊 Total entity types: {type_summary}")
             
-            # Step 3: Map entities to mCODE elements with source tracking
-            self.logger.info("🗺️  Starting mCODE mapping phase...")
+            # Step 3: Map entities to Mcode elements with source tracking
+            self.logger.info("🗺️  Starting Mcode mapping phase...")
             self.logger.info(f"   📊 Input: {len(all_entities)} entities to map")
             self.logger.info(f"   📋 Source references: {len(source_references)}")
             
@@ -211,13 +213,13 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
                 source_references=source_references
             )
             
-            self.logger.info(f"✅ Mapped {len(mapping_result['mapped_elements'])} mCODE elements")
+            self.logger.info(f"✅ Mapped {len(mapping_result['mapped_elements'])} Mcode elements")
             self.logger.info(f"   🎯 Compliance score: {mapping_result['validation_results'].get('compliance_score', 0):.2%}")
             
             # Step 4: Prepare comprehensive result
-            return StrictPipelineResult(
+            return PipelineResult(
                 extracted_entities=all_entities,
-                mcode_mappings=mapping_result['mapped_elements'],
+                Mcode_mappings=mapping_result['mapped_elements'],
                 source_references=mapping_result.get('source_references', []),
                 validation_results=mapping_result['validation_results'],
                 metadata={
@@ -233,8 +235,8 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
                 error=None
             )
             
-        except (NLPConfigurationError, MCodeConfigurationError, NPLExtractionError,
-                MCodeMappingError, ValueError) as e:
+        except (NlpConfigurationError, McodeConfigurationError, NlpExtractionError,
+                McodeMappingError, ValueError) as e:
             self.logger.error(f"STRICT clinical trial processing FAILED: {str(e)}")
             raise  # Re-raise the exception for proper error handling
         except Exception as e:
@@ -242,7 +244,7 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
             raise RuntimeError(f"Unexpected pipeline error: {str(e)}")
     
     def process_eligibility_criteria(self, criteria_text: str,
-                                   section_context: Dict[str, Any] = None) -> StrictPipelineResult:
+                                   section_context: Dict[str, Any] = None) -> PipelineResult:
         """
         Process eligibility criteria text through the strict pipeline
         
@@ -251,7 +253,7 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
             section_context: Optional context about the criteria section
             
         Returns:
-            StrictPipelineResult with extracted entities and mCODE mappings
+            PipelineResult with extracted entities and Mcode mappings
         """
         try:
             self.logger.info("📋 Processing eligibility criteria with STRICT pipeline")
@@ -268,7 +270,7 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
             
             return result
             
-        except (NPLExtractionError, MCodeMappingError, ValueError) as e:
+        except (NlpExtractionError, McodeMappingError, ValueError) as e:
             self.logger.error(f"STRICT criteria processing FAILED: {str(e)}")
             raise  # Re-raise the exception for proper error handling
         except Exception as e:
@@ -316,7 +318,7 @@ class NlpExtractionToMcodeMappingPipeline(ProcessingPipeline, Loggable):
             
             return enhanced_entities
             
-        except NPLExtractionError as e:
+        except NlpExtractionError as e:
             self.logger.error(f"STRICT entity extraction from section {section.name} FAILED: {str(e)}")
             raise  # Re-raise to propagate the error
         except Exception as e:
@@ -358,7 +360,7 @@ if __name__ == "__main__":
     }
     
     # Initialize strict pipeline
-    pipeline = NlpExtractionToMcodeMappingPipeline()
+    pipeline = NlpMcodePipeline()
     
     try:
         # Process complete trial
@@ -366,7 +368,7 @@ if __name__ == "__main__":
         
         logger.info("STRICT Dynamic Extraction Pipeline Results:")
         logger.info(f"Extracted entities: {len(result.extracted_entities)}")
-        logger.info(f"Mapped mCODE elements: {len(result.mcode_mappings)}")
+        logger.info(f"Mapped Mcode elements: {len(result.mcode_mappings)}")
         logger.info(f"Validation valid: {result.validation_results['valid']}")
         logger.info(f"Compliance score: {result.validation_results['compliance_score']}")
         
@@ -374,7 +376,7 @@ if __name__ == "__main__":
         for mapping in result.mcode_mappings[:3]:
             logger.info(f"  - {mapping['resourceType']}: {mapping['element_name']}")
             
-    except (NLPConfigurationError, MCodeConfigurationError, NPLExtractionError,
-            MCodeMappingError, ValueError, RuntimeError) as e:
+    except (NlpConfigurationError, McodeConfigurationError, NlpExtractionError,
+            McodeMappingError, ValueError, RuntimeError) as e:
         logger.error(f"❌ STRICT Pipeline FAILED: {str(e)}")
         logger.error(f"Pipeline execution failed: {str(e)}")

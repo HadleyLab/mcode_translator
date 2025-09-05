@@ -99,8 +99,9 @@ class APICache:
             with open(cache_path, 'r') as f:
                 cached_data = json.load(f)
             
-            # Check if cache has expired (24 hours by default)
-            if time.time() - cached_data.get('timestamp', 0) > cached_data.get('ttl', 86400):
+            # Check if cache has expired (never expire by default)
+            ttl = cached_data.get('ttl', None)
+            if ttl is not None and time.time() - cached_data.get('timestamp', 0) > ttl:
                 os.remove(cache_path)
                 return None
             
@@ -135,7 +136,7 @@ class APICache:
         cache_key = self._get_cache_key(func_name, *args, **kwargs)
         self._set_by_key(result, cache_key, func_name, args, kwargs)
     
-    def _set_by_key(self, result: Any, cache_key: str, func_name: str = "unknown", args: tuple = (), kwargs: dict = {}, ttl: int = 86400) -> None:
+    def _set_by_key(self, result: Any, cache_key: str, func_name: str = "unknown", args: tuple = (), kwargs: dict = {}, ttl: int = None) -> None:
         """
         Store result in cache by cache key
         
@@ -153,7 +154,7 @@ class APICache:
             cached_data = {
                 'result': result,
                 'timestamp': time.time(),
-                'ttl': ttl,
+                'ttl': ttl,  # None means never expire
                 'namespace': self.namespace,
                 'function': func_name,
                 'args': str(args),
@@ -185,7 +186,7 @@ class APICache:
         key_string = json.dumps(key_data, sort_keys=True, default=str)
         return hashlib.md5(key_string.encode()).hexdigest()
     
-    def set_by_key(self, result: Any, cache_key_data: Any, ttl: int = 86400) -> None:
+    def set_by_key(self, result: Any, cache_key_data: Any, ttl: int = None) -> None:
         """
         Store result in cache by cache key data (public method)
         
@@ -240,7 +241,7 @@ class APICache:
 class UnifiedAPIManager:
     """Unified API manager handling caching for all API calls in the system"""
     
-    def __init__(self, cache_dir: str = ".api_cache", default_ttl: int = 86400):
+    def __init__(self, cache_dir: str = ".api_cache", default_ttl: int = None):
         """
         Initialize the unified API manager
         

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MCODE Optimize - Unified Command Line Interface for Prompt and Model Optimization
+Mcode Optimize - Unified Command Line Interface for Prompt and Model Optimization
 
 This CLI provides comprehensive optimization capabilities across all prompts and models
 with the ability to set the best performing combinations as defaults in their respective libraries.
@@ -28,15 +28,15 @@ setup_logging(logging.INFO)
 logger = get_logger(__name__)
 
 # Import pipeline components
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
-from src.pipeline.nlp_engine import StrictNlpExtractor
-from src.pipeline.mcode_mapper import StrictMcodeMapper
+from src.pipeline.nlp_extraction_to_mcode_mapping_pipeline import NlpMcodePipeline
+from pipeline.nlp_extractor import NlpLlm
+from src.pipeline.mcode_mapper import McodeMapper
 from src.utils.prompt_loader import PromptLoader, load_prompt
 from src.utils.model_loader import ModelLoader, load_model
 
 # Import optimization framework
-from src.optimization.strict_prompt_optimization_framework import (
-    StrictPromptOptimizationFramework, 
+from src.optimization.prompt_optimization_framework import (
+    PromptOptimizationFramework, 
     PromptType, 
     APIConfig, 
     PromptVariant
@@ -99,7 +99,7 @@ class GoldStandardTester:
     """STRICT Gold standard testing functionality"""
     
     def __init__(self):
-        self.pipeline = StrictDynamicExtractionPipeline()
+        self.pipeline = NlpMcodePipeline()
         self.token_usage = {
             'total_tokens': 0,
             'prompt_tokens': 0,
@@ -249,7 +249,7 @@ class GoldStandardTester:
         }
     
     def _calculate_mapping_metrics(self, actual: List[Dict], expected: List[Dict]) -> Dict[str, float]:
-        """Calculate metrics for mCODE mapping using semantic similarity"""
+        """Calculate metrics for Mcode mapping using semantic similarity"""
         # Debug: Check what types we're getting in helper method
         logger.info(f"DEBUG: _calculate_mapping_metrics called with actual type: {type(actual)}, expected type: {type(expected)}")
         
@@ -324,8 +324,8 @@ class GoldStandardTester:
             # Validate pipeline result structure
             if not hasattr(result, 'extracted_entities'):
                 raise ValueError("Pipeline result missing extracted_entities attribute")
-            if not hasattr(result, 'mcode_mappings'):
-                raise ValueError("Pipeline result missing mcode_mappings attribute")
+            if not hasattr(result, 'Mcode_mappings'):
+                raise ValueError("Pipeline result missing Mcode_mappings attribute")
             
             # Extract results from PipelineResult object
             extraction_result = {
@@ -514,7 +514,7 @@ class ModelManager:
 # CLI Command Groups
 @click.group()
 def cli():
-    """MCODE Optimize - Unified Command Line Interface for Prompt and Model Optimization"""
+    """Mcode Optimize - Unified Command Line Interface for Prompt and Model Optimization"""
     pass
 
 
@@ -568,7 +568,7 @@ def run(test_cases, gold_standard, prompt_config, model_config, output, metric, 
         extracted_gold_standard = gold_standard_dict
         
         # Create optimization framework
-        framework = StrictPromptOptimizationFramework(results_dir=str(output_path))
+        framework = PromptOptimizationFramework(results_dir=str(output_path))
         
         # Load prompt configuration
         prompt_manager = PromptManager(prompt_config_path)
@@ -681,7 +681,7 @@ def run(test_cases, gold_standard, prompt_config, model_config, output, metric, 
         
         # Pipeline callback function
         def pipeline_callback(test_data, prompt_content, prompt_variant_id):
-            pipeline = StrictDynamicExtractionPipeline()
+            pipeline = NlpMcodePipeline()
             return pipeline.process_clinical_trial(test_data)
         
         # Run benchmarks for all combinations
@@ -737,7 +737,7 @@ def set_default(prompt_type, prompt_name, model_name, from_results, metric, resu
     logger.info("=" * 60)
     
     try:
-        framework = StrictPromptOptimizationFramework()
+        framework = PromptOptimizationFramework()
         
         if prompt_name:
             # Set specific prompt as default
@@ -804,7 +804,7 @@ def view_results(results_dir, metric, top_n, format, export):
         results_dir_path = Path(results_dir)
         
         # Create optimization framework and load results
-        framework = StrictPromptOptimizationFramework(results_dir=str(results_dir_path))
+        framework = PromptOptimizationFramework(results_dir=str(results_dir_path))
         framework.load_benchmark_results()
         df = framework.get_results_dataframe()
         

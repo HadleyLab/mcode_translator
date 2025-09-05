@@ -1,13 +1,13 @@
 # Default Prompt Functionality Design
 
 ## Overview
-This document outlines the design for implementing default prompt functionality in the MCODE Translator system. The goal is to allow users to set and use default prompts for NLP extraction and MCODE mapping after benchmark validation.
+This document outlines the design for implementing default prompt functionality in the Mcode Translator system. The goal is to allow users to set and use default prompts for NLP extraction and Mcode mapping after benchmark validation.
 
 ## Current System Architecture
 The current system consists of:
 1. **Prompt Library**: File-based prompt storage in `prompts/prompts_config.json`
 2. **Prompt Loader**: `src/utils/prompt_loader.py` handles loading prompts from the library
-3. **Optimization Framework**: `src/optimization/strict_prompt_optimization_framework.py` runs benchmarks and optimization
+3. **Optimization Framework**: `src/optimization/prompt_optimization_framework.py` runs benchmarks and optimization
 4. **Optimization UI**: Web interface for managing prompts and running benchmarks
 5. **CLI**: Command-line interface for various operations
 
@@ -38,18 +38,18 @@ Add a `default` field to the prompt configuration to mark default prompts:
             "tags": ["generic", "comprehensive", "structured"]
           }
         ],
-        "mcode_mapping": [
+        "Mcode_mapping": [
           {
             "name": "generic_mapping",
             "prompt_type": "MCODE_MAPPING",
-            "prompt_file": "txt/mcode_mapping/generic_mapping.txt",
-            "description": "Generic mCODE mapping prompt with comprehensive instructions",
+            "prompt_file": "txt/Mcode_mapping/generic_mapping.txt",
+            "description": "Generic Mcode mapping prompt with comprehensive instructions",
             "version": "1.0.0",
-            "author": "mCODE Team",
+            "author": "Mcode Team",
             "created_date": "2024-08-26",
             "status": "production",
             "default": true,
-            "tags": ["generic", "comprehensive", "mcode"]
+            "tags": ["generic", "comprehensive", "Mcode"]
           }
         ]
       }
@@ -58,7 +58,7 @@ Add a `default` field to the prompt configuration to mark default prompts:
 }
 ```
 
-### 2. StrictPromptOptimizationFramework Enhancements
+### 2. PromptOptimizationFramework Enhancements
 Add methods to:
 - Get best performing prompt combinations based on benchmark results
 - Set default prompts in the configuration
@@ -80,7 +80,7 @@ Create a new CLI with commands for:
 ## Implementation Plan
 
 ### Phase 1: Backend Implementation
-1. Modify `StrictPromptOptimizationFramework` to add default prompt functionality
+1. Modify `PromptOptimizationFramework` to add default prompt functionality
 2. Update `PromptLoader` to recognize and load default prompts
 3. Add persistence for default prompt settings
 
@@ -98,13 +98,13 @@ Create a new CLI with commands for:
 ### Default Prompt Selection Criteria
 Default prompts will be selected based on:
 1. **F1 Score**: Primary metric for extraction and mapping performance
-2. **Compliance Score**: Secondary metric for mCODE compliance
+2. **Compliance Score**: Secondary metric for Mcode compliance
 3. **Success Rate**: Reliability of the prompt-model combination
 4. **Token Usage**: Efficiency consideration
 
 ### API Design
 ```python
-# In StrictPromptOptimizationFramework
+# In PromptOptimizationFramework
 def get_best_combinations(self, metric: str = 'f1_score', top_n: int = 5) -> pd.DataFrame:
     """Get the best prompt-model combinations based on the specified metric"""
 
@@ -120,10 +120,10 @@ def get_default_prompt(self, prompt_type: str) -> str:
 
 ## CLI Command Structure
 ```
-mcode-optimize run [--test-cases PATH] [--gold-standard PATH] [--output DIR]
-mcode-optimize set-default [--prompt-type TYPE] [--prompt-name NAME]
-mcode-optimize view-results [--metric METRIC] [--top-n N]
-mcode-optimize list-prompts [--type TYPE] [--default-only]
+Mcode-optimize run [--test-cases PATH] [--gold-standard PATH] [--output DIR]
+Mcode-optimize set-default [--prompt-type TYPE] [--prompt-name NAME]
+Mcode-optimize view-results [--metric METRIC] [--top-n N]
+Mcode-optimize list-prompts [--type TYPE] [--default-only]
 ```
 
 ## Testing Strategy

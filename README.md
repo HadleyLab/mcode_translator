@@ -1,12 +1,12 @@
-# mCODE Translator
+# Mcode Translator
 
-A comprehensive clinical trial data processing pipeline that extracts and maps eligibility criteria to standardized mCODE elements using LLM-based natural language processing.
+A comprehensive clinical trial data processing pipeline that extracts and maps eligibility criteria to standardized Mcode elements using LLM-based natural language processing.
 
 ## Overview
 
-The mCODE Translator is a sophisticated system that processes clinical trial eligibility criteria from ClinicalTrials.gov and maps them to standardized mCODE (Minimal Common Oncology Data Elements) format. The system features:
+The Mcode Translator is a sophisticated system that processes clinical trial eligibility criteria from ClinicalTrials.gov and maps them to standardized Mcode (Minimal Common Oncology Data Elements) format. The system features:
 
-- **Strict Dynamic Extraction Pipeline**: LLM-based entity extraction with no fallbacks
+- **NLP Extraction to Mcode Mapping Pipeline**: LLM-based entity extraction with no fallbacks
 - **Patient-Trial Matching**: Interactive web application for matching patient profiles to clinical trials
 - **Prompt Optimization Framework**: Advanced prompt engineering for improved extraction accuracy
 - **Source Provenance Tracking**: Comprehensive tracking of extraction sources and confidence scores
@@ -47,34 +47,34 @@ The mCODE Translator is a sophisticated system that processes clinical trial eli
    # Edit .env with your API keys and configuration
    ```
 
-### Running the MCODE Translator CLI
+### Running the Mcode Translator CLI
 
 The project now uses a unified CLI interface for all functionality:
 
 ```bash
 # Show CLI help
-python mcode-cli.py --help
+python Mcode-cli.py --help
 
 # Run optimization demo
-python mcode-cli.py optimization demo
+python Mcode-cli.py optimization demo
 
 # Run comprehensive benchmark
-python mcode-cli.py benchmark comprehensive
+python Mcode-cli.py benchmark comprehensive
 
 # Run prompt library demo
-python mcode-cli.py prompt demo
+python Mcode-cli.py prompt demo
 
 # Run patient-trial matcher web application
-python mcode-cli.py webapp start
+python Mcode-cli.py webapp start
 
 # Run pipeline task tracker with gold standard validation
-python mcode-cli.py pipeline-tracker start
+python Mcode-cli.py pipeline-tracker start
 ```
 
 ### Running the Patient-Trial Matcher Web Application
 
 ```bash
-python mcode-cli.py webapp start
+python Mcode-cli.py webapp start
 ```
 
 The application will be accessible at:
@@ -84,7 +84,7 @@ The application will be accessible at:
 ### Running the Pipeline Task Tracker with Gold Standard Validation
 
 ```bash
-python mcode-cli.py pipeline-tracker start
+python Mcode-cli.py pipeline-tracker start
 ```
 
 The pipeline task tracker provides:
@@ -98,23 +98,23 @@ The pipeline task tracker provides:
 
 ### Core Components
 
-#### 1. Strict LLM Base Engine ([`src/pipeline/strict_llm_base.py`](src/pipeline/strict_llm_base.py:52))
+#### 1. Strict LLM Base Engine ([`src/pipeline/llm_base.py`](src/pipeline/llm_base.py:52))
 - **Purpose**: Foundation for all LLM-based components with strict error handling
 - **Features**: Cache isolation, token tracking, strict JSON parsing, no fallbacks
-- **Key Classes**: `StrictLLMBase`, `LLMCallMetrics`, `LLMConfigurationError`
+- **Key Classes**: `LlmBase`, `LLMCallMetrics`, `LlmConfigurationError`
 
 #### 2. Strict NLP Extractor ([`src/pipeline/strict_nlp_extractor.py`](src/pipeline/strict_nlp_extractor.py))
 - **Purpose**: Entity extraction from clinical text using LLMs
 - **Features**: Pattern-based extraction, confidence scoring, strict validation
-- **Key Classes**: `StrictNlpExtractor`
+- **Key Classes**: `NlpLlm`
 
-#### 3. Strict Dynamic Extraction Pipeline ([`src/pipeline/strict_dynamic_extraction_pipeline.py`](src/pipeline/strict_dynamic_extraction_pipeline.py:33))
+#### 3. NLP Extraction to Mcode Mapping Pipeline ([`src/pipeline/nlp_extraction_to_mcode_mapping_pipeline.py`](src/pipeline/nlp_extraction_to_mcode_mapping_pipeline.py:33))
 - **Purpose**: Main processing pipeline for clinical trial data
-- **Features**: LLM-based entity extraction, mCODE mapping, source provenance tracking
-- **Key Classes**: `StrictDynamicExtractionPipeline`, `StrictPipelineResult`
+- **Features**: LLM-based entity extraction, Mcode mapping, source provenance tracking
+- **Key Classes**: `NlpMcodePipeline`, `PipelineResult`
 
-#### 4. mCODE Mapper ([`src/pipeline/mcode_mapper.py`](src/pipeline/mcode_mapper.py))
-- **Purpose**: Map extracted entities to standardized mCODE elements
+#### 4. Mcode Mapper ([`src/pipeline/Mcode_mapper.py`](src/pipeline/Mcode_mapper.py))
+- **Purpose**: Map extracted entities to standardized Mcode elements
 - **Features**: Rule-based mapping, validation, compliance scoring
 
 #### 5. Document Ingestor ([`src/pipeline/document_ingestor.py`](src/pipeline/document_ingestor.py))
@@ -136,7 +136,7 @@ The pipeline task tracker provides:
 The project uses a **strict framework** approach with no fallbacks:
 
 - **No Legacy Code**: All components use the latest LLM-based extraction
-- **Direct Integration**: Tight coupling between NLP engine and mCODE mapper
+- **Direct Integration**: Tight coupling between NLP engine and Mcode mapper
 - **Hard Failures**: Invalid configurations result in immediate failures
 - **Source Provenance**: Comprehensive tracking of extraction sources
 - **Cache Isolation**: Proper cache separation between different model configurations
@@ -167,7 +167,7 @@ sources = result.source_references
 
 - **Patient Profile Management**: Edit cancer type, stage, biomarkers
 - **Clinical Trial Search**: Advanced filtering and pagination
-- **NLP to mCODE Visualization**: Interactive mapping visualization
+- **NLP to Mcode Visualization**: Interactive mapping visualization
 - **Matching Analysis**: Biomarker-based compatibility scoring
 - **Source Provenance**: Detailed extraction source tracking
 - **Gold Standard Validation**: Precision, recall, and F1-score metrics
@@ -192,7 +192,7 @@ LOG_LEVEL=INFO
 The system uses a file-based prompt library located in [`prompts/`](prompts/):
 
 - **Extraction Prompts**: [`prompts/txt/nlp_extraction/`](prompts/txt/nlp_extraction/)
-- **Mapping Prompts**: [`prompts/txt/mcode_mapping/`](prompts/txt/mcode_mapping/)
+- **Mapping Prompts**: [`prompts/txt/Mcode_mapping/`](prompts/txt/Mcode_mapping/)
 
 ## Testing
 
@@ -245,7 +245,7 @@ mcode_translator/
 ├── prompts/             # Prompt library
 │   ├── txt/
 │   │   ├── nlp_extraction/
-│   │   └── mcode_mapping/
+│   │   └── Mcode_mapping/
 │   └── prompts_config.json
 ├── examples/            # Usage examples and configurations
 ├── docs/               # Documentation
@@ -302,7 +302,7 @@ The system includes a file-based model library ([`models/models_config.json`](mo
 
 ### Optimization
 
-The system includes an advanced prompt optimization framework ([`src/optimization/strict_prompt_optimization_framework.py`](src/optimization/strict_prompt_optimization_framework.py)) and prompt library integration that:
+The system includes an advanced prompt optimization framework ([`src/optimization/prompt_optimization_framework.py`](src/optimization/prompt_optimization_framework.py)) and prompt library integration that:
 
 - Automatically tunes prompt templates
 - Optimizes extraction patterns
@@ -333,7 +333,7 @@ See [`CHANGELOG.md`](CHANGELOG.md) for recent changes and updates.
 ## Acknowledgments
 
 - ClinicalTrials.gov for providing the clinical trial data API
-- mCODE initiative for standardized oncology data elements
+- Mcode initiative for standardized oncology data elements
 - DeepSeek for LLM API services
 - NiceGUI for the web application framework
 
@@ -347,7 +347,7 @@ The caching system uses a custom `@cache_api_response` decorator and direct cach
 
 - **Custom Cache Decorator**: [`src/utils/cache_decorator.py`](src/utils/cache_decorator.py) - Disk-based caching with TTL support
 - **Automatic Caching**: Applied to key API functions in [`src/pipeline/fetcher.py`](src/pipeline/fetcher.py)
-- **LLM Caching**: Built-in caching for all LLM API calls in [`src/pipeline/strict_llm_base.py`](src/pipeline/strict_llm_base.py)
+- **LLM Caching**: Built-in caching for all LLM API calls in [`src/pipeline/llm_base.py`](src/pipeline/llm_base.py)
 - **Cache Management**: Built-in cache statistics and clearing functionality
 
 ### Cached Functions
@@ -360,7 +360,7 @@ The following functions in [`src/pipeline/fetcher.py`](src/pipeline/fetcher.py) 
 
 ### LLM Caching
 
-All LLM API calls through the [`StrictLLMBase`](src/pipeline/strict_llm_base.py:52) class are automatically cached:
+All LLM API calls through the [`LlmBase`](src/pipeline/llm_base.py:52) class are automatically cached:
 
 - **Cache Key Generation**: Deterministic cache keys based on prompt content and model parameters
 - **Cache Storage**: Disk-based storage in `./.llm_cache/` directory

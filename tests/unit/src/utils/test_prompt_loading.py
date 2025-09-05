@@ -37,11 +37,11 @@ def test_all_prompts():
         except Exception as e:
             print(f"✗ {prompt_name}: Failed to load - {e}")
     
-    # Test mCODE mapping prompts
-    print("\nmCODE Mapping Prompts:")
+    # Test Mcode mapping prompts
+    print("\nMcode Mapping Prompts:")
     print("-" * 30)
     
-    mcode_prompts = [
+    Mcode_prompts = [
         "generic_mapping",
         "standard_mapping",
         "detailed_mapping",
@@ -50,7 +50,7 @@ def test_all_prompts():
         "simple_mapping"
     ]
     
-    for prompt_name in mcode_prompts:
+    for prompt_name in Mcode_prompts:
         try:
             prompt = loader.get_prompt(prompt_name)
             print(f"✓ {prompt_name}: Loaded successfully ({len(prompt)} chars)")

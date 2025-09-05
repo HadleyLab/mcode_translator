@@ -5,7 +5,7 @@ This document outlines the plan for adding gold standard validation and benchmar
 
 ## Current System Analysis
 The pipeline task tracker currently:
-- Supports two pipeline types: NLP to mCODE and Direct to mCODE
+- Supports two pipeline types: NLP to Mcode and Direct to Mcode
 - Processes clinical trial data through LLM-based extraction and mapping
 - Tracks task status, duration, token usage, and error information
 - Uses a queue-based concurrency model with worker tasks
@@ -19,9 +19,9 @@ The gold standard data contains:
    - Confidence scores
    - Source context information
 
-2. Expected mCODE mappings with:
+2. Expected Mcode mappings with:
    - Source entity references
-   - mCODE element types (CancerCondition, CancerDiseaseStatus, etc.)
+   - Mcode element types (CancerCondition, CancerDiseaseStatus, etc.)
    - Mapped values
    - Confidence scores
    - Mapping rationale
@@ -35,12 +35,12 @@ The gold standard data contains:
 
 ### 2. Validation Logic
 - Compare pipeline extraction results with expected entities
-- Compare pipeline mCODE mappings with expected mappings
+- Compare pipeline Mcode mappings with expected mappings
 - Implement fuzzy matching for text comparisons
 - Calculate validation metrics:
   - Precision, recall, F1-score for entity extraction
-  - Precision, recall, F1-score for mCODE mapping
-  - Compliance score based on mCODE validation rules
+  - Precision, recall, F1-score for Mcode mapping
+  - Compliance score based on Mcode validation rules
 
 ### 3. Benchmarking Metrics Collection
 - Collect performance metrics during pipeline execution:
@@ -76,13 +76,13 @@ Extend existing data classes to include validation and benchmarking information:
    - Use fuzzy text matching to handle variations
    - Calculate precision, recall, F1-score
 
-2. mCODE Mapping Validation:
-   - Compare mCODE mappings with expected mappings
-   - Match on mCODE element type and value
+2. Mcode Mapping Validation:
+   - Compare Mcode mappings with expected mappings
+   - Match on Mcode element type and value
    - Calculate precision, recall, F1-score
 
 3. Compliance Validation:
-   - Validate mCODE mappings against mCODE standards
+   - Validate Mcode mappings against Mcode standards
    - Calculate compliance score
 
 ### UI Enhancements
@@ -103,8 +103,8 @@ Extend existing data classes to include validation and benchmarking information:
 
 ## Integration with Existing Components
 The implementation will leverage existing components where possible:
-- Use the `StrictMcodeMapper` for mCODE validation
-- Integrate with the `StrictPromptOptimizationFramework` for metrics calculation
+- Use the `McodeMapper` for Mcode validation
+- Integrate with the `PromptOptimizationFramework` for metrics calculation
 - Reuse UI components from the benchmark task tracker where applicable
 
 ## Testing Strategy
