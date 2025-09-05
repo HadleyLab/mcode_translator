@@ -29,9 +29,6 @@ class Config:
         # Validate configuration structure
         self._validate_config_structure()
         
-        # Create cache directory if enabled
-        if self.is_cache_enabled():
-            os.makedirs(self.get_cache_directory(), exist_ok=True)
     
     def _load_config_file(self) -> dict:
         """
@@ -70,20 +67,27 @@ class Config:
             if section not in self.config_data:
                 raise ConfigurationError(f"Missing required configuration section: {section}")
         
-        # Validate API configurations
-        if 'llm_providers' not in self.config_data['apis']:
-            raise ConfigurationError("Missing 'llm_providers' in apis configuration")
-        
-        if not self.config_data['apis']['llm_providers']:
-            raise ConfigurationError("No LLM providers configured")
+        # Note: llm_providers validation removed - models are now managed through
+        # centralized model_loader.py that reads from models/models_config.json
     
     def is_cache_enabled(self) -> bool:
         """Check if caching is enabled"""
         return self.config_data['cache']['enabled']
     
+    def get_api_cache_directory(self) -> str:
+        """Get API cache directory path for clinical trials and other API data"""
+        if 'api_cache_directory' in self.config_data['cache']:
+            return self.config_data['cache']['api_cache_directory']
+        elif 'directory' in self.config_data['cache']:
+            # Fallback to legacy directory field for backward compatibility
+            return self.config_data['cache']['directory']
+        else:
+            raise ConfigurationError("Missing API cache directory configuration")
+    
     def get_cache_directory(self) -> str:
-        """Get cache directory path"""
-        return self.config_data['cache']['directory']
+        """DEPRECATED: Get cache directory path - returns API cache directory as default
+        Use get_api_cache_directory() instead"""
+        return self.get_api_cache_directory()
     
     def get_cache_ttl(self) -> int:
         """Get cache TTL in seconds"""

@@ -2,8 +2,10 @@
   "version": "1.0.0",
   "cache": {
     "enabled": true,
-    "directory": "./cache",
-    "ttl_seconds": 3600
+    "api_cache_directory": ".api_cache",
+    "llm_cache_directory": ".api_cache/llm",
+    "clinical_trials_cache_directory": ".api_cache/clinical_trials",
+    "ttl_seconds": 0
   },
   "rate_limiting": {
     "delay_seconds": 1.0
@@ -14,42 +16,7 @@
   "apis": {
     "clinical_trials": {
       "base_url": "https://clinicaltrials.gov/api/v2/studies"
-    },
-    "llm_providers": [
-      {
-        "name": "deepseek-coder",
-        "base_url": "https://api.deepseek.com/v1",
-        "api_key": "",
-        "model": "deepseek-coder",
-        "temperature": 0.1,
-        "max_tokens": 4000,
-        "description": "DeepSeek Coder model for code generation tasks",
-        "timeout_seconds": 60,
-        "max_retries": 5
-      },
-      {
-        "name": "deepseek-chat",
-        "base_url": "https://api.deepseek.com/v1",
-        "api_key": "",
-        "model": "deepseek-chat",
-        "temperature": 0.1,
-        "max_tokens": 4000,
-        "description": "DeepSeek Chat model for general conversation tasks",
-        "timeout_seconds": 60,
-        "max_retries": 5
-      },
-      {
-        "name": "deepseek-reasoner",
-        "base_url": "https://api.deepseek.com/v1",
-        "api_key": "",
-        "model": "deepseek-reasoner",
-        "temperature": 0.1,
-        "max_tokens": 4000,
-        "description": "DeepSeek Reasoner model for reasoning and problem-solving tasks",
-        "timeout_seconds": 60,
-        "max_retries": 5
-      }
-    ]
+    }
   },
   "validation": {
     "strict_mode": true,
