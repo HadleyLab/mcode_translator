@@ -9,8 +9,8 @@ from pathlib import Path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
-from src.optimization.strict_prompt_optimization_framework import (
-    StrictPromptOptimizationFramework, PromptVariant, PromptType, APIConfig
+from src.optimization.prompt_optimization_framework import (
+    PromptOptimizationFramework, PromptVariant, PromptType, APIConfig
 )
 from src.utils.logging_config import get_logger
 from src.utils.config import Config
@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Also configure the framework logger to show debug messages
-framework_logger = get_logger(StrictPromptOptimizationFramework.__name__)
+framework_logger = get_logger(PromptOptimizationFramework.__name__)
 framework_logger.setLevel(logging.DEBUG)
 
 def main():
@@ -28,7 +28,7 @@ def main():
     logger.info("🚀 Starting token usage validation test")
     
     # Initialize framework
-    framework = StrictPromptOptimizationFramework(results_dir="./test_token_usage_results")
+    framework = PromptOptimizationFramework(results_dir="./test_token_usage_results")
 
     # Add a single API config
     config = Config()
@@ -77,7 +77,7 @@ def main():
                 "expected_mcode_mappings": {
                     "mapped_elements": [
                         {
-                            "mcode_element": "CancerCondition",
+                            "Mcode_element": "CancerCondition",
                             "value": "HER2-Positive Breast Cancer"
                         }
                     ]
@@ -98,7 +98,7 @@ def main():
         pipeline = StrictDynamicExtractionPipeline()
         variant = framework.prompt_variants.get(prompt_variant_id)
         if variant.prompt_type == PromptType.NLP_EXTRACTION:
-            pipeline.nlp_engine.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
+            pipeline.nlp_extractor.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
         elif variant.prompt_type == PromptType.MCODE_MAPPING:
             pipeline.llm_mapper.MCODE_MAPPING_PROMPT_TEMPLATE = prompt_content
         return pipeline.process_clinical_trial(test_data)

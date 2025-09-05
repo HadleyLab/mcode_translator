@@ -7,8 +7,8 @@ This document details the design for collecting benchmarking metrics in the pipe
 
 ### 1. Time-based Metrics
 - **Total Pipeline Execution Time**: Time from pipeline start to completion
-- **NLP Extraction Time**: Time for entity extraction step (NLP to mCODE pipeline)
-- **mCODE Mapping Time**: Time for mCODE mapping step
+- **NLP Extraction Time**: Time for entity extraction step (NLP to Mcode pipeline)
+- **Mcode Mapping Time**: Time for Mcode mapping step
 - **Per-Task Processing Time**: Individual task processing duration
 
 ### 2. Resource Usage Metrics
@@ -21,9 +21,9 @@ This document details the design for collecting benchmarking metrics in the pipe
 
 ### 3. Quality Metrics
 - **Entity Count**: Number of entities extracted
-- **Mapping Count**: Number of mCODE elements mapped
+- **Mapping Count**: Number of Mcode elements mapped
 - **Validation Scores**: Precision, recall, F1-score for both extraction and mapping
-- **Compliance Score**: Percentage of mappings that comply with mCODE standards
+- **Compliance Score**: Percentage of mappings that comply with Mcode standards
 
 ### 4. Reliability Metrics
 - **Success Rate**: Percentage of successful pipeline executions
@@ -46,7 +46,7 @@ This document details the design for collecting benchmarking metrics in the pipe
 ### 3. Quality Metrics Calculation
 - Implement validation logic that compares results with gold standard
 - Calculate precision, recall, and F1-score using standard formulas
-- Determine compliance based on mCODE validation rules
+- Determine compliance based on Mcode validation rules
 
 ### 4. Resource Usage Monitoring
 - Use system monitoring libraries (e.g., `psutil`) to track resource usage

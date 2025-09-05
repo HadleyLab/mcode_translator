@@ -10,7 +10,7 @@ from functools import lru_cache
 # Add src directory to path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from src.utils import Config, get_logger, UnifiedAPIManager
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
 from src.pipeline.prompt_model_interface import create_configured_pipeline
 
 # Get logger instance
@@ -145,8 +145,8 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
     logger.info(f"search_trials: Performing search for search_expr='{search_expr}', max_results={max_results}, page_token={page_token}")
     result = _search_trials(search_expr, fields_str, max_results, page_token_str)
     
-    # Store result in cache with 1 hour TTL
-    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=3600)
+    # Store result in cache with default TTL
+    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=None)
     
     return result
 
@@ -246,8 +246,8 @@ def get_full_study(nct_id: str):
     logger.info(f"get_full_study: Fetching study for NCT ID {nct_id}")
     result = _get_full_study(nct_id)
     
-    # Store result in cache with 24 hour TTL
-    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=86400)
+    # Store result in cache with default TTL
+    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=None)
     
     return result
 
@@ -298,7 +298,7 @@ def get_study_fields():
 @click.option('--process-trial', '-t', is_flag=True, help='Process complete trial with NLP engine')
 def main(condition, nct_id, limit, count, export, process_criteria, process_trial):
     """
-    Clinical Trial Data Fetcher for mCODE Translator
+    Clinical Trial Data Fetcher for Mcode Translator
     
     Examples:
       python fetcher.py --condition "breast cancer" --limit 10
@@ -373,23 +373,23 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
             study = result
             
         try:
-            # Import the strict dynamic extraction pipeline
-            from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+            # Import the NLP extraction to Mcode mapping pipeline
+            from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
             
             # Create a configured pipeline using the prompt/model interface
-            pipeline = StrictDynamicExtractionPipeline()
+            pipeline = NlpMcodePipeline()
             
             # Process the complete trial through the pipeline
             # This will raise exceptions for missing assets or configuration issues
             pipeline_result = pipeline.process_clinical_trial(result)
             
             # Add results to the study data
-            if 'mcodeResults' not in result:
-                result['mcodeResults'] = {}
+            if 'McodeResults' not in result:
+                result['McodeResults'] = {}
             
-            result['mcodeResults'] = {
+            result['McodeResults'] = {
                 'extracted_entities': pipeline_result.extracted_entities,
-                'mcode_mappings': pipeline_result.mcode_mappings,
+                'Mcode_mappings': pipeline_result.mcode_mappings,
                 'source_references': pipeline_result.source_references,
                 'validation': pipeline_result.validation_results,
                 'metadata': pipeline_result.metadata,
@@ -399,7 +399,7 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
             # Log detailed processing information
             logger.info(f"✅ NLP processing completed for complete trial")
             logger.info(f"   📊 Extracted {len(pipeline_result.extracted_entities)} entities")
-            logger.info(f"   🗺️  Mapped {len(pipeline_result.mcode_mappings)} mCODE elements")
+            logger.info(f"   🗺️  Mapped {len(pipeline_result.mcode_mappings)} Mcode elements")
             logger.info(f"   📈 Validation score: {pipeline_result.validation_results.get('compliance_score', 0):.2%}")
             
             # Log token usage if available
@@ -429,7 +429,7 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
             
             # Show sample mappings if available
             if pipeline_result.mcode_mappings:
-                logger.info("   🔍 Sample mCODE mappings:")
+                logger.info("   🔍 Sample Mcode mappings:")
                 for i, mapping in enumerate(pipeline_result.mcode_mappings[:3]):
                     logger.info(f"     {i+1}. {mapping.get('resourceType', 'Unknown')} - "
                                f"{mapping.get('element_name', 'No name')} - "
@@ -488,7 +488,7 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
                             # Log detailed processing information
                             logger.info(f"✅ NLP processing completed for {section_context['source_id']}")
                             logger.info(f"   📊 Extracted {len(pipeline_result.extracted_entities)} entities")
-                            logger.info(f"   🗺️  Mapped {len(pipeline_result.mcode_mappings)} mCODE elements")
+                            logger.info(f"   🗺️  Mapped {len(pipeline_result.mcode_mappings)} Mcode elements")
                             logger.info(f"   📈 Validation score: {pipeline_result.validation_results.get('compliance_score', 0):.2%}")
                             
                             # Log token usage if available
@@ -518,19 +518,19 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
                             
                             # Show sample mappings if available
                             if pipeline_result.mcode_mappings:
-                                logger.info("   🔍 Sample mCODE mappings:")
+                                logger.info("   🔍 Sample Mcode mappings:")
                                 for i, mapping in enumerate(pipeline_result.mcode_mappings[:3]):
                                     logger.info(f"     {i+1}. {mapping.get('resourceType', 'Unknown')} - "
                                                f"{mapping.get('element_name', 'No name')} - "
                                                f"Confidence: {mapping.get('mapping_confidence', 0.0):.2f}")
                             
                             # Add results to the study data
-                            if 'mcodeResults' not in result:
-                                result['mcodeResults'] = {}
+                            if 'McodeResults' not in result:
+                                result['McodeResults'] = {}
                             
-                            result['mcodeResults'] = {
+                            result['McodeResults'] = {
                                 'extracted_entities': pipeline_result.extracted_entities,
-                                'mcode_mappings': pipeline_result.mcode_mappings,
+                                'Mcode_mappings': pipeline_result.mcode_mappings,
                                 'source_references': pipeline_result.source_references,
                                 'validation': pipeline_result.validation_results,
                                 'metadata': pipeline_result.metadata,
@@ -701,8 +701,8 @@ def calculate_total_studies(search_expr: str, fields=None, page_size: int = 100)
     logger.info(f"calculate_total_studies: Performing calculation for search_expr='{search_expr}', page_size={page_size}")
     result = _calculate_total_studies(search_expr, fields_str, page_size)
     
-    # Store result in cache with 1 hour TTL
-    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=3600)
+    # Store result in cache with default TTL
+    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=None)
     
     return result
 

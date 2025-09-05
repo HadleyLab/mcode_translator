@@ -48,6 +48,8 @@ class Task:
 class BenchmarkTask(Task):
     """Extended task class for benchmark validation tasks"""
     
+    _tasks: Dict[str, 'BenchmarkTask'] = {}
+
     def __init__(self, name: str, description: str = "", priority: TaskPriority = TaskPriority.NORMAL,
                  prompt_key: str = "", model_key: str = "", trial_id: str = ""):
         super().__init__(name, description, priority)
@@ -63,3 +65,16 @@ class BenchmarkTask(Task):
         self.f1_score = 0.0
         self.precision = 0.0
         self.recall = 0.0
+        self.live_log: List[str] = []
+        
+        # Add task to the registry
+        BenchmarkTask._tasks[self.id] = self
+
+    def add_log(self, log_entry: str):
+        """Add a log entry to the live log."""
+        self.live_log.append(log_entry)
+
+    @classmethod
+    def get_task(cls, task_id: str) -> Optional['BenchmarkTask']:
+        """Retrieve a task by its ID."""
+        return cls._tasks.get(task_id)

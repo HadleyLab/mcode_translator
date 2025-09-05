@@ -2,7 +2,7 @@
 
 ## Overview
 
-This prompt library provides a centralized, file-based system for managing all LLM prompts used in the mCODE Translator project. The library eliminates hardcoded prompts and provides a single source of truth for prompt management, versioning, and experimentation.
+This prompt library provides a centralized, file-based system for managing all LLM prompts used in the Mcode Translator project. The library eliminates hardcoded prompts and provides a single source of truth for prompt management, versioning, and experimentation.
 
 ## Directory Structure
 
@@ -17,7 +17,7 @@ prompts/
 │   │   ├── structured_extraction.txt
 │   │   ├── basic_extraction.txt
 │   │   └── minimal_extraction_optimization.txt
-│   └── mcode_mapping/           # mCODE mapping prompts
+│   └── Mcode_mapping/           # Mcode mapping prompts
 │       ├── generic_mapping.txt
 │       ├── standard_mapping.txt
 │       ├── detailed_mapping.txt
@@ -44,10 +44,10 @@ The `prompts_config.json` file uses external file references to point to prompt 
     }
     // ... more prompts
   },
-  "mcode_mapping": {
+  "Mcode_mapping": {
     "generic_mapping": {
-      "file": "txt/mcode_mapping/generic_mapping.txt",
-      "description": "Main mCODE mapping prompt"
+      "file": "txt/Mcode_mapping/generic_mapping.txt",
+      "description": "Main Mcode mapping prompt"
     }
     // ... more prompts
   }
@@ -64,9 +64,9 @@ The `prompts_config.json` file uses external file references to point to prompt 
 - **basic_extraction**: Basic extraction for optimization framework
 - **minimal_extraction_optimization**: Minimal extraction for optimization
 
-### mCODE Mapping Prompts
-- **generic_mapping**: Main mCODE mapping prompt
-- **standard_mapping**: Standard mCODE mapping
+### Mcode Mapping Prompts
+- **generic_mapping**: Main Mcode mapping prompt
+- **standard_mapping**: Standard Mcode mapping
 - **detailed_mapping**: Detailed mapping with comprehensive instructions
 - **error_robust_mapping**: Error-robust mapping with fallback handling
 - **comprehensive_mapping**: Comprehensive mapping for optimization
@@ -98,7 +98,7 @@ def extract_entities(self, text: str, prompt_name: str = "generic_extraction") -
     template = self.prompt_loader.load_prompt(prompt_name)
     # Use template with LLM
 
-# In mCODE Mapper  
+# In Mcode Mapper  
 def map_to_mcode(self, entities: List[Dict], prompt_name: str = "generic_mapping") -> Dict:
     template = self.prompt_loader.load_prompt(prompt_name)
     # Use template with LLM
@@ -129,8 +129,8 @@ prompt_variants = [
    # For NLP extraction
    touch prompts/txt/nlp_extraction/new_extraction_prompt.txt
    
-   # For mCODE mapping  
-   touch prompts/txt/mcode_mapping/new_mapping_prompt.txt
+   # For Mcode mapping  
+   touch prompts/txt/Mcode_mapping/new_mapping_prompt.txt
    ```
 
 2. **Add the prompt content** to the text file
@@ -194,9 +194,9 @@ formatted = prompt_loader.load_prompt(
 
 All hardcoded prompts have been migrated to this library. The following files were updated:
 
-- `src/pipeline/nlp_engine.py` - Now uses prompt loader
-- `src/pipeline/mcode_mapper.py` - Now uses prompt loader  
-- `src/optimization/strict_prompt_optimization_framework.py` - Now loads from file library
+- `src/pipeline/nlp_extractor.py` - Now uses prompt loader
+- `src/pipeline/Mcode_mapper.py` - Now uses prompt loader  
+- `src/optimization/prompt_optimization_framework.py` - Now loads from file library
 - `src/pipeline/strict_dynamic_extraction_pipeline.py` - Accepts prompt names instead of templates
 
 ## Testing

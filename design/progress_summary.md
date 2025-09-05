@@ -1,21 +1,21 @@
-# MCODE Translator - Default Prompt Functionality and Unified CLI
+# Mcode Translator - Default Prompt Functionality and Unified CLI
 ## Progress Summary
 
 ### Completed Work
 
 #### 1. Analysis and Design Phase
-- ✅ **Codebase Analysis**: Completed thorough analysis of existing MCODE Translator system including:
-  - `StrictPromptOptimizationFramework` in `src/optimization/strict_prompt_optimization_framework.py`
+- ✅ **Codebase Analysis**: Completed thorough analysis of existing Mcode Translator system including:
+  - `PromptOptimizationFramework` in `src/optimization/prompt_optimization_framework.py`
   - `PromptLoader` in `src/utils/prompt_loader.py`
   - `OptimizationUI` in `src/optimization/optimization_ui.py`
-  - Current CLI implementation in `mcode-cli.py`
+  - Current CLI implementation in `Mcode-cli.py`
   - Prompt configuration in `prompts/prompts_config.json`
   - Model configuration in `models/models_config.json`
   - Test data structures in example files
 
 - ✅ **Default Prompt Functionality Design**: Created comprehensive design document (`design/default_prompt_functionality.md`) detailing:
   - Proposed changes to prompt configuration structure
-  - Enhancements to `StrictPromptOptimizationFramework`
+  - Enhancements to `PromptOptimizationFramework`
   - Modifications to `PromptLoader`
   - UI enhancements for default prompt management
   - Persistence strategy for default prompt settings
@@ -39,7 +39,7 @@
   - Data flow for optimization process
 
 #### 2. Framework Implementation
-- ✅ **StrictPromptOptimizationFramework Enhancements**: Designed methods to:
+- ✅ **PromptOptimizationFramework Enhancements**: Designed methods to:
   - Get best performing prompt combinations based on benchmark results
   - Set default prompts in the configuration
   - Save updated configuration to disk
@@ -117,16 +117,16 @@
 #### New CLI Commands
 ```
 # Run full optimization
-mcode-optimize run --test-cases data/test_cases.json --gold-standard data/gold_standard.json --output results/
+Mcode-optimize run --test-cases data/test_cases.json --gold-standard data/gold_standard.json --output results/
 
 # Set best prompt as default
-mcode-optimize set-default --from-results --metric f1_score
+Mcode-optimize set-default --from-results --metric f1_score
 
 # View optimization results
-mcode-optimize view-results --metric f1_score --top-n 10
+Mcode-optimize view-results --metric f1_score --top-n 10
 
 # List prompts
-mcode-optimize list-prompts --default-only
+Mcode-optimize list-prompts --default-only
 ```
 
 ### Success Criteria

@@ -1,13 +1,13 @@
-**TASK: Map clinical entities to mCODE elements**
+**TASK: Map clinical entities to Mcode elements**
 
-Map extracted clinical entities to mCODE data elements.
+Map extracted clinical entities to Mcode data elements.
 
 **OUTPUT FORMAT (JSON):**
 {{
-    "mcode_mappings": [
+    "Mcode_mappings": [
         {{
             "source_entity_index": 0,
-            "mcode_element": "mCODE element name",
+            "Mcode_element": "Mcode element name",
             "value": "mapped value",
             "confidence": 0.0-1.0,
             "mapping_rationale": "brief explanation"
@@ -19,14 +19,14 @@ Map extracted clinical entities to mCODE data elements.
     }}
 }}
 
-**COMMON MCODE ELEMENTS:**
+**COMMON Mcode ELEMENTS:**
 - CancerCondition: Cancer diagnoses
 - GenomicVariant: Genetic mutations, biomarkers
 - CancerRelatedMedication: Treatments
 - ECOGPerformanceStatus: Performance scores
 
 **INSTRUCTIONS:**
-1. Map to appropriate mCODE elements
+1. Map to appropriate Mcode elements
 2. Include confidence scores
 3. Provide mapping rationale
 4. Return ONLY valid JSON

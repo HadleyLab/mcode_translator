@@ -4,7 +4,9 @@ from typing import Dict, List, Optional
 from nicegui import ui, run
 import sys
 import os
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.utils import get_logger
 
 # Load environment variables from .env file
 try:
@@ -22,7 +24,7 @@ setup_logging(logging.INFO)
 logger = get_logger(__name__)
 
 from src.pipeline.fetcher import search_trials, get_full_study
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
 
 # Test logging at startup
 logger.info("PatientMatcherApp starting up...")
@@ -34,7 +36,7 @@ class PatientMatcherApp(Loggable):
         self.current_trial = None
         self.search_results = []
         self.loading = False
-        self.dynamic_pipeline = StrictDynamicExtractionPipeline()
+        self.dynamic_pipeline = NlpMcodePipeline()
         
         # Pagination variables
         self.current_page = 1
@@ -375,7 +377,7 @@ class PatientMatcherApp(Loggable):
                 })()
                 source_references = pipeline_result.source_references
 
-                # Add source tracking to mapped mCODE elements
+                # Add source tracking to mapped Mcode elements
                 nct_id_from_trial = trial.get('protocolSection', {}).get('identificationModule', {}).get('nctId', nct_id)
                 for element in mapped_mcode:
                     element['source'] = nct_id_from_trial
@@ -404,14 +406,14 @@ class PatientMatcherApp(Loggable):
         
         Args:
             trial: Dictionary containing trial details from ClinicalTrials.gov API
-            mapped_mcode: List of mCODE elements mapped from trial criteria
+            mapped_mcode: List of Mcode elements mapped from trial criteria
             nlp_result: NLP processing result containing raw extracted features
             source_references: List of SourceReference objects for provenance tracking
             
         Data Binding Notes:
             - Trial details are bound directly from API response
-            - mCODE elements are grouped by type for display
-            - Shows many-to-one mapping relationships between NLP entities and mCODE elements
+            - Mcode elements are grouped by type for display
+            - Shows many-to-one mapping relationships between NLP entities and Mcode elements
             - Confidence scores are color-coded (green >70%, orange >50%, red <=50%)
             - Biomarker matching is calculated against patient profile
             - Source provenance is shown with comprehensive tooltips
@@ -432,7 +434,7 @@ class PatientMatcherApp(Loggable):
                 with ui.card().classes('w-full p-4'):
                     ui.label('Matching Score').classes('text-lg font-bold mb-2')
                     
-                    # Calculate actual match score based on mapped mCODE elements
+                    # Calculate actual match score based on mapped Mcode elements
                     total_biomarkers = len(self.patient_profile['biomarkers'])
                     matched_biomarkers = 0
                     biomarker_details = []
@@ -465,8 +467,8 @@ class PatientMatcherApp(Loggable):
                             for detail in biomarker_details:
                                 ui.label(detail).classes('text-xs')
             
-            # NLP to mCODE Mapping Visualization with Many-to-One Relationships
-            with ui.expansion('NLP to mCODE Mapping', icon='compare_arrows', value=True).classes('w-full'):
+            # NLP to Mcode Mapping Visualization with Many-to-One Relationships
+            with ui.expansion('NLP to Mcode Mapping', icon='compare_arrows', value=True).classes('w-full'):
                 
                 # Summary statistics with mapping relationships
                 with ui.row().classes('w-full justify-between items-center mb-4'):
@@ -475,7 +477,7 @@ class PatientMatcherApp(Loggable):
                         if nlp_result and hasattr(nlp_result, 'entities'):
                             ui.badge(f"NLP: {len(nlp_result.entities)}").props('color=blue')
                         if mapped_mcode:
-                            ui.badge(f"mCODE: {len(mapped_mcode)}").props('color=green')
+                            ui.badge(f"Mcode: {len(mapped_mcode)}").props('color=green')
                         if source_references:
                             ui.badge(f"Sources: {len(source_references)}").props('color=purple')
                 
@@ -506,9 +508,9 @@ class PatientMatcherApp(Loggable):
                         else:
                             ui.label('No NLP entities extracted').classes('text-gray-500 text-center')
                     
-                    # mCODE Mappings Badges
+                    # Mcode Mappings Badges
                     with ui.card().classes('w-full p-4'):
-                        ui.label('mCODE Mappings').classes('text-md font-bold mb-3 text-green-600')
+                        ui.label('Mcode Mappings').classes('text-md font-bold mb-3 text-green-600')
                         
                         if mapped_mcode:
                             with ui.row().classes('flex-wrap gap-2'):
@@ -526,7 +528,7 @@ class PatientMatcherApp(Loggable):
                                     tooltip_content = self._create_mcode_tooltip(element, element_type, source_references)
                                     badge.tooltip(tooltip_content)
                         else:
-                            ui.label('No mCODE elements were mapped').classes('text-gray-500 text-center')
+                            ui.label('No Mcode elements were mapped').classes('text-gray-500 text-center')
             
             # Raw eligibility criteria
             with ui.expansion('Eligibility Criteria', icon='list').classes('w-full'):
@@ -793,39 +795,39 @@ class PatientMatcherApp(Loggable):
             self.logger.warning(f"Page {page_num} not available in page tokens")
     
     def _create_feature_mapping(self, nlp_result, mapped_mcode):
-        """Create a mapping between NLP features and mCODE elements with strict 1:1 biomarker matching
+        """Create a mapping between NLP features and Mcode elements with strict 1:1 biomarker matching
         
         Args:
             nlp_result: NLP processing result containing extracted features
-            mapped_mcode: List of mapped mCODE elements
+            mapped_mcode: List of mapped Mcode elements
             
         Returns:
-            Dictionary mapping feature types to paired NLP features and mCODE elements,
+            Dictionary mapping feature types to paired NLP features and Mcode elements,
             ensuring exact 1:1 matches for biomarkers based on both name and status
         
         Args:
             nlp_result: NLP processing result
-            mapped_mcode: List of mapped mCODE elements
+            mapped_mcode: List of mapped Mcode elements
             
         Returns:
-            Dictionary mapping feature types to paired NLP features and mCODE elements
+            Dictionary mapping feature types to paired NLP features and Mcode elements
         """
         feature_mapping = {}
         
         # Special handling for biomarkers to ensure 1:1 mapping
         biomarker_mapping = []
         nlp_biomarkers = [e for e in (nlp_result.entities if nlp_result else []) if e.get('type') == 'Biomarker']
-        mcode_biomarkers = [e for e in mapped_mcode if e.get('element_type') == 'Biomarker']
+        Mcode_biomarkers = [e for e in mapped_mcode if e.get('element_type') == 'Biomarker']
         
         # Pair biomarkers by name
         for nlp_bm in nlp_biomarkers:
-            for mcode_bm in mcode_biomarkers:
+            for Mcode_bm in Mcode_biomarkers:
                 # Match biomarkers by name AND status for exact 1:1 mapping
-                if (nlp_bm.get('text', '').lower() == mcode_bm.get('element_name', '').lower() and
-                    nlp_bm.get('status', '').lower() == mcode_bm.get('value', '').lower()):
+                if (nlp_bm.get('text', '').lower() == Mcode_bm.get('element_name', '').lower() and
+                    nlp_bm.get('status', '').lower() == Mcode_bm.get('value', '').lower()):
                     biomarker_mapping.append({
                         'nlp_feature': nlp_bm,
-                        'mcode_element': mcode_bm
+                        'Mcode_element': Mcode_bm
                     })
                     break
         
@@ -840,10 +842,10 @@ class PatientMatcherApp(Loggable):
                 feature_mapping[feature_type] = []
             feature_mapping[feature_type].append({
                 'nlp_feature': entity,
-                'mcode_element': None  # Will be matched later
+                'Mcode_element': None  # Will be matched later
             })
         
-        # Match remaining mCODE elements
+        # Match remaining Mcode elements
         for element in [e for e in mapped_mcode if e.get('element_type') != 'Biomarker']:
             element_type = element.get('element_type', 'Other')
             if element_type in feature_mapping:
@@ -852,19 +854,19 @@ class PatientMatcherApp(Loggable):
                 for item in feature_mapping[element_type]:
                     if (item['nlp_feature'] and
                         item['nlp_feature'].get('text', '').lower() == element.get('element_name', '').lower()):
-                        item['mcode_element'] = element
+                        item['Mcode_element'] = element
                         matched = True
                         break
                 
                 if not matched:
                     feature_mapping[element_type].append({
                         'nlp_feature': None,
-                        'mcode_element': element
+                        'Mcode_element': element
                     })
             else:
                 feature_mapping[element_type] = [{
                     'nlp_feature': None,
-                    'mcode_element': element
+                    'Mcode_element': element
                 }]
         
         return feature_mapping
@@ -874,20 +876,20 @@ class PatientMatcherApp(Loggable):
         
         Args:
             entities: List of NLP entities
-            mapped_mcode: List of mapped mCODE elements
+            mapped_mcode: List of mapped Mcode elements
             source_references: List of SourceReference objects for provenance tracking
         """
-        # Create a mapping from entity text to mCODE element
+        # Create a mapping from entity text to Mcode element
         mapping_dict = {}
-        for mcode_element in mapped_mcode:
-            if isinstance(mcode_element, dict):
-                element_name = mcode_element.get('element_name', '')
-                element_type = mcode_element.get('element_type', '')
-                element_value = mcode_element.get('value', '')
+        for Mcode_element in mapped_mcode:
+            if isinstance(Mcode_element, dict):
+                element_name = Mcode_element.get('element_name', '')
+                element_type = Mcode_element.get('element_type', '')
+                element_value = Mcode_element.get('value', '')
                 
                 # Try multiple ways to match back to source entity
                 keys_to_try = [
-                    mcode_element.get('mapped_from', ''),
+                    Mcode_element.get('mapped_from', ''),
                     element_name.lower(),
                     f"{element_name.lower()}-{element_value.lower()}" if element_value else ''
                 ]
@@ -916,27 +918,27 @@ class PatientMatcherApp(Loggable):
                 entity['has_mapping'] = True
     
     def _display_mapping_relationships(self, entities, mapped_mcode, source_references):
-        """Display many-to-one mapping relationships between NLP entities and mCODE elements
+        """Display many-to-one mapping relationships between NLP entities and Mcode elements
         
         Args:
             entities: List of NLP entities
-            mapped_mcode: List of mapped mCODE elements
+            mapped_mcode: List of mapped Mcode elements
             source_references: List of SourceReference objects for provenance tracking
         """
-        # Group mCODE elements by type for better organization
-        mcode_by_type = {}
+        # Group Mcode elements by type for better organization
+        Mcode_by_type = {}
         for element in mapped_mcode:
             element_type = element.get('element_type', 'Other')
-            if element_type not in mcode_by_type:
-                mcode_by_type[element_type] = []
-            mcode_by_type[element_type].append(element)
+            if element_type not in Mcode_by_type:
+                Mcode_by_type[element_type] = []
+            Mcode_by_type[element_type].append(element)
         
-        # Display mCODE elements grouped by type with their source relationships
-        for element_type, elements in mcode_by_type.items():
+        # Display Mcode elements grouped by type with their source relationships
+        for element_type, elements in Mcode_by_type.items():
             with ui.expansion(f"{element_type} Mappings", icon='category', value=True).classes('w-full mb-4'):
                 for element in elements:
                     with ui.card().classes('w-full p-4 mb-3 bg-gray-50'):
-                        # mCODE element header
+                        # Mcode element header
                         with ui.row().classes('w-full justify-between items-center mb-3'):
                             element_name = element.get('element_name', 'Unknown')
                             confidence = element.get('confidence', 0.8)
@@ -1055,10 +1057,10 @@ Context: {context[:80]}{'...' if len(context) > 80 else ''}
         return tooltip_content.strip()
 
     def _create_mcode_tooltip(self, element, element_type, source_references=None):
-        """Create comprehensive tooltip content for mCODE element showing source provenance
+        """Create comprehensive tooltip content for Mcode element showing source provenance
         
         Args:
-            element: mCODE element dictionary
+            element: Mcode element dictionary
             element_type: Type of the element
             source_references: List of SourceReference objects for provenance tracking
             

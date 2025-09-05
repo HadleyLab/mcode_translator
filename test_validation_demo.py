@@ -11,7 +11,7 @@ from src.optimization.pipeline_task_tracker import PipelineTask, TaskStatus
 
 def calculate_validation_metrics(pipeline_mappings: list, gold_mappings: list) -> dict:
     """
-    Calculate precision, recall, and F1-score for mCODE mappings.
+    Calculate precision, recall, and F1-score for Mcode mappings.
     This is a standalone version of the validation logic.
     """
     # Convert mappings to strings for comparison
@@ -71,7 +71,7 @@ async def test_validation_demo():
         task.start_time = asyncio.get_event_loop().time() - 5.0
         task.end_time = asyncio.get_event_loop().time()
         task.test_case_name = "breast_cancer_her2_positive"
-        task.pipeline_type = "NLP to mCODE"
+        task.pipeline_type = "NLP to Mcode"
         
         # Add validation metrics
         task.benchmark_metrics = {
@@ -85,7 +85,7 @@ async def test_validation_demo():
             'total_gold': 22,
             'total_processing_time': 4.2,
             'nlp_extraction_time': 1.8,
-            'mcode_mapping_time': 2.4,
+            'Mcode_mapping_time': 2.4,
             'total_tokens': 1250,
             'prompt_tokens': 850,
             'completion_tokens': 400

@@ -1,4 +1,4 @@
-# MCODE Translator System Architecture
+# Mcode Translator System Architecture
 
 ## Current Architecture
 
@@ -42,7 +42,7 @@ graph TD
 
 ```mermaid
 graph TD
-    A[mcode-optimize] --> B[run]
+    A[Mcode-optimize] --> B[run]
     A --> C[set-default]
     A --> D[view-results]
     A --> E[list-prompts]
@@ -88,7 +88,7 @@ sequenceDiagram
     participant L as LLM Provider
     participant R as Results Storage
 
-    U->>C: mcode-optimize run
+    U->>C: Mcode-optimize run
     C->>F: Initialize optimization
     F->>P: Load prompts
     F->>M: Load models
@@ -102,7 +102,7 @@ sequenceDiagram
     F->>F: Calculate metrics
     F->>F: Determine best combinations
     C->>C: Display results
-    U->>C: mcode-optimize set-default
+    U->>C: Mcode-optimize set-default
     C->>F: Get best combination
     F->>P: Update default prompt
     P->>P: Save configuration

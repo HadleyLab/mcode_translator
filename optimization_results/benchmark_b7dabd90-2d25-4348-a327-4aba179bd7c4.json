@@ -1,0 +1,23 @@
+{
+  "run_id": "b7dabd90-2d25-4348-a327-4aba179bd7c4",
+  "prompt_variant_id": "be057d8a-06f1-4fcc-b362-d4a9b321f28f",
+  "api_config_name": "model_gpt_4o",
+  "test_case_id": "breast_cancer_her2_positive",
+  "start_time": "2025-09-03T17:21:27.676218",
+  "end_time": "2025-09-03T17:22:06.438103",
+  "duration_ms": 0.0,
+  "success": false,
+  "error_message": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: identifier']",
+  "entities_extracted": 0,
+  "entities_mapped": 0,
+  "extraction_completeness": 0.0,
+  "mapping_accuracy": 0.0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1_score": 0.0,
+  "compliance_score": 0.0,
+  "token_usage": 0,
+  "extracted_entities": [],
+  "Mcode_mappings": [],
+  "validation_results": {}
+}

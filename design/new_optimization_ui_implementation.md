@@ -43,8 +43,8 @@ from datetime import datetime
 # Setup logger
 logger = logging.getLogger(__name__)
 
-from src.optimization.strict_prompt_optimization_framework import (
-    StrictPromptOptimizationFramework,
+from src.optimization.prompt_optimization_framework import (
+    PromptOptimizationFramework,
     PromptType,
     APIConfig,
     PromptVariant
@@ -57,8 +57,8 @@ from src.utils.model_loader import model_loader
 class ModernOptimizationUI:
     """Modern web-based UI for prompt optimization experiments"""
     
-    def __init__(self, framework: Optional[StrictPromptOptimizationFramework] = None):
-        self.framework = framework or StrictPromptOptimizationFramework()
+    def __init__(self, framework: Optional[PromptOptimizationFramework] = None):
+        self.framework = framework or PromptOptimizationFramework()
         self.current_results = None
         self._load_default_libraries()
         self.setup_ui()
@@ -765,7 +765,7 @@ class ModernOptimizationUI:
 
 def run_modern_optimization_ui():
     """Run the modern optimization UI as a standalone application"""
-    framework = StrictPromptOptimizationFramework()
+    framework = PromptOptimizationFramework()
     ui_instance = ModernOptimizationUI(framework)
     ui.run(title='Modern Prompt Optimization Framework', port=8082, reload=False)
 
@@ -1270,7 +1270,7 @@ class InputValidator:
 - Default model management through configuration updates
 
 ### Framework Integration
-- Seamless connection to `StrictPromptOptimizationFramework`
+- Seamless connection to `PromptOptimizationFramework`
 - Real-time benchmark execution with progress tracking
 - Results persistence and retrieval through framework methods
 

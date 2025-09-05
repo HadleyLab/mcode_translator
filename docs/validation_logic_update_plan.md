@@ -4,7 +4,7 @@
 
 ### 1. Field Comparison Mismatch
 - **Current**: Compares `text` field from gold standard vs `element_name` from LLM output
-- **Problem**: Should compare `element_name` vs `mcode_type` (or equivalent fields)
+- **Problem**: Should compare `element_name` vs `Mcode_type` (or equivalent fields)
 
 ### 2. Exact Text Matching
 - **Current**: Uses exact string matching
@@ -28,7 +28,7 @@
 
 **Should be changed to:**
 ```python
-# Compare element_name vs mcode_type (or equivalent semantic fields)
+# Compare element_name vs Mcode_type (or equivalent semantic fields)
 gold_standard_element = gold_standard_mapping.get('element_name', '')
 predicted_element = predicted_mapping.get('element_name', '')
 ```

@@ -11,7 +11,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from optimization.strict_prompt_optimization_framework import StrictPromptOptimizationFramework, BenchmarkResult
+from optimization.prompt_optimization_framework import PromptOptimizationFramework, BenchmarkResult
 
 def test_strict_validation():
     """STRICT test of validation logic using actual framework components"""
@@ -24,13 +24,13 @@ def test_strict_validation():
     with open(gold_standard_path, 'r') as f:
         gold_data = json.load(f)
     
-    # Extract the mCODE mappings from the gold standard
+    # Extract the Mcode mappings from the gold standard
     gold_standard = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']
     
-    print(f"Gold standard contains {len(gold_standard)} expected mCODE mappings")
+    print(f"Gold standard contains {len(gold_standard)} expected Mcode mappings")
     
     # Create the actual framework instance
-    framework = StrictPromptOptimizationFramework()
+    framework = PromptOptimizationFramework()
     
     # Create sample extracted entities (what the NLP engine would produce)
     extracted_entities = [
@@ -96,12 +96,12 @@ def test_strict_validation():
         if expected_entities and benchmark.extracted_entities and framework:
             print("✅ Validation condition met - proceeding with calculation")
             
-            # Convert both extracted and expected entities to mCODE format
+            # Convert both extracted and expected entities to Mcode format
             extracted_mcode = framework._convert_entities_to_mcode(benchmark.extracted_entities)
             expected_mcode_elements = framework._convert_entities_to_mcode(expected_entities)
             
-            print(f"Extracted mCODE elements: {[m.get('element_name', '') for m in extracted_mcode]}")
-            print(f"Expected mCODE elements: {[m.get('element_name', '') for m in expected_mcode_elements]}")
+            print(f"Extracted Mcode elements: {[m.get('element_name', '') for m in extracted_mcode]}")
+            print(f"Expected Mcode elements: {[m.get('element_name', '') for m in expected_mcode_elements]}")
             
             # Calculate metrics
             true_positives_ext = len(set(m.get('element_name', '') for m in extracted_mcode) &
@@ -139,12 +139,12 @@ def test_strict_validation():
     
     # Debug: Show what's being compared
     print(f"\nDebug - Element Comparison:")
-    # Get the actual extracted mCODE elements from the conversion
+    # Get the actual extracted Mcode elements from the conversion
     extracted_mcode = framework._convert_entities_to_mcode(benchmark.extracted_entities)
     extracted_elements = {m.get('element_name', '') for m in extracted_mcode}
     
-    # Get expected elements from gold standard (which uses 'mcode_element' field)
-    expected_elements = {m.get('mcode_element', '') for m in gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']}
+    # Get expected elements from gold standard (which uses 'Mcode_element' field)
+    expected_elements = {m.get('Mcode_element', '') for m in gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']}
     
     print(f"Extracted elements: {extracted_elements}")
     print(f"Expected elements: {expected_elements}")

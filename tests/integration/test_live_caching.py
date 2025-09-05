@@ -18,7 +18,7 @@ from src.utils.api_manager import UnifiedAPIManager, APICache
 from src.utils.model_loader import ModelLoader
 from src.utils.prompt_loader import PromptLoader
 from src.utils.config import Config
-from src.pipeline.strict_llm_base import StrictLLMBase
+from src.pipeline.llm_base import LlmBase
 
 
 class TestLiveCaching(unittest.TestCase):

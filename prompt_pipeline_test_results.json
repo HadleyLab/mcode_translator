@@ -1,11 +1,11 @@
 [
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
     "success": true,
-    "execution_time": 0.040857791900634766,
+    "execution_time": 0.05039525032043457,
     "error": null,
     "metrics": {
       "precision": 0.0,
@@ -14,47 +14,17 @@
       "true_positives": 0,
       "false_positives": 6,
       "false_negatives": 5,
-      "total_actual": 23,
+      "total_actual": 24,
       "total_expected": 12
     }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n  \"mcode_mappings\"'",
-    "metrics": {}
-  },
-  {
-    "pipeline_type": "NLP to mCODE",
-    "extraction_prompt": "generic_extraction",
-    "mapping_prompt": "detailed_mapping",
-    "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n  \"mcode_mappings\"'",
-    "metrics": {}
-  },
-  {
-    "pipeline_type": "NLP to mCODE",
-    "extraction_prompt": "generic_extraction",
-    "mapping_prompt": "error_robust_mapping",
-    "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n  \"mcode_mappings\"'",
-    "metrics": {}
-  },
-  {
-    "pipeline_type": "NLP to mCODE",
-    "extraction_prompt": "generic_extraction",
-    "mapping_prompt": "minimal_mapping",
-    "direct_prompt": null,
     "success": true,
-    "execution_time": 0.025664091110229492,
+    "execution_time": 0.0194089412689209,
     "error": null,
     "metrics": {
       "precision": 0.0,
@@ -63,177 +33,288 @@
       "true_positives": 0,
       "false_positives": 6,
       "false_negatives": 5,
-      "total_actual": 23,
+      "total_actual": 24,
       "total_expected": 12
     }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
+    "extraction_prompt": "generic_extraction",
+    "mapping_prompt": "detailed_mapping",
+    "direct_prompt": null,
+    "success": false,
+    "execution_time": 0,
+    "error": "LLM-based mapping failed: Mapping response parsing failed: JSON response appears truncated due to max_tokens limit (4000). Increase max_tokens parameter to allow complete JSON responses. Error: Expecting value: line 537 column 25 (char 21084)",
+    "metrics": {}
+  },
+  {
+    "pipeline_type": "NLP to Mcode",
+    "extraction_prompt": "generic_extraction",
+    "mapping_prompt": "error_robust_mapping",
+    "direct_prompt": null,
+    "success": false,
+    "execution_time": 0,
+    "error": "LLM-based mapping failed: Mapping response parsing failed: JSON response appears truncated due to max_tokens limit (4000). Increase max_tokens parameter to allow complete JSON responses. Error: Unterminated string starting at: line 551 column 40 (char 21313)",
+    "metrics": {}
+  },
+  {
+    "pipeline_type": "NLP to Mcode",
+    "extraction_prompt": "generic_extraction",
+    "mapping_prompt": "minimal_mapping",
+    "direct_prompt": null,
+    "success": true,
+    "execution_time": 0.020238876342773438,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 4,
+      "false_negatives": 5,
+      "total_actual": 19,
+      "total_expected": 12
+    }
+  },
+  {
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n    \"mcode_mappings\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 196.63207483291626,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 11,
+      "false_negatives": 5,
+      "total_actual": 24,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n  \"mcode_mappings\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 383.20051312446594,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 6,
+      "false_negatives": 5,
+      "total_actual": 24,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 357.91500186920166,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 6,
+      "false_negatives": 5,
+      "total_actual": 24,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 201.64023399353027,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 6,
+      "false_negatives": 5,
+      "total_actual": 25,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
+    "error": "LLM-based mapping failed: Mapping response parsing failed: JSON response appears truncated due to max_tokens limit (4000). Increase max_tokens parameter to allow complete JSON responses. Error: Unterminated string starting at: line 544 column 13 (char 21486)",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "error_robust_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 432.84116196632385,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 6,
+      "false_negatives": 5,
+      "total_actual": 25,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "minimal_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 138.5458381175995,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 4,
+      "false_negatives": 5,
+      "total_actual": 19,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 185.55096673965454,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 10,
+      "false_negatives": 5,
+      "total_actual": 25,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 277.5274679660797,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 6,
+      "false_negatives": 5,
+      "total_actual": 25,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n    \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: condition_status']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n    \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: condition_status']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n    \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: condition_status']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "error_robust_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n    \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: condition_status']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "minimal_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n    \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: condition_status']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n    \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: condition_status']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n    \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: condition_status']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
     "success": true,
-    "execution_time": 0.028406143188476562,
+    "execution_time": 0.01805424690246582,
     "error": null,
     "metrics": {
       "precision": 0.0,
@@ -242,47 +323,36 @@
       "true_positives": 0,
       "false_positives": 5,
       "false_negatives": 5,
-      "total_actual": 13,
+      "total_actual": 14,
       "total_expected": 12
     }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n  \"mcode_mappings\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 146.6072609424591,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 5,
+      "false_negatives": 5,
+      "total_actual": 16,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n  \"mcode_mappings\"'",
-    "metrics": {}
-  },
-  {
-    "pipeline_type": "NLP to mCODE",
-    "extraction_prompt": "minimal_extraction",
-    "mapping_prompt": "error_robust_mapping",
-    "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n  \"mcode_mappings\"'",
-    "metrics": {}
-  },
-  {
-    "pipeline_type": "NLP to mCODE",
-    "extraction_prompt": "minimal_extraction",
-    "mapping_prompt": "minimal_mapping",
-    "direct_prompt": null,
     "success": true,
-    "execution_time": 0.023937702178955078,
+    "execution_time": 318.5446331501007,
     "error": null,
     "metrics": {
       "precision": 0.0,
@@ -296,172 +366,304 @@
     }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
+    "extraction_prompt": "minimal_extraction",
+    "mapping_prompt": "error_robust_mapping",
+    "direct_prompt": null,
+    "success": true,
+    "execution_time": 300.32604789733887,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 6,
+      "false_negatives": 5,
+      "total_actual": 16,
+      "total_expected": 12
+    }
+  },
+  {
+    "pipeline_type": "NLP to Mcode",
+    "extraction_prompt": "minimal_extraction",
+    "mapping_prompt": "minimal_mapping",
+    "direct_prompt": null,
+    "success": true,
+    "execution_time": 0.01827096939086914,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 4,
+      "false_negatives": 5,
+      "total_actual": 16,
+      "total_expected": 12
+    }
+  },
+  {
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n    \"mcode_mappings\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 162.67896699905396,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 7,
+      "false_negatives": 5,
+      "total_actual": 16,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n  \"mcode_mappings\"'",
-    "metrics": {}
+    "success": true,
+    "execution_time": 290.4129538536072,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 4,
+      "false_negatives": 5,
+      "total_actual": 16,
+      "total_expected": 12
+    }
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: DISEASE']",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: Disease']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: DISEASE']",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: Disease']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: DISEASE']",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: Disease']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "error_robust_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: DISEASE']",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: Disease']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "minimal_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: DISEASE']",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: Disease']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: DISEASE']",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: Disease']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: DISEASE']",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: Disease']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: assessment']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: assessment']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: assessment']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "error_robust_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: assessment']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "minimal_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: assessment']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: assessment']",
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to mCODE",
+    "pipeline_type": "NLP to Mcode",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
     "success": false,
     "execution_time": 0,
-    "error": "Unexpected error during extraction: '\\n  \"entities\"'",
+    "error": "Unexpected error during extraction: Invalid entity: ['Invalid entity type: assessment']",
     "metrics": {}
   },
   {
-    "pipeline_type": "Direct to mCODE",
+    "pipeline_type": "Direct to Mcode",
     "extraction_prompt": null,
     "mapping_prompt": null,
     "direct_prompt": "direct_mcode",
     "success": true,
-    "execution_time": 0.011101961135864258,
+    "execution_time": 0.012536287307739258,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 8,
+      "false_negatives": 5,
+      "total_actual": 20,
+      "total_expected": 12
+    }
+  },
+  {
+    "pipeline_type": "Direct to Mcode",
+    "extraction_prompt": null,
+    "mapping_prompt": null,
+    "direct_prompt": "direct_mcode_simple",
+    "success": true,
+    "execution_time": 0.007463932037353516,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 15,
+      "false_negatives": 5,
+      "total_actual": 24,
+      "total_expected": 12
+    }
+  },
+  {
+    "pipeline_type": "Direct to Mcode",
+    "extraction_prompt": null,
+    "mapping_prompt": null,
+    "direct_prompt": "direct_mcode_comprehensive",
+    "success": true,
+    "execution_time": 0.010477066040039062,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 5,
+      "false_negatives": 5,
+      "total_actual": 16,
+      "total_expected": 12
+    }
+  },
+  {
+    "pipeline_type": "Direct to Mcode",
+    "extraction_prompt": null,
+    "mapping_prompt": null,
+    "direct_prompt": "direct_mcode_minimal",
+    "success": true,
+    "execution_time": 0.007439136505126953,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 22,
+      "false_negatives": 5,
+      "total_actual": 25,
+      "total_expected": 12
+    }
+  },
+  {
+    "pipeline_type": "Direct to Mcode",
+    "extraction_prompt": null,
+    "mapping_prompt": null,
+    "direct_prompt": "direct_mcode_structured",
+    "success": true,
+    "execution_time": 0.0073699951171875,
     "error": null,
     "metrics": {
       "precision": 0.0,
@@ -470,76 +672,46 @@
       "true_positives": 0,
       "false_positives": 11,
       "false_negatives": 5,
-      "total_actual": 20,
+      "total_actual": 22,
       "total_expected": 12
     }
   },
   {
-    "pipeline_type": "Direct to mCODE",
-    "extraction_prompt": null,
-    "mapping_prompt": null,
-    "direct_prompt": "direct_mcode_simple",
-    "success": true,
-    "execution_time": 0.013918161392211914,
-    "error": null,
-    "metrics": {
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "true_positives": 0,
-      "false_positives": 20,
-      "false_negatives": 5,
-      "total_actual": 24,
-      "total_expected": 12
-    }
-  },
-  {
-    "pipeline_type": "Direct to mCODE",
-    "extraction_prompt": null,
-    "mapping_prompt": null,
-    "direct_prompt": "direct_mcode_comprehensive",
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n  \"mcode_mappings\"'",
-    "metrics": {}
-  },
-  {
-    "pipeline_type": "Direct to mCODE",
-    "extraction_prompt": null,
-    "mapping_prompt": null,
-    "direct_prompt": "direct_mcode_minimal",
-    "success": true,
-    "execution_time": 0.014374971389770508,
-    "error": null,
-    "metrics": {
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "true_positives": 0,
-      "false_positives": 13,
-      "false_negatives": 5,
-      "total_actual": 19,
-      "total_expected": 12
-    }
-  },
-  {
-    "pipeline_type": "Direct to mCODE",
-    "extraction_prompt": null,
-    "mapping_prompt": null,
-    "direct_prompt": "direct_mcode_structured",
-    "success": false,
-    "execution_time": 0,
-    "error": "Unexpected error during mapping: '\\n  \"mcode_mappings\"'",
-    "metrics": {}
-  },
-  {
-    "pipeline_type": "Direct to mCODE",
+    "pipeline_type": "Direct to Mcode",
     "extraction_prompt": null,
     "mapping_prompt": null,
     "direct_prompt": "direct_mcode_optimization",
-    "success": false,
-    "execution_time": 0,
-    "error": "LLM-based mapping failed: Mapping response parsing failed: Each mapping must contain 'mcode_element' field",
-    "metrics": {}
+    "success": true,
+    "execution_time": 0.007822275161743164,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 22,
+      "false_negatives": 5,
+      "total_actual": 29,
+      "total_expected": 12
+    }
+  },
+  {
+    "pipeline_type": "Direct to Mcode",
+    "extraction_prompt": null,
+    "mapping_prompt": null,
+    "direct_prompt": "direct_mcode_improved",
+    "success": true,
+    "execution_time": 0.007175922393798828,
+    "error": null,
+    "metrics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "true_positives": 0,
+      "false_positives": 5,
+      "false_negatives": 5,
+      "total_actual": 17,
+      "total_expected": 12
+    }
   }
 ]

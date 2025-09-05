@@ -11,12 +11,12 @@ def test_benchmark_file(benchmark_file, gold_data):
     with open(benchmark_file, 'r') as f:
         benchmark_data = json.load(f)
     
-    extracted_mappings = benchmark_data.get('mcode_mappings', [])
+    extracted_mappings = benchmark_data.get('Mcode_mappings', [])
     expected_mappings = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']
     
     # Test the fixed metric calculation logic
-    actual_mappings = set((m.get('mcode_element', ''), m.get('value', '')) for m in extracted_mappings)
-    expected_mappings_set = set((m.get('mcode_element', ''), m.get('value', '')) for m in expected_mappings)
+    actual_mappings = set((m.get('Mcode_element', ''), m.get('value', '')) for m in extracted_mappings)
+    expected_mappings_set = set((m.get('Mcode_element', ''), m.get('value', '')) for m in expected_mappings)
     
     true_positives = len(actual_mappings & expected_mappings_set)
     false_positives = len(actual_mappings - expected_mappings_set)

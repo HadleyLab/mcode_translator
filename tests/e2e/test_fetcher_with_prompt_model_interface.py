@@ -59,8 +59,8 @@ def test_fetcher_pipeline_creation():
         logger.info("✅ Pipeline created successfully")
         
         # Verify the pipeline has the expected components
-        if hasattr(pipeline, 'nlp_engine'):
-            logger.info(f"✅ NLP engine configured with model: {getattr(pipeline.nlp_engine, 'model_name', 'Unknown')}")
+        if hasattr(pipeline, 'nlp_extractor'):
+            logger.info(f"✅ NLP engine configured with model: {getattr(pipeline.nlp_extractor, 'model_name', 'Unknown')}")
         else:
             logger.warning("⚠️  NLP engine not found in pipeline")
             

@@ -21,8 +21,8 @@ from datetime import datetime
 # Setup logger
 logger = logging.getLogger(__name__)
 
-from src.optimization.strict_prompt_optimization_framework import (
-    StrictPromptOptimizationFramework,
+from src.optimization.prompt_optimization_framework import (
+    PromptOptimizationFramework,
     PromptType,
     APIConfig,
     PromptVariant
@@ -35,8 +35,8 @@ from src.utils.model_loader import model_loader
 class ModernOptimizationUI:
     """Modern web-based UI for prompt optimization experiments"""
     
-    def __init__(self, framework: Optional[StrictPromptOptimizationFramework] = None):
-        self.framework = framework or StrictPromptOptimizationFramework()
+    def __init__(self, framework: Optional[PromptOptimizationFramework] = None):
+        self.framework = framework or PromptOptimizationFramework()
         self.current_results = None
         self.test_cases_file = "examples/breast_cancer_data/breast_cancer_her2_positive.trial.json"
         self.gold_standard_file = "examples/breast_cancer_data/breast_cancer_her2_positive.gold.json"
@@ -999,14 +999,14 @@ class ModernOptimizationUI:
             # Set the prompt content directly on the NLP engine based on prompt type
             if variant.prompt_type == PromptType.NLP_EXTRACTION:
                 # For extraction prompts, set the extraction prompt template
-                pipeline.nlp_engine.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
+                pipeline.nlp_extractor.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
             elif variant.prompt_type == PromptType.MCODE_MAPPING:
                 # For mapping prompts, set the mapping prompt template
-                # Note: This would require similar changes to StrictMcodeMapper
+                # Note: This would require similar changes to McodeMapper
                 pipeline.llm_mapper.MCODE_MAPPING_PROMPT_TEMPLATE = prompt_content
             else:
                 # Default to extraction prompt if type is unknown
-                pipeline.nlp_engine.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
+                pipeline.nlp_extractor.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
             
             # Process the test data with the configured pipeline
             return pipeline.process_clinical_trial(test_data)
@@ -1016,7 +1016,7 @@ class ModernOptimizationUI:
 
 def run_modern_optimization_ui(port: int = 8082):
     """Run the modern optimization UI as a standalone application"""
-    framework = StrictPromptOptimizationFramework()
+    framework = PromptOptimizationFramework()
     ui_instance = ModernOptimizationUI(framework)
     ui.run(title='Modern Prompt Optimization Framework', port=port, reload=False)
 

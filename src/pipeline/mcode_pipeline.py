@@ -1,12 +1,12 @@
 """
-A single-step pipeline to map clinical text directly to mCODE entities.
+A single-step pipeline to map clinical text directly to Mcode entities.
 """
 
 import json
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
-from .processing_pipeline import ProcessingPipeline, StrictPipelineResult
-from .mcode_mapper import StrictMcodeMapper, MCodeMappingError, MCodeConfigurationError
+from .pipeline_base import ProcessingPipeline, PipelineResult
+from .mcode_mapper import McodeMapper, McodeMappingError, McodeConfigurationError
 from .document_ingestor import DocumentIngestor, DocumentSection
 import sys
 import os
@@ -22,36 +22,37 @@ from src.utils import (
 
 class McodePipeline(ProcessingPipeline, Loggable):
     """
-    A single-step pipeline that maps clinical text directly to mCODE entities.
+    A single-step pipeline that maps clinical text directly to Mcode entities.
     """
 
     def __init__(self, prompt_name: str = "direct_mcode"):
         """
-        Initialize the mCODE pipeline.
+        Initialize the Mcode pipeline.
 
         Args:
-            prompt_name: Name of the prompt template for mCODE mapping.
+            prompt_name: Name of the prompt template for Mcode mapping.
         """
         super().__init__()
         self.prompt_name = prompt_name
         self.document_ingestor = DocumentIngestor()
         try:
-            self.llm_mapper = StrictMcodeMapper(prompt_name=self.prompt_name)
-        except MCodeConfigurationError as e:
-            raise ValueError(f"Failed to initialize StrictMcodeMapper: {str(e)}")
+            self.llm_mapper = McodeMapper(prompt_name=self.prompt_name)
+        except McodeConfigurationError as e:
+            raise ValueError(f"Failed to initialize McodeMapper: {str(e)}")
 
-    def process_clinical_trial(self, trial_data: Dict[str, Any]) -> StrictPipelineResult:
+    def process_clinical_trial(self, trial_data: Dict[str, Any], task_id: Optional[str] = None) -> PipelineResult:
         """
-        Process complete clinical trial data through the mCODE pipeline.
+        Process complete clinical trial data through the Mcode pipeline.
 
         Args:
             trial_data: Raw clinical trial data from API or source.
+            task_id: Optional task ID for associating with a BenchmarkTask.
 
         Returns:
-            StrictPipelineResult with mCODE mappings and source tracking.
+            PipelineResult with Mcode mappings and source tracking.
         """
         try:
-            self.logger.info("🚀 Starting mCODE pipeline processing")
+            self.logger.info("🚀 Starting Mcode pipeline processing")
             self.logger.info(f"   📄 Trial ID: {trial_data.get('protocolSection', {}).get('identificationModule', {}).get('nctId', 'unknown')}")
             self.logger.info(f"   📋 Title: {trial_data.get('protocolSection', {}).get('identificationModule', {}).get('briefTitle', 'unknown')}")
 
@@ -60,6 +61,7 @@ class McodePipeline(ProcessingPipeline, Loggable):
             
             all_mappings = []
             source_references = []
+            mapping_result = None
 
             for section in document_sections:
                 if not section.content or not section.content.strip():
@@ -82,29 +84,31 @@ class McodePipeline(ProcessingPipeline, Loggable):
                 source_references.extend(mapping_result.get('source_references', []))
 
             # Get the validation results from the last mapping result
-            validation_results = mapping_result['validation_results'] if all_mappings else {}
+            validation_results = {}
+            if mapping_result is not None:
+                validation_results = mapping_result['validation_results']
 
-            return StrictPipelineResult(
+            return PipelineResult(
                 extracted_entities=[],
-                mcode_mappings=all_mappings,
+                Mcode_mappings=all_mappings,
                 source_references=source_references,
                 validation_results=validation_results,
                 metadata={
-                    'pipeline_version': 'mcode_pipeline_v1',
+                    'pipeline_version': 'Mcode_pipeline_v1',
                     'engine_type': 'LLM',
                     'entities_count': 0,
                     'mapped_count': len(all_mappings),
                     'compliance_score': validation_results.get('compliance_score', 0.0),
-                    'token_usage': mapping_result['metadata'].get('token_usage', {}),
+                    'token_usage': mapping_result['metadata'].get('token_usage', {}) if mapping_result is not None else {},
                     'aggregate_token_usage': global_token_tracker.get_total_usage().to_dict()
                 },
                 original_data=trial_data,
                 error=None
             )
 
-        except (MCodeMappingError, ValueError) as e:
-            self.logger.error(f"mCODE pipeline processing FAILED: {str(e)}")
+        except (McodeMappingError, ValueError) as e:
+            self.logger.error(f"Mcode pipeline processing FAILED: {str(e)}")
             raise
         except Exception as e:
-            self.logger.error(f"Unexpected error in mCODE pipeline processing: {str(e)}")
+            self.logger.error(f"Unexpected error in Mcode pipeline processing: {str(e)}")
             raise RuntimeError(f"Unexpected pipeline error: {str(e)}")

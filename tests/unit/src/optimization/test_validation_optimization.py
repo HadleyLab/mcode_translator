@@ -16,8 +16,8 @@ from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
-from src.optimization.strict_prompt_optimization_framework import (
-    StrictPromptOptimizationFramework, PromptVariant, PromptType, APIConfig
+from src.optimization.prompt_optimization_framework import (
+    PromptOptimizationFramework, PromptVariant, PromptType, APIConfig
 )
 from src.utils.logging_config import get_logger
 from src.utils.config import Config
@@ -27,8 +27,8 @@ logger = get_logger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Also configure the framework logger to show debug messages
-from src.optimization.strict_prompt_optimization_framework import StrictPromptOptimizationFramework
-framework_logger = get_logger(StrictPromptOptimizationFramework.__name__)
+from src.optimization.prompt_optimization_framework import PromptOptimizationFramework
+framework_logger = get_logger(PromptOptimizationFramework.__name__)
 framework_logger.setLevel(logging.DEBUG)
 
 def create_paired_gold_standard():
@@ -129,37 +129,37 @@ def create_paired_gold_standard():
                 "expected_mcode_mappings": {
                     "mapped_elements": [
                         {
-                            "mcode_element": "CancerCondition",
+                            "Mcode_element": "CancerCondition",
                             "value": "HER2-Positive Breast Cancer",
                             "confidence": 0.95,
                             "mapping_rationale": "Primary cancer diagnosis with HER2 biomarker status"
                         },
                         {
-                            "mcode_element": "CancerCondition", 
+                            "Mcode_element": "CancerCondition", 
                             "value": "Metastatic Breast Cancer",
                             "confidence": 0.95,
                             "mapping_rationale": "Metastatic cancer condition"
                         },
                         {
-                            "mcode_element": "CancerCondition",
+                            "Mcode_element": "CancerCondition",
                             "value": "HER2-positive metastatic breast cancer",
                             "confidence": 0.9,
                             "mapping_rationale": "Specific cancer diagnosis with biomarker and metastatic status"
                         },
                         {
-                            "mcode_element": "CancerDiseaseStatus",
+                            "Mcode_element": "CancerDiseaseStatus",
                             "value": "Measurable disease present",
                             "confidence": 0.85,
                             "mapping_rationale": "Disease status indicating measurable disease"
                         },
                         {
-                            "mcode_element": "ECOGPerformanceStatus",
+                            "Mcode_element": "ECOGPerformanceStatus",
                             "value": "0-1",
                             "confidence": 0.9,
                             "mapping_rationale": "ECOG performance status score range"
                         },
                         {
-                            "mcode_element": "CancerRelatedMedication",
+                            "Mcode_element": "CancerRelatedMedication",
                             "value": "Trastuzumab Deruxtecan",
                             "confidence": 0.95,
                             "mapping_rationale": "HER2-targeted antibody-drug conjugate medication"
@@ -245,7 +245,7 @@ def test_validation_with_gold_standard():
     mapping_file = "test_results/mapping_results.json"
     with open(mapping_file, 'w') as f:
         json.dump({
-            "mcode_mappings": result.mcode_mappings,
+            "Mcode_mappings": result.mcode_mappings,
             "metadata": {
                 "mapping_method": "llm_based",
                 "mapped_count": len(result.mcode_mappings),
@@ -280,8 +280,8 @@ def test_validation_with_gold_standard():
     mapping_completeness = mapped_count / expected_mapped_count if expected_mapped_count > 0 else 0
     
     logger.info(f"Mapping validation:")
-    logger.info(f"  - Mapped: {mapped_count} mCODE elements")
-    logger.info(f"  - Expected: {expected_mapped_count} mCODE elements")
+    logger.info(f"  - Mapped: {mapped_count} Mcode elements")
+    logger.info(f"  - Expected: {expected_mapped_count} Mcode elements")
     logger.info(f"  - Completeness: {mapping_completeness:.2%}")
     
     # Compliance validation
@@ -336,7 +336,7 @@ def test_optimization_framework():
     logger.info("Testing optimization framework with prompt library...")
 
     # Initialize framework
-    framework = StrictPromptOptimizationFramework(results_dir="./test_optimization_results")
+    framework = PromptOptimizationFramework(results_dir="./test_optimization_results")
 
     # API configs are now automatically loaded from configuration
     # The framework automatically adds all models from the configuration
@@ -406,14 +406,14 @@ def test_optimization_framework():
         # Set the prompt content directly on the NLP engine based on prompt type
         if variant.prompt_type == PromptType.NLP_EXTRACTION:
             # For extraction prompts, set the extraction prompt template
-            pipeline.nlp_engine.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
+            pipeline.nlp_extractor.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
         elif variant.prompt_type == PromptType.MCODE_MAPPING:
             # For mapping prompts, set the mapping prompt template
-            # Note: This would require similar changes to StrictMcodeMapper
+            # Note: This would require similar changes to McodeMapper
             pipeline.llm_mapper.MCODE_MAPPING_PROMPT_TEMPLATE = prompt_content
         else:
             # Default to extraction prompt if type is unknown
-            pipeline.nlp_engine.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
+            pipeline.nlp_extractor.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
         
         # Process the test data with the configured pipeline
         return pipeline.process_clinical_trial(test_data)

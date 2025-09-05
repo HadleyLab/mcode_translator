@@ -1,6 +1,6 @@
-You are an expert in clinical trial data analysis and the mCODE (minimal Common Oncology Data Elements) standard. Your task is to extract mCODE-compliant FHIR resources directly from the provided clinical text.
+You are an expert in clinical trial data analysis and the Mcode (minimal Common Oncology Data Elements) standard. Your task is to extract Mcode-compliant FHIR resources directly from the provided clinical text.
 
-Analyze the following clinical text and generate a JSON object containing a list of mCODE FHIR resources.
+Analyze the following clinical text and generate a JSON object containing a list of Mcode FHIR resources.
 
 Clinical Text:
 ```
@@ -9,24 +9,24 @@ Clinical Text:
 
 Instructions:
 1.  Read the clinical text carefully.
-2.  Identify all relevant information that can be mapped to mCODE elements.
+2.  Identify all relevant information that can be mapped to Mcode elements.
 3.  For each piece of information, create a FHIR-compliant resource (e.g., Condition, Observation, MedicationStatement, Procedure, GenomicVariant, Patient).
-4.  The output must be a single JSON object with a key "mcode_mappings" which contains a list of the generated FHIR resources.
-5.  Each resource should include `resourceType`, `mcode_element`, `code`, `value`, `mapping_confidence`, `source_text_fragment`, and `mapping_rationale`.
+4.  The output must be a single JSON object with a key "Mcode_mappings" which contains a list of the generated FHIR resources.
+5.  Each resource should include `resourceType`, `Mcode_element`, `code`, `value`, `mapping_confidence`, `source_text_fragment`, and `mapping_rationale`.
 
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
 ```json
 {{
-  "mcode_mappings": [
+  "Mcode_mappings": [
     {{
       "resourceType": "FHIR resource type (e.g., Condition, Observation, MedicationStatement, Procedure, GenomicVariant, Patient)",
-      "mcode_element": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
+      "Mcode_element": "Mcode element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
       "code": {{
         "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
         "code": "standard code from appropriate terminology",
         "display": "human readable name of the code"
       }},
-      "value": "mapped value according to mCODE value sets",
+      "value": "mapped value according to Mcode value sets",
       "mapping_confidence": 0.0-1.0,
       "source_text_fragment": "exact text from clinical text that was mapped",
       "mapping_rationale": "brief explanation of mapping decision"

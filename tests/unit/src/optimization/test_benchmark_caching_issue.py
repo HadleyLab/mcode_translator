@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.optimization.benchmark_task_tracker import BenchmarkTaskTrackerUI
 from src.utils.api_manager import UnifiedAPIManager
-from src.pipeline.strict_llm_base import StrictLLMBase
+from src.pipeline.llm_base import LlmBase
 
 def get_cache_stats():
     """Get cache statistics from the unified API manager"""

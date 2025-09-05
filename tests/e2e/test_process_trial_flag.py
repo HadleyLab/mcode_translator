@@ -51,15 +51,15 @@ def test_process_trial_flag():
             try:
                 data = json.loads(result.stdout)
                 print(f"✅ Output is valid JSON with {len(str(data))} characters")
-                if 'mcodeResults' in data:
-                    print("✅ mCODE results found in output")
-                    mcode_results = data['mcodeResults']
-                    if 'extracted_entities' in mcode_results:
-                        print(f"📊 Extracted {len(mcode_results['extracted_entities'])} entities")
-                    if 'mcode_mappings' in mcode_results:
-                        print(f"🗺️  Mapped {len(mcode_results['mcode_mappings'])} mCODE elements")
+                if 'McodeResults' in data:
+                    print("✅ Mcode results found in output")
+                    Mcode_results = data['McodeResults']
+                    if 'extracted_entities' in Mcode_results:
+                        print(f"📊 Extracted {len(Mcode_results['extracted_entities'])} entities")
+                    if 'Mcode_mappings' in Mcode_results:
+                        print(f"🗺️  Mapped {len(Mcode_results['Mcode_mappings'])} Mcode elements")
                 else:
-                    print("⚠️  No mCODE results found in output")
+                    print("⚠️  No Mcode results found in output")
             except json.JSONDecodeError:
                 print("⚠️  Output is not valid JSON")
                 print("First 500 characters of output:")

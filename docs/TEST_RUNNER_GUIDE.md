@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the new logical testing structure for the mCODE Translator project. The testing has been reorganized to be more explicit, with breast cancer as the default focus and clear extensibility for other cancer types.
+This document describes the new logical testing structure for the Mcode Translator project. The testing has been reorganized to be more explicit, with breast cancer as the default focus and clear extensibility for other cancer types.
 
 ## Directory Structure
 
@@ -191,7 +191,7 @@ python -m pytest tests/e2e/ -v
 #### Performance Metrics
 Typical performance with live DeepSeek API:
 - **Extraction**: 7-10 entities extracted from clinical trial data
-- **Mapping**: 7 mCODE elements mapped with SNOMEDCT/LOINC codes
+- **Mapping**: 7 Mcode elements mapped with SNOMEDCT/LOINC codes
 - **Metrics**: Precision/Recall/F1 scores calculated against gold standard
 - **Success Rate**: High success rate with automatic JSON repair for parsing issues
 

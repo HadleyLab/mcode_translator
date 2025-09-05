@@ -23,8 +23,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # Setup logger
 logger = logging.getLogger(__name__)
 
-from src.optimization.strict_prompt_optimization_framework import (
-    StrictPromptOptimizationFramework,
+from src.optimization.prompt_optimization_framework import (
+    PromptOptimizationFramework,
     PromptType,
     APIConfig,
     PromptVariant
@@ -81,8 +81,8 @@ class ValidationResult:
 class ClinicalBenchmarkUI:
     """Modern clinical trial benchmark UI with uber list concept"""
     
-    def __init__(self, framework: Optional[StrictPromptOptimizationFramework] = None):
-        self.framework = framework or StrictPromptOptimizationFramework()
+    def __init__(self, framework: Optional[PromptOptimizationFramework] = None):
+        self.framework = framework or PromptOptimizationFramework()
         self.validations: List[Dict[str, Any]] = []
         self.validation_results: Dict[str, ValidationResult] = {}
         self.filtered_validations: List[Dict[str, Any]] = []
@@ -256,8 +256,8 @@ class ClinicalBenchmarkUI:
                 validation['prompt_key'] not in self.nlp_prompt_filter.value):
                 matches = False
                 
-            # Apply MCODE prompt filter - if filter has values, only include selected prompts
-            if matches and (hasattr(self, 'mcode_prompt_filter') and self.mcode_prompt_filter.value and
+            # Apply Mcode prompt filter - if filter has values, only include selected prompts
+            if matches and (hasattr(self, 'Mcode_prompt_filter') and self.mcode_prompt_filter.value and
                 validation['prompt_type'] == 'MCODE_MAPPING' and
                 validation['prompt_key'] not in self.mcode_prompt_filter.value):
                 matches = False
@@ -581,7 +581,7 @@ class ClinicalBenchmarkUI:
         
         # Use prompt loader to get prompt information
         nlp_prompts = {}
-        mcode_prompts = {}
+        Mcode_prompts = {}
         
         for key, info in self.available_prompts.items():
             prompt_name = info.get('name', key)
@@ -590,10 +590,10 @@ class ClinicalBenchmarkUI:
             if prompt_type == 'NLP_EXTRACTION':
                 nlp_prompts[key] = prompt_name
             elif prompt_type == 'MCODE_MAPPING':
-                mcode_prompts[key] = prompt_name
+                Mcode_prompts[key] = prompt_name
         
         self.nlp_prompt_filter = ui.select(options=nlp_prompts, label='NLP Prompts', multiple=True, on_change=self._apply_filters).classes('w-full')
-        self.mcode_prompt_filter = ui.select(options=mcode_prompts, label='MCODE Prompts', multiple=True, on_change=self._apply_filters).classes('w-full')
+        self.mcode_prompt_filter = ui.select(options=Mcode_prompts, label='Mcode Prompts', multiple=True, on_change=self._apply_filters).classes('w-full')
         
         # Use model loader to get model information
         model_options = {key: info.get('name', key) for key, info in self.available_models.items()}
@@ -844,9 +844,9 @@ class ClinicalBenchmarkUI:
             
             # Set appropriate prompt based on type
             if prompt_type == 'NLP_EXTRACTION':
-                pipeline.nlp_engine.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
+                pipeline.nlp_extractor.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
             elif prompt_type == 'MCODE_MAPPING':
-                # This would require changes to StrictMcodeMapper
+                # This would require changes to McodeMapper
                 pipeline.llm_mapper.MCODE_MAPPING_PROMPT_TEMPLATE = prompt_content
             
             return pipeline.process_clinical_trial(test_data)

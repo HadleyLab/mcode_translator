@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This guide provides comprehensive documentation for the new file-based prompt library system implemented in the mCODE Translator project. The library centralizes all LLM prompts, eliminates hardcoded strings, and provides a robust system for prompt management and experimentation.
+This guide provides comprehensive documentation for the new file-based prompt library system implemented in the Mcode Translator project. The library centralizes all LLM prompts, eliminates hardcoded strings, and provides a robust system for prompt management and experimentation.
 
 ## Architecture Overview
 
@@ -46,7 +46,7 @@ prompts/
 ├── prompts_config.json          # Master configuration
 ├── txt/
 │   ├── nlp_extraction/          # 6 NLP extraction prompts
-│   └── mcode_mapping/           # 6 mCODE mapping prompts
+│   └── Mcode_mapping/           # 6 Mcode mapping prompts
 └── README.md                    # Library documentation
 ```
 
@@ -78,15 +78,15 @@ The [`PromptLoader`](../src/utils/prompt_loader.py) class provides:
 
 ### Step 1: Identify Hardcoded Prompts
 Located all hardcoded prompts across the codebase:
-- [`nlp_engine.py`](../src/pipeline/nlp_engine.py)
-- [`mcode_mapper.py`](../src/pipeline/mcode_mapper.py) 
-- [`strict_prompt_optimization_framework.py`](../src/optimization/strict_prompt_optimization_framework.py)
+- [`nlp_extractor.py`](../src/pipeline/nlp_extractor.py)
+- [`Mcode_mapper.py`](../src/pipeline/Mcode_mapper.py) 
+- [`prompt_optimization_framework.py`](../src/optimization/prompt_optimization_framework.py)
 - [`prompts_config.json`](../prompts/prompts_config.json)
 
 ### Step 2: Create File Structure
 Organized prompts into logical categories:
 - `nlp_extraction/` - Entity extraction prompts
-- `mcode_mapping/` - mCODE mapping prompts
+- `Mcode_mapping/` - Mcode mapping prompts
 
 ### Step 3: Migrate Content
 Moved all prompt content from code to text files while preserving:
@@ -139,7 +139,7 @@ def extract_entities(self, text: str, prompt_name: str = "generic_extraction"):
     formatted = template.format(text=text)
     return self.llm_client.generate(formatted)
 
-# mCODE Mapper
+# Mcode Mapper
 def map_to_mcode(self, entities: List, prompt_name: str = "generic_mapping"):
     template = self.prompt_loader.load_prompt(prompt_name)
     formatted = template.format(entities=json.dumps(entities))
@@ -173,8 +173,8 @@ variants = [
 - **basic_extraction**: Optimization framework baseline
 - **minimal_extraction_optimization**: Minimal optimization variant
 
-### mCODE Mapping Prompts (6 total)  
-- **generic_mapping**: Primary mCODE mapping
+### Mcode Mapping Prompts (6 total)  
+- **generic_mapping**: Primary Mcode mapping
 - **standard_mapping**: Standard mapping approach
 - **detailed_mapping**: Comprehensive mapping instructions
 - **error_robust_mapping**: Error handling and fallbacks

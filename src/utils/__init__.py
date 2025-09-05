@@ -1,9 +1,9 @@
 """
-mCODE-Translator Utilities
+Mcode-Translator Utilities
 ==========================
 
 This package provides a centralized library of utility modules that support various
-components of the mCODE-Translator framework. The utilities are designed to be
+components of the Mcode-Translator framework. The utilities are designed to be
 reusable, well-documented, and strictly implemented to ensure consistency and
 reliability across the system.
 

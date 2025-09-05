@@ -7,12 +7,12 @@ from src.utils.logging_config import get_logger
 class ProcessingResult:
     """Result from NLP processing containing extracted features and metadata"""
     features: Dict[str, Any]
-    mcode_mappings: Dict[str, Any]
+    Mcode_mappings: Dict[str, Any]
     metadata: Dict[str, Any]
     entities: List[Dict[str, Any]]
     error: Optional[str] = None
 
-class NLPEngine(ABC):
+class NlpBase(ABC):
     """Abstract base class for NLP engines"""
     
     def __init__(self):

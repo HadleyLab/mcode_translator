@@ -24,13 +24,13 @@ from src.utils import (
     model_loader,
     global_token_tracker
 )
-from src.pipeline.mcode_mapper import StrictMcodeMapper
+from src.pipeline.mcode_mapper import McodeMapper
 
 
 class PromptType(Enum):
     """Types of prompts that can be optimized"""
     NLP_EXTRACTION = "nlp_extraction"
-    MCODE_MAPPING = "mcode_mapping"
+    MCODE_MAPPING = "Mcode_mapping"
 
 
 class APIConfig:
@@ -120,6 +120,7 @@ class BenchmarkResult:
     prompt_variant_id: str = ""
     api_config_name: str = ""
     test_case_id: str = ""
+    pipeline_type: str = ""  # Type of pipeline used (McodePipeline or NlpMcodePipeline)
     start_time: datetime = field(default_factory=datetime.now)
     end_time: Optional[datetime] = None
     duration_ms: float = 0.0
@@ -139,7 +140,7 @@ class BenchmarkResult:
     
     # Raw results
     extracted_entities: List[Dict[str, Any]] = field(default_factory=list)
-    mcode_mappings: List[Dict[str, Any]] = field(default_factory=list)
+    Mcode_mappings: List[Dict[str, Any]] = field(default_factory=list)
     validation_results: Dict[str, Any] = field(default_factory=dict)
     
     def to_dict(self) -> Dict[str, Any]:
@@ -148,6 +149,7 @@ class BenchmarkResult:
             'prompt_variant_id': self.prompt_variant_id,
             'api_config_name': self.api_config_name,
             'test_case_id': self.test_case_id,
+            'pipeline_type': self.pipeline_type,
             'start_time': self.start_time.isoformat(),
             'end_time': self.end_time.isoformat() if self.end_time else None,
             'duration_ms': self.duration_ms,
@@ -164,13 +166,13 @@ class BenchmarkResult:
             'token_usage': self.token_usage,
             # Include raw results for validation recalculation
             'extracted_entities': self.extracted_entities,
-            'mcode_mappings': self.mcode_mappings,
+            'Mcode_mappings': self.mcode_mappings,
             'validation_results': self.validation_results
         }
     
     def calculate_metrics(self, expected_entities: List[Dict[str, Any]] = None,
                          expected_mappings: List[Dict[str, Any]] = None,
-                         framework: 'StrictPromptOptimizationFramework' = None) -> None:
+                         framework: 'PromptOptimizationFramework' = None) -> None:
         """Calculate performance metrics based on results using gold standard validation"""
         framework.logger.debug("calculate_metrics method called")
         if not self.success:
@@ -194,7 +196,7 @@ class BenchmarkResult:
             if expected_count > 0:
                 self.extraction_completeness = self.entities_extracted / expected_count
         
-        # Use validation results from mCODE mapping
+        # Use validation results from Mcode mapping
         if self.validation_results:
             self.compliance_score = self.validation_results.get('compliance_score', 0.0)
         
@@ -244,20 +246,20 @@ class BenchmarkResult:
             else:
                 framework.logger.warning(f"   Validation condition failed: expected_entities={bool(expected_entities)}, extracted_entities={bool(self.extracted_entities)}")
         
-        # Calculate mapping accuracy using mCODE-based matching for mCODE elements
-        framework.logger.debug(f"Mapping validation: expected_mappings={bool(expected_mappings)}, mcode_mappings={bool(self.mcode_mappings)}, len={len(self.mcode_mappings) if self.mcode_mappings else 0}")
-        framework.logger.debug(f"Mapping validation: expected_mappings type={type(expected_mappings)}, mcode_mappings type={type(self.mcode_mappings)}")
-        framework.logger.debug(f"Mapping validation: expected_mappings value={expected_mappings}, mcode_mappings value={self.mcode_mappings}")
+        # Calculate mapping accuracy using Mcode-based matching for Mcode elements
+        framework.logger.debug(f"Mapping validation: expected_mappings={bool(expected_mappings)}, Mcode_mappings={bool(self.mcode_mappings)}, len={len(self.mcode_mappings) if self.mcode_mappings else 0}")
+        framework.logger.debug(f"Mapping validation: expected_mappings type={type(expected_mappings)}, Mcode_mappings type={type(self.mcode_mappings)}")
+        framework.logger.debug(f"Mapping validation: expected_mappings value={expected_mappings}, Mcode_mappings value={self.mcode_mappings}")
         framework.logger.debug(f"Mapping validation: expected_mappings is None: {expected_mappings is None}")
         framework.logger.debug(f"Mapping validation: self.mcode_mappings is None: {self.mcode_mappings is None}")
         framework.logger.debug(f"Mapping validation: expected_mappings bool: {bool(expected_mappings)}")
         framework.logger.debug(f"Mapping validation: self.mcode_mappings bool: {bool(self.mcode_mappings)}")
         if expected_mappings and self.mcode_mappings:
             framework.logger.debug(f"Calculating mapping metrics with {len(self.mcode_mappings)} mapped and {len(expected_mappings)} expected mappings")
-            # Use mCODE-based matching for mapping metrics (compare mcode_element + value tuples)
-            # Case-insensitive matching for both mcode_element and values to handle case differences
-            actual_mappings = set((m.get('mcode_element', '').lower(), m.get('value', '').lower()) for m in self.mcode_mappings)
-            expected_mappings_set = set((m.get('mcode_element', '').lower(), m.get('value', '').lower()) for m in expected_mappings)
+            # Use Mcode-based matching for mapping metrics (compare Mcode_element + value tuples)
+            # Case-insensitive matching for both Mcode_element and values to handle case differences
+            actual_mappings = set((m.get('Mcode_element', '').lower(), m.get('value', '').lower()) for m in self.mcode_mappings)
+            expected_mappings_set = set((m.get('Mcode_element', '').lower(), m.get('value', '').lower()) for m in expected_mappings)
             
             # Debug logging to understand what's happening
             framework.logger.debug(f"Mapping validation debug info:")
@@ -305,9 +307,9 @@ class BenchmarkResult:
             framework.logger.warning(f"   Expected mappings: {len(expected_mappings) if expected_mappings else 0}")
             
             if expected_mappings and self.mcode_mappings:
-                # Use case-insensitive matching for both mcode_element and values in debug logging as well
-                actual_mappings = set((m.get('mcode_element', '').lower(), m.get('value', '').lower()) for m in self.mcode_mappings)
-                expected_mappings_set = set((m.get('mcode_element', '').lower(), m.get('value', '').lower()) for m in expected_mappings)
+                # Use case-insensitive matching for both Mcode_element and values in debug logging as well
+                actual_mappings = set((m.get('Mcode_element', '').lower(), m.get('value', '').lower()) for m in self.mcode_mappings)
+                expected_mappings_set = set((m.get('Mcode_element', '').lower(), m.get('value', '').lower()) for m in expected_mappings)
                 
                 true_positives_map = len(actual_mappings & expected_mappings_set)
                 false_positives_map = len(actual_mappings - expected_mappings_set)
@@ -321,13 +323,13 @@ class BenchmarkResult:
                     framework.logger.warning(f"   Actual mappings: {sorted(list(actual_mappings))[:5]}")
                     framework.logger.warning(f"   Expected mappings: {sorted(list(expected_mappings_set))[:5]}")
             else:
-                framework.logger.warning(f"   Mapping validation condition failed: expected_mappings={bool(expected_mappings)}, mcode_mappings={bool(self.mcode_mappings)}")
+                framework.logger.warning(f"   Mapping validation condition failed: expected_mappings={bool(expected_mappings)}, Mcode_mappings={bool(self.mcode_mappings)}")
 
 
     @staticmethod
     def _calculate_fuzzy_text_matches(extracted_entities: List[Dict[str, Any]],
                                     expected_entities: List[Dict[str, Any]],
-                                    framework: 'StrictPromptOptimizationFramework' = None,
+                                    framework: 'PromptOptimizationFramework' = None,
                                     debug: bool = False) -> Tuple[int, int, int]:
         """
         Calculate text matches using fuzzy matching to handle different text representations
@@ -419,7 +421,7 @@ class BenchmarkResult:
         
         return true_positives, false_positives, false_negatives
 
-class StrictPromptOptimizationFramework(Loggable):
+class PromptOptimizationFramework(Loggable):
     """STRICT framework - no fallbacks, fails hard on invalid configs
     Now integrated with file-based prompt library using PromptLoader"""
     
@@ -434,8 +436,8 @@ class StrictPromptOptimizationFramework(Loggable):
         self.test_cases: Dict[str, Dict[str, Any]] = {}
         self.benchmark_results: List[BenchmarkResult] = []
         
-        # Initialize mCODE mapper for validation
-        self.mcode_mapper = StrictMcodeMapper()
+        # Initialize Mcode mapper for validation
+        self.mcode_mapper = McodeMapper()
         
         # Automatically add all models from configuration
         self._add_all_models_from_config()
@@ -518,18 +520,18 @@ class StrictPromptOptimizationFramework(Loggable):
     
     def _convert_entities_to_mcode(self, entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Convert extracted entities to mCODE format using the mCODE mapper
-        This allows for proper mCODE-based validation instead of exact text matching
+        Convert extracted entities to Mcode format using the Mcode mapper
+        This allows for proper Mcode-based validation instead of exact text matching
         """
         if not entities:
             return []
         
         try:
-            # Use the mCODE mapper to convert entities to mCODE format
+            # Use the Mcode mapper to convert entities to Mcode format
             mapping_result = self.mcode_mapper.map_to_mcode(entities)
             return mapping_result.get('mapped_elements', [])
         except Exception as e:
-            self.logger.warning(f"Failed to convert entities to mCODE format: {str(e)}")
+            self.logger.warning(f"Failed to convert entities to Mcode format: {str(e)}")
             # Return empty list if conversion fails
             return []
     
@@ -551,6 +553,7 @@ class StrictPromptOptimizationFramework(Loggable):
                                  prompt_variant_id: str,
                                  api_config_name: str,
                                  test_case_id: str,
+                                 pipeline_type: str,
                                  expected_entities: List[Dict[str, Any]] = None,
                                  expected_mappings: List[Dict[str, Any]] = None) -> BenchmarkResult:
         """
@@ -559,7 +562,8 @@ class StrictPromptOptimizationFramework(Loggable):
         result = BenchmarkResult(
             prompt_variant_id=prompt_variant_id,
             api_config_name=api_config_name,
-            test_case_id=test_case_id
+            test_case_id=test_case_id,
+            pipeline_type=pipeline_type
         )
         
         try:
@@ -588,15 +592,15 @@ class StrictPromptOptimizationFramework(Loggable):
             
             # Create pipeline callback
             def pipeline_callback(test_data):
-                from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
-                
-                pipeline = StrictDynamicExtractionPipeline()
+                from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
+
+                pipeline = NlpMcodePipeline()
                 
                 # Set appropriate prompt based on type
                 if prompt_variant.prompt_type == PromptType.NLP_EXTRACTION:
-                    pipeline.nlp_engine.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
+                    pipeline.nlp_extractor.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
                 elif prompt_variant.prompt_type == PromptType.MCODE_MAPPING:
-                    # This would require changes to StrictMcodeMapper
+                    # This would require changes to McodeMapper
                     pipeline.llm_mapper.MCODE_MAPPING_PROMPT_TEMPLATE = prompt_content
                 
                 return pipeline.process_clinical_trial(test_data)
@@ -614,7 +618,7 @@ class StrictPromptOptimizationFramework(Loggable):
                 result.extracted_entities = pipeline_result.extracted_entities
                 result.entities_extracted = len(pipeline_result.extracted_entities)
             
-            if hasattr(pipeline_result, 'mcode_mappings'):
+            if hasattr(pipeline_result, 'Mcode_mappings'):
                 result.mcode_mappings = pipeline_result.mcode_mappings
                 result.entities_mapped = len(pipeline_result.mcode_mappings)
             
@@ -630,7 +634,7 @@ class StrictPromptOptimizationFramework(Loggable):
             
             self.logger.info(f"✅ Async benchmark completed in {result.duration_ms:.2f}ms")
             self.logger.info(f"   📊 Extraction: {result.entities_extracted} entities")
-            self.logger.info(f"   🗺️  Mapping: {result.entities_mapped} mCODE elements")
+            self.logger.info(f"   🗺️  Mapping: {result.entities_mapped} Mcode elements")
             self.logger.info(f"   🎯 Metrics: F1={result.f1_score:.3f}")
             
         except Exception as e:
@@ -652,6 +656,7 @@ class StrictPromptOptimizationFramework(Loggable):
                       api_config_name: str,
                       test_case_id: str,
                       pipeline_callback: Callable,
+                      pipeline_type: str,
                       expected_entities: List[Dict[str, Any]] = None,
                       expected_mappings: List[Dict[str, Any]] = None,
                       current_index: int = None,
@@ -673,7 +678,8 @@ class StrictPromptOptimizationFramework(Loggable):
         result = BenchmarkResult(
             prompt_variant_id=prompt_variant_id,
             api_config_name=api_config_name,
-            test_case_id=test_case_id
+            test_case_id=test_case_id,
+            pipeline_type=pipeline_type
         )
         
         try:
@@ -729,10 +735,10 @@ class StrictPromptOptimizationFramework(Loggable):
                 result.extracted_entities = pipeline_result.extracted_entities
                 result.entities_extracted = len(pipeline_result.extracted_entities)
             
-            if hasattr(pipeline_result, 'mcode_mappings'):
+            if hasattr(pipeline_result, 'Mcode_mappings'):
                 result.mcode_mappings = pipeline_result.mcode_mappings
                 result.entities_mapped = len(pipeline_result.mcode_mappings)
-                self.logger.debug(f"Set mcode_mappings: {len(result.mcode_mappings)} mappings")
+                self.logger.debug(f"Set Mcode_mappings: {len(result.mcode_mappings)} mappings")
             
             if hasattr(pipeline_result, 'validation_results'):
                 result.validation_results = pipeline_result.validation_results
@@ -743,8 +749,8 @@ class StrictPromptOptimizationFramework(Loggable):
                 if token_usage:
                     result.token_usage = token_usage.get('total_tokens', 0)
             
-            # Also capture token usage from mcode_mappings
-            if hasattr(result, 'mcode_mappings') and result.mcode_mappings:
+            # Also capture token usage from Mcode_mappings
+            if hasattr(result, 'Mcode_mappings') and result.mcode_mappings:
                 for mapping in result.mcode_mappings:
                     if 'metadata' in mapping and 'token_usage' in mapping['metadata']:
                         token_usage = mapping['metadata']['token_usage']
@@ -780,7 +786,7 @@ class StrictPromptOptimizationFramework(Loggable):
             
             self.logger.info(f"{completion_status} STRICT benchmark completed in {result.duration_ms:.2f}ms{time_remaining}")
             self.logger.info(f"   📊 Extraction: {result.entities_extracted} entities")
-            self.logger.info(f"   🗺️  Mapping: {result.entities_mapped} mCODE elements")
+            self.logger.info(f"   🗺️  Mapping: {result.entities_mapped} Mcode elements")
             self.logger.info(f"   🎯 Metrics: F1={result.f1_score:.3f}, Precision={result.precision:.3f}, Recall={result.recall:.3f}")
             self.logger.info(f"   ✅ Compliance: {result.compliance_score:.2%}")
             
@@ -852,7 +858,7 @@ class StrictPromptOptimizationFramework(Loggable):
                 
                 # Load raw results for validation recalculation
                 result.extracted_entities = result_data.get('extracted_entities', [])
-                result.mcode_mappings = result_data.get('mcode_mappings', [])
+                result.mcode_mappings = result_data.get('Mcode_mappings', [])
                 result.validation_results = result_data.get('validation_results', {})
                 
                 self.benchmark_results.append(result)
@@ -919,7 +925,7 @@ class StrictPromptOptimizationFramework(Loggable):
             test_case_ids: List of test case IDs to run
             pipeline_callback: Callback function that executes the pipeline
             expected_entities: Gold standard entities for validation
-            expected_mappings: Gold standard mCODE mappings for validation
+            expected_mappings: Gold standard Mcode mappings for validation
         """
         if not self.prompt_variants:
             raise ValueError("No prompt variants configured")
@@ -1294,6 +1300,205 @@ class StrictPromptOptimizationFramework(Loggable):
         except Exception as e:
             return {'error': f'Failed to generate report: {str(e)}'}
     
+    def run_benchmark_with_live_logging(self,
+                                        prompt_variant_id: str,
+                                        api_config_name: str,
+                                        test_case_id: str,
+                                        pipeline_callback: Callable,
+                                        pipeline_type: str,
+                                        expected_entities: List[Dict[str, Any]] = None,
+                                        expected_mappings: List[Dict[str, Any]] = None,
+                                        current_index: int = None,
+                                        total_count: int = None,
+                                        benchmark_start_time: float = None,
+                                        log_callback: Callable[[str], None] = None) -> BenchmarkResult:
+        """
+        Run a single benchmark with live logging - streams log messages during execution
+        
+        Args:
+            prompt_variant_id: ID of the prompt variant to test
+            api_config_name: Name of the API configuration to use
+            test_case_id: ID of the test case to run
+            pipeline_callback: Callback function that executes the pipeline
+            pipeline_type: Type of pipeline being used
+            expected_entities: Gold standard entities for validation
+            expected_mappings: Gold standard Mcode mappings for validation
+            current_index: Current test index (for progress tracking)
+            total_count: Total number of tests (for progress tracking)
+            benchmark_start_time: Start time of the overall benchmark run (for ETR calculation)
+            log_callback: Callback function to stream log messages during execution
+            
+        Returns:
+            BenchmarkResult with the benchmark results
+        """
+        def _log_with_callback(message: str, level: str = "INFO"):
+            """Log message and send to callback if provided"""
+            if level == "INFO":
+                self.logger.info(message)
+            elif level == "DEBUG":
+                self.logger.debug(message)
+            elif level == "WARNING":
+                self.logger.warning(message)
+            elif level == "ERROR":
+                self.logger.error(message)
+            
+            # Send to callback for live streaming
+            if log_callback:
+                try:
+                    log_callback(message)
+                except Exception as e:
+                    self.logger.warning(f"Failed to send log to callback: {str(e)}")
+        
+        # Create result object
+        result = BenchmarkResult(
+            prompt_variant_id=prompt_variant_id,
+            api_config_name=api_config_name,
+            test_case_id=test_case_id,
+            pipeline_type=pipeline_type
+        )
+        
+        try:
+            # Get the test case data
+            test_case = self.test_cases.get(test_case_id)
+            if not test_case:
+                raise ValueError(f"Test case {test_case_id} not found")
+            
+            # Get the prompt variant
+            prompt_variant = self.prompt_variants.get(prompt_variant_id)
+            if not prompt_variant:
+                raise ValueError(f"Prompt variant {prompt_variant_id} not found")
+            
+            # Get the API config
+            api_config = self.api_configs.get(api_config_name)
+            if not api_config:
+                raise ValueError(f"API config {api_config_name} not found")
+            
+            # Get the actual prompt content from the prompt library
+            prompt_content = prompt_variant.get_prompt_content()
+            
+            # Enhanced progress tracking with detailed information
+            progress_info = ""
+            if current_index is not None and total_count is not None:
+                progress_info = f" [{current_index}/{total_count}]"
+            
+            # Get detailed model information
+            model_info = f"model={api_config.model}"
+            if api_config.temperature is not None:
+                model_info += f", temp={api_config.temperature}"
+            if api_config.max_tokens is not None:
+                model_info += f", max_tokens={api_config.max_tokens}"
+            
+            _log_with_callback(f"🧪{progress_info} Starting STRICT benchmark:")
+            _log_with_callback(f"   📋 Prompt: {prompt_variant.name} ({prompt_variant.prompt_key})")
+            _log_with_callback(f"   🤖 Model: {model_info}")
+            _log_with_callback(f"   📊 Test Case: {test_case_id}")
+            _log_with_callback(f"   🔄 Prompt Type: {prompt_variant.prompt_type.value}")
+            
+            # Note: The pipeline callback should use the Config class directly for API configuration
+            # Environment variables are no longer needed since the pipeline components use Config class
+            
+            # Run the pipeline processing
+            start_time = time.time()
+            _log_with_callback(f"   ⚡ Starting pipeline execution...")
+            
+            pipeline_result = pipeline_callback(test_case, prompt_content, prompt_variant_id, api_config_name)
+            end_time = time.time()
+            
+            # Calculate duration
+            result.duration_ms = (end_time - start_time) * 1000
+            
+            # Extract results
+            if hasattr(pipeline_result, 'extracted_entities'):
+                result.extracted_entities = pipeline_result.extracted_entities
+                result.entities_extracted = len(pipeline_result.extracted_entities)
+                _log_with_callback(f"   📊 Extracted {result.entities_extracted} entities")
+            
+            if hasattr(pipeline_result, 'Mcode_mappings'):
+                result.mcode_mappings = pipeline_result.mcode_mappings
+                result.entities_mapped = len(pipeline_result.mcode_mappings)
+                _log_with_callback(f"   🗺️  Mapped {result.entities_mapped} Mcode elements")
+                self.logger.debug(f"Set Mcode_mappings: {len(result.mcode_mappings)} mappings")
+            
+            if hasattr(pipeline_result, 'validation_results'):
+                result.validation_results = pipeline_result.validation_results
+                result.compliance_score = pipeline_result.validation_results.get('compliance_score', 0.0)
+                _log_with_callback(f"   ✅ Compliance score: {result.compliance_score:.2%}")
+
+            if hasattr(pipeline_result, 'metadata') and 'token_usage' in pipeline_result.metadata:
+                token_usage = pipeline_result.metadata['token_usage']
+                if token_usage:
+                    result.token_usage = token_usage.get('total_tokens', 0)
+                    _log_with_callback(f"   📝 Token usage: {result.token_usage} tokens")
+            
+            # Also capture token usage from Mcode_mappings
+            if hasattr(result, 'Mcode_mappings') and result.mcode_mappings:
+                for mapping in result.mcode_mappings:
+                    if 'metadata' in mapping and 'token_usage' in mapping['metadata']:
+                        token_usage = mapping['metadata']['token_usage']
+                        if token_usage:
+                            result.token_usage += token_usage.get('total_tokens', 0)
+            
+            # Capture aggregate token usage from global tracker
+            aggregate_token_usage = global_token_tracker.get_total_usage()
+            if aggregate_token_usage.total_tokens > 0:
+                result.token_usage = aggregate_token_usage.total_tokens
+                _log_with_callback(f"   📊 Aggregate token usage: {aggregate_token_usage.total_tokens} tokens")
+                _log_with_callback(f"      Prompt tokens: {aggregate_token_usage.prompt_tokens}")
+                _log_with_callback(f"      Completion tokens: {aggregate_token_usage.completion_tokens}")
+            
+            # Mark the result as successful before calculating metrics
+            result.success = True
+            
+            # Calculate metrics using provided gold standard data
+            _log_with_callback(f"   📈 Calculating performance metrics...")
+            result.calculate_metrics(expected_entities, expected_mappings, self)
+            
+            # Enhanced completion logging with detailed metrics
+            completion_status = "✅"
+            if current_index is not None and total_count is not None:
+                completion_status = f"✅ [{current_index}/{total_count}]"
+            
+            # Calculate estimated time remaining if we have progress info
+            time_remaining = ""
+            if current_index is not None and total_count is not None and current_index > 1:
+                avg_time_per_test = (time.time() - benchmark_start_time) / current_index
+                remaining_tests = total_count - current_index
+                remaining_seconds = avg_time_per_test * remaining_tests
+                time_remaining = f" ⏰ ETR: {self._format_time_remaining(remaining_seconds)}"
+            
+            _log_with_callback(f"{completion_status} STRICT benchmark completed in {result.duration_ms:.2f}ms{time_remaining}")
+            _log_with_callback(f"   📊 Extraction: {result.entities_extracted} entities")
+            _log_with_callback(f"   🗺️  Mapping: {result.entities_mapped} Mcode elements")
+            _log_with_callback(f"   🎯 Metrics: F1={result.f1_score:.3f}, Precision={result.precision:.3f}, Recall={result.recall:.3f}")
+            _log_with_callback(f"   ✅ Compliance: {result.compliance_score:.2%}")
+            
+        except Exception as e:
+            result.success = False
+            result.error_message = str(e)
+            
+            # Enhanced error logging with progress info and time remaining
+            error_status = "❌"
+            time_remaining = ""
+            if current_index is not None and total_count is not None:
+                error_status = f"❌ [{current_index}/{total_count}]"
+                
+                # Calculate estimated time remaining for error cases too
+                if current_index > 1 and benchmark_start_time is not None:
+                    avg_time_per_test = (time.time() - benchmark_start_time) / current_index
+                    remaining_tests = total_count - current_index
+                    remaining_seconds = avg_time_per_test * remaining_tests
+                    time_remaining = f" ⏰ ETR: {self._format_time_remaining(remaining_seconds)}"
+            
+            _log_with_callback(f"{error_status} STRICT benchmark FAILED in {result.duration_ms:.2f}ms{time_remaining}: {str(e)}", "ERROR")
+        
+        result.end_time = datetime.now()
+        self.benchmark_results.append(result)
+        
+        # Save results
+        self._save_benchmark_result(result)
+        
+        return result
+
     def get_visualization_data(self) -> Dict[str, Any]:
         """Generate data for visualizations"""
         df = self.get_results_dataframe()

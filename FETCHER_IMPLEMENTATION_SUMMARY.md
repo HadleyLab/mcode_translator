@@ -7,7 +7,7 @@ Successfully implemented a new fetcher.py that uses the StrictDynamicExtractionP
 
 ### 1. Strict Dynamic Extraction Pipeline Integration
 - Replaced legacy code extraction with StrictDynamicExtractionPipeline
-- Integrated with the new NLP engine and mCODE mapper
+- Integrated with the new NLP engine and Mcode mapper
 - Maintained strict implementation without fallbacks
 - Added comprehensive error handling that raises exceptions for missing assets
 
@@ -34,7 +34,7 @@ Successfully implemented a new fetcher.py that uses the StrictDynamicExtractionP
   - descriptionModule
   - identificationModule
 - Extract entities from each section with source tracking
-- Map entities to mCODE elements with validation
+- Map entities to Mcode elements with validation
 - Generate comprehensive JSON output with all results
 
 ## Testing Results
@@ -55,8 +55,8 @@ Successfully implemented a new fetcher.py that uses the StrictDynamicExtractionP
    - Entity types: 12 condition, 5 biomarker, 2 procedure, 1 demographic, 1 exclusion, 4 medication, 1 temporal
    - Processing each section with ATOMIC processor
 
-4. **mCODE Mapping**: ✅ Working correctly
-   - Mapped 21 mCODE elements
+4. **Mcode Mapping**: ✅ Working correctly
+   - Mapped 21 Mcode elements
    - Compliance score: 100.00%
    - Validation passing with strict requirements
 
@@ -110,7 +110,7 @@ validation = result.validation_results
 ```
 
 ## Compliance and Standards
-- **mCODE Compliance**: 100% compliance score achieved
+- **Mcode Compliance**: 100% compliance score achieved
 - **JSON Validation**: Strict JSON parsing with detailed error reporting
 - **Source Tracking**: Complete provenance for all extracted entities
 - **Validation Framework**: Comprehensive validation with detailed metrics

@@ -189,12 +189,12 @@
       }
     }
   ],
-  "mcode_mappings": [
+  "Mcode_mappings": [
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -208,9 +208,9 @@
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -224,9 +224,9 @@
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -240,9 +240,9 @@
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "CancerDiseaseStatus",
+      "Mcode_element": "CancerDiseaseStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerdiseasestatus",
         "display": "CancerDiseaseStatus"
       },
@@ -256,9 +256,9 @@
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "ECOGPerformanceStatus",
+      "Mcode_element": "ECOGPerformanceStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "ecogperformancestatus",
         "display": "ECOGPerformanceStatus"
       },
@@ -272,9 +272,9 @@
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -288,25 +288,25 @@
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Prior treatment with Trastuzumab Deruxtecan",
       "mapping_confidence": 0.5,
       "source_text_fragment": "Entity index 6",
-      "mapping_rationale": "Mapped to CancerCondition as it relates to treatment history but does not fit a specific mCODE category.",
+      "mapping_rationale": "Mapped to CancerCondition as it relates to treatment history but does not fit a specific Mcode category.",
       "id": "b4c714a8-7594-4917-bafb-7bea01b3715a",
       "llm_source_text_fragment": "Entity index 6",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -320,25 +320,25 @@
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
       "value": "Pregnancy or breastfeeding",
       "mapping_confidence": 0.5,
       "source_text_fragment": "Entity index 8",
-      "mapping_rationale": "Mapped to CancerCondition as it relates to eligibility but does not fit a specific mCODE category.",
+      "mapping_rationale": "Mapped to CancerCondition as it relates to eligibility but does not fit a specific Mcode category.",
       "id": "337305dd-2b6c-40f9-b014-b317b5348c94",
       "llm_source_text_fragment": "Entity index 8",
       "source_references": []
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -352,9 +352,9 @@
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "GenomicVariant",
+      "Mcode_element": "GenomicVariant",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "genomicvariant",
         "display": "GenomicVariant"
       },
@@ -368,9 +368,9 @@
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -384,9 +384,9 @@
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },

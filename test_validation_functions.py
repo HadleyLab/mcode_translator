@@ -42,13 +42,13 @@ def create_test_gold_standard():
                     "mapped_elements": [
                         {
                             "source_entity_index": 0,
-                            "mcode_element": "CancerCondition",
+                            "Mcode_element": "CancerCondition",
                             "value": "Test Cancer",
                             "confidence": 0.95
                         },
                         {
                             "source_entity_index": 1,
-                            "mcode_element": "CancerRelatedMedication",
+                            "Mcode_element": "CancerRelatedMedication",
                             "value": "Test Medication",
                             "confidence": 0.9
                         }
@@ -91,17 +91,17 @@ def create_test_pipeline_result():
                 "entity_count": 2
             }
         },
-        "mcode_mappings": {
+        "Mcode_mappings": {
             "mapped_elements": [
                 {
                     "source_entity_index": 0,
-                    "mcode_element": "CancerCondition",
+                    "Mcode_element": "CancerCondition",
                     "value": "Test Cancer",
                     "confidence": 0.92
                 },
                 {
                     "source_entity_index": 1,
-                    "mcode_element": "CancerRelatedMedication",
+                    "Mcode_element": "CancerRelatedMedication",
                     "value": "Different Medication",
                     "confidence": 0.85
                 }
@@ -177,11 +177,11 @@ def _calculate_validation_metrics(pipeline_result, gold_standard_case):
     
     # Mapping validation
     def _mapping_match_func(actual_mapping, expected_mapping):
-        return (_fuzzy_text_match(actual_mapping["mcode_element"], expected_mapping["mcode_element"]) and
+        return (_fuzzy_text_match(actual_mapping["Mcode_element"], expected_mapping["Mcode_element"]) and
                 _fuzzy_text_match(actual_mapping["value"], expected_mapping["value"]))
     
     mapping_metrics = _calculate_precision_recall_f1(
-        pipeline_result["mcode_mappings"]["mapped_elements"],
+        pipeline_result["Mcode_mappings"]["mapped_elements"],
         gold_standard_case["expected_mcode_mappings"]["mapped_elements"],
         _mapping_match_func
     )

@@ -1,6 +1,6 @@
 # Prompt Optimization Framework Documentation
 
-A comprehensive framework for optimizing LLM prompts in clinical NLP and mCODE mapping pipelines.
+A comprehensive framework for optimizing LLM prompts in clinical NLP and Mcode mapping pipelines.
 
 ## Overview
 
@@ -15,7 +15,7 @@ The Prompt Optimization Framework provides a systematic approach to:
 
 ### Core Components
 
-1. **StrictPromptOptimizationFramework** - Main orchestrator class
+1. **PromptOptimizationFramework** - Main orchestrator class
 2. **APIConfig** - API endpoint configurations
 3. **PromptVariant** - Versioned prompt templates
 4. **BenchmarkResult** - Performance measurement storage
@@ -24,7 +24,7 @@ The Prompt Optimization Framework provides a systematic approach to:
 ### Supported Prompt Types
 
 - **NLP_EXTRACTION**: Clinical entity extraction from trial protocols
-- **MCODE_MAPPING**: Mapping extracted entities to mCODE standard
+- **MCODE_MAPPING**: Mapping extracted entities to Mcode standard
 
 ## Installation & Setup
 
@@ -56,7 +56,7 @@ python -m src.optimization.optimization_ui
 Manage multiple LLM API endpoints:
 
 ```python
-from src.optimization.strict_prompt_optimization_framework import APIConfig
+from src.optimization.prompt_optimization_framework import APIConfig
 
 config = APIConfig(
     name="deepseek_prod",
@@ -73,7 +73,7 @@ config = APIConfig(
 Create and version prompt templates:
 
 ```python
-from src.optimization.strict_prompt_optimization_framework import PromptVariant, PromptType
+from src.optimization.prompt_optimization_framework import PromptVariant, PromptType
 
 variant = PromptVariant(
     name="comprehensive_extraction",
@@ -98,10 +98,10 @@ framework.load_test_cases_from_file("test_data/clinical_trials.json")
 
 ```python
 import asyncio
-from src.optimization.strict_prompt_optimization_framework import StrictPromptOptimizationFramework, PromptType
+from src.optimization.prompt_optimization_framework import PromptOptimizationFramework, PromptType
 
 async def run_benchmark():
-    framework = StrictPromptOptimizationFramework()
+    framework = PromptOptimizationFramework()
     
     # Configure your API and prompts first
     # framework.add_api_config(...)
@@ -180,7 +180,7 @@ The NiceGUI-based interface provides:
 ### Using Existing Prompt Templates
 
 ```python
-from src.pipeline.nlp_engine import GENERIC_EXTRACTION_PROMPT_TEMPLATE
+from src.pipeline.nlp_extractor import GENERIC_EXTRACTION_PROMPT_TEMPLATE
 from src.pipeline.mcode_mapper import MCODE_MAPPING_PROMPT_TEMPLATE
 
 # Create variants from existing templates
@@ -200,9 +200,9 @@ framework.add_prompt_variant(PromptVariant(
 best_prompt = framework.get_best_performing_prompt(PromptType.NLP_EXTRACTION)
 
 # Integrate with existing NLP engine
-from src.pipeline.nlp_engine import NLPEngine
+from src.pipeline.nlp_extractor import NlpBase
 
-engine = NLPEngine()
+engine = NlpBase()
 engine.set_prompt_template(best_prompt.template)
 ```
 
@@ -214,7 +214,7 @@ The framework tracks:
 - **Success Rate**: Percentage of successful API calls
 - **Duration**: Processing time in milliseconds
 - **Entities Extracted**: Number of clinical entities identified
-- **Compliance Score**: mCODE standard compliance (0-1)
+- **Compliance Score**: Mcode standard compliance (0-1)
 
 ### Secondary Metrics
 - **Token Usage**: Input/output tokens consumed (tracked via unified token tracker)
@@ -251,7 +251,7 @@ The framework tracks:
 
 ```
 src/optimization/
-├── strict_prompt_optimization_framework.py  # Core framework implementation
+├── prompt_optimization_framework.py  # Core framework implementation
 ├── optimization_ui.py                # Web interface
 └── __init__.py
 
@@ -308,4 +308,4 @@ Planned features:
 
 ## License
 
-This framework is part of the mCODE Translator project. See the main project [`LICENSE`](../LICENSE) file for details.
+This framework is part of the Mcode Translator project. See the main project [`LICENSE`](../LICENSE) file for details.

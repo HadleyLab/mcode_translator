@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 from src.utils.model_loader import ModelLoader, load_model, model_loader
 from src.utils.config import Config
-from src.optimization.strict_prompt_optimization_framework import APIConfig
+from src.optimization.prompt_optimization_framework import APIConfig
 
 
 def test_strict_model_loading():

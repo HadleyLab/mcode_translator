@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
 from src.pipeline.fetcher import search_trials, get_full_study, calculate_total_studies
-from src.pipeline.strict_llm_base import StrictLLMBase
+from src.pipeline.llm_base import LlmBase
 from src.utils.api_manager import UnifiedAPIManager
 from src.optimization.benchmark_task_tracker import BenchmarkTaskTracker
 
@@ -54,7 +54,7 @@ def test_llm_caching():
     print("\n🧪 Testing LLM Caching...")
     
     # Create LLM instance
-    llm = StrictLLMBase(model_name="gpt-3.5-turbo")
+    llm = LlmBase(model_name="gpt-3.5-turbo")
     
     # Clear LLM cache to start fresh
     llm.llm_cache.clear_cache()
@@ -100,7 +100,7 @@ def test_across_models():
     
     for model in models:
         print(f"\nTesting model: {model}")
-        llm = StrictLLMBase(model_name=model)
+        llm = LlmBase(model_name=model)
         
         model_results = []
         for i, prompt in enumerate(prompts):

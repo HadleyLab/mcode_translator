@@ -4,12 +4,12 @@ import os
 from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
-from src.pipeline.nlp_engine import NLPEngine
+from pipeline.nlp_extractor import NlpBase
 
-class TestNLPEngine(unittest.TestCase):
+class TestNlpBase(unittest.TestCase):
 
     def setUp(self):
-        self.engine = NLPEngine()
+        self.engine = NlpBase()
 
     def test_initialization(self):
         self.assertIsNotNone(self.engine)

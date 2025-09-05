@@ -1,5 +1,5 @@
 """
-Prompt and Model Library Interface for mCODE Translator
+Prompt and Model Library Interface for Mcode Translator
 Provides setters and defaults for prompt templates and model configurations
 """
 
@@ -16,9 +16,9 @@ from src.utils import (
     ModelConfig,
     Config
 )
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
-from src.pipeline.mcode_mapper import StrictMcodeMapper
-from src.pipeline.nlp_engine import StrictNlpExtractor
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
+from src.pipeline.mcode_mapper import McodeMapper
+from pipeline.nlp_extractor import NlpLlm
 
 # Global instances for easy access
 prompt_loader = PromptLoader()
@@ -29,7 +29,7 @@ config = Config()
 class PromptModelInterface:
     """
     Interface for managing prompt templates and model configurations
-    Provides setters and defaults for the mCODE Translator pipeline
+    Provides setters and defaults for the Mcode Translator pipeline
     """
     
     def __init__(self):
@@ -63,7 +63,7 @@ class PromptModelInterface:
     
     def set_mapping_prompt(self, prompt_name: str) -> None:
         """
-        Set custom mapping prompt template for the mCODE mapper
+        Set custom mapping prompt template for the Mcode mapper
         
         Args:
             prompt_name: Name of the prompt template to use from the library
@@ -177,12 +177,12 @@ class PromptModelInterface:
     
     # Pipeline Configuration Methods
     
-    def create_pipeline_with_config(self) -> StrictDynamicExtractionPipeline:
+    def create_pipeline_with_config(self) -> NlpMcodePipeline:
         """
         Create a pipeline instance with the configured prompts and models
         
         Returns:
-            Configured StrictDynamicExtractionPipeline instance
+            Configured NlpMcodePipeline instance
             
         Raises:
             ValueError: If required configuration is missing
@@ -192,7 +192,7 @@ class PromptModelInterface:
         mapping_prompt_name = getattr(self, '_mapping_prompt_name', None)
         
         # Create pipeline with configured prompts
-        pipeline = StrictDynamicExtractionPipeline(
+        pipeline = NlpMcodePipeline(
             extraction_prompt_name=extraction_prompt_name,
             mapping_prompt_name=mapping_prompt_name
         )
@@ -202,17 +202,17 @@ class PromptModelInterface:
             model_config = self._model_config
             
             # Update NLP engine with model configuration
-            if hasattr(pipeline, 'nlp_engine'):
-                pipeline.nlp_engine.model_name = model_config.model_identifier
-                pipeline.nlp_engine.base_url = model_config.base_url
+            if hasattr(pipeline, 'nlp_extractor'):
+                pipeline.nlp_extractor.model_name = model_config.model_identifier
+                pipeline.nlp_extractor.base_url = model_config.base_url
                 # Update default parameters
                 default_params = model_config.default_parameters
                 if 'temperature' in default_params:
-                    pipeline.nlp_engine.temperature = default_params['temperature']
+                    pipeline.nlp_extractor.temperature = default_params['temperature']
                 if 'max_tokens' in default_params:
-                    pipeline.nlp_engine.max_tokens = default_params['max_tokens']
+                    pipeline.nlp_extractor.max_tokens = default_params['max_tokens']
             
-            # Update mCODE mapper with model configuration
+            # Update Mcode mapper with model configuration
             if hasattr(pipeline, 'llm_mapper'):
                 pipeline.llm_mapper.model_name = model_config.model_identifier
                 pipeline.llm_mapper.base_url = model_config.base_url
@@ -284,12 +284,12 @@ def set_model(model_key: str) -> None:
     prompt_model_interface.set_model(model_key)
 
 
-def create_configured_pipeline() -> StrictDynamicExtractionPipeline:
+def create_configured_pipeline() -> NlpMcodePipeline:
     """
     Create a pipeline instance with the global configuration
     
     Returns:
-        Configured StrictDynamicExtractionPipeline instance
+        Configured NlpMcodePipeline instance
     """
     return prompt_model_interface.create_pipeline_with_config()
 

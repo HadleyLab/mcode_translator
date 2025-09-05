@@ -14,12 +14,12 @@ def debug_validation():
     with open(gold_standard_path, 'r') as f:
         gold_data = json.load(f)
     
-    # Extract the mCODE mappings from the gold standard
+    # Extract the Mcode mappings from the gold standard
     gold_standard = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']
     
-    print("Gold Standard mCODE Elements:")
+    print("Gold Standard Mcode Elements:")
     for i, entity in enumerate(gold_standard):
-        print(f"  {i+1}. {entity.get('mcode_element', 'Unknown')}: {entity.get('value', 'No value')}")
+        print(f"  {i+1}. {entity.get('Mcode_element', 'Unknown')}: {entity.get('value', 'No value')}")
     
     # Sample extracted entities from benchmark result
     sample_extracted = [
@@ -49,12 +49,12 @@ def debug_validation():
         }
     ]
     
-    print("\nSample Extracted mCODE Elements:")
+    print("\nSample Extracted Mcode Elements:")
     for i, entity in enumerate(sample_extracted):
         print(f"  {i+1}. {entity.get('element_name', 'Unknown')}: {entity.get('value', 'No value')}")
     
     # Now let's manually calculate the metrics
-    gold_elements = set(m.get('mcode_element', '') for m in gold_standard)
+    gold_elements = set(m.get('Mcode_element', '') for m in gold_standard)
     extracted_elements = set(m.get('element_name', '') for m in sample_extracted)
     
     print(f"\nGold Elements: {gold_elements}")

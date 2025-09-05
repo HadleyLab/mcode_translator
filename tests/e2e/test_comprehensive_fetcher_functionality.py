@@ -38,7 +38,7 @@ def test_comprehensive_fetcher_functionality():
         pipeline = create_configured_pipeline()
         if pipeline:
             print("✅ Pipeline creation working correctly")
-            print(f"   🤖 NLP Engine Model: {getattr(pipeline.nlp_engine, 'model_name', 'Unknown')}")
+            print(f"   🤖 NLP Engine Model: {getattr(pipeline.nlp_extractor, 'model_name', 'Unknown')}")
             print(f"   🤖 LLM Mapper Model: {getattr(pipeline.llm_mapper, 'model_name', 'Unknown')}")
         else:
             print("❌ Pipeline creation failed")
@@ -88,7 +88,7 @@ def test_comprehensive_fetcher_functionality():
             if result:
                 print("✅ Process-trial functionality working correctly")
                 print(f"   📊 Extracted {len(result.extracted_entities)} entities")
-                print(f"   🗺️  Mapped {len(result.mcode_mappings)} mCODE elements")
+                print(f"   🗺️  Mapped {len(result.mcode_mappings)} Mcode elements")
                 print(f"   📈 Validation score: {result.validation_results.get('compliance_score', 0):.2%}")
             else:
                 print("❌ Process-trial functionality failed")

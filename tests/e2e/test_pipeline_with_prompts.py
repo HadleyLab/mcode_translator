@@ -56,7 +56,7 @@ def test_pipeline_with_prompts():
         result = pipeline.process_clinical_trial(sample_trial_data)
         
         logger.info(f"✓ Success! Extracted {len(result.extracted_entities)} entities")
-        logger.info(f"✓ Mapped {len(result.mcode_mappings)} mCODE elements")
+        logger.info(f"✓ Mapped {len(result.mcode_mappings)} Mcode elements")
         logger.info(f"✓ Compliance score: {result.validation_results['compliance_score']}")
         
     except Exception as e:
@@ -72,7 +72,7 @@ def test_pipeline_with_prompts():
         result = pipeline.process_clinical_trial(sample_trial_data)
         
         logger.info(f"✓ Success! Extracted {len(result.extracted_entities)} entities")
-        logger.info(f"✓ Mapped {len(result.mcode_mappings)} mCODE elements")
+        logger.info(f"✓ Mapped {len(result.mcode_mappings)} Mcode elements")
         
     except Exception as e:
         logger.error(f"❌ Custom extraction prompt failed: {str(e)}")
@@ -87,7 +87,7 @@ def test_pipeline_with_prompts():
         result = pipeline.process_clinical_trial(sample_trial_data)
         
         logger.info(f"✓ Success! Extracted {len(result.extracted_entities)} entities")
-        logger.info(f"✓ Mapped {len(result.mcode_mappings)} mCODE elements")
+        logger.info(f"✓ Mapped {len(result.mcode_mappings)} Mcode elements")
         
     except Exception as e:
         logger.error(f"❌ Custom mapping prompt failed: {str(e)}")
@@ -103,7 +103,7 @@ def test_pipeline_with_prompts():
         result = pipeline.process_clinical_trial(sample_trial_data)
         
         logger.info(f"✓ Success! Extracted {len(result.extracted_entities)} entities")
-        logger.info(f"✓ Mapped {len(result.mcode_mappings)} mCODE elements")
+        logger.info(f"✓ Mapped {len(result.mcode_mappings)} Mcode elements")
         
     except Exception as e:
         logger.error(f"❌ Both custom prompts failed: {str(e)}")

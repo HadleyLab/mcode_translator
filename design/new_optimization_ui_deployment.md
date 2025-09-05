@@ -29,8 +29,8 @@ The new UI requires the following packages:
 ### 1. Environment Setup
 ```bash
 # Create a new conda environment
-conda create -n mcode_optimization python=3.9
-conda activate mcode_optimization
+conda create -n Mcode_optimization python=3.9
+conda activate Mcode_optimization
 
 # Install core dependencies
 pip install -r requirements.txt

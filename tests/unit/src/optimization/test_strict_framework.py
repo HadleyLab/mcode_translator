@@ -11,13 +11,13 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.optimization.strict_prompt_optimization_framework import StrictPromptOptimizationFramework, APIConfig, PromptVariant, PromptType
+from src.optimization.prompt_optimization_framework import PromptOptimizationFramework, APIConfig, PromptVariant, PromptType
 
 def test_valid_config_validation():
     """Test that valid API configurations pass validation"""
     print("🧪 Testing valid API configuration validation...")
     
-    framework = StrictPromptOptimizationFramework()
+    framework = PromptOptimizationFramework()
     
     # Test valid API config
     valid_config = APIConfig(
@@ -39,7 +39,7 @@ def test_invalid_config_validation():
     """Test that invalid API configurations fail validation"""
     print("\n🧪 Testing invalid API configuration validation...")
     
-    framework = StrictPromptOptimizationFramework()
+    framework = PromptOptimizationFramework()
     
     # Test various invalid patterns
     invalid_configs = [
@@ -70,7 +70,7 @@ def test_config_loading_from_file():
     """Test loading valid configurations from file"""
     print("\n🧪 Testing configuration loading from valid file...")
     
-    framework = StrictPromptOptimizationFramework()
+    framework = PromptOptimizationFramework()
     
     # Load the valid config file we created
     config_file = "examples/config/valid_api_configs.json"

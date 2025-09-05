@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify DeepSeek API connectivity for the mCODE translator project.
+Test script to verify DeepSeek API connectivity for the Mcode translator project.
 """
 
 import os

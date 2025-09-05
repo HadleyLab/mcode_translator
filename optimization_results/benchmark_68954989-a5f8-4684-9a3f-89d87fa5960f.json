@@ -380,12 +380,12 @@
       }
     }
   ],
-  "mcode_mappings": [
+  "Mcode_mappings": [
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -399,9 +399,9 @@
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -415,9 +415,9 @@
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -431,9 +431,9 @@
     },
     {
       "resourceType": "Observation",
-      "mcode_element": "ECOGPerformanceStatus",
+      "Mcode_element": "ECOGPerformanceStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "ecogperformancestatus",
         "display": "ECOGPerformanceStatus"
       },
@@ -447,9 +447,9 @@
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },
@@ -463,9 +463,9 @@
     },
     {
       "resourceType": "Condition",
-      "mcode_element": "CancerCondition",
+      "Mcode_element": "CancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancercondition",
         "display": "CancerCondition"
       },
@@ -479,9 +479,9 @@
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },
@@ -495,9 +495,9 @@
     },
     {
       "resourceType": "MedicationStatement",
-      "mcode_element": "CancerRelatedMedication",
+      "Mcode_element": "CancerRelatedMedication",
       "code": {
-        "system": "http://hl7.org/fhir/us/mcode",
+        "system": "http://hl7.org/fhir/us/Mcode",
         "code": "cancerrelatedmedication",
         "display": "CancerRelatedMedication"
       },

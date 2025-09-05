@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / 'src'))
 from src.utils.api_manager import UnifiedAPIManager, APICache
 from src.utils.model_loader import ModelLoader, ModelConfig
 from src.utils.prompt_loader import PromptLoader
-from src.pipeline.strict_llm_base import StrictLLMBase
+from src.pipeline.llm_base import LlmBase
 
 
 class TestCachingAPIKeys(unittest.TestCase):

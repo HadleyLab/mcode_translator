@@ -63,7 +63,7 @@ A modern, strict, and forward-thinking web-based UI for the Prompt Optimization 
 - Default model management
 
 ### Framework Integration
-- Seamless connection to `StrictPromptOptimizationFramework`
+- Seamless connection to `PromptOptimizationFramework`
 - Real-time benchmark execution
 - Results persistence and retrieval
 

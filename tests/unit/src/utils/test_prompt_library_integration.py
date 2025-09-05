@@ -8,8 +8,8 @@ import json
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from src.optimization.strict_prompt_optimization_framework import (
-    StrictPromptOptimizationFramework, PromptVariant, PromptType, APIConfig
+from src.optimization.prompt_optimization_framework import (
+    PromptOptimizationFramework, PromptVariant, PromptType, APIConfig
 )
 from src.utils.prompt_loader import prompt_loader
 
@@ -35,7 +35,7 @@ class TestPromptLibraryIntegration:
 
     def test_prompt_variant_validation(self):
         """Test that prompt variants validate against prompt library"""
-        framework = StrictPromptOptimizationFramework()
+        framework = PromptOptimizationFramework()
         
         # Test valid prompt variant
         valid_variant = PromptVariant(
@@ -62,7 +62,7 @@ class TestPromptLibraryIntegration:
 
     def test_api_config_validation(self):
         """Test API configuration validation"""
-        framework = StrictPromptOptimizationFramework()
+        framework = PromptOptimizationFramework()
         
         # Test valid API config
         valid_config = APIConfig(
@@ -108,7 +108,7 @@ class TestPromptLibraryIntegration:
 
     def test_framework_integration(self):
         """Test full framework integration with prompt library"""
-        framework = StrictPromptOptimizationFramework()
+        framework = PromptOptimizationFramework()
         
         # Create a minimal test case
         framework.add_test_case("test_case_1", {

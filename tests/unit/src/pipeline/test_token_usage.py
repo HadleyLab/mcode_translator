@@ -105,7 +105,7 @@ def test_token_usage():
         "extraction_token_usage": extraction_token_usage,
         "aggregate_token_usage": aggregate_token_usage_dict,
         "entities_extracted": len(result.extracted_entities),
-        "mcode_mappings": len(result.mcode_mappings)
+        "Mcode_mappings": len(result.mcode_mappings)
     }
     
     results_file = results_dir / f"benchmark_{results['run_id']}.json"
@@ -128,7 +128,7 @@ def main():
         logger.info("\n📋 Test Results Summary:")
         logger.info(f"  Duration: {results['duration_seconds']:.2f} seconds")
         logger.info(f"  Entities extracted: {results['entities_extracted']}")
-        logger.info(f"  mCODE mappings: {results['mcode_mappings']}")
+        logger.info(f"  Mcode mappings: {results['Mcode_mappings']}")
         logger.info(f"  Total tokens: {results['aggregate_token_usage'].get('total_tokens', 0)}")
         logger.info(f"  Prompt tokens: {results['aggregate_token_usage'].get('prompt_tokens', 0)}")
         logger.info(f"  Completion tokens: {results['aggregate_token_usage'].get('completion_tokens', 0)}")

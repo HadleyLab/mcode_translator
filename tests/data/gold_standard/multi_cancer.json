@@ -33,22 +33,22 @@
         "mapped_elements": [
           {
             "text": "FOLFIRINOX",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "Gemcitabine",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "Nab-Paclitaxel",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "metastatic pancreatic adenocarcinoma",
-            "mcode_type": "CancerCondition",
+            "Mcode_type": "CancerCondition",
             "confidence": 0.95
           }
         ]
@@ -81,17 +81,17 @@
         "mapped_elements": [
           {
             "text": "PARP Inhibitor",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "platinum-based chemotherapy",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.85
           },
           {
             "text": "platinum-sensitive recurrent ovarian cancer",
-            "mcode_type": "CancerCondition",
+            "Mcode_type": "CancerCondition",
             "confidence": 0.95
           }
         ]
@@ -124,17 +124,17 @@
         "mapped_elements": [
           {
             "text": "TTFields",
-            "mcode_type": "Radiotherapy",
+            "Mcode_type": "Radiotherapy",
             "confidence": 0.8
           },
           {
             "text": "Temozolomide",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "newly diagnosed glioblastoma",
-            "mcode_type": "CancerCondition",
+            "Mcode_type": "CancerCondition",
             "confidence": 0.95
           }
         ]
@@ -173,22 +173,22 @@
         "mapped_elements": [
           {
             "text": "Immunotherapy",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.85
           },
           {
             "text": "anti-PD-L1 antibody",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "chemotherapy",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "muscle-invasive bladder cancer",
-            "mcode_type": "CancerCondition",
+            "Mcode_type": "CancerCondition",
             "confidence": 0.95
           }
         ]
@@ -221,17 +221,17 @@
         "mapped_elements": [
           {
             "text": "CAR-T Cell Therapy",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "BCMA-directed CAR-T cells",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "triple-class refractory multiple myeloma",
-            "mcode_type": "CancerCondition",
+            "Mcode_type": "CancerCondition",
             "confidence": 0.95
           }
         ]
@@ -264,17 +264,17 @@
         "mapped_elements": [
           {
             "text": "Anti-PD-1",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "Cetuximab",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "platinum-refractory recurrent/metastatic head and neck squamous cell carcinoma",
-            "mcode_type": "CancerCondition",
+            "Mcode_type": "CancerCondition",
             "confidence": 0.95
           }
         ]
@@ -313,22 +313,22 @@
         "mapped_elements": [
           {
             "text": "Immunotherapy",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.85
           },
           {
             "text": "Anti-PD-1 antibody",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "chemotherapy",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "advanced gastric or gastroesophageal junction adenocarcinoma",
-            "mcode_type": "CancerCondition",
+            "Mcode_type": "CancerCondition",
             "confidence": 0.95
           }
         ]
@@ -373,27 +373,27 @@
         "mapped_elements": [
           {
             "text": "IO/TKI Combination",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.85
           },
           {
             "text": "Immunotherapy",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.85
           },
           {
             "text": "Tyrosine Kinase Inhibitor",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "Sunitinib",
-            "mcode_type": "CancerRelatedMedicationAdministration",
+            "Mcode_type": "CancerRelatedMedicationAdministration",
             "confidence": 0.9
           },
           {
             "text": "advanced renal cell carcinoma",
-            "mcode_type": "CancerCondition",
+            "Mcode_type": "CancerCondition",
             "confidence": 0.95
           }
         ]

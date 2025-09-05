@@ -1,6 +1,6 @@
 """
 STRICT NLP Extractor - No fallbacks, exception-based error handling
-Uses shared StrictLLMBase for LLM operations
+Uses shared LlmBase for LLM operations
 """
 
 import json
@@ -8,8 +8,8 @@ import re
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 
-from .nlp_base import ProcessingResult, NLPEngine
-from .strict_llm_base import StrictLLMBase, LLMExecutionError, LLMResponseError, LLMCallMetrics
+from .nlp_base import ProcessingResult, NlpBase
+from .llm_base import LlmBase, LlmExecutionError, LlmResponseError, LLMCallMetrics
 from src.utils import (
     Loggable,
     load_prompt,
@@ -20,12 +20,12 @@ from src.utils.prompt_loader import PromptLoader
 from src.utils.prompt_loader import PromptLoader
 
 
-class NLPConfigurationError(Exception):
+class NlpConfigurationError(Exception):
     """Exception raised for NLP configuration issues"""
     pass
 
 
-class NPLExtractionError(Exception):
+class NlpExtractionError(Exception):
     """Exception raised for NLP extraction failures"""
     pass
 
@@ -44,11 +44,11 @@ class EntityValidationResult:
             self.warnings = []
 
 
-class StrictNlpExtractor(NLPEngine, StrictLLMBase):
+class NlpLlm(NlpBase, LlmBase):
     """
     STRICT NLP Extractor for medical entity extraction from clinical text
     No fallbacks, explicit error handling, and strict validation
-    Inherits from both NLPEngine abstract class and StrictLLMBase
+    Inherits from both NlpBase abstract class and LlmBase
     """
     
     # Default prompt template - can be overridden by pipeline
@@ -70,8 +70,8 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             max_tokens: Maximum tokens for response
             
         Raises:
-            NLPConfigurationError: If configuration is invalid
-            LLMConfigurationError: If LLM configuration fails
+            NlpConfigurationError: If configuration is invalid
+            LlmConfigurationError: If LLM configuration fails
         """
         try:
             # Get default values from unified configuration (strict infrastructure - no fallbacks)
@@ -80,8 +80,8 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             final_temperature = temperature if temperature is not None else config.get_temperature()
             final_max_tokens = max_tokens if max_tokens is not None else config.get_max_tokens()
             
-            # Initialize StrictLLMBase first
-            StrictLLMBase.__init__(
+            # Initialize LlmBase first
+            LlmBase.__init__(
                 self,
                 model_name=final_model_name,
                 temperature=final_temperature,
@@ -89,8 +89,8 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
                 response_format={"type": "json_object"}
             )
             
-            # Initialize NLPEngine
-            NLPEngine.__init__(self)
+            # Initialize NlpBase
+            NlpBase.__init__(self)
             
             # Initialize Loggable
             Loggable.__init__(self)
@@ -105,7 +105,7 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             self.logger.info(f"   📏 Max tokens: {final_max_tokens}")
             
         except Exception as e:
-            raise NLPConfigurationError(f"Failed to initialize StrictNlpExtractor: {str(e)}")
+            raise NlpConfigurationError(f"Failed to initialize NlpLlm: {str(e)}")
     
     def extract_entities(self, clinical_text: str, section_context: Dict[str, Any] = None) -> ProcessingResult:
         """
@@ -120,9 +120,9 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             
         Raises:
             ValueError: If clinical text is invalid
-            NPLExtractionError: If extraction fails
-            LLMExecutionError: If LLM API call fails
-            LLMResponseError: If LLM response parsing fails
+            NlpExtractionError: If extraction fails
+            LlmExecutionError: If LLM API call fails
+            LlmResponseError: If LLM response parsing fails
         """
         # Validate input with strict error handling
         self._validate_clinical_text(clinical_text)
@@ -156,10 +156,10 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             self.logger.info(f"   📊 Extraction token usage - Prompt: {metrics.prompt_tokens}, Completion: {metrics.completion_tokens}, Total: {metrics.total_tokens}")
             
             return parsed_result
-        except (LLMExecutionError, LLMResponseError) as e:
-            raise NPLExtractionError(f"LLM-based extraction failed: {str(e)}")
+        except (LlmExecutionError, LlmResponseError) as e:
+            raise NlpExtractionError(f"LLM-based extraction failed: {str(e)}")
         except Exception as e:
-            raise NPLExtractionError(f"Unexpected error during extraction: {str(e)}")
+            raise NlpExtractionError(f"Unexpected error during extraction: {str(e)}")
     
     def _validate_clinical_text(self, clinical_text: str) -> None:
         """Validate clinical text with strict error handling"""
@@ -183,7 +183,7 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             A tuple containing the LLM response text and call metrics
             
         Raises:
-            LLMExecutionError: If API call fails
+            LlmExecutionError: If API call fails
         """
         cache_key_data = {
             "prompt": prompt,
@@ -198,7 +198,7 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
         try:
             return self._call_llm_api(messages, cache_key_data)
             
-        except LLMExecutionError as e:
+        except LlmExecutionError as e:
             self.logger.error(f"❌ LLM extraction call failed: {str(e)}")
             raise
     
@@ -216,7 +216,7 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             ProcessingResult with parsed entities
             
         Raises:
-            LLMResponseError: If JSON parsing fails or response is invalid
+            LlmResponseError: If JSON parsing fails or response is invalid
         """
         try:
             # Parse and validate JSON response
@@ -248,26 +248,26 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             
             return ProcessingResult(
                 features=features,
-                mcode_mappings={},
+                Mcode_mappings={},
                 metadata=parsed.get('metadata', {}),
                 entities=processed_entities,
                 error=None
             )
             
-        except (LLMResponseError, ValueError) as e:
+        except (LlmResponseError, ValueError) as e:
             self.logger.error(f"❌ Failed to parse LLM response: {str(e)}")
-            raise LLMResponseError(f"Parsing failed: {str(e)}")
+            raise LlmResponseError(f"Parsing failed: {str(e)}")
     
     def _validate_extraction_response_structure(self, parsed_response: Dict[str, Any]) -> None:
         """Validate the structure of the extraction response"""
         if not isinstance(parsed_response, dict):
-            raise LLMResponseError("LLM response must be a JSON object")
+            raise LlmResponseError("LLM response must be a JSON object")
         
         if 'entities' not in parsed_response:
-            raise LLMResponseError("Missing 'entities' field in LLM response")
+            raise LlmResponseError("Missing 'entities' field in LLM response")
         
         if not isinstance(parsed_response['entities'], list):
-            raise LLMResponseError("'entities' must be an array")
+            raise LlmResponseError("'entities' must be an array")
     
     def _process_entities_with_validation(self, entities: List[Dict[str, Any]], 
                                         original_text: str,
@@ -284,7 +284,7 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
                 )
                 processed_entities.append(enhanced_entity)
             else:
-                raise NPLExtractionError(f"Invalid entity: {validation_result.errors}")
+                raise NlpExtractionError(f"Invalid entity: {validation_result.errors}")
         
         return processed_entities
     
@@ -386,7 +386,7 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
     
     def process_text(self, text: str) -> ProcessingResult:
         """
-        Process clinical text and extract entities - implements NLPEngine abstract method
+        Process clinical text and extract entities - implements NlpBase abstract method
         
         Args:
             text: Clinical text to process
@@ -396,13 +396,13 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             
         Raises:
             ValueError: If text is invalid
-            NPLExtractionError: If extraction fails
+            NlpExtractionError: If extraction fails
         """
         return self.extract_entities(text)
     
     def process_request(self, clinical_text: str, section_context: Dict[str, Any] = None) -> ProcessingResult:
         """
-        Process LLM request for entity extraction - implements StrictLLMBase abstract method
+        Process LLM request for entity extraction - implements LlmBase abstract method
         
         Args:
             clinical_text: Clinical text to process
@@ -413,9 +413,9 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
             
         Raises:
             ValueError: If clinical text is invalid
-            NPLExtractionError: If extraction fails
-            LLMExecutionError: If LLM API call fails
-            LLMResponseError: If LLM response parsing fails
+            NlpExtractionError: If extraction fails
+            LlmExecutionError: If LLM API call fails
+            LlmResponseError: If LLM response parsing fails
         """
         return self.extract_entities(clinical_text, section_context)
 
@@ -427,15 +427,15 @@ class StrictNlpExtractor(NLPEngine, StrictLLMBase):
 # Factory function for backward compatibility (with deprecation warning)
 def create_nlp_engine(model_name: str = None,
                      temperature: float = None,
-                     max_tokens: int = None) -> StrictNlpExtractor:
+                     max_tokens: int = None) -> NlpLlm:
     """Create a strict NLP extractor instance"""
     import warnings
     warnings.warn(
-        "create_nlp_engine() is deprecated. Use StrictNlpExtractor() directly for strict error handling.",
+        "create_nlp_engine() is deprecated. Use NlpLlm() directly for strict error handling.",
         DeprecationWarning,
         stacklevel=2
     )
-    return StrictNlpExtractor(
+    return NlpLlm(
         model_name=model_name,
         temperature=temperature,
         max_tokens=max_tokens

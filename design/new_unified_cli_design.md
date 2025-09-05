@@ -1,7 +1,7 @@
 # New Unified CLI Design
 
 ## Overview
-This document outlines the design for a new unified command-line interface that will obsolete the current `mcode-cli.py` and provide comprehensive optimization capabilities across all prompts and models.
+This document outlines the design for a new unified command-line interface that will obsolete the current `Mcode-cli.py` and provide comprehensive optimization capabilities across all prompts and models.
 
 ## Current CLI Limitations
 The current CLI has several limitations:
@@ -19,7 +19,7 @@ The current CLI has several limitations:
 
 ## Command Structure
 ```
-mcode-optimize [OPTIONS] COMMAND [ARGS]...
+Mcode-optimize [OPTIONS] COMMAND [ARGS]...
 
 Options:
  --help  Show this message and exit.
@@ -38,7 +38,7 @@ Commands:
 
 ### 1. run
 ```
-mcode-optimize run [OPTIONS]
+Mcode-optimize run [OPTIONS]
 
 Run full optimization across all prompts and models.
 
@@ -55,7 +55,7 @@ Options:
 
 ### 2. set-default
 ```
-mcode-optimize set-default [OPTIONS]
+Mcode-optimize set-default [OPTIONS]
 
 Set the best performing prompt as default for its type.
 
@@ -70,7 +70,7 @@ Options:
 
 ### 3. view-results
 ```
-mcode-optimize view-results [OPTIONS]
+Mcode-optimize view-results [OPTIONS]
 
 View optimization results and best combinations.
 
@@ -85,7 +85,7 @@ Options:
 
 ### 4. list-prompts
 ```
-mcode-optimize list-prompts [OPTIONS]
+Mcode-optimize list-prompts [OPTIONS]
 
 List available prompts in the library.
 
@@ -99,7 +99,7 @@ Options:
 
 ### 5. show-prompt
 ```
-mcode-optimize show-prompt [OPTIONS] PROMPT_NAME
+Mcode-optimize show-prompt [OPTIONS] PROMPT_NAME
 
 Show the content of a specific prompt.
 
@@ -112,7 +112,7 @@ Options:
 
 ### 6. benchmark
 ```
-mcode-optimize benchmark [OPTIONS]
+Mcode-optimize benchmark [OPTIONS]
 
 Run performance benchmarks.
 
@@ -128,7 +128,7 @@ Options:
 
 ### 7. validate
 ```
-mcode-optimize validate [OPTIONS]
+Mcode-optimize validate [OPTIONS]
 
 Validate against gold standard.
 

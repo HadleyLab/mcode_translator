@@ -8,10 +8,10 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 @dataclass
-class StrictPipelineResult:
+class PipelineResult:
     """Comprehensive result from a processing pipeline"""
     extracted_entities: List[Dict[str, Any]]
-    mcode_mappings: List[Dict[str, Any]]
+    Mcode_mappings: List[Dict[str, Any]]
     source_references: List[Any] 
     validation_results: Dict[str, Any]
     metadata: Dict[str, Any]
@@ -26,7 +26,7 @@ class ProcessingPipeline(ABC):
     """
 
     @abstractmethod
-    def process_clinical_trial(self, trial_data: Dict[str, Any]) -> StrictPipelineResult:
+    def process_clinical_trial(self, trial_data: Dict[str, Any]) -> PipelineResult:
         """
         Process complete clinical trial data through the pipeline.
 
@@ -34,6 +34,6 @@ class ProcessingPipeline(ABC):
             trial_data: Raw clinical trial data from API or source.
 
         Returns:
-            StrictPipelineResult with extracted entities, mCODE mappings, and source tracking.
+            PipelineResult with extracted entities, Mcode mappings, and source tracking.
         """
         pass
