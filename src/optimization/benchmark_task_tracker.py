@@ -28,6 +28,9 @@ from src.pipeline import (
     get_global_task_queue, initialize_task_queue, shutdown_task_queue
 )
 
+# Import cache management
+from src.utils.api_manager import APICache
+
 # Import existing components for data loading only
 from src.optimization.prompt_optimization_framework import (
     PromptOptimizationFramework, PromptType,
@@ -72,13 +75,14 @@ class BenchmarkTaskTrackerUI:
         self.stop_benchmark_button = None
         self.benchmark_progress = None
         self.benchmark_status = None
+        self.worker_filter = None
         
         # Benchmark state
         self.is_benchmark_running = False
         self.benchmark_cancelled = False
         self.benchmark_results = []
         self.validation_results = []
-        self.preloaded_validations = []
+        self.active_validations: Dict[str, Dict] = {}  # task_id -> validation data
         
         # Dark mode
         self.dark_mode = ui.dark_mode()
@@ -211,6 +215,12 @@ class BenchmarkTaskTrackerUI:
                 
                 # Concurrency selection
                 self.concurrency_selection = ui.number('Concurrency Level', value=5, min=1, max=10).classes('w-1/4')
+                
+                # Worker filter
+                self.worker_filter = ui.input(
+                    placeholder='Filter by worker ID...',
+                    on_change=lambda: self._update_validation_display()
+                ).classes('w-1/4').tooltip('Filter tasks by worker ID')
             
             with ui.row().classes('w-full gap-2 mt-4'):
                 self.run_benchmark_button = ui.button('Run Benchmark', on_click=self._run_benchmark).props('icon=play_arrow color=positive')
@@ -251,94 +261,82 @@ class BenchmarkTaskTrackerUI:
             # Use refreshable function directly
             self._update_validation_display()
     
-    def _load_initial_validations(self) -> None:
-        """Preload all validations before running benchmarks"""
-        self.preloaded_validations = []
+    def _create_validation_entry(self, task: BenchmarkTask) -> Dict[str, Any]:
+        """Create a validation entry for a task"""
+        prompt_type_str = task.prompt_type
+        pipeline_type = 'McodePipeline' if prompt_type_str == 'DIRECT_MCODE' else 'NlpMcodePipeline'
         
-        prompt_keys = list(self.available_prompts.keys())
-        model_keys = list(self.available_models.keys())
-        trial_ids = list(self.trial_data.keys())
-        
-        for prompt_key in prompt_keys:
-            prompt_info = self.available_prompts.get(prompt_key)
-            prompt_name = prompt_info.get('name', prompt_key) if prompt_info else prompt_key
-            prompt_type_str = prompt_info.get('prompt_type', 'NLP_EXTRACTION') if prompt_info else 'NLP_EXTRACTION'
-            pipeline_type = 'McodePipeline' if prompt_type_str == 'DIRECT_MCODE' else 'NlpMcodePipeline'
-            
-            for model_key in model_keys:
-                model_info = self.available_models.get(model_key)
-                model_name = model_info.get('name', model_key) if model_info else model_key
-                
-                for trial_id in trial_ids:
-                    self.preloaded_validations.append({
-                        'prompt': prompt_name,
-                        'model': model_name,
-                        'trial': trial_id,
-                        'status': 'Pending',
-                        'details': 'Waiting to run',
-                        'status_icon': '🔵',
-                        'precision': None,
-                        'recall': None,
-                        'f1_score': None,
-                        'duration_ms': None,
-                        'token_usage': None,
-                        'compliance_score': None,
-                        'log': '🕒 Pending',
-                        'detailed_log': '🕒 Pending',
-                        'error_message': '',
-                        'pipeline_type': pipeline_type,
-                        'live_logs': []
-                    })
-        
-        # Refresh the validation display to show initial state
-        self._update_validation_display.refresh()
-        self._update_results_display.refresh()
+        return {
+            'prompt': task.prompt_name,
+            'model': task.model_name,
+            'trial': task.trial_id,
+            'status': 'Processing',
+            'details': 'Queued for execution',
+            'status_icon': '🔄',
+            'precision': None,
+            'recall': None,
+            'f1_score': None,
+            'duration_ms': None,
+            'token_usage': None,
+            'compliance_score': None,
+            'log': f'INFO: Queued {task.prompt_name} + {task.model_name} on {task.trial_id}',
+            'detailed_log': f'🕒 Queued {task.prompt_name} + {task.model_name} on {task.trial_id}',
+            'error_message': '',
+            'pipeline_type': pipeline_type,
+            'live_logs': [],
+            'task_id': task.task_id,
+            'worker_id': task.worker_id or 'N/A',
+            'pipeline_type': task.pipeline_type or pipeline_type,
+            'optimization_parameters': task.optimization_parameters or {},
+            'prompt_info': task.prompt_info or {}
+        }
     
-    def _update_preloaded_validation_status(self, prompt_name: str, model_name: str, trial_id: str,
-                                           status: str, details: str, status_icon: str,
-                                           precision: Optional[str] = None, recall: Optional[str] = None, f1_score: Optional[str] = None,
-                                           duration_ms: Optional[str] = None, token_usage: Optional[str] = None, compliance_score: Optional[str] = None,
-                                           log: str = '', error_message: str = '', pipeline_type: str = 'NlpMcodePipeline',
-                                           live_log_entry: str = None, live_logs: List[str] = None) -> None:
-        """Update the status of a preloaded validation"""
-        for validation in self.preloaded_validations:
-            if (validation['prompt'] == prompt_name and
-                validation['model'] == model_name and
-                validation['trial'] == trial_id):
-                validation.update({
-                    'status': status,
-                    'details': details,
-                    'status_icon': status_icon,
-                    'precision': precision if precision is not None else None,
-                    'recall': recall if recall is not None else None,
-                    'f1_score': f1_score if f1_score is not None else None,
-                    'compliance_score': compliance_score if compliance_score is not None else None,
-                    'duration_ms': duration_ms if duration_ms is not None else None,
-                    'token_usage': token_usage if token_usage is not None else None,
-                    'log': log,
-                    'error_message': error_message,
-                    'pipeline_type': pipeline_type
-                })
-                
-                if live_log_entry:
-                    validation['live_logs'].append(live_log_entry)
-                    if len(validation['live_logs']) > 20:
-                        validation['live_logs'] = validation['live_logs'][-20:]
-                
-                # If we have a list of live logs, update the entire list
-                if live_logs is not None:
-                    validation['live_logs'] = live_logs
-                
-                timestamp = datetime.now().strftime("%H:%M:%S")
-                if status == 'Processing':
-                    validation['detailed_log'] = f"[{timestamp}] 🔄 {log}"
-                elif status == 'Success':
-                    validation['detailed_log'] = f"[{timestamp}] ✅ {log}"
-                elif status == 'Failed':
-                    validation['detailed_log'] = f"[{timestamp}] ❌ {details}\nError: {error_message}"
-                else:
-                    validation['detailed_log'] = f"[{timestamp}] {log}"
-                break
+    def _update_validation_status(self, task: BenchmarkTask, status: str, details: str,
+                                 status_icon: str, log: str = '', error_message: str = '',
+                                 live_log_entry: str = None) -> None:
+        """Update the status of a validation entry"""
+        if task.task_id not in self.active_validations:
+            # Create new validation entry if it doesn't exist
+            self.active_validations[task.task_id] = self._create_validation_entry(task)
+        
+        validation = self.active_validations[task.task_id]
+        validation.update({
+            'status': status,
+            'details': details,
+            'status_icon': status_icon,
+            'log': log,
+            'error_message': error_message,
+            'worker_id': task.worker_id or 'N/A',
+            'pipeline_type': task.pipeline_type or validation['pipeline_type'],
+            'optimization_parameters': task.optimization_parameters or {},
+            'prompt_info': task.prompt_info or {}
+        })
+        
+        # Update metrics if task completed successfully
+        if status == 'Success':
+            validation.update({
+                'precision': f"{task.precision:.3f}" if task.precision is not None else 'N/A',
+                'recall': f"{task.recall:.3f}" if task.recall is not None else 'N/A',
+                'f1_score': f"{task.f1_score:.3f}" if task.f1_score is not None else 'N/A',
+                'compliance_score': f"{task.compliance_score:.2%}" if task.compliance_score is not None else 'N/A',
+                'duration_ms': f"{task.duration_ms:.1f}" if task.duration_ms else 'N/A',
+                'token_usage': str(task.token_usage) if task.token_usage else 'N/A',
+            })
+        
+        if live_log_entry:
+            validation['live_logs'].append(live_log_entry)
+            if len(validation['live_logs']) > 20:
+                validation['live_logs'] = validation['live_logs'][-20:]
+        
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        if status == 'Processing':
+            validation['detailed_log'] = f"[{timestamp}] 🔄 {log}"
+        elif status == 'Success':
+            validation['detailed_log'] = f"[{timestamp}] ✅ {log}"
+        elif status == 'Failed':
+            validation['detailed_log'] = f"[{timestamp}] ❌ {details}\nError: {error_message}"
+        else:
+            validation['detailed_log'] = f"[{timestamp}] {log}"
         
         # Refresh displays after updating validation status using NiceGUI's refreshable pattern
         self._update_validation_display.refresh()
@@ -351,8 +349,9 @@ class BenchmarkTaskTrackerUI:
         selected_models = self.model_selection.value or []
         selected_trials = self.trial_selection.value or []
         selected_pipelines = self.pipeline_selection.value or []
+        worker_filter = self.worker_filter.value or ''
         
-        validation_data = self.preloaded_validations
+        validation_data = list(self.active_validations.values())
         filtered_results = validation_data
         
         if selected_prompts:
@@ -369,33 +368,35 @@ class BenchmarkTaskTrackerUI:
             filtered_results = [r for r in filtered_results if r.get('trial') in selected_trials]
         if selected_pipelines:
             filtered_results = [r for r in filtered_results if r.get('pipeline_type') in selected_pipelines]
+        if worker_filter:
+            filtered_results = [r for r in filtered_results if worker_filter.lower() in str(r.get('worker_id', '')).lower()]
         
         def status_priority(status):
-            if status == 'Pending': return 2
-            elif status == 'Processing': return 1
+            if status == 'Processing': return 1
             else: return 0
         
-        filtered_results.sort(key=lambda x: status_priority(x.get('status', 'Pending')))
+        filtered_results.sort(key=lambda x: status_priority(x.get('status', 'Completed')))
         
         if not filtered_results:
             ui.label('No validation results match current filters.').classes('text-gray-500 italic')
         else:
-            active_results = [r for r in filtered_results if r.get('status') != 'Pending']
-            ui.label(f'Showing {len(active_results)} active results ({len(filtered_results)} total)').classes('text-sm text-gray-500 mb-2')
+            ui.label(f'Showing {len(filtered_results)} results').classes('text-sm text-gray-500 mb-2')
             
             # Create a compact table with all benchmark stats using NiceGUI's grid component
-            with ui.grid(columns=11).classes('w-full gap-x-2 gap-y-1 items-center'):
+            with ui.grid(columns=13).classes('w-full gap-x-2 gap-y-1 items-center'):
                 # Header row
                 ui.label('Status').classes('font-bold text-xs')
                 ui.label('Prompt').classes('font-bold text-xs')
                 ui.label('Model').classes('font-bold text-xs')
                 ui.label('Pipeline').classes('font-bold text-xs')
                 ui.label('Trial').classes('font-bold text-xs')
+                ui.label('Worker').classes('font-bold text-xs')
                 ui.label('F1').classes('font-bold text-xs')
                 ui.label('Precision').classes('font-bold text-xs')
                 ui.label('Recall').classes('font-bold text-xs')
                 ui.label('Time').classes('font-bold text-xs')
                 ui.label('Tokens').classes('font-bold text-xs')
+                ui.label('Compliance').classes('font-bold text-xs')
                 ui.label('Log').classes('font-bold text-xs')
 
                 # Data rows
@@ -407,12 +408,13 @@ class BenchmarkTaskTrackerUI:
                     elif result['status'] == 'Processing':
                         ui.spinner('dots', color='orange').tooltip('🔄 Task in progress')
                     else:
-                        ui.icon('pending', color='blue').classes('text-base').tooltip('🔵 Task pending')
+                        ui.icon('pending', color='blue').classes('text-base').tooltip('🔵 Task completed')
                     
                     ui.label(result['prompt']).classes('text-xs truncate')
                     ui.label(result['model']).classes('text-xs truncate')
                     ui.label(result['pipeline_type']).classes('text-xs truncate')
                     ui.label(result['trial']).classes('text-xs truncate')
+                    ui.label(result.get('worker_id', 'N/A')).classes('text-xs truncate')
                     
                     ui.label(result.get('f1_score', 'N/A')).classes('text-xs')
                     ui.label(result.get('precision', 'N/A')).classes('text-xs')
@@ -437,6 +439,8 @@ class BenchmarkTaskTrackerUI:
                         token_str = "N/A"
                     ui.label(token_str).classes('text-xs')
 
+                    ui.label(result.get('compliance_score', 'N/A')).classes('text-xs')
+
                     if result['status'] == 'Failed':
                         log_text = f"❌ {result.get('error_message', 'Unknown error')}"
                         log_color = 'text-red-600'
@@ -444,8 +448,8 @@ class BenchmarkTaskTrackerUI:
                         log_text = result['live_logs'][-1]
                         log_color = 'text-gray-500'
                     else:
-                        log_text = '🕒 Pending'
-                        log_color = 'text-gray-400'
+                        log_text = '✅ Completed'
+                        log_color = 'text-green-600'
                     ui.label(log_text).classes(f'text-xs truncate {log_color}')
     
     def _setup_live_logger(self) -> None:
@@ -542,23 +546,24 @@ class BenchmarkTaskTrackerUI:
                         trial_data=trial_data,
                         prompt_type=prompt_type,
                         expected_entities=expected_entities,
-                        expected_mappings=expected_mappings
+                        expected_mappings=expected_mappings,
+                        pipeline_type='McodePipeline' if prompt_type == 'DIRECT_MCODE' else 'NlpMcodePipeline',
+                        optimization_parameters={
+                            'metric': self.metric_selection.value,
+                            'top_n': self.top_n_selection.value,
+                            'concurrency': self.concurrency_selection.value
+                        },
+                        prompt_info={
+                            'prompt_key': prompt_key,
+                            'prompt_name': prompt_name,
+                            'prompt_type': prompt_type
+                        }
                     )
                     
                     # Add task to centralized queue with callback
                     await self.task_queue.add_task(task, self._task_completion_callback)
                     
-                    # Update UI for pending task
-                    self._update_preloaded_validation_status(
-                        prompt_name, model_name, trial_id,
-                        'Processing',
-                        'Queued for execution',
-                        '🔄',
-                        log=f'INFO: Queued {prompt_name} + {model_name} on {trial_id}',
-                        pipeline_type='McodePipeline' if prompt_type == 'DIRECT_MCODE' else 'NlpMcodePipeline'
-                    )
-                    # Refresh validation display to show queued tasks using NiceGUI's refreshable pattern
-                    self._update_validation_display.refresh()
+                    # Update UI for pending task - validation entry will be created when task is processed
                 
                 if self.benchmark_cancelled:
                     break
@@ -581,25 +586,23 @@ class BenchmarkTaskTrackerUI:
         self.benchmark_results.append(task)
         status = 'Success' if task.status == TaskStatus.SUCCESS else 'Failed'
         
-        # Log completion
-        log_message = f"[{status.upper()}] Task {task.task_id} completed. Prompt: {task.prompt_name}, Model: {task.model_name}"
+        # Log completion with worker information
+        worker_info = f" (Worker: {task.worker_id})" if task.worker_id else ""
+        log_message = f"[{status.upper()}] Task {task.task_id} completed. Prompt: {task.prompt_name}, Model: {task.model_name}{worker_info}"
         if self.live_log_display:
             self.live_log_display.push(log_message)
 
         # Update validation status
-        self._update_preloaded_validation_status(
-            prompt_name=task.prompt_name,
-            model_name=task.model_name,
-            trial_id=task.trial_id,
+        details = f"F1={task.f1_score:.3f}" if task.status == TaskStatus.SUCCESS else task.error_message
+        status_icon = '✅' if status == 'Success' else '❌'
+        log_message = f"Task {task.task_id} completed. Prompt: {task.prompt_name}, Model: {task.model_name}"
+        
+        self._update_validation_status(
+            task=task,
             status=status,
-            details=f"F1={task.f1_score:.3f}" if task.status == TaskStatus.SUCCESS else task.error_message,
-            status_icon='✅' if status == 'Success' else '❌',
-            precision=f"{task.precision:.3f}" if task.status == TaskStatus.SUCCESS and task.precision is not None else 'N/A',
-            recall=f"{task.recall:.3f}" if task.status == TaskStatus.SUCCESS and task.recall is not None else 'N/A',
-            f1_score=f"{task.f1_score:.3f}" if task.status == TaskStatus.SUCCESS and task.f1_score is not None else 'N/A',
-            compliance_score=f"{task.compliance_score:.2%}" if task.status == TaskStatus.SUCCESS and task.compliance_score is not None else 'N/A',
-            duration_ms=f"{task.duration_ms:.1f}" if task.duration_ms else 'N/A',
-            token_usage=str(task.token_usage) if task.token_usage else 'N/A',
+            details=details,
+            status_icon=status_icon,
+            log=log_message,
             error_message=task.error_message or '',
         )
 
@@ -658,7 +661,7 @@ class BenchmarkTaskTrackerUI:
         if self.trial_selection:
             self.trial_selection.set_value(list(self.trial_data.keys()))
         
-        self._load_initial_validations()
+        self.active_validations.clear()
         if self.live_log_display:
             self.live_log_display.clear()
         ui.notify("Interface reset to initial state", type='positive')
@@ -727,6 +730,40 @@ class BenchmarkTaskTrackerUI:
                 ui.label(f"{row['recall']:.3f}")
                 ui.label(f"{row['duration_ms']:.1f}")
                 ui.label(f"{int(row['token_usage'])}")
+
+    def display_cache_stats(self) -> None:
+        """Display cache statistics for both API and LLM caches"""
+        from src.utils.config import Config
+        config = Config()
+        
+        # Create cache instances using config methods
+        api_cache = APICache(config.get_api_cache_directory())
+        llm_cache = APICache(".api_cache/llm")
+        
+        # Get statistics
+        api_stats = api_cache.get_stats()
+        llm_stats = llm_cache.get_stats()
+        
+        # Display statistics
+        ui.notify("Displaying cache statistics...")
+        print(f"API Cache Stats: {api_stats}")
+        print(f"LLM Cache Stats: {llm_stats}")
+
+    def clear_caches(self) -> None:
+        """Clear both API and LLM caches"""
+        from src.utils.config import Config
+        config = Config()
+        
+        # Create cache instances using config methods
+        api_cache = APICache(config.get_api_cache_directory())
+        llm_cache = APICache(".api_cache/llm")
+        
+        # Clear both caches
+        api_cache.clear()
+        llm_cache.clear()
+        
+        ui.notify("Clearing caches...")
+        print("Clearing caches...")
 
 
 def run_benchmark_task_tracker(port: int = 8089):

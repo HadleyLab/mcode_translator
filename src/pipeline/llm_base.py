@@ -27,7 +27,7 @@ from src.utils import (
     global_token_tracker,
     UnifiedAPIManager
 )
-from src.optimization.benchmark_task import BenchmarkTask
+from src.pipeline.task_queue import BenchmarkTask, get_global_task_queue
 
 
 class LlmConfigurationError(Exception):
@@ -444,6 +444,8 @@ class LlmBase(Loggable, ABC):
 
         def emit(self, record):
             log_entry = self.format(record)
-            task = BenchmarkTask.get_task(self.task_id)
-            if task:
-                task.add_log(log_entry)
+            task_queue = get_global_task_queue()
+            if task_queue:
+                task = task_queue.get_task(self.task_id)
+                if task:
+                    task.live_log.append(log_entry)
