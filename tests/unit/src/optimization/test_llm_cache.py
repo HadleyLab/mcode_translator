@@ -12,7 +12,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from pipeline.llm_base import LlmBase
-from utils.cache_manager import cache_manager
+from utils.api_manager import UnifiedAPIManager
 
 class TestLLM(LlmBase):
     """Test implementation of LlmBase for testing caching"""
@@ -25,12 +25,8 @@ def test_llm_caching():
     print("🧪 Testing LLM disk-based caching...")
     
     # Clear LLM cache first
-    cache_manager.clear_cache("llm_cache")
+    UnifiedAPIManager().clear_cache("llm")
     print("🗑️  Cleared LLM cache")
-    
-    # Check initial cache size
-    initial_size = len(cache_manager.llm_cache)
-    print(f"📊 Initial cache size: {initial_size}")
     
     # Create test LLM instance
     llm = TestLLM(
@@ -60,7 +56,8 @@ def test_llm_caching():
     cache_key = json.dumps(complete_cache_data, sort_keys=True)
     
     # Check if entry exists in cache (should not)
-    cached_result = cache_manager.llm_cache.get(cache_key)
+    llm_cache = UnifiedAPIManager().get_cache("llm")
+    cached_result = llm_cache.get_by_key(cache_key)
     if cached_result is not None:
         print("❌ Unexpected cache hit before first call")
         return False
@@ -73,15 +70,11 @@ def test_llm_caching():
     })
     
     # Store in cache
-    cache_manager.llm_cache.set(cache_key, test_result)
+    llm_cache.set_by_key(test_result, cache_key)
     print("💾 Stored test result in cache")
     
-    # Check cache size after storing
-    after_store_size = len(cache_manager.llm_cache)
-    print(f"📊 Cache size after storing: {after_store_size}")
-    
     # Try to retrieve from cache
-    retrieved_result = cache_manager.llm_cache.get(cache_key)
+    retrieved_result = llm_cache.get_by_key(cache_key)
     if retrieved_result is None:
         print("❌ Cache miss after storing entry")
         return False
@@ -105,11 +98,9 @@ def test_llm_caching():
         print(f"❌ Error calling _cached_llm_call: {e}")
         return False
     
-    # List cache keys
-    keys = cache_manager.list_cache_keys("llm_cache")
-    print(f"📋 Cache contains {len(keys)} keys")
-    if len(keys) > 0:
-        print(f"   Sample key: {keys[0][:50]}...")
+    # Get cache stats instead of listing keys
+    stats = UnifiedAPIManager().get_cache_stats("llm")
+    print(f"📋 Cache stats: {stats['llm']['cached_items']} items")
     
     print("🎉 All LLM caching tests passed!")
     return True

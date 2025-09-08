@@ -88,7 +88,7 @@ def test_comprehensive_fetcher_functionality():
             if result:
                 print("✅ Process-trial functionality working correctly")
                 print(f"   📊 Extracted {len(result.extracted_entities)} entities")
-                print(f"   🗺️  Mapped {len(result.mcode_mappings)} Mcode elements")
+                print(f"   🗺️  Mapped {len(result.mcode_mappings)} mCODE elements")
                 print(f"   📈 Validation score: {result.validation_results.get('compliance_score', 0):.2%}")
             else:
                 print("❌ Process-trial functionality failed")
@@ -186,7 +186,7 @@ if __name__ == "__main__":
     if success1 and success2:
         print("\n🎉 All tests completed successfully!")
         print("The fetcher now includes:")
-        print("  • StrictDynamicExtractionPipeline integration")
+        print("  • NlpMcodePipeline integration")
         print("  • Prompt and model library interface")
         print("  • Process-trial flag functionality")
         print("  • Comprehensive error handling")

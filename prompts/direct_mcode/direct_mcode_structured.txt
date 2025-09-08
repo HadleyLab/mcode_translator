@@ -1,10 +1,10 @@
-Analyze the clinical trial protocol and extract structured Mcode FHIR resources:
+Analyze the clinical trial protocol and extract structured mCODE FHIR resources:
 
 {clinical_text}
 
 Follow these steps:
 1. Identify all cancer-related entities
-2. Categorize into appropriate Mcode elements
+2. Categorize into appropriate mCODE elements
 3. Map to FHIR resource types
 4. Extract numerical values and biomarker mentions
 5. Return structured JSON output with mcode_mappings array
@@ -15,7 +15,7 @@ Follow these steps:
   "mcode_mappings": [
     {{
       "resourceType": "FHIR resource type",
-      "Mcode_element": "Mcode element name",
+      "Mcode_element": "mCODE element name",
       "code": {{
         "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
         "code": "standard code from appropriate terminology",

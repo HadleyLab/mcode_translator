@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Mcode Translator now features a **combined benchmark and optimization framework** that integrates the best of both worlds:
+The mCODE Translator now features a **combined benchmark and optimization framework** that integrates the best of both worlds:
 
 - **Benchmarking**: Performance validation against gold standards with proper metrics
 - **Optimization**: Experimental testing of different prompt configurations and API setups
@@ -23,7 +23,7 @@ The Mcode Translator now features a **combined benchmark and optimization framew
 
 ### 3. Combined CLI Command
 ```bash
-python Mcode-cli.py combined optimize-and-benchmark \
+python mCODE-cli.py combined optimize-and-benchmark \
     --test-cases examples/test_cases.json \
     --prompt-variants examples/combined_optimization_config.json \
     --api-configs examples/config/api_configs.json \
@@ -96,7 +96,7 @@ python Mcode-cli.py combined optimize-and-benchmark \
 
 ### Basic Combined Testing
 ```bash
-python Mcode-cli.py combined optimize-and-benchmark \
+python mCODE-cli.py combined optimize-and-benchmark \
     --test-cases test_data/gold_standard_cases.json \
     --prompt-config prompts/prompts_config.json \
     --api-configs config/api_configs.json \
@@ -105,7 +105,7 @@ python Mcode-cli.py combined optimize-and-benchmark \
 
 ### Specific Test Cases
 ```bash
-python Mcode-cli.py combined optimize-and-benchmark \
+python mCODE-cli.py combined optimize-and-benchmark \
     --test-cases test_data/gold_standard_cases.json \
     --prompt-config prompts/prompts_config.json \
     --api-configs config/api_configs.json \

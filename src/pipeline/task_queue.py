@@ -12,8 +12,9 @@ from enum import Enum
 import uuid
 
 from src.pipeline.pipeline_base import PipelineResult
-from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
-from src.pipeline.mcode_pipeline import McodePipeline
+# Import moved to method level to avoid circular imports
+# from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
+# from src.pipeline.mcode_pipeline import McodePipeline
 from src.shared.benchmark_result import BenchmarkResult
 
 
@@ -22,7 +23,7 @@ from src.shared.types import TaskStatus
 
 @dataclass
 class BenchmarkTask:
-    """Data structure for benchmark task execution"""
+    """Data structure for benchmark task execution with optimization metadata"""
     task_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     prompt_name: str = ""
     model_name: str = ""
@@ -38,11 +39,19 @@ class BenchmarkTask:
     end_time: float = 0.0
     duration_ms: float = 0.0
     token_usage: Dict[str, int] = field(default_factory=dict)
-    precision: float = 0.0
-    recall: float = 0.0
-    f1_score: float = 0.0
-    compliance_score: float = 0.0
+    precision: Optional[float] = None
+    recall: Optional[float] = None
+    f1_score: Optional[float] = None
+    compliance_score: Optional[float] = None
     live_log: List[str] = field(default_factory=list)
+    
+    # Optimization metadata
+    pipeline_type: str = "NLP_EXTRACTION"  # NLP_EXTRACTION, DIRECT_MCODE, MCODE_MAPPING
+    optimization_parameters: Dict[str, Any] = field(default_factory=dict)
+    prompt_info: Dict[str, Any] = field(default_factory=dict)
+    
+    # Worker consumption tracking
+    worker_id: Optional[int] = None
 
 
 class PipelineTaskQueue:
@@ -52,7 +61,7 @@ class PipelineTaskQueue:
         self.task_queue = asyncio.Queue()
         self.workers: List[asyncio.Task] = []
         self.max_workers = max_workers
-        self.is_running = False
+        self._is_running = False
         self.cancelled = False
         self.completed_tasks = 0
         self.failed_tasks = 0
@@ -74,7 +83,7 @@ class PipelineTaskQueue:
             self.logger.warning("Workers are already running")
             return
         
-        self.is_running = True
+        self._is_running = True
         self.cancelled = False
         
         # Create worker tasks
@@ -100,7 +109,7 @@ class PipelineTaskQueue:
             await asyncio.gather(*self.workers, return_exceptions=True)
             self.workers.clear()
         
-        self.is_running = False
+        self._is_running = False
         self.logger.info("All workers stopped")
     
     async def add_task(self, task: BenchmarkTask, callback: Optional[Callable] = None) -> str:
@@ -148,12 +157,13 @@ class PipelineTaskQueue:
         """Process a single benchmark task"""
         task.status = TaskStatus.PROCESSING
         task.start_time = time.time()
+        task.worker_id = worker_id  # Track which worker is processing this task
 
-        # Add initial log entry
+        # Add initial log entry with worker info
         timestamp = time.strftime("%H:%M:%S")
-        task.live_log.append(f"[{timestamp}] 🔄 Processing {task.prompt_name} + {task.model_name} + {task.trial_id}")
+        task.live_log.append(f"[{timestamp}] 🔄 Worker {worker_id}: Processing {task.prompt_name} + {task.model_name} + {task.trial_id}")
 
-        self.logger.info(f"Processing {task.prompt_name} + {task.model_name} + {task.trial_id}")
+        self.logger.info(f"Worker {worker_id}: Processing {task.prompt_name} + {task.model_name} + {task.trial_id}")
 
         try:
             # Get or create pipeline instance
@@ -198,11 +208,13 @@ class PipelineTaskQueue:
             task.f1_score = benchmark.f1_score
             task.compliance_score = benchmark.compliance_score
 
-            # Add completion log entry
+            # Add completion log entry with worker info
             timestamp = time.strftime("%H:%M:%S")
-            task.live_log.append(f"[{timestamp}] ✅ Completed {task.prompt_name} + {task.model_name} + {task.trial_id} - F1={task.f1_score:.3f}")
+            f1_score_str = f"{task.f1_score:.3f}" if task.f1_score is not None else "N/A"
+            task.live_log.append(f"[{timestamp}] ✅ Worker {worker_id}: Completed {task.prompt_name} + {task.model_name} + {task.trial_id} - F1={f1_score_str}")
 
-            self.logger.info(f"Completed {task.prompt_name} + {task.model_name} + {task.trial_id} - F1={task.f1_score:.3f}")
+            f1_score_info = f"{task.f1_score:.3f}" if task.f1_score is not None else "N/A"
+            self.logger.info(f"Worker {worker_id}: Completed {task.prompt_name} + {task.model_name} + {task.trial_id} - F1={f1_score_info}")
 
         except Exception as e:
             task.status = TaskStatus.FAILED
@@ -210,11 +222,20 @@ class PipelineTaskQueue:
             task.end_time = time.time()
             task.duration_ms = (task.end_time - task.start_time) * 1000
 
-            # Add error log entry
+            # Add error log entry with worker info
             timestamp = time.strftime("%H:%M:%S")
-            task.live_log.append(f"[{timestamp}] ❌ Failed {task.prompt_name} + {task.model_name} + {task.trial_id} - {str(e)}")
-
-            self.logger.error(f"Failed {task.prompt_name} + {task.model_name} + {task.trial_id} - {str(e)}")
+            # Safely convert all values to strings to avoid formatting issues
+            try:
+                worker_id_str = str(worker_id) if worker_id is not None else "N/A"
+                prompt_name_str = str(task.prompt_name) if task.prompt_name is not None else "N/A"
+                model_name_str = str(task.model_name) if task.model_name is not None else "N/A"
+                trial_id_str = str(task.trial_id) if task.trial_id is not None else "N/A"
+                error_str = str(e) if e is not None else "Unknown error"
+                task.live_log.append(f"[{timestamp}] ❌ Worker {worker_id_str}: Failed {prompt_name_str} + {model_name_str} + {trial_id_str} - {error_str}")
+                self.logger.error(f"Worker {worker_id_str}: Failed {prompt_name_str} + {model_name_str} + {trial_id_str} - {error_str}")
+            except Exception as logger_error:
+                # If logging fails, use a simpler approach
+                self.logger.error("Worker error: Failed to log error message - %s", str(logger_error))
 
         finally:
             # Update completion count
@@ -229,7 +250,7 @@ class PipelineTaskQueue:
                 except Exception as e:
                     self.logger.error(f"Callback error for task {task.task_id}: {str(e)}")
     
-    async def _get_pipeline(self, prompt_name: str, prompt_type: str) -> Union[NlpMcodePipeline, McodePipeline]:
+    async def _get_pipeline(self, prompt_name: str, prompt_type: str):
         """Get or create pipeline instance for the given prompt"""
         cache_key = f"{prompt_name}_{prompt_type}"
         
@@ -238,9 +259,11 @@ class PipelineTaskQueue:
         
         # Create appropriate pipeline based on prompt type
         if prompt_type == "DIRECT_MCODE":
+            from src.pipeline.mcode_pipeline import McodePipeline
             pipeline = McodePipeline(prompt_name=prompt_name)
         else:
             # For NLP extraction or mapping, use NLP+mcode pipeline
+            from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
             extraction_prompt = prompt_name if prompt_type == "NLP_EXTRACTION" else "generic_extraction"
             mapping_prompt = prompt_name if prompt_type == "MCODE_MAPPING" else "generic_mapping"
             pipeline = NlpMcodePipeline(
@@ -277,6 +300,30 @@ class PipelineTaskQueue:
             "queue_size": self.task_queue.qsize(),
         }
 
+    async def update_worker_count(self, new_worker_count: int) -> None:
+        """Update the number of worker tasks dynamically"""
+        if new_worker_count == self.max_workers:
+            return  # No change needed
+            
+        if new_worker_count < 1:
+            raise ValueError("Worker count must be at least 1")
+            
+        # Stop current workers
+        await self.stop_workers()
+        
+        # Update worker count
+        self.max_workers = new_worker_count
+        
+        # Start new workers with updated count
+        await self.start_workers()
+        
+        self.logger.info(f"Updated worker count to {new_worker_count}")
+
+    @property
+    def is_running(self) -> bool:
+        """Check if workers are currently running"""
+        return self._is_running
+
 
 # Global task queue instance
 global_task_queue: Optional[PipelineTaskQueue] = None
@@ -293,7 +340,13 @@ def get_global_task_queue(max_workers: int = 5) -> PipelineTaskQueue:
 async def initialize_task_queue(max_workers: int = 5) -> PipelineTaskQueue:
     """Initialize the global task queue and start workers"""
     task_queue = get_global_task_queue(max_workers)
-    await task_queue.start_workers()
+    
+    # If workers are already running with different concurrency, update
+    if task_queue.max_workers != max_workers:
+        await task_queue.update_worker_count(max_workers)
+    elif not task_queue.is_running:
+        await task_queue.start_workers()
+    
     return task_queue
 
 

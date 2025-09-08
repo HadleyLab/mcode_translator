@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify the validation fix for Mcode field comparison.
+Test script to verify the validation fix for mCODE field comparison.
 This script tests the BenchmarkResult.calculate_metrics() method with the fixed logic.
 """
 
@@ -21,11 +21,11 @@ def test_validation_fix():
     with open(gold_standard_path, 'r') as f:
         gold_data = json.load(f)
     
-    # Extract the expected entities and Mcode mappings from the gold standard
+    # Extract the expected entities and mCODE mappings from the gold standard
     expected_entities = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_extraction']['entities']
     gold_standard = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']
     
-    print(f"Gold standard contains {len(gold_standard)} expected Mcode mappings")
+    print(f"Gold standard contains {len(gold_standard)} expected mCODE mappings")
     
     # Create sample extracted entities that would be produced by the NLP extraction
     sample_extracted_entities = [
@@ -98,7 +98,7 @@ def test_validation_fix():
         }
     ]
     
-    # Create sample Mcode mappings that match the gold standard structure exactly
+    # Create sample mCODE mappings that match the gold standard structure exactly
     sample_mcode_mappings = [
         {
             "source_entity_index": 0,
@@ -214,11 +214,11 @@ def test_validation_fix():
             self.logger.setLevel(logging.DEBUG)
         
         def _convert_entities_to_mcode(self, entities):
-            """Mock conversion method - return simplified Mcode format"""
+            """Mock conversion method - return simplified mCODE format"""
             if not entities:
                 return []
             
-            # For testing, just create simple Mcode elements based on the sample data
+            # For testing, just create simple mCODE elements based on the sample data
             Mcode_elements = []
             for entity in entities:
                 if isinstance(entity, dict) and 'element_name' in entity:
@@ -266,13 +266,13 @@ def analyze_gold_standard():
     with open(gold_standard_path, 'r') as f:
         gold_data = json.load(f)
     
-    # Extract the Mcode mappings
+    # Extract the mCODE mappings
     gold_standard = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']
     
     print("Gold Standard Analysis:")
-    print(f"Total Mcode mappings: {len(gold_standard)}")
+    print(f"Total mCODE mappings: {len(gold_standard)}")
     
-    # Count by Mcode element type
+    # Count by mCODE element type
     Mcode_elements = {}
     
     for entity in gold_standard:
@@ -284,12 +284,12 @@ def analyze_gold_standard():
         print(f"  {element}: {count}")
     
     # Show first few entities
-    print("\nSample Mcode mappings:")
+    print("\nSample mCODE mappings:")
     for i, entity in enumerate(gold_standard[:5]):
         print(f"  {i+1}. {entity.get('Mcode_element', 'Unknown')}: {entity.get('value', 'No value')}")
 
 if __name__ == "__main__":
-    print("Testing Validation Fix for Mcode Field Comparison")
+    print("Testing Validation Fix for mCODE Field Comparison")
     print("=" * 50)
     
     # First analyze the gold standard

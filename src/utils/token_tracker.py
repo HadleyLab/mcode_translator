@@ -66,7 +66,7 @@ class TokenTracker:
         
         Args:
             usage: TokenUsage instance to add
-            component: Component name for tracking (e.g., "nlp_extraction", "Mcode_mapping")
+            component: Component name for tracking (e.g., "nlp_extraction", "mcode_mapping")
         """
         with self._lock:
             # Add to total usage

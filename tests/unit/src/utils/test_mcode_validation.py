@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify Mcode-based validation is working correctly
+Test script to verify mCODE-based validation is working correctly
 """
 
 import json
@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from src.optimization.prompt_optimization_framework import PromptOptimizationFramework
 
 def test_mcode_validation():
-    """Test the Mcode-based validation with existing benchmark results"""
+    """Test the mCODE-based validation with existing benchmark results"""
     
     # Initialize the framework
     framework = PromptOptimizationFramework(results_dir="./breast_cancer_optimization_results_fixed")
@@ -35,16 +35,16 @@ def test_mcode_validation():
     
     print(f"Loaded benchmark result: {benchmark_data.get('run_id', 'N/A')}")
     
-    # Test the Mcode conversion function
+    # Test the mCODE conversion function
     expected_entities = test_case_data['expected_extraction']['entities']
     expected_mappings = test_case_data['expected_mcode_mappings']['mapped_elements']
     
     print(f"Expected entities: {len(expected_entities)}")
-    print(f"Expected Mcode mappings: {len(expected_mappings)}")
+    print(f"Expected mCODE mappings: {len(expected_mappings)}")
     
-    # Test converting entities to Mcode format
+    # Test converting entities to mCODE format
     converted_mcode = framework._convert_entities_to_mcode(expected_entities)
-    print(f"Converted entities to Mcode: {len(converted_mcode)} elements")
+    print(f"Converted entities to mCODE: {len(converted_mcode)} elements")
     
     for i, mapping in enumerate(converted_mcode[:3]):
         print(f"  {i+1}. {mapping.get('element_name', 'N/A')} -> {mapping.get('resourceType', 'N/A')}")
@@ -54,11 +54,11 @@ def test_mcode_validation():
     mcode_mappings = benchmark_data.get('mcode_mappings', [])
     
     print(f"\nBenchmark extracted entities: {len(extracted_entities)}")
-    print(f"Benchmark Mcode mappings: {len(mcode_mappings)}")
+    print(f"Benchmark mCODE mappings: {len(mcode_mappings)}")
     
-    # Convert benchmark entities to Mcode format
+    # Convert benchmark entities to mCODE format
     benchmark_mcode = framework._convert_entities_to_mcode(extracted_entities)
-    print(f"Benchmark entities converted to Mcode: {len(benchmark_mcode)} elements")
+    print(f"Benchmark entities converted to mCODE: {len(benchmark_mcode)} elements")
     
     # Calculate metrics manually
     true_positives_ext = len(set(m.get('element_name', '') for m in benchmark_mcode) &
@@ -81,6 +81,6 @@ def test_mcode_validation():
 if __name__ == "__main__":
     success = test_mcode_validation()
     if success:
-        print("\n✅ Mcode-based validation test PASSED!")
+        print("\n✅ mCODE-based validation test PASSED!")
     else:
-        print("\n❌ Mcode-based validation test FAILED!")
+        print("\n❌ mCODE-based validation test FAILED!")

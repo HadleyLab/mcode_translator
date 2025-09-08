@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This guide provides comprehensive documentation for the new file-based model library system implemented in the Mcode Translator project. The library centralizes all LLM model configurations, eliminates hardcoded strings, and provides a robust system for model management and experimentation.
+This guide provides comprehensive documentation for the new file-based model library system implemented in the mCODE Translator project. The library centralizes all LLM model configurations, eliminates hardcoded strings, and provides a robust system for model management and experimentation.
 
 ## Architecture Overview
 
@@ -211,7 +211,7 @@ The library includes comprehensive error handling:
 
 ## Strict Implementation Principles
 
-The model library follows strict implementation principles consistent with the overall Mcode Translator framework:
+The model library follows strict implementation principles consistent with the overall mCODE Translator framework:
 
 ### No Fallbacks
 - Throws exceptions for missing models rather than providing defaults
@@ -325,4 +325,4 @@ def test_strict_model_loading():
 
 ## Conclusion
 
-The file-based model library provides a robust, maintainable solution for model configuration management that eliminates technical debt from hardcoded strings while enabling better experimentation, version control, and collaboration across the development team. The strict implementation ensures that all model configurations are accessible and throws exceptions for missing models rather than providing fallbacks, maintaining consistency with the overall Mcode Translator framework's strict infrastructure principles. The flattened structure simplifies model access and reduces complexity in the configuration management system.
+The file-based model library provides a robust, maintainable solution for model configuration management that eliminates technical debt from hardcoded strings while enabling better experimentation, version control, and collaboration across the development team. The strict implementation ensures that all model configurations are accessible and throws exceptions for missing models rather than providing fallbacks, maintaining consistency with the overall mCODE Translator framework's strict infrastructure principles. The flattened structure simplifies model access and reduces complexity in the configuration management system.

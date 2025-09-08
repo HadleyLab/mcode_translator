@@ -1,5 +1,5 @@
 """
-Prompt and Model Library Interface for Mcode Translator
+Prompt and Model Library Interface for mCODE Translator
 Provides setters and defaults for prompt templates and model configurations
 """
 
@@ -29,7 +29,7 @@ config = Config()
 class PromptModelInterface:
     """
     Interface for managing prompt templates and model configurations
-    Provides setters and defaults for the Mcode Translator pipeline
+    Provides setters and defaults for the mCODE Translator pipeline
     """
     
     def __init__(self):
@@ -63,7 +63,7 @@ class PromptModelInterface:
     
     def set_mapping_prompt(self, prompt_name: str) -> None:
         """
-        Set custom mapping prompt template for the Mcode mapper
+        Set custom mapping prompt template for the mCODE mapper
         
         Args:
             prompt_name: Name of the prompt template to use from the library
@@ -212,7 +212,7 @@ class PromptModelInterface:
                 if 'max_tokens' in default_params:
                     pipeline.nlp_extractor.max_tokens = default_params['max_tokens']
             
-            # Update Mcode mapper with model configuration
+            # Update mCODE mapper with model configuration
             if hasattr(pipeline, 'llm_mapper'):
                 pipeline.llm_mapper.model_name = model_config.model_identifier
                 pipeline.llm_mapper.base_url = model_config.base_url

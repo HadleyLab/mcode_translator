@@ -21,10 +21,10 @@ graph TD
     C --> D[NlpLlm]
     D --> E[LLM-Based Entity Extraction]
     E --> F[Extracted Entities]
-    F --> G[Mcode Mapping Phase]
+    F --> G[mCODE Mapping Phase]
     G --> H[McodeMapper]
-    H --> I[LLM-Based Mcode Mapping]
-    I --> J[Mapped Mcode Elements]
+    H --> I[LLM-Based mCODE Mapping]
+    I --> J[Mapped mCODE Elements]
     J --> K[Benchmarking Against Gold Standard]
     K --> L[PromptOptimizationFramework]
     L --> M[Performance Metrics]
@@ -42,7 +42,7 @@ graph TD
 
 1. **Input**: Clinical trial data is fed into the `StrictDynamicExtractionPipeline`.
 2. **NLP Extraction**: The pipeline processes the data through the `NlpLlm`, which uses LLM-based entity extraction to identify medical entities.
-3. **Mcode Mapping**: The extracted entities are then mapped to Mcode elements using the `McodeMapper`, which also uses LLM-based mapping.
+3. **mCODE Mapping**: The extracted entities are then mapped to mCODE elements using the `McodeMapper`, which also uses LLM-based mapping.
 4. **Benchmarking**: The results are benchmarked against gold standard data using the `PromptOptimizationFramework` to generate performance metrics.
 5. **Optimization**: The performance metrics are used to optimize the system, with results fed back into the prompt library and configuration files.
 
@@ -78,9 +78,9 @@ The NLP extraction phase expects the following data structure:
 }
 ```
 
-### Mcode Mapping Interface
+### mCODE Mapping Interface
 
-The Mcode mapping phase expects the following data structure for extracted entities:
+The mCODE mapping phase expects the following data structure for extracted entities:
 
 ```json
 {

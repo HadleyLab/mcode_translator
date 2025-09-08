@@ -69,7 +69,7 @@ class LLMCallMetrics:
 
 class LlmBase(Loggable, ABC):
     """
-    STRICT Base LLM Engine for shared functionality between NLP extractor and Mcode mapper
+    STRICT Base LLM Engine for shared functionality between NLP extractor and mCODE mapper
     Implements strict error handling, no fallbacks, and explicit configuration validation
     """
     
@@ -177,7 +177,7 @@ class LlmBase(Loggable, ABC):
     
     def _call_llm_api(self,
                      messages: List[Dict[str, str]],
-                     cache_key_data: Dict[str, Any]) -> Tuple[str, LLMCallMetrics]:
+                     cache_key_data: Dict[str, Any]) -> Tuple[Dict[str, Any], LLMCallMetrics]:
         """
         Make LLM API call with strict error handling and metrics tracking
         
@@ -186,17 +186,18 @@ class LlmBase(Loggable, ABC):
             cache_key_data: Data for generating cache key
         
         Returns:
-            Tuple of (response_content, call_metrics)
+            Tuple of (parsed_response_json, call_metrics)
         
         Raises:
             LlmExecutionError: If API call fails
         """
-        # Add API key to cache key data to ensure cache isolation by API key
-        cache_key_data_with_api = cache_key_data.copy()
-        cache_key_data_with_api["api_key"] = self.api_key
+        # Add model name and API key to cache key data for comprehensive cache isolation
+        cache_key_data_with_model_and_api = cache_key_data.copy()
+        cache_key_data_with_model_and_api["model_name"] = self.model_name
+        cache_key_data_with_model_and_api["api_key"] = self.api_key
         
         # Try to get cached result first
-        cached_result = self.llm_cache.get_by_key(cache_key_data_with_api)
+        cached_result = self.llm_cache.get_by_key(cache_key_data_with_model_and_api)
         if cached_result is not None:
             self.logger.info(f"✅ LLM API call CACHED for {self.model_name}")
             # Convert metrics dict back to LLMCallMetrics object
@@ -209,7 +210,7 @@ class LlmBase(Loggable, ABC):
                 success=metrics_dict['success'],
                 error_type=metrics_dict['error_type']
             )
-            return cached_result['response_content'], metrics
+            return cached_result['response_json'], metrics
         
         metrics = LLMCallMetrics(duration=0.0)
         start_time = time.time()
@@ -232,6 +233,9 @@ class LlmBase(Loggable, ABC):
             
             response_content = response.choices[0].message.content
             
+            # Parse JSON response immediately to ensure proper JSON objects in cache
+            response_json = self._parse_and_validate_json_response(response_content)
+            
             # Capture token usage metrics
             token_usage = extract_token_usage_from_response(response, self.model_name, "deepseek")
             
@@ -244,18 +248,14 @@ class LlmBase(Loggable, ABC):
             # Track token usage globally
             global_token_tracker.add_usage(token_usage, self.__class__.__name__)
             
-            # Cache the result
+            # Cache the result with proper JSON object (not string)
             cache_data = {
-                'response_content': response_content,
+                'response_json': response_json,
                 'metrics': metrics.to_dict()
             }
-            self.llm_cache.set_by_key(cache_data, cache_key_data_with_api, ttl=None)
+            self.llm_cache.set_by_key(cache_data, cache_key_data_with_model_and_api, ttl=None)
             
-            self.logger.info(f"✅ LLM API call completed in {metrics.duration:.2f}s")
-            self.logger.info(f"   📊 Token usage - Prompt: {token_usage.prompt_tokens}, Completion: {token_usage.completion_tokens}, Total: {token_usage.total_tokens}")
-            self.logger.debug(f"Raw LLM response length: {len(response_content)} characters")
-            
-            return response_content, metrics
+            return response_json, metrics
             
         except openai.APIConnectionError as e:
             end_time = time.time()
@@ -337,9 +337,6 @@ class LlmBase(Loggable, ABC):
         Raises:
             LlmResponseError: If JSON parsing fails or response is invalid
         """
-        # Log the raw response for debugging
-        self.logger.debug(f"Raw LLM response: {repr(response_text[:500])}")
-        
         try:
             # STRICT: Only attempt direct JSON parsing - no fallbacks or cleanup
             parsed = json.loads(response_text)
@@ -351,7 +348,6 @@ class LlmBase(Loggable, ABC):
             # Check for truncation patterns that indicate max_tokens limit reached
             self._check_for_truncation(response_text, parsed)
             
-            self.logger.debug("✅ Direct JSON parsing successful")
             return parsed
             
         except json.JSONDecodeError as e:
@@ -419,18 +415,12 @@ class LlmBase(Loggable, ABC):
         
         # Pattern 1: Response ends with incomplete structure
         if text.endswith(',') or text.endswith(':'):
-            self.logger.warning(
-                f"⚠️  JSON response appears truncated (ends with '{text[-10:]}'). "
-                f"Consider increasing max_tokens from {self.max_tokens} for complete responses."
-            )
+            pass
             
         # Pattern 2: Missing expected array structures in common fields
         for field in ['entities', 'mapped_elements']:
             if field in parsed_json and not isinstance(parsed_json[field], list):
-                self.logger.warning(
-                    f"⚠️  Field '{field}' is not an array as expected. "
-                    f"This may indicate truncation. Current max_tokens: {self.max_tokens}"
-                )
+                pass
     
     @abstractmethod
     def process_request(self, *args, **kwargs) -> Any:

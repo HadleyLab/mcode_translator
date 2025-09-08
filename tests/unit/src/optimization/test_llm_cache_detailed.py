@@ -10,14 +10,16 @@ import json
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from src.utils.api_manager import UnifiedAPIManager
-from src.pipeline.llm_base import LlmBase
+from utils.api_manager import UnifiedAPIManager, APICache
+from pipeline.llm_base import LlmBase
 
-class TestLLM(LlmBase):
-    """Test LLM implementation"""
+class MockLLM:
+    """Simple mock LLM implementation without LlmBase inheritance"""
     
-    def process_request(self, *args, **kwargs):
-        return {"test": "response"}
+    def __init__(self, model_name=None, temperature=None, max_tokens=None):
+        self.model_name = model_name
+        self.temperature = temperature
+        self.max_tokens = max_tokens
 
 def test_llm_caching_detailed():
     """Detailed test of LLM caching"""
@@ -29,18 +31,16 @@ def test_llm_caching_detailed():
     llm_cache.clear()
     print("🗑️  Cleared LLM cache")
     
-    # Create test LLM instance
-    llm = TestLLM(
-        model_name="deepseek-chat",
-        temperature=0.1,
-        max_tokens=100
-    )
+    # Create test LLM instance data (no inheritance needed)
+    model_name = "deepseek-chat"
+    temperature = 0.1
+    max_tokens = 100
     
     # Create test cache key data
     cache_key_data = {
-        "model": "deepseek-chat",
-        "temperature": 0.1,
-        "max_tokens": 100,
+        "model": model_name,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
         "prompt": "Test prompt for caching",
         "task": "entity_extraction"
     }
@@ -88,12 +88,12 @@ def test_llm_caching_detailed():
             print("✅ Retrieved result matches stored result")
         else:
             print("❌ Retrieved result doesn't match stored result")
-            return False
+            assert False, "Retrieved result doesn't match stored result"
     else:
         print("❌ Cache miss - no result retrieved")
-        return False
+        assert False, "Cache miss - no result retrieved"
     
-    return True
+    print("✅ Detailed LLM caching test passed")
 
 def test_cache_expiration():
     """Test cache expiration"""
@@ -126,21 +126,17 @@ def test_cache_expiration():
     
     if result1 is not None and result2 is None:
         print("✅ Cache expiration working correctly")
-        return True
     else:
         print("❌ Cache expiration not working")
-        return False
+        assert False, "Cache expiration not working"
+    
+    print("✅ Cache expiration test passed")
 
 if __name__ == "__main__":
     try:
-        success1 = test_llm_caching_detailed()
-        success2 = test_cache_expiration()
-        
-        if success1 and success2:
-            print("\n🎉 All detailed caching tests passed!")
-        else:
-            print("\n💥 Some detailed caching tests failed!")
-            sys.exit(1)
+        test_llm_caching_detailed()
+        test_cache_expiration()
+        print("\n🎉 All detailed caching tests passed!")
     except Exception as e:
         print(f"\n💥 Error during detailed testing: {e}")
         import traceback

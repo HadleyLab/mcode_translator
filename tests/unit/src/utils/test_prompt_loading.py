@@ -37,7 +37,7 @@ def test_all_prompts():
         except Exception as e:
             print(f"✗ {prompt_name}: Failed to load - {e}")
     
-    # Test Mcode mapping prompts
+    # Test mCODE mapping prompts
     print("\nMcode Mapping Prompts:")
     print("-" * 30)
     

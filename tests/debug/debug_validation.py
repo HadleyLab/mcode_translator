@@ -14,10 +14,10 @@ def debug_validation():
     with open(gold_standard_path, 'r') as f:
         gold_data = json.load(f)
     
-    # Extract the Mcode mappings from the gold standard
+    # Extract the mCODE mappings from the gold standard
     gold_standard = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']
     
-    print("Gold Standard Mcode Elements:")
+    print("Gold Standard mCODE Elements:")
     for i, entity in enumerate(gold_standard):
         print(f"  {i+1}. {entity.get('Mcode_element', 'Unknown')}: {entity.get('value', 'No value')}")
     
@@ -49,7 +49,7 @@ def debug_validation():
         }
     ]
     
-    print("\nSample Extracted Mcode Elements:")
+    print("\nSample Extracted mCODE Elements:")
     for i, entity in enumerate(sample_extracted):
         print(f"  {i+1}. {entity.get('element_name', 'Unknown')}: {entity.get('value', 'No value')}")
     

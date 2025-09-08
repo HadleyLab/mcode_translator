@@ -31,8 +31,8 @@ def test_benchmark_caching():
     
     # Clear all caches first
     clear_api_cache()
-    llm_cache = APICache(".llm_cache")
-    llm_cache.clear()
+    llm_cache = UnifiedAPIManager().get_cache("llm")
+    llm_cache.clear_cache()
     
     print("🗑️  Cleared all caches")
     
@@ -74,8 +74,8 @@ def test_llm_cache_directly():
     print("\n🔍 Testing LLM caching directly...")
     
     # Clear LLM cache
-    llm_cache = APICache(".llm_cache")
-    llm_cache.clear()
+    llm_cache = UnifiedAPIManager().get_cache("llm")
+    llm_cache.clear_cache()
     print("🗑️  Cleared LLM cache")
     
     # Create cache key data that would be used in a real scenario
@@ -158,7 +158,7 @@ def test_cache_key_generation():
     }
     
     # Create cache instance
-    cache = APICache(".test_cache")
+    cache = UnifiedAPIManager().get_cache("test")
     
     # Generate cache keys
     key1 = cache._generate_cache_key(cache_data_1)

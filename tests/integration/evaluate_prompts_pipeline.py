@@ -14,7 +14,7 @@ import logging
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.utils.prompt_loader import PromptLoader
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
 from src.utils.logging_config import setup_logging
 
 # Setup logging with explicit WARNING level to reduce verbosity
@@ -205,7 +205,7 @@ SAMPLE_GOLD_STANDARD = {
                 "unmapped_entities": [
                     {
                         "entity_index": 7,
-                        "reason": "Exclusion criteria - absence of cardiac disease is not a Mcode oncology element for current condition"
+                        "reason": "Exclusion criteria - absence of cardiac disease is not a mCODE oncology element for current condition"
                     }
                 ],
                 "metadata": {
@@ -247,9 +247,9 @@ def test_prompt_with_pipeline(prompt_name: str, prompt_config: Dict[str, Any]) -
         
         # Initialize pipeline with this prompt
         if results['prompt_type'] == 'NLP_EXTRACTION':
-            pipeline = StrictDynamicExtractionPipeline(extraction_prompt_name=prompt_name)
+            pipeline = NlpMcodePipeline(extraction_prompt_name=prompt_name)
         elif results['prompt_type'] == 'MCODE_MAPPING':
-            pipeline = StrictDynamicExtractionPipeline(mapping_prompt_name=prompt_name)
+            pipeline = NlpMcodePipeline(mapping_prompt_name=prompt_name)
         else:
             results['error'] = f"Unknown prompt type: {results['prompt_type']}"
             return results

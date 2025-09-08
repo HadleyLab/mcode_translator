@@ -1,6 +1,6 @@
 # Prompt Optimization Framework Documentation
 
-A comprehensive framework for optimizing LLM prompts in clinical NLP and Mcode mapping pipelines.
+A comprehensive framework for optimizing LLM prompts in clinical NLP and mCODE mapping pipelines.
 
 ## Overview
 
@@ -24,7 +24,7 @@ The Prompt Optimization Framework provides a systematic approach to:
 ### Supported Prompt Types
 
 - **NLP_EXTRACTION**: Clinical entity extraction from trial protocols
-- **MCODE_MAPPING**: Mapping extracted entities to Mcode standard
+- **MCODE_MAPPING**: Mapping extracted entities to mCODE standard
 
 ## Installation & Setup
 
@@ -214,7 +214,7 @@ The framework tracks:
 - **Success Rate**: Percentage of successful API calls
 - **Duration**: Processing time in milliseconds
 - **Entities Extracted**: Number of clinical entities identified
-- **Compliance Score**: Mcode standard compliance (0-1)
+- **Compliance Score**: mCODE standard compliance (0-1)
 
 ### Secondary Metrics
 - **Token Usage**: Input/output tokens consumed (tracked via unified token tracker)
@@ -308,4 +308,4 @@ Planned features:
 
 ## License
 
-This framework is part of the Mcode Translator project. See the main project [`LICENSE`](../LICENSE) file for details.
+This framework is part of the mCODE Translator project. See the main project [`LICENSE`](../LICENSE) file for details.

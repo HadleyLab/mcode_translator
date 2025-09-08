@@ -1,5 +1,5 @@
 """
-A single-step pipeline to map clinical text directly to Mcode entities.
+A single-step pipeline to map clinical text directly to mCODE entities.
 """
 
 import json
@@ -22,15 +22,15 @@ from src.utils import (
 
 class McodePipeline(ProcessingPipeline, Loggable):
     """
-    A single-step pipeline that maps clinical text directly to Mcode entities.
+    A single-step pipeline that maps clinical text directly to mCODE entities.
     """
 
     def __init__(self, prompt_name: str = "direct_mcode"):
         """
-        Initialize the Mcode pipeline.
+        Initialize the mCODE pipeline.
 
         Args:
-            prompt_name: Name of the prompt template for Mcode mapping.
+            prompt_name: Name of the prompt template for mCODE mapping.
         """
         super().__init__()
         self.prompt_name = prompt_name
@@ -42,17 +42,17 @@ class McodePipeline(ProcessingPipeline, Loggable):
 
     def process_clinical_trial(self, trial_data: Dict[str, Any], task_id: Optional[str] = None) -> PipelineResult:
         """
-        Process complete clinical trial data through the Mcode pipeline.
+        Process complete clinical trial data through the mCODE pipeline.
 
         Args:
             trial_data: Raw clinical trial data from API or source.
             task_id: Optional task ID for associating with a BenchmarkTask.
 
         Returns:
-            PipelineResult with Mcode mappings and source tracking.
+            PipelineResult with mCODE mappings and source tracking.
         """
         try:
-            self.logger.info("🚀 Starting Mcode pipeline processing")
+            self.logger.info("🚀 Starting mCODE pipeline processing")
             self.logger.info(f"   📄 Trial ID: {trial_data.get('protocolSection', {}).get('identificationModule', {}).get('nctId', 'unknown')}")
             self.logger.info(f"   📋 Title: {trial_data.get('protocolSection', {}).get('identificationModule', {}).get('briefTitle', 'unknown')}")
 
@@ -107,8 +107,8 @@ class McodePipeline(ProcessingPipeline, Loggable):
             )
 
         except (McodeMappingError, ValueError) as e:
-            self.logger.error(f"Mcode pipeline processing FAILED: {str(e)}")
+            self.logger.error(f"mCODE pipeline processing FAILED: {str(e)}")
             raise
         except Exception as e:
-            self.logger.error(f"Unexpected error in Mcode pipeline processing: {str(e)}")
+            self.logger.error(f"Unexpected error in mCODE pipeline processing: {str(e)}")
             raise RuntimeError(f"Unexpected pipeline error: {str(e)}")

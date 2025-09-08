@@ -1,4 +1,4 @@
-Convert these medical entities to Mcode format:
+Convert these medical entities to mCODE format:
 
 Entities: {entities_json}
 Trial Context: {trial_context}
@@ -8,7 +8,7 @@ Return JSON with this exact structure:
     "mcode_mappings": [
         {{
             "source_entity_index": 0,
-            "Mcode_element": "Mcode element name",
+            "Mcode_element": "mCODE element name",
             "value": "mapped value",
             "confidence": 0.0-1.0,
             "mapping_rationale": "brief explanation"

@@ -28,7 +28,7 @@ async def test_task_queue():
     with open(gold_standard_path, 'r') as f:
         gold_data = json.load(f)
     
-    # Extract the expected entities and Mcode mappings from the gold standard
+    # Extract the expected entities and mCODE mappings from the gold standard
     expected_entities = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_extraction']['entities']
     expected_mappings = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']
     

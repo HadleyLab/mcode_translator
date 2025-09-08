@@ -41,20 +41,21 @@ class PromptLoader:
             "field_types": {
                 "mcode_mappings": "array"
             },
-            "error_message": "Mcode mapping prompts must produce JSON with 'mcode_mappings' array field"
+            "error_message": "mCODE mapping prompts must produce JSON with 'mcode_mappings' array field"
         },
         "DIRECT_MCODE": {
             "required_fields": ["mcode_mappings"],
             "field_types": {
                 "mcode_mappings": "array"
             },
-            "error_message": "Direct Mcode mapping prompts must produce JSON with 'mcode_mappings' array field"
+            "error_message": "Direct mCODE mapping prompts must produce JSON with 'mcode_mappings' array field"
         }
     }
     
     def __init__(self, prompts_config_path: str = "prompts/prompts_config.json"):
         self.prompts_config_path = Path(prompts_config_path)
         self.prompts_config = self._load_prompts_config()
+        self.pipelines_config = self._load_pipelines_config()
     
     def _load_prompts_config(self) -> Dict[str, Any]:
         """Load the prompts configuration JSON file and flatten the structure"""
@@ -83,6 +84,26 @@ class PromptLoader:
                 
         except Exception as e:
             logger.error(f"Failed to load prompts config: {str(e)}")
+            return {}
+    
+    def _load_pipelines_config(self) -> Dict[str, Any]:
+        """Load the pipelines configuration from the JSON file"""
+        try:
+            if not self.prompts_config_path.exists():
+                raise FileNotFoundError(f"Prompts config file not found: {self.prompts_config_path}")
+            
+            with open(self.prompts_config_path, 'r') as f:
+                config_data = json.load(f)
+            
+            # Extract pipelines configuration
+            if "pipelines" in config_data:
+                return config_data["pipelines"]
+            else:
+                logger.warning("Pipelines configuration not found in config")
+                return {}
+                
+        except Exception as e:
+            logger.error(f"Failed to load pipelines config: {str(e)}")
             return {}
     
     def get_prompt(self, prompt_key: str, **format_kwargs) -> str:
@@ -369,21 +390,6 @@ class PromptLoader:
         
         return errors
     
-    def get_all_prompts(self) -> Dict[str, str]:
-        """Get all prompts from the library (read from disk each time)"""
-        all_prompts = {}
-        for prompt_key in self.prompts_config.keys():
-            try:
-                all_prompts[prompt_key] = self.get_prompt(prompt_key)
-            except ValueError as e:
-                # Skip prompts that fail validation with appropriate logging
-                logger.warning(f"Skipping prompt '{prompt_key}' due to validation failure: {str(e)}")
-                continue
-            except Exception as e:
-                logger.warning(f"Failed to load prompt '{prompt_key}': {str(e)}")
-        
-        return all_prompts
-    
     def reload_config(self) -> None:
         """Reload the prompts configuration from disk"""
         self.prompts_config = self._load_prompts_config()
@@ -393,14 +399,66 @@ class PromptLoader:
         """Get metadata for a specific prompt"""
         return self.prompts_config.get(prompt_key)
     
-    def list_available_prompts(self) -> Dict[str, Dict[str, Any]]:
-        """List all available prompts with their metadata"""
-        # Validate that all prompt keys are unique
-        prompt_keys = list(self.prompts_config.keys())
-        if len(prompt_keys) != len(set(prompt_keys)):
-            duplicates = [key for key in prompt_keys if prompt_keys.count(key) > 1]
-            raise ValueError(f"Duplicate prompt keys found: {set(duplicates)}")
+    def get_prompts_by_pipeline(self, pipeline_key: str) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Get prompts organized by prompt type for a specific pipeline
         
+        Args:
+            pipeline_key: The pipeline key (e.g., "NlpMcodePipeline", "McodePipeline")
+            
+        Returns:
+            Dictionary mapping prompt types to lists of prompt metadata
+        """
+        if pipeline_key not in self.pipelines_config:
+            raise ValueError(f"Pipeline '{pipeline_key}' not found in configuration")
+        
+        pipeline_config = self.pipelines_config[pipeline_key]
+        required_types = pipeline_config.get("required_prompt_types", [])
+        
+        pipeline_prompts = {}
+        for prompt_name, prompt_metadata in self.prompts_config.items():
+            prompt_type = prompt_metadata.get("prompt_type")
+            compatible_pipelines = prompt_metadata.get("compatible_pipelines", [])
+            
+            # Check if prompt is compatible with this pipeline and of required type
+            if prompt_type in required_types and pipeline_key in compatible_pipelines:
+                if prompt_type not in pipeline_prompts:
+                    pipeline_prompts[prompt_type] = []
+                pipeline_prompts[prompt_type].append(prompt_metadata)
+        
+        return pipeline_prompts
+    
+    def get_pipeline_config(self, pipeline_key: str) -> Dict[str, Any]:
+        """
+        Get configuration for a specific pipeline
+        
+        Args:
+            pipeline_key: The pipeline key
+            
+        Returns:
+            Pipeline configuration dictionary
+        """
+        if pipeline_key not in self.pipelines_config:
+            raise ValueError(f"Pipeline '{pipeline_key}' not found in configuration")
+        
+        return self.pipelines_config[pipeline_key].copy()
+    
+    def list_available_pipelines(self) -> Dict[str, Dict[str, Any]]:
+        """
+        List all available pipelines with their configuration
+
+        Returns:
+            Dictionary mapping pipeline keys to pipeline configurations
+        """
+        return self.pipelines_config.copy()
+
+    def list_available_prompts(self) -> Dict[str, Dict[str, Any]]:
+        """
+        List all available prompts with their metadata
+
+        Returns:
+            Dictionary mapping prompt names to prompt metadata
+        """
         return self.prompts_config.copy()
 
 
@@ -434,10 +492,6 @@ if __name__ == "__main__":
         # Load a specific prompt
         extraction_prompt = load_prompt("generic_extraction")
         print(f"Loaded extraction prompt: {extraction_prompt[:100]}...")
-        
-        # List all available prompts
-        available_prompts = prompt_loader.list_available_prompts()
-        print(f"Available prompts: {list(available_prompts.keys())}")
         
     except Exception as e:
         print(f"Error testing prompt loader: {str(e)}")

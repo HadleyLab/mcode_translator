@@ -1,5 +1,5 @@
 """
-STRICT Mcode Mapper - No fallbacks, exception-based error handling
+STRICT mCODE Mapper - No fallbacks, exception-based error handling
 Uses shared LlmBase for LLM operations
 """
 
@@ -17,18 +17,18 @@ from src.utils.token_tracker import global_token_tracker
 
 
 class McodeConfigurationError(Exception):
-    """Exception raised for Mcode mapping configuration issues"""
+    """Exception raised for mCODE mapping configuration issues"""
     pass
 
 
 class McodeMappingError(Exception):
-    """Exception raised for Mcode mapping failures"""
+    """Exception raised for mCODE mapping failures"""
     pass
 
 
 @dataclass
 class SourceReference:
-    """Represents source tracking information for Mcode mappings"""
+    """Represents source tracking information for mCODE mappings"""
     section_name: str
     section_type: str
     text_fragment: str
@@ -40,7 +40,7 @@ class SourceReference:
 
 @dataclass
 class McodeValidationResult:
-    """Result of Mcode element validation with detailed error information"""
+    """Result of mCODE element validation with detailed error information"""
     valid: bool
     errors: List[str] = None
     warnings: List[str] = None
@@ -55,8 +55,8 @@ class McodeValidationResult:
 
 class McodeMapper(LlmBase, Loggable):
     """
-    STRICT Mcode Mapping Engine
-    Uses LLMs to dynamically map extracted entities to Mcode elements
+    STRICT mCODE Mapping Engine
+    Uses LLMs to dynamically map extracted entities to mCODE elements
     No fallbacks, explicit error handling, and strict validation
     """
 
@@ -70,7 +70,7 @@ class McodeMapper(LlmBase, Loggable):
                  temperature: float = None,
                  max_tokens: int = None):
         """
-        Initialize strict Mcode mapper with explicit configuration validation
+        Initialize strict mCODE mapper with explicit configuration validation
         
         Args:
             model_name: LLM model name to use
@@ -100,7 +100,7 @@ class McodeMapper(LlmBase, Loggable):
             # Initialize Loggable
             Loggable.__init__(self)
             
-            # Standard Mcode value sets
+            # Standard mCODE value sets
             self.mcode_value_sets = {
                 'gender': ['male', 'female', 'other', 'unknown'],
                 'ethnicity': ['hispanic-or-latino', 'not-hispanic-or-latino', 'unknown'],
@@ -114,13 +114,6 @@ class McodeMapper(LlmBase, Loggable):
             self.prompt_name = prompt_name
             self.MCODE_MAPPING_PROMPT_TEMPLATE = self.prompt_loader.get_prompt(self.prompt_name)
 
-            self.logger.info("✅ Strict Mcode Mapper initialized successfully")
-            self.logger.info(f"   🤖 Model: {final_model_name}")
-            self.logger.info(f"   🌡️  Temperature: {final_temperature}")
-            self.logger.info(f"   📏 Max tokens: {final_max_tokens}")
-            # Log that mapper is initialized without a prompt template
-            self.logger.info(f"   📝 Prompt: {self.prompt_name}")
-            
         except Exception as e:
             raise McodeConfigurationError(f"Failed to initialize McodeMapper: {str(e)}")
     
@@ -130,7 +123,7 @@ class McodeMapper(LlmBase, Loggable):
                     prompt_key: str = "generic_mapping",
                     clinical_text: str = None) -> Dict[str, Any]:
         """
-        Map extracted entities to Mcode elements using LLM with strict error handling
+        Map extracted entities to mCODE elements using LLM with strict error handling
         
         Args:
             entities: List of extracted medical entities
@@ -139,7 +132,7 @@ class McodeMapper(LlmBase, Loggable):
             prompt_key: Key for the prompt template to use
             
         Returns:
-            Dictionary with Mcode mappings and validation results
+            Dictionary with mCODE mappings and validation results
             
         Raises:
             ValueError: If entities are invalid
@@ -151,17 +144,11 @@ class McodeMapper(LlmBase, Loggable):
         self._validate_entities(entities, clinical_text)
         
         try:
-            self.logger.info("🗺️  Starting Mcode mapping process...")
-            self.logger.info(f"   📊 Input entities: {len(entities)}")
-            
             # Prepare entities for LLM processing
             entities_json = json.dumps(entities, indent=2)
             context_json = json.dumps(trial_context or {}, indent=2)
             
-            self.logger.info("   📋 Preparing prompt for LLM mapping...")
-            
             prompt_template = self.MCODE_MAPPING_PROMPT_TEMPLATE
-            self.logger.info(f"   📝 Using prompt template: {self.prompt_name}")
             
             # Determine which placeholders the template expects
             format_kwargs = {}
@@ -179,19 +166,13 @@ class McodeMapper(LlmBase, Loggable):
             prompt = prompt_template.format(**format_kwargs)
             
             # Call LLM for mapping
-            self.logger.info("🤖 Calling LLM for Mcode mapping...")
-            llm_response, metrics = self._call_llm_mapping(prompt, prompt_key)
-            self.logger.info("✅ LLM mapping call completed")
+            parsed_response, metrics = self._call_llm_mapping(prompt, prompt_key)
             
             # Parse and validate LLM response
-            self.logger.info("📋 Parsing and validating LLM mapping response...")
-            mapped_elements = self._parse_llm_response(llm_response, source_references)
-            self.logger.info(f"✅ Successfully parsed {len(mapped_elements)} Mcode elements")
+            mapped_elements = self._parse_llm_response(parsed_response, source_references)
             
-            # Validate Mcode compliance with strict validation
-            self.logger.info("✅ Validating Mcode compliance...")
+            # Validate mCODE compliance with strict validation
             validation_results = self._validate_mcode_compliance_strict(mapped_elements)
-            self.logger.info(f"   🎯 Compliance score: {validation_results.get('compliance_score', 0):.2%}")
             
             return {
                 'mapped_elements': mapped_elements,
@@ -209,8 +190,6 @@ class McodeMapper(LlmBase, Loggable):
                 }
             }
             
-            self.logger.info(f"   📊 Mapping token usage - Prompt: {metrics.prompt_tokens}, Completion: {metrics.completion_tokens}, Total: {metrics.total_tokens}")
-            
         except (LlmExecutionError, LlmResponseError) as e:
             raise McodeMappingError(f"LLM-based mapping failed: {str(e)}")
         except Exception as e:
@@ -219,7 +198,7 @@ class McodeMapper(LlmBase, Loggable):
     def _validate_entities(self, entities: List[Dict[str, Any]], clinical_text: str = None) -> None:
         """Validate entities with strict error handling"""
         if entities is None:
-            # For direct text-to-Mcode, entities can be None
+            # For direct text-to-mCODE, entities can be None
             if clinical_text is None:
                 raise ValueError("Entities and clinical_text cannot both be None")
         elif not isinstance(entities, list):
@@ -233,9 +212,9 @@ class McodeMapper(LlmBase, Loggable):
                 if 'text' not in entity or not entity['text']:
                     raise ValueError(f"Entity at index {i} must have a 'text' field")
     
-    def _call_llm_mapping(self, prompt: str, prompt_key: str = "generic_mapping") -> Tuple[str, 'LLMCallMetrics']:
+    def _call_llm_mapping(self, prompt: str, prompt_key: str = "generic_mapping") -> Tuple[Dict[str, Any], 'LLMCallMetrics']:
         """
-        Call LLM API for Mcode mapping with strict error handling
+        Call LLM API for mCODE mapping with strict error handling
         
         Args:
             prompt: Formatted prompt for LLM mapping
@@ -260,27 +239,26 @@ class McodeMapper(LlmBase, Loggable):
             return self._call_llm_api(messages, cache_key_data)
             
         except LlmExecutionError as e:
-            self.logger.error(f"❌ LLM mapping call failed: {str(e)}")
             raise
     
-    def _parse_llm_response(self, response_text: str,
+    def _parse_llm_response(self, parsed_response: Dict[str, Any],
                           source_references: List[SourceReference] = None) -> List[Dict[str, Any]]:
         """
         Parse and validate LLM mapping response with strict error handling
         
         Args:
-            response_text: Raw LLM response
+            parsed_response: Parsed JSON response from LLM
             source_references: List of source references for provenance tracking
-            
+        
         Returns:
-            List of validated Mcode mappings with proper source references
-            
+            List of validated mCODE mappings with proper source references
+        
         Raises:
-            LlmResponseError: If JSON parsing fails or response is invalid
+            LlmResponseError: If response structure is invalid
         """
         try:
-            # Parse and validate JSON response
-            parsed = self._parse_and_validate_json_response(response_text)
+            # Use the already parsed response
+            parsed = parsed_response
             
             # Validate required structure
             self._validate_mapping_response_structure(parsed)
@@ -312,12 +290,11 @@ class McodeMapper(LlmBase, Loggable):
                     
                     validated_elements.append(element)
                 else:
-                    raise McodeMappingError(f"Invalid Mcode element: {validation_result.errors}")
+                    raise McodeMappingError(f"Invalid mCODE element: {validation_result.errors}")
             
             return validated_elements
             
         except (LlmResponseError, ValueError) as e:
-            self.logger.error(f"❌ Failed to parse LLM mapping response: {str(e)}")
             raise LlmResponseError(f"Mapping response parsing failed: {str(e)}")
     
     def _validate_mapping_response_structure(self, parsed_response: Dict[str, Any]) -> None:
@@ -334,7 +311,7 @@ class McodeMapper(LlmBase, Loggable):
                 raise LlmResponseError("Each mapping must contain 'Mcode_element' field")
     
     def _validate_mcode_element_strict(self, element: Dict[str, Any]) -> McodeValidationResult:
-        """Validate a single Mcode element with detailed error reporting"""
+        """Validate a single mCODE element with detailed error reporting"""
         result = McodeValidationResult(valid=True)
         
         # Check required fields
@@ -381,20 +358,20 @@ class McodeMapper(LlmBase, Loggable):
     def _connect_source_references_strict(self, element: Dict[str, Any], 
                                         source_references: List[SourceReference]) -> None:
         """
-        Connect actual SourceReference objects to Mcode element based on text fragment matching
+        Connect actual SourceReference objects to mCODE element based on text fragment matching
         with strict validation
         
         Args:
-            element: Mcode element to connect source references to
+            element: mCODE element to connect source references to
             source_references: List of source references from entity extraction
         """
         if 'source_text_fragment' not in element:
-            raise McodeMappingError("Mcode element missing required source_text_fragment field for reference connection")
+            raise McodeMappingError("mCODE element missing required source_text_fragment field for reference connection")
             
         # Get the text fragment from LLM-generated source reference
         llm_text_fragment = element['source_text_fragment']
         if not llm_text_fragment:
-            raise McodeMappingError("Empty source_text_fragment in Mcode element - cannot connect source references")
+            raise McodeMappingError("Empty source_text_fragment in mCODE element - cannot connect source references")
             
         # Find matching source references by text fragment similarity
         matching_references = []
@@ -424,7 +401,6 @@ class McodeMapper(LlmBase, Loggable):
             element['llm_source_text_fragment'] = element['source_text_fragment']
             element['source_references'] = []
             # This is not an error - it's expected that some LLM-generated fragments won't match source references
-            self.logger.info(f"No source references found for LLM-generated text fragment: {llm_text_fragment[:100]}...")
     
     def _transform_mapping_to_fhir(self, mapping: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -455,7 +431,7 @@ class McodeMapper(LlmBase, Loggable):
             'resourceType': resource_type,
             'Mcode_element': mapping.get('Mcode_element', ''),
             'code': {
-                'system': 'http://hl7.org/fhir/us/Mcode',
+                'system': 'http://hl7.org/fhir/us/mCODE',
                 'code': mapping.get('Mcode_element', '').lower().replace(' ', '-'),
                 'display': mapping.get('Mcode_element', '')
             },
@@ -469,10 +445,10 @@ class McodeMapper(LlmBase, Loggable):
     
     def _validate_mcode_compliance_strict(self, mapped_elements: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
-        Validate Mcode compliance of mapped elements with strict validation
+        Validate mCODE compliance of mapped elements with strict validation
         
         Args:
-            mapped_elements: List of mapped Mcode elements
+            mapped_elements: List of mapped mCODE elements
             
         Returns:
             Validation results dictionary
@@ -486,7 +462,7 @@ class McodeMapper(LlmBase, Loggable):
         
         if not mapped_elements:
             validation_results['valid'] = False
-            validation_results['errors'].append("No Mcode elements mapped")
+            validation_results['errors'].append("No mCODE elements mapped")
             validation_results['compliance_score'] = 0.0
             return validation_results
         
@@ -521,10 +497,10 @@ class McodeMapper(LlmBase, Loggable):
     
     def _is_fully_compliant_strict(self, element: Dict[str, Any]) -> bool:
         """
-        Check if an element is fully Mcode compliant with strict validation
+        Check if an element is fully mCODE compliant with strict validation
         
         Args:
-            element: Mcode element to check
+            element: mCODE element to check
             
         Returns:
             True if fully compliant, False otherwise
@@ -544,7 +520,7 @@ class McodeMapper(LlmBase, Loggable):
                        source_references: List[SourceReference] = None,
                        prompt_key: str = "generic_mapping") -> Dict[str, Any]:
         """
-        Process LLM request for Mcode mapping - implements LlmBase abstract method
+        Process LLM request for mCODE mapping - implements LlmBase abstract method
         
         Args:
             entities: List of extracted medical entities
@@ -553,7 +529,7 @@ class McodeMapper(LlmBase, Loggable):
             prompt_key: Key for the prompt template to use
             
         Returns:
-            Dictionary with Mcode mappings and validation results
+            Dictionary with mCODE mappings and validation results
             
         Raises:
             ValueError: If entities are invalid

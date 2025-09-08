@@ -150,15 +150,15 @@ class ComprehensiveCancerDemo:
             PromptVariant(
                 name="comprehensive_mapping",
                 prompt_type=PromptType.MCODE_MAPPING,
-                template="Map clinical entities to Mcode: {entities}",
-                description="Comprehensive Mcode mapping",
+                template="Map clinical entities to mCODE: {entities}",
+                description="Comprehensive mCODE mapping",
                 version="2.0.0"
             ),
             PromptVariant(
                 name="cancer_specific_mapping",
                 prompt_type=PromptType.MCODE_MAPPING,
-                template="Map oncology entities to Mcode standards: {entities}",
-                description="Cancer-specific Mcode mapping",
+                template="Map oncology entities to mCODE standards: {entities}",
+                description="Cancer-specific mCODE mapping",
                 version="1.8.0"
             )
         ]
@@ -220,8 +220,8 @@ class ComprehensiveCancerDemo:
         print(f"  ✅ Completed {len(nlp_results)} NLP extraction experiments")
         self.results.extend(nlp_results)
         
-        # Run Mcode mapping benchmark on subset of cases
-        print("\n🧬 Running Mcode Mapping Benchmark...")
+        # Run mCODE mapping benchmark on subset of cases
+        print("\n🧬 Running mCODE Mapping Benchmark...")
         Mcode_results = self.framework.run_comprehensive_benchmark(
             prompt_type=PromptType.MCODE_MAPPING,
             pipeline_callback=self._mock_pipeline_callback,
@@ -230,7 +230,7 @@ class ComprehensiveCancerDemo:
             test_case_ids=test_cases[:3]  # First 3 test cases
         )
         
-        print(f"  ✅ Completed {len(Mcode_results)} Mcode mapping experiments")
+        print(f"  ✅ Completed {len(Mcode_results)} mCODE mapping experiments")
         self.results.extend(Mcode_results)
     
     def analyze_results(self) -> None:
