@@ -5,7 +5,7 @@
       "resourceType": "Observation",
       "Mcode_element": "PrimaryCancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "primarycancercondition",
         "display": "PrimaryCancerCondition"
       },
@@ -19,21 +19,21 @@
       "resourceType": "Observation",
       "Mcode_element": "SecondaryCancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "secondarycancercondition",
         "display": "SecondaryCancerCondition"
       },
       "value": "Metastatic Breast Cancer",
       "mapping_confidence": 0.0,
       "source_text_fragment": "Entity index unknown",
-      "mapping_rationale": "The term 'Metastatic Breast Cancer' indicates the cancer has spread beyond the primary site, qualifying as a secondary cancer condition in Mcode.",
+      "mapping_rationale": "The term 'Metastatic Breast Cancer' indicates the cancer has spread beyond the primary site, qualifying as a secondary cancer condition in mCODE.",
       "id": "0b63900b-f6fc-4c8d-add3-c71049e84fb3"
     },
     {
       "resourceType": "Observation",
       "Mcode_element": "CancerDiseaseStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerdiseasestatus",
         "display": "CancerDiseaseStatus"
       },
@@ -47,7 +47,7 @@
       "resourceType": "Observation",
       "Mcode_element": "HER2Status",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "her2status",
         "display": "HER2Status"
       },
@@ -61,7 +61,7 @@
       "resourceType": "Observation",
       "Mcode_element": "CancerDiseaseStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerdiseasestatus",
         "display": "CancerDiseaseStatus"
       },
@@ -75,7 +75,7 @@
       "resourceType": "Observation",
       "Mcode_element": "HER2ReceptorStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "her2receptorstatus",
         "display": "HER2ReceptorStatus"
       },
@@ -89,7 +89,7 @@
       "resourceType": "Observation",
       "Mcode_element": "ECOGPerformanceStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "ecogperformancestatus",
         "display": "ECOGPerformanceStatus"
       },
@@ -103,7 +103,7 @@
       "resourceType": "Observation",
       "Mcode_element": "CancerRelatedComorbidities",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedcomorbidities",
         "display": "CancerRelatedComorbidities"
       },
@@ -117,7 +117,7 @@
       "resourceType": "Observation",
       "Mcode_element": "CancerRelatedMedicationStatement",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedicationstatement",
         "display": "CancerRelatedMedicationStatement"
       },
@@ -131,7 +131,7 @@
       "resourceType": "Observation",
       "Mcode_element": "PregnancyStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "pregnancystatus",
         "display": "PregnancyStatus"
       },
@@ -145,7 +145,7 @@
       "resourceType": "Observation",
       "Mcode_element": "PrimaryCancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "primarycancercondition",
         "display": "PrimaryCancerCondition"
       },
@@ -159,7 +159,7 @@
       "resourceType": "Observation",
       "Mcode_element": "CancerDiseaseStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerdiseasestatus",
         "display": "CancerDiseaseStatus"
       },
@@ -173,7 +173,7 @@
       "resourceType": "Observation",
       "Mcode_element": "HER2Status",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "her2status",
         "display": "HER2Status"
       },
@@ -187,7 +187,7 @@
       "resourceType": "Observation",
       "Mcode_element": "CancerRelatedMedicationStatement",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedicationstatement",
         "display": "CancerRelatedMedicationStatement"
       },
@@ -201,7 +201,7 @@
       "resourceType": "Observation",
       "Mcode_element": "CancerRelatedMedicationStatement",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedicationstatement",
         "display": "CancerRelatedMedicationStatement"
       },
@@ -215,7 +215,7 @@
       "resourceType": "Observation",
       "Mcode_element": "PrimaryCancerCondition",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "primarycancercondition",
         "display": "PrimaryCancerCondition"
       },
@@ -229,7 +229,7 @@
       "resourceType": "Observation",
       "Mcode_element": "CancerDiseaseStatus",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerdiseasestatus",
         "display": "CancerDiseaseStatus"
       },
@@ -243,7 +243,7 @@
       "resourceType": "Observation",
       "Mcode_element": "GenomicVariant",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "genomicvariant",
         "display": "GenomicVariant"
       },
@@ -257,7 +257,7 @@
       "resourceType": "Observation",
       "Mcode_element": "CancerRelatedSurgicalProcedure",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedsurgicalprocedure",
         "display": "CancerRelatedSurgicalProcedure"
       },
@@ -271,7 +271,7 @@
       "resourceType": "Observation",
       "Mcode_element": "CancerRelatedMedicationStatement",
       "code": {
-        "system": "http://hl7.org/fhir/us/Mcode",
+        "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedicationstatement",
         "display": "CancerRelatedMedicationStatement"
       },

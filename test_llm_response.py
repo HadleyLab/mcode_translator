@@ -68,18 +68,18 @@ def test_llm_call():
     
     try:
         # Call the LLM directly
-        response_text, metrics = pipeline.llm_mapper._call_llm_api(messages, {"test": "debug"})
-        logger.info(f"LLM response text:\n{response_text}")
+        response_json, metrics = pipeline.llm_mapper._call_llm_api(messages, {"test": "debug"})
+        logger.info(f"LLM response JSON:\n{response_json}")
         logger.info(f"Response metrics: {metrics}")
         
-        # Try to parse the response
+        # The response is already parsed, so we can use it directly
         try:
-            parsed = pipeline.llm_mapper._parse_and_validate_json_response(response_text)
-            logger.info(f"Parsed response: {parsed}")
-        except Exception as parse_error:
-            logger.error(f"Failed to parse response: {parse_error}")
-            # Let's see what the response actually looks like
-            logger.info(f"Raw response (first 500 chars): {response_text[:500]}")
+            # Validate the structure of the response
+            pipeline.llm_mapper._validate_mapping_response_structure(response_json)
+            logger.info(f"Response structure is valid")
+            logger.info(f"Mapped elements count: {len(response_json.get('mcode_mappings', []))}")
+        except Exception as validation_error:
+            logger.error(f"Failed to validate response structure: {validation_error}")
             
     except Exception as e:
         logger.error(f"LLM call failed: {e}")

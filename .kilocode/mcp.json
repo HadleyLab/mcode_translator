@@ -8,7 +8,8 @@
         "https://core.heysol.ai/api/v1/mcp?source=Kilo-Code"
       ],
       "alwaysAllow": [
-        "memory_get_spaces"
+        "memory_get_spaces",
+        "memory_search"
       ],
       "disabled": false
     }

@@ -1,10 +1,10 @@
-# Mcode Translator - Default Prompt Functionality and Unified CLI Implementation Plan
+# mCODE Translator - Default Prompt Functionality and Unified CLI Implementation Plan
 
 ## Project Overview
-This document summarizes the implementation plan for adding default prompt functionality to the Mcode Translator system and creating a new unified command-line interface that will obsolete the current `Mcode-cli.py`.
+This document summarizes the implementation plan for adding default prompt functionality to the mCODE Translator system and creating a new unified command-line interface that will obsolete the current `mCODE-cli.py`.
 
 ## Key Objectives
-1. Enable setting and using default prompts for NLP extraction and Mcode mapping
+1. Enable setting and using default prompts for NLP extraction and mCODE mapping
 2. Create a new unified CLI with comprehensive optimization capabilities
 3. Allow full optimization across all prompts and models
 4. Provide functionality to set the best performing prompts as defaults in the prompts library
@@ -74,16 +74,16 @@ This document summarizes the implementation plan for adding default prompt funct
 ### New CLI Commands
 ```
 # Run full optimization
-Mcode-optimize run --test-cases data/test_cases.json --gold-standard data/gold_standard.json --output results/
+mCODE-optimize run --test-cases data/test_cases.json --gold-standard data/gold_standard.json --output results/
 
 # Set best prompt as default
-Mcode-optimize set-default --from-results --metric f1_score
+mCODE-optimize set-default --from-results --metric f1_score
 
 # View optimization results
-Mcode-optimize view-results --metric f1_score --top-n 10
+mCODE-optimize view-results --metric f1_score --top-n 10
 
 # List prompts
-Mcode-optimize list-prompts --default-only
+mCODE-optimize list-prompts --default-only
 ```
 
 ## Implementation Timeline

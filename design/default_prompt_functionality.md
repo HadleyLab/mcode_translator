@@ -1,7 +1,7 @@
 # Default Prompt Functionality Design
 
 ## Overview
-This document outlines the design for implementing default prompt functionality in the Mcode Translator system. The goal is to allow users to set and use default prompts for NLP extraction and Mcode mapping after benchmark validation.
+This document outlines the design for implementing default prompt functionality in the mCODE Translator system. The goal is to allow users to set and use default prompts for NLP extraction and mCODE mapping after benchmark validation.
 
 ## Current System Architecture
 The current system consists of:
@@ -38,18 +38,18 @@ Add a `default` field to the prompt configuration to mark default prompts:
             "tags": ["generic", "comprehensive", "structured"]
           }
         ],
-        "Mcode_mapping": [
+        "mcode_mapping": [
           {
             "name": "generic_mapping",
             "prompt_type": "MCODE_MAPPING",
-            "prompt_file": "txt/Mcode_mapping/generic_mapping.txt",
-            "description": "Generic Mcode mapping prompt with comprehensive instructions",
+            "prompt_file": "txt/mcode_mapping/generic_mapping.txt",
+            "description": "Generic mCODE mapping prompt with comprehensive instructions",
             "version": "1.0.0",
-            "author": "Mcode Team",
+            "author": "mCODE Team",
             "created_date": "2024-08-26",
             "status": "production",
             "default": true,
-            "tags": ["generic", "comprehensive", "Mcode"]
+            "tags": ["generic", "comprehensive", "mCODE"]
           }
         ]
       }
@@ -98,7 +98,7 @@ Create a new CLI with commands for:
 ### Default Prompt Selection Criteria
 Default prompts will be selected based on:
 1. **F1 Score**: Primary metric for extraction and mapping performance
-2. **Compliance Score**: Secondary metric for Mcode compliance
+2. **Compliance Score**: Secondary metric for mCODE compliance
 3. **Success Rate**: Reliability of the prompt-model combination
 4. **Token Usage**: Efficiency consideration
 
@@ -120,10 +120,10 @@ def get_default_prompt(self, prompt_type: str) -> str:
 
 ## CLI Command Structure
 ```
-Mcode-optimize run [--test-cases PATH] [--gold-standard PATH] [--output DIR]
-Mcode-optimize set-default [--prompt-type TYPE] [--prompt-name NAME]
-Mcode-optimize view-results [--metric METRIC] [--top-n N]
-Mcode-optimize list-prompts [--type TYPE] [--default-only]
+mCODE-optimize run [--test-cases PATH] [--gold-standard PATH] [--output DIR]
+mCODE-optimize set-default [--prompt-type TYPE] [--prompt-name NAME]
+mCODE-optimize view-results [--metric METRIC] [--top-n N]
+mCODE-optimize list-prompts [--type TYPE] [--default-only]
 ```
 
 ## Testing Strategy

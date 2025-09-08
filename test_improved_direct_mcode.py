@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to validate the improved direct Mcode prompt with breast cancer data.
+Test script to validate the improved direct mCODE prompt with breast cancer data.
 """
 
 import sys
@@ -45,9 +45,9 @@ def load_test_data() -> tuple[Dict[str, Any], Dict[str, Any]]:
     return test_case, gold_standard
 
 def test_improved_direct_mcode_prompt(test_case: Dict[str, Any]) -> Dict[str, Any]:
-    """Test the improved direct Mcode prompt"""
+    """Test the improved direct mCODE prompt"""
     try:
-        logger.info("Testing improved direct Mcode prompt...")
+        logger.info("Testing improved direct mCODE prompt...")
         
         # Initialize pipeline with the improved prompt
         pipeline = McodePipeline(prompt_name="direct_mcode_improved")
@@ -71,7 +71,7 @@ def test_improved_direct_mcode_prompt(test_case: Dict[str, Any]) -> Dict[str, An
 
 def main():
     """Main function to test the improved prompt"""
-    logger.info("Starting test of improved direct Mcode prompt...")
+    logger.info("Starting test of improved direct mCODE prompt...")
     
     try:
         # Load test data
@@ -81,13 +81,13 @@ def main():
         result = test_improved_direct_mcode_prompt(test_case)
         
         if result['success']:
-            logger.info("✅ Improved direct Mcode prompt test PASSED")
-            print("✅ Improved direct Mcode prompt test PASSED")
+            logger.info("✅ Improved direct mCODE prompt test PASSED")
+            print("✅ Improved direct mCODE prompt test PASSED")
             
             # Show some details about the result
             mappings = result['result'].mcode_mappings
-            logger.info(f"Generated {len(mappings)} Mcode mappings")
-            print(f"Generated {len(mappings)} Mcode mappings")
+            logger.info(f"Generated {len(mappings)} mCODE mappings")
+            print(f"Generated {len(mappings)} mCODE mappings")
             
             # Show first few mappings as examples
             for i, mapping in enumerate(mappings[:3]):
@@ -107,8 +107,8 @@ def main():
             
             return True
         else:
-            logger.error("❌ Improved direct Mcode prompt test FAILED")
-            print("❌ Improved direct Mcode prompt test FAILED")
+            logger.error("❌ Improved direct mCODE prompt test FAILED")
+            print("❌ Improved direct mCODE prompt test FAILED")
             print(f"Error: {result['error']}")
             return False
             

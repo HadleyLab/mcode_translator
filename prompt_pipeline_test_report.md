@@ -7,8 +7,8 @@ Successful tests: 25
 Failed tests: 24
 Success rate: 51.0%
 
-NLP to Mcode tests: 42
-Direct to Mcode tests: 7
+NLP to mCODE tests: 42
+Direct to mCODE tests: 7
 
 ## Failed Tests
 
@@ -88,31 +88,31 @@ Direct to Mcode tests: 7
 
 | Pipeline Type | Prompt(s) | F1 Score | Precision | Recall | Execution Time (s) |
 |---------------|-----------|----------|-----------|--------|-------------------|
-| NLP to Mcode | Ext:generic_extraction / Map:generic_mapping | 0.000 | 0.000 | 0.000 | 0.05 |
-| NLP to Mcode | Ext:generic_extraction / Map:comprehensive_mapping | 0.000 | 0.000 | 0.000 | 0.02 |
-| NLP to Mcode | Ext:generic_extraction / Map:minimal_mapping | 0.000 | 0.000 | 0.000 | 0.02 |
-| NLP to Mcode | Ext:generic_extraction / Map:simple_mapping | 0.000 | 0.000 | 0.000 | 196.63 |
-| NLP to Mcode | Ext:generic_extraction / Map:standard_mapping | 0.000 | 0.000 | 0.000 | 383.20 |
-| NLP to Mcode | Ext:comprehensive_extraction / Map:generic_mapping | 0.000 | 0.000 | 0.000 | 357.92 |
-| NLP to Mcode | Ext:comprehensive_extraction / Map:comprehensive_mapping | 0.000 | 0.000 | 0.000 | 201.64 |
-| NLP to Mcode | Ext:comprehensive_extraction / Map:error_robust_mapping | 0.000 | 0.000 | 0.000 | 432.84 |
-| NLP to Mcode | Ext:comprehensive_extraction / Map:minimal_mapping | 0.000 | 0.000 | 0.000 | 138.55 |
-| NLP to Mcode | Ext:comprehensive_extraction / Map:simple_mapping | 0.000 | 0.000 | 0.000 | 185.55 |
-| NLP to Mcode | Ext:comprehensive_extraction / Map:standard_mapping | 0.000 | 0.000 | 0.000 | 277.53 |
-| NLP to Mcode | Ext:minimal_extraction / Map:generic_mapping | 0.000 | 0.000 | 0.000 | 0.02 |
-| NLP to Mcode | Ext:minimal_extraction / Map:comprehensive_mapping | 0.000 | 0.000 | 0.000 | 146.61 |
-| NLP to Mcode | Ext:minimal_extraction / Map:detailed_mapping | 0.000 | 0.000 | 0.000 | 318.54 |
-| NLP to Mcode | Ext:minimal_extraction / Map:error_robust_mapping | 0.000 | 0.000 | 0.000 | 300.33 |
-| NLP to Mcode | Ext:minimal_extraction / Map:minimal_mapping | 0.000 | 0.000 | 0.000 | 0.02 |
-| NLP to Mcode | Ext:minimal_extraction / Map:simple_mapping | 0.000 | 0.000 | 0.000 | 162.68 |
-| NLP to Mcode | Ext:minimal_extraction / Map:standard_mapping | 0.000 | 0.000 | 0.000 | 290.41 |
-| Direct to Mcode | Direct:direct_mcode | 0.000 | 0.000 | 0.000 | 0.01 |
-| Direct to Mcode | Direct:direct_mcode_simple | 0.000 | 0.000 | 0.000 | 0.01 |
-| Direct to Mcode | Direct:direct_mcode_comprehensive | 0.000 | 0.000 | 0.000 | 0.01 |
-| Direct to Mcode | Direct:direct_mcode_minimal | 0.000 | 0.000 | 0.000 | 0.01 |
-| Direct to Mcode | Direct:direct_mcode_structured | 0.000 | 0.000 | 0.000 | 0.01 |
-| Direct to Mcode | Direct:direct_mcode_optimization | 0.000 | 0.000 | 0.000 | 0.01 |
-| Direct to Mcode | Direct:direct_mcode_improved | 0.000 | 0.000 | 0.000 | 0.01 |
+| NLP to mCODE | Ext:generic_extraction / Map:generic_mapping | 0.000 | 0.000 | 0.000 | 0.05 |
+| NLP to mCODE | Ext:generic_extraction / Map:comprehensive_mapping | 0.000 | 0.000 | 0.000 | 0.02 |
+| NLP to mCODE | Ext:generic_extraction / Map:minimal_mapping | 0.000 | 0.000 | 0.000 | 0.02 |
+| NLP to mCODE | Ext:generic_extraction / Map:simple_mapping | 0.000 | 0.000 | 0.000 | 196.63 |
+| NLP to mCODE | Ext:generic_extraction / Map:standard_mapping | 0.000 | 0.000 | 0.000 | 383.20 |
+| NLP to mCODE | Ext:comprehensive_extraction / Map:generic_mapping | 0.000 | 0.000 | 0.000 | 357.92 |
+| NLP to mCODE | Ext:comprehensive_extraction / Map:comprehensive_mapping | 0.000 | 0.000 | 0.000 | 201.64 |
+| NLP to mCODE | Ext:comprehensive_extraction / Map:error_robust_mapping | 0.000 | 0.000 | 0.000 | 432.84 |
+| NLP to mCODE | Ext:comprehensive_extraction / Map:minimal_mapping | 0.000 | 0.000 | 0.000 | 138.55 |
+| NLP to mCODE | Ext:comprehensive_extraction / Map:simple_mapping | 0.000 | 0.000 | 0.000 | 185.55 |
+| NLP to mCODE | Ext:comprehensive_extraction / Map:standard_mapping | 0.000 | 0.000 | 0.000 | 277.53 |
+| NLP to mCODE | Ext:minimal_extraction / Map:generic_mapping | 0.000 | 0.000 | 0.000 | 0.02 |
+| NLP to mCODE | Ext:minimal_extraction / Map:comprehensive_mapping | 0.000 | 0.000 | 0.000 | 146.61 |
+| NLP to mCODE | Ext:minimal_extraction / Map:detailed_mapping | 0.000 | 0.000 | 0.000 | 318.54 |
+| NLP to mCODE | Ext:minimal_extraction / Map:error_robust_mapping | 0.000 | 0.000 | 0.000 | 300.33 |
+| NLP to mCODE | Ext:minimal_extraction / Map:minimal_mapping | 0.000 | 0.000 | 0.000 | 0.02 |
+| NLP to mCODE | Ext:minimal_extraction / Map:simple_mapping | 0.000 | 0.000 | 0.000 | 162.68 |
+| NLP to mCODE | Ext:minimal_extraction / Map:standard_mapping | 0.000 | 0.000 | 0.000 | 290.41 |
+| Direct to mCODE | Direct:direct_mcode | 0.000 | 0.000 | 0.000 | 0.01 |
+| Direct to mCODE | Direct:direct_mcode_simple | 0.000 | 0.000 | 0.000 | 0.01 |
+| Direct to mCODE | Direct:direct_mcode_comprehensive | 0.000 | 0.000 | 0.000 | 0.01 |
+| Direct to mCODE | Direct:direct_mcode_minimal | 0.000 | 0.000 | 0.000 | 0.01 |
+| Direct to mCODE | Direct:direct_mcode_structured | 0.000 | 0.000 | 0.000 | 0.01 |
+| Direct to mCODE | Direct:direct_mcode_optimization | 0.000 | 0.000 | 0.000 | 0.01 |
+| Direct to mCODE | Direct:direct_mcode_improved | 0.000 | 0.000 | 0.000 | 0.01 |
 
 ## Best Performers (by F1 Score)
 

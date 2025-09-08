@@ -33,14 +33,14 @@ This document outlines the testing plan for the enhanced pipeline task tracker w
 - [ ] Entity extraction validation with exact matches
 - [ ] Entity extraction validation with fuzzy matches
 - [ ] Entity extraction validation with no matches
-- [ ] Mcode mapping validation with exact matches
-- [ ] Mcode mapping validation with partial matches
-- [ ] Mcode mapping validation with no matches
+- [ ] mCODE mapping validation with exact matches
+- [ ] mCODE mapping validation with partial matches
+- [ ] mCODE mapping validation with no matches
 - [ ] Compliance score calculation
 
 **Expected Results**:
 - Precision, recall, and F1-score calculated correctly for all scenarios
-- Compliance score accurately reflects Mcode validation results
+- Compliance score accurately reflects mCODE validation results
 - Error handling for malformed validation data
 
 ### 3. Benchmarking Metrics Collection
@@ -94,8 +94,8 @@ This document outlines the testing plan for the enhanced pipeline task tracker w
 **Objective**: Verify complete pipeline execution with validation and benchmarking
 
 **Test Cases**:
-- [ ] NLP to Mcode pipeline with validation and benchmarking
-- [ ] Direct to Mcode pipeline with validation and benchmarking
+- [ ] NLP to mCODE pipeline with validation and benchmarking
+- [ ] Direct to mCODE pipeline with validation and benchmarking
 - [ ] Pipeline execution with successful validation
 - [ ] Pipeline execution with failed validation
 - [ ] Pipeline execution with benchmarking metrics collection
@@ -131,12 +131,12 @@ This document outlines the testing plan for the enhanced pipeline task tracker w
 
 ### Gold Standard Data
 - Expected extraction entities with text, type, and attributes
-- Expected Mcode mappings with element types and values
+- Expected mCODE mappings with element types and values
 
 ### Test Configurations
 - Various prompt configurations
 - Different model configurations
-- Multiple pipeline types (NLP to Mcode, Direct to Mcode)
+- Multiple pipeline types (NLP to mCODE, Direct to mCODE)
 
 ## Testing Tools
 ### Unit Testing

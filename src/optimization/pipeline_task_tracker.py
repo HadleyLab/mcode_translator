@@ -1,6 +1,6 @@
 """
 Pipeline Task Tracker - A NiceGUI UI for tracking individual pipeline tasks.
-Each pipeline task consists of two LLM calls: NLP extraction and Mcode mapping.
+Each pipeline task consists of two LLM calls: NLP extraction and mCODE mapping.
 
 This implementation uses a queue-based concurrency approach with multiple worker tasks
 to process pipeline tasks concurrently. Tasks are added directly to a queue and
@@ -8,7 +8,7 @@ processed by worker tasks based on the selected concurrency level.
 
 Features:
 - Concurrency control with adjustable number of worker tasks (1-10)
-- Support for different pipeline types (NLP extraction to Mcode mapping and Direct to Mcode)
+- Support for different pipeline types (NLP extraction to mCODE mapping and Direct to mCODE)
 - Dynamic prompt selection for each pipeline type
 - Real-time task status tracking and display
 """
@@ -34,6 +34,7 @@ from src.pipeline.mcode_pipeline import McodePipeline
 from pipeline.pipeline_base import ProcessingPipeline
 from src.utils import get_logger
 from src.utils.prompt_loader import PromptLoader
+from src.shared.types import TaskStatus
 
 # Configure logging
 logger = get_logger(__name__)
@@ -42,7 +43,7 @@ logger = get_logger(__name__)
 @dataclass
 class LLMCallTask:
     """Represents a single LLM call task (extraction or mapping)"""
-    name: str  # "NLP Extraction" or "Mcode Mapping"
+    name: str  # "NLP Extraction" or "mCODE Mapping"
     status: TaskStatus = TaskStatus.PENDING
     start_time: Optional[float] = None
     end_time: Optional[float] = None
@@ -57,15 +58,14 @@ class LLMCallTask:
             return self.end_time - self.start_time
         return None
 
-from src.optimization.benchmark_task import BenchmarkTask, TaskPriority
-from src.shared.types import TaskStatus
+from src.pipeline.task_queue import BenchmarkTask
 
 @dataclass
 class PipelineTask(BenchmarkTask):
     """Represents a complete pipeline task with two LLM call sub-tasks and benchmarking capabilities"""
     nlp_extraction: LLMCallTask = None
     mcode_mapping: LLMCallTask = None
-    pipeline_type: str = "NLP to Mcode"
+    pipeline_type: str = "NLP to mCODE"
     test_case_name: str = "unknown"
     prompt_info: Optional[Dict[str, str]] = None
     pipeline_result: Optional[Dict[str, Any]] = None
@@ -83,7 +83,7 @@ class PipelineTaskTrackerUI:
     
     The UI provides:
     - Concurrency control with adjustable number of worker tasks (1-10)
-    - Support for different pipeline types (NLP extraction to Mcode mapping and Direct to Mcode)
+    - Support for different pipeline types (NLP extraction to mCODE mapping and Direct to mCODE)
     - Dynamic prompt selection for each pipeline type
     - Real-time task status tracking and display
     """
@@ -123,16 +123,13 @@ class PipelineTaskTrackerUI:
         # Setup UI
         self._setup_ui()
         
-        # Start background worker after UI is initialized
-        ui.timer(0.1, self._start_worker, once=True)
-        # Timer to process notifications
-        ui.timer(0.5, self._process_notifications)
-        # Timer for frequent UI refreshes during batch processing
-        ui.timer(0.2, self._refresh_ui_during_processing)
-        
         # Track dark mode state
         self.dark_mode = ui.dark_mode()
         self.is_dark_mode = False
+        
+        # Start background worker after UI is fully initialized
+        # Use a timer to start workers after the event loop is available
+        ui.timer(0.1, self._start_worker, once=True)
     
     def _load_sample_data(self) -> Optional[Dict[str, Any]]:
         """Load sample clinical trial data for testing"""
@@ -182,7 +179,7 @@ class PipelineTaskTrackerUI:
             return {}
         
         try:
-            # Extract Mcode mappings from pipeline result
+            # Extract mCODE mappings from pipeline result
             pipeline_mappings = task.pipeline_result.mcode_mappings if task.pipeline_result else []
             
             # Extract gold standard mappings - correct path based on gold standard structure
@@ -211,7 +208,9 @@ class PipelineTaskTrackerUI:
             # Calculate validation metrics
             metrics = self._calculate_validation_metrics(pipeline_mappings, gold_mappings)
             
-            # Store metrics in task
+            # Store metrics in task - initialize benchmark_metrics if None
+            if task.benchmark_metrics is None:
+                task.benchmark_metrics = {}
             task.benchmark_metrics.update(metrics)
             
             logger.info(f"Validation completed for task {task.id}: {metrics}")
@@ -222,7 +221,7 @@ class PipelineTaskTrackerUI:
             return {}
 
     def _calculate_validation_metrics(self, pipeline_mappings: List[Dict], gold_mappings: List[Dict]) -> Dict[str, float]:
-        """Calculate precision, recall, and F1-score for Mcode mappings"""
+        """Calculate precision, recall, and F1-score for mCODE mappings"""
         if not pipeline_mappings or not gold_mappings:
             return {'precision': 0.0, 'recall': 0.0, 'f1_score': 0.0}
         
@@ -252,7 +251,7 @@ class PipelineTaskTrackerUI:
         }
 
     def _simplify_mappings(self, mappings: List[Dict]) -> set:
-        """Simplify Mcode mappings for comparison by focusing on key elements"""
+        """Simplify mCODE mappings for comparison by focusing on key elements"""
         simplified = set()
         for mapping in mappings:
             # Create a simplified representation focusing on key elements
@@ -295,6 +294,10 @@ class PipelineTaskTrackerUI:
         """Calculate benchmarking metrics for the pipeline task"""
         if not task.start_time or not task.end_time:
             return
+        
+        # Initialize benchmark_metrics if None
+        if task.benchmark_metrics is None:
+            task.benchmark_metrics = {}
         
         # Calculate total processing time
         total_time = task.end_time - task.start_time
@@ -364,8 +367,8 @@ class PipelineTaskTrackerUI:
         # Pipeline selection
         with ui.row().classes('w-full gap-2 items-end'):
             self.pipeline_selector = ui.select(
-                options=['NLP to Mcode', 'Direct to Mcode'],
-                value='NLP to Mcode',
+                options=['NLP to mCODE', 'Direct to mCODE'],
+                value='NLP to mCODE',
                 label='Select Pipeline',
                 on_change=self._on_pipeline_change
             ).classes('w-64')
@@ -389,9 +392,9 @@ class PipelineTaskTrackerUI:
         
         # Prompt selectors (initially hidden)
         with ui.column().classes('w-full mt-4 gap-2').bind_visibility_from(self.pipeline_selector, 'value'):
-            # NLP Extraction prompts (for NLP to Mcode pipeline)
+            # NLP Extraction prompts (for NLP to mCODE pipeline)
             with ui.row().classes('w-full gap-2 items-end').bind_visibility_from(
-                self.pipeline_selector, 'value', backward=lambda x: x == 'NLP to Mcode'):
+                self.pipeline_selector, 'value', backward=lambda x: x == 'NLP to mCODE'):
                 ui.label('NLP Extraction Prompt:').classes('text-sm self-center')
                 nlp_extraction_prompts = [
                     name for name, info in self.available_prompts.items()
@@ -403,7 +406,7 @@ class PipelineTaskTrackerUI:
                     label='Extraction Prompt'
                 ).classes('w-48')
                 
-                ui.label('Mcode Mapping Prompt:').classes('text-sm self-center')
+                ui.label('mCODE Mapping Prompt:').classes('text-sm self-center')
                 Mcode_mapping_prompts = [
                     name for name, info in self.available_prompts.items()
                     if info.get('prompt_type') == 'MCODE_MAPPING'
@@ -414,10 +417,10 @@ class PipelineTaskTrackerUI:
                     label='Mapping Prompt'
                 ).classes('w-48')
             
-            # Direct Mcode prompts (for Direct to Mcode pipeline)
+            # Direct mCODE prompts (for Direct to mCODE pipeline)
             with ui.row().classes('w-full gap-2 items-end').bind_visibility_from(
-                self.pipeline_selector, 'value', backward=lambda x: x == 'Direct to Mcode'):
-                ui.label('Direct Mcode Prompt:').classes('text-sm self-center')
+                self.pipeline_selector, 'value', backward=lambda x: x == 'Direct to mCODE'):
+                ui.label('Direct mCODE Prompt:').classes('text-sm self-center')
                 direct_mcode_prompts = [
                     name for name, info in self.available_prompts.items()
                     if info.get('prompt_type') == 'DIRECT_MCODE'
@@ -504,7 +507,7 @@ class PipelineTaskTrackerUI:
         # Create a new pipeline task
         task_id = str(uuid.uuid4())[:8]
         prompt_info = {}
-        if self.pipeline_selector.value == 'Direct to Mcode':
+        if self.pipeline_selector.value == 'Direct to mCODE':
             prompt_info = {
                 'direct_prompt': self.direct_mcode_prompt_selector.value
             }
@@ -584,12 +587,15 @@ class PipelineTaskTrackerUI:
                     metrics = task.benchmark_metrics
                     if 'f1_score' in metrics:
                         f1_score = metrics['f1_score']
-                        if f1_score >= 0.8:
-                            status_text += f" ✓ F1: {f1_score:.3f}"
-                        elif f1_score >= 0.5:
-                            status_text += f" ⚠ F1: {f1_score:.3f}"
+                        if f1_score is not None:
+                            if f1_score >= 0.8:
+                                status_text += f" ✓ F1: {f1_score:.3f}"
+                            elif f1_score >= 0.5:
+                                status_text += f" ⚠ F1: {f1_score:.3f}"
+                            else:
+                                status_text += f" ✗ F1: {f1_score:.3f}"
                         else:
-                            status_text += f" ✗ F1: {f1_score:.3f}"
+                            status_text += " ✓ F1: N/A"
                     
                 ui.label(status_text).classes(f'text-{status_color}-600 font-medium')
             
@@ -606,14 +612,14 @@ class PipelineTaskTrackerUI:
                 # Pipeline information
                 with ui.row().classes('w-full text-sm text-gray-600 dark:text-gray-400 mb-2'):
                     if task.prompt_info:
-                        if task.pipeline_type == 'Direct to Mcode':
+                        if task.pipeline_type == 'Direct to mCODE':
                             ui.label(f'Prompt: {task.prompt_info.get("direct_prompt", "N/A")}')
                         else:
                             ui.label(f'Extraction Prompt: {task.prompt_info.get("extraction_prompt", "N/A")}')
                             ui.label(f'Mapping Prompt: {task.prompt_info.get("mapping_prompt", "N/A")}')
                 
                 # Sub-tasks
-                if task.pipeline_type == 'Direct to Mcode':
+                if task.pipeline_type == 'Direct to mCODE':
                     self._create_subtask_row(task.mcode_mapping)
                 else:
                     self._create_subtask_row(task.nlp_extraction)
@@ -629,15 +635,19 @@ class PipelineTaskTrackerUI:
                             
                             # Color-coded validation badge
                             f1_score = metrics['f1_score']
-                            if f1_score >= 0.8:
-                                badge_color = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                badge_text = f"Excellent (F1: {f1_score:.3f})"
-                            elif f1_score >= 0.5:
-                                badge_color = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                badge_text = f"Good (F1: {f1_score:.3f})"
+                            if f1_score is not None:
+                                if f1_score >= 0.8:
+                                    badge_color = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                    badge_text = f"Excellent (F1: {f1_score:.3f})"
+                                elif f1_score >= 0.5:
+                                    badge_color = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                    badge_text = f"Good (F1: {f1_score:.3f})"
+                                else:
+                                    badge_color = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                    badge_text = f"Poor (F1: {f1_score:.3f})"
                             else:
-                                badge_color = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                badge_text = f"Poor (F1: {f1_score:.3f})"
+                                badge_color = 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                badge_text = "Validation: N/A"
                             
                             ui.label(badge_text).classes(f'text-xs px-2 py-1 rounded-full {badge_color}')
                         
@@ -647,9 +657,12 @@ class PipelineTaskTrackerUI:
                             
                             # Main metrics in a prominent row
                             with ui.row().classes('w-full justify-between text-sm font-medium'):
-                                ui.label(f'Precision: {metrics["precision"]:.3f}').classes('text-blue-700 dark:text-blue-300')
-                                ui.label(f'Recall: {metrics["recall"]:.3f}').classes('text-blue-700 dark:text-blue-300')
-                                ui.label(f'F1-Score: {metrics["f1_score"]:.3f}').classes('text-blue-700 dark:text-blue-300')
+                                precision = metrics["precision"]
+                                recall = metrics["recall"]
+                                f1_score = metrics["f1_score"]
+                                ui.label(f'Precision: {precision:.3f}' if precision is not None else 'Precision: N/A').classes('text-blue-700 dark:text-blue-300')
+                                ui.label(f'Recall: {recall:.3f}' if recall is not None else 'Recall: N/A').classes('text-blue-700 dark:text-blue-300')
+                                ui.label(f'F1-Score: {f1_score:.3f}' if f1_score is not None else 'F1-Score: N/A').classes('text-blue-700 dark:text-blue-300')
                             
                             # Detailed counts
                             with ui.row().classes('w-full justify-between text-sm text-gray-600 dark:text-gray-400 mt-2'):
@@ -686,7 +699,7 @@ class PipelineTaskTrackerUI:
                             ui.label(f'NLP Extraction Time: {metrics["nlp_extraction_time"]:.3f}s').classes('text-sm text-gray-600 dark:text-gray-400')
                             
                         if 'Mcode_mapping_time' in metrics:
-                            ui.label(f'Mcode Mapping Time: {metrics["Mcode_mapping_time"]:.3f}s').classes('text-sm text-gray-600 dark:text-gray-400')
+                            ui.label(f'mCODE Mapping Time: {metrics["Mcode_mapping_time"]:.3f}s').classes('text-sm text-gray-600 dark:text-gray-400')
                         
                         # Token usage metrics
                         if 'total_tokens' in metrics:
@@ -746,17 +759,19 @@ class PipelineTaskTrackerUI:
                         ui.label(token_text).classes('text-gray-600 dark:text-gray-400')
     
     def _process_notifications(self):
-        """Process and display notifications"""
-        while self.notifications:
-            notification = self.notifications.pop(0)
+        """Process and display notifications immediately"""
+        # Process all pending notifications
+        notifications_to_process = self.notifications.copy()
+        self.notifications.clear()
+        
+        for notification in notifications_to_process:
             ui.notify(notification['message'], type=notification['type'])
     
     def _refresh_ui_during_processing(self):
-        """Refresh UI more frequently when tasks are being processed"""
-        # Only refresh if there are running tasks to avoid unnecessary updates
-        running_tasks = [task for task in self.tasks if task.status == TaskStatus.RUNNING]
-        if running_tasks:
-            self._update_task_list()
+        """Refresh UI when tasks are being processed - now handled by reactive updates"""
+        # This method is no longer needed as UI updates are handled reactively
+        # by NiceGUI's data binding system
+        pass
     
     def _add_notification(self, message: str, type: str = 'info'):
         """Add a notification to be displayed"""
@@ -845,7 +860,7 @@ class PipelineTaskTrackerUI:
             
             # Reset pipeline selection
             if self.pipeline_selector:
-                self.pipeline_selector.value = 'NLP to Mcode'
+                self.pipeline_selector.value = 'NLP to mCODE'
             
             # Reset status label
             if self.status_label:
@@ -963,8 +978,8 @@ class PipelineTaskTrackerUI:
             for _ in range(concurrency_level):
                 await self.task_queue.put(None)
         
-        background_tasks.create(clear_queue())
-        background_tasks.create(stop_workers())
+        background_tasks.create(clear_queue)
+        background_tasks.create(stop_workers)
         
         logger.info("Pipeline task workers stopped")
     
@@ -980,7 +995,7 @@ class PipelineTaskTrackerUI:
         
         try:
             # Create pipeline instance with selected prompts
-            if self.pipeline_selector.value == 'Direct to Mcode':
+            if self.pipeline_selector.value == 'Direct to mCODE':
                 prompt_name = self.direct_mcode_prompt_selector.value
                 pipeline = McodePipeline(prompt_name=prompt_name)
             else:
@@ -1007,13 +1022,16 @@ class PipelineTaskTrackerUI:
                 logger.info(f"Validation completed for task {task.id}: {validation_metrics}")
                 # Add validation notification
                 if validation_metrics:
-                    f1_score = validation_metrics.get('f1_score', 0)
-                    if f1_score >= 0.8:
-                        self._add_notification(f"Task {task.id}: Excellent validation (F1: {f1_score:.3f})", 'positive')
-                    elif f1_score >= 0.5:
-                        self._add_notification(f"Task {task.id}: Good validation (F1: {f1_score:.3f})", 'warning')
+                    f1_score = validation_metrics.get('f1_score')
+                    if f1_score is not None:
+                        if f1_score >= 0.8:
+                            self._add_notification(f"Task {task.id}: Excellent validation (F1: {f1_score:.3f})", 'positive')
+                        elif f1_score >= 0.5:
+                            self._add_notification(f"Task {task.id}: Good validation (F1: {f1_score:.3f})", 'warning')
+                        else:
+                            self._add_notification(f"Task {task.id}: Poor validation (F1: {f1_score:.3f})", 'negative')
                     else:
-                        self._add_notification(f"Task {task.id}: Poor validation (F1: {f1_score:.3f})", 'negative')
+                        self._add_notification(f"Task {task.id}: Validation completed (F1: N/A)", 'info')
             
             # Calculate benchmarking metrics (processing time, token usage, etc.)
             self._calculate_benchmark_metrics(task)
@@ -1061,10 +1079,10 @@ class PipelineTaskTrackerUI:
         
         # Update task details based on pipeline type
         if isinstance(pipeline, McodePipeline):
-            task.mcode_mapping.name = "Direct to Mcode"
+            task.mcode_mapping.name = "Direct to mCODE"
             task.mcode_mapping.status = TaskStatus.RUNNING
             task.mcode_mapping.start_time = asyncio.get_event_loop().time()
-            task.mcode_mapping.details = f"Mapping text to Mcode using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={mapping_prompt})..."
+            task.mcode_mapping.details = f"Mapping text to mCODE using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={mapping_prompt})..."
             task.nlp_extraction.details = "Not applicable for this pipeline"
             task.nlp_extraction.status = TaskStatus.SUCCESS
         else:
@@ -1092,12 +1110,12 @@ class PipelineTaskTrackerUI:
 
                     task.mcode_mapping.status = TaskStatus.RUNNING
                     task.mcode_mapping.start_time = asyncio.get_event_loop().time()
-                    task.mcode_mapping.details = f"Mapping entities to Mcode using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={pipeline.mapping_prompt_name})..."
+                    task.mcode_mapping.details = f"Mapping entities to mCODE using {model_name} (temp={temperature}, max_tokens={max_tokens}, prompt={pipeline.mapping_prompt_name})..."
                     self._update_task_list()
 
                 task.mcode_mapping.status = TaskStatus.SUCCESS
                 task.mcode_mapping.end_time = asyncio.get_event_loop().time()
-                task.mcode_mapping.details = f"Mapped {len(result.mcode_mappings)} Mcode elements using {model_name} with prompt '{pipeline.prompt_name if isinstance(pipeline, McodePipeline) else pipeline.mapping_prompt_name}'"
+                task.mcode_mapping.details = f"Mapped {len(result.mcode_mappings)} mCODE elements using {model_name} with prompt '{pipeline.prompt_name if isinstance(pipeline, McodePipeline) else pipeline.mapping_prompt_name}'"
                 if result.metadata and 'token_usage' in result.metadata:
                     task.mcode_mapping.token_usage = result.metadata['token_usage']
             
@@ -1140,9 +1158,9 @@ class PipelineTaskTrackerUI:
         
         # Pipeline selection hierarchy
         with ui.row().classes('w-full gap-4 mt-4'):
-            # NLP to Mcode Pipeline
+            # NLP to mCODE Pipeline
             with ui.card().classes('flex-1'):
-                ui.label('NLP to Mcode Pipeline').classes('text-md font-semibold mb-2')
+                ui.label('NLP to mCODE Pipeline').classes('text-md font-semibold mb-2')
                 
                 # Pipeline-level checkbox for NLP Extraction prompts
                 self.nlp_pipeline_checkbox = ui.checkbox(
@@ -1164,15 +1182,15 @@ class PipelineTaskTrackerUI:
                             value=False
                         )
                 
-                # Pipeline-level checkbox for Mcode Mapping prompts
+                # Pipeline-level checkbox for mCODE Mapping prompts
                 self.mcode_pipeline_checkbox = ui.checkbox(
-                    'Select All Mcode Mapping Prompts',
+                    'Select All mCODE Mapping Prompts',
                     on_change=lambda e: self._toggle_all_prompts('MCODE_MAPPING', e.value)
                 ).classes('mt-4')
                 
-                # Mcode Mapping prompts
+                # mCODE Mapping prompts
                 with ui.column().classes('ml-6 gap-2 mt-2'):
-                    ui.label('Mcode Mapping Prompts:').classes('text-sm font-medium')
+                    ui.label('mCODE Mapping Prompts:').classes('text-sm font-medium')
                     self.mcode_mapping_checkboxes = {}
                     Mcode_mapping_prompts = [
                         (name, info) for name, info in self.available_prompts.items()
@@ -1184,9 +1202,9 @@ class PipelineTaskTrackerUI:
                             value=False
                         )
             
-            # Direct to Mcode Pipeline
+            # Direct to mCODE Pipeline
             with ui.card().classes('flex-1'):
-                ui.label('Direct to Mcode Pipeline').classes('text-md font-semibold mb-2')
+                ui.label('Direct to mCODE Pipeline').classes('text-md font-semibold mb-2')
                 
                 # Pipeline-level checkbox
                 self.direct_pipeline_checkbox = ui.checkbox(
@@ -1194,9 +1212,9 @@ class PipelineTaskTrackerUI:
                     on_change=lambda e: self._toggle_all_prompts('DIRECT_MCODE', e.value)
                 )
                 
-                # Direct Mcode prompts
+                # Direct mCODE prompts
                 with ui.column().classes('ml-6 gap-2'):
-                    ui.label('Direct Mcode Prompts:').classes('text-sm font-medium')
+                    ui.label('Direct mCODE Prompts:').classes('text-sm font-medium')
                     self.direct_mcode_checkboxes = {}
                     direct_mcode_prompts = [
                         (name, info) for name, info in self.available_prompts.items()
@@ -1228,22 +1246,22 @@ class PipelineTaskTrackerUI:
         
         selected_tasks = []
         
-        # Get selected NLP to Mcode tasks
+        # Get selected NLP to mCODE tasks
         for nlp_prompt_name, nlp_checkbox in self.nlp_extraction_checkboxes.items():
             if nlp_checkbox.value:
                 for Mcode_prompt_name, Mcode_checkbox in self.mcode_mapping_checkboxes.items():
                     if Mcode_checkbox.value:
                         selected_tasks.append({
-                            'pipeline_type': 'NLP to Mcode',
+                            'pipeline_type': 'NLP to mCODE',
                             'extraction_prompt': nlp_prompt_name,
                             'mapping_prompt': Mcode_prompt_name
                         })
         
-        # Get selected Direct to Mcode tasks
+        # Get selected Direct to mCODE tasks
         for direct_prompt_name, direct_checkbox in self.direct_mcode_checkboxes.items():
             if direct_checkbox.value:
                 selected_tasks.append({
-                    'pipeline_type': 'Direct to Mcode',
+                    'pipeline_type': 'Direct to mCODE',
                     'direct_prompt': direct_prompt_name
                 })
         
@@ -1285,7 +1303,7 @@ class PipelineTaskTrackerUI:
         pipeline_type = task_config['pipeline_type']
         prompt_info = {}
         
-        if pipeline_type == 'Direct to Mcode':
+        if pipeline_type == 'Direct to mCODE':
             prompt_info = {
                 'direct_prompt': task_config['direct_prompt']
             }

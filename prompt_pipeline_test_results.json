@@ -1,6 +1,6 @@
 [
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
@@ -19,7 +19,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
@@ -38,7 +38,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
@@ -48,7 +48,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "error_robust_mapping",
     "direct_prompt": null,
@@ -58,7 +58,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "minimal_mapping",
     "direct_prompt": null,
@@ -77,7 +77,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
@@ -96,7 +96,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "generic_extraction",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
@@ -115,7 +115,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
@@ -134,7 +134,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
@@ -153,7 +153,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
@@ -163,7 +163,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "error_robust_mapping",
     "direct_prompt": null,
@@ -182,7 +182,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "minimal_mapping",
     "direct_prompt": null,
@@ -201,7 +201,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
@@ -220,7 +220,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "comprehensive_extraction",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
@@ -239,7 +239,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
@@ -249,7 +249,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
@@ -259,7 +259,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
@@ -269,7 +269,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "error_robust_mapping",
     "direct_prompt": null,
@@ -279,7 +279,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "minimal_mapping",
     "direct_prompt": null,
@@ -289,7 +289,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
@@ -299,7 +299,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "basic_extraction",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
@@ -309,7 +309,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
@@ -328,7 +328,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
@@ -347,7 +347,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
@@ -366,7 +366,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "error_robust_mapping",
     "direct_prompt": null,
@@ -385,7 +385,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "minimal_mapping",
     "direct_prompt": null,
@@ -404,7 +404,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
@@ -423,7 +423,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
@@ -442,7 +442,7 @@
     }
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
@@ -452,7 +452,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
@@ -462,7 +462,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
@@ -472,7 +472,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "error_robust_mapping",
     "direct_prompt": null,
@@ -482,7 +482,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "minimal_mapping",
     "direct_prompt": null,
@@ -492,7 +492,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
@@ -502,7 +502,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "minimal_extraction_optimization",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
@@ -512,7 +512,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "generic_mapping",
     "direct_prompt": null,
@@ -522,7 +522,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "comprehensive_mapping",
     "direct_prompt": null,
@@ -532,7 +532,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "detailed_mapping",
     "direct_prompt": null,
@@ -542,7 +542,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "error_robust_mapping",
     "direct_prompt": null,
@@ -552,7 +552,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "minimal_mapping",
     "direct_prompt": null,
@@ -562,7 +562,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "simple_mapping",
     "direct_prompt": null,
@@ -572,7 +572,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "NLP to Mcode",
+    "pipeline_type": "NLP to mCODE",
     "extraction_prompt": "structured_extraction",
     "mapping_prompt": "standard_mapping",
     "direct_prompt": null,
@@ -582,7 +582,7 @@
     "metrics": {}
   },
   {
-    "pipeline_type": "Direct to Mcode",
+    "pipeline_type": "Direct to mCODE",
     "extraction_prompt": null,
     "mapping_prompt": null,
     "direct_prompt": "direct_mcode",
@@ -601,7 +601,7 @@
     }
   },
   {
-    "pipeline_type": "Direct to Mcode",
+    "pipeline_type": "Direct to mCODE",
     "extraction_prompt": null,
     "mapping_prompt": null,
     "direct_prompt": "direct_mcode_simple",
@@ -620,7 +620,7 @@
     }
   },
   {
-    "pipeline_type": "Direct to Mcode",
+    "pipeline_type": "Direct to mCODE",
     "extraction_prompt": null,
     "mapping_prompt": null,
     "direct_prompt": "direct_mcode_comprehensive",
@@ -639,7 +639,7 @@
     }
   },
   {
-    "pipeline_type": "Direct to Mcode",
+    "pipeline_type": "Direct to mCODE",
     "extraction_prompt": null,
     "mapping_prompt": null,
     "direct_prompt": "direct_mcode_minimal",
@@ -658,7 +658,7 @@
     }
   },
   {
-    "pipeline_type": "Direct to Mcode",
+    "pipeline_type": "Direct to mCODE",
     "extraction_prompt": null,
     "mapping_prompt": null,
     "direct_prompt": "direct_mcode_structured",
@@ -677,7 +677,7 @@
     }
   },
   {
-    "pipeline_type": "Direct to Mcode",
+    "pipeline_type": "Direct to mCODE",
     "extraction_prompt": null,
     "mapping_prompt": null,
     "direct_prompt": "direct_mcode_optimization",
@@ -696,7 +696,7 @@
     }
   },
   {
-    "pipeline_type": "Direct to Mcode",
+    "pipeline_type": "Direct to mCODE",
     "extraction_prompt": null,
     "mapping_prompt": null,
     "direct_prompt": "direct_mcode_improved",

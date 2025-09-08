@@ -63,7 +63,7 @@ def get_all_prompts_by_type() -> Dict[str, List[str]]:
     return prompt_groups
 
 def test_nlp_pipeline(extraction_prompt: str, mapping_prompt: str, test_case: Dict[str, Any]) -> Dict[str, Any]:
-    """Test NLP to Mcode pipeline with specific prompts"""
+    """Test NLP to mCODE pipeline with specific prompts"""
     try:
         logger.info(f"Testing NLP pipeline: extraction='{extraction_prompt}', mapping='{mapping_prompt}'")
         
@@ -82,7 +82,7 @@ def test_nlp_pipeline(extraction_prompt: str, mapping_prompt: str, test_case: Di
         logger.info(f"✅ NLP pipeline '{extraction_prompt}' + '{mapping_prompt}' succeeded with {mapped_count} mappings")
         return {
             'success': True,
-            'pipeline_type': 'NLP to Mcode',
+            'pipeline_type': 'NLP to mCODE',
             'extraction_prompt': extraction_prompt,
             'mapping_prompt': mapping_prompt,
             'mapped_count': mapped_count,
@@ -93,7 +93,7 @@ def test_nlp_pipeline(extraction_prompt: str, mapping_prompt: str, test_case: Di
         logger.error(f"❌ NLP pipeline '{extraction_prompt}' + '{mapping_prompt}' failed: {e}")
         return {
             'success': False,
-            'pipeline_type': 'NLP to Mcode',
+            'pipeline_type': 'NLP to mCODE',
             'extraction_prompt': extraction_prompt,
             'mapping_prompt': mapping_prompt,
             'mapped_count': 0,
@@ -101,7 +101,7 @@ def test_nlp_pipeline(extraction_prompt: str, mapping_prompt: str, test_case: Di
         }
 
 def test_direct_pipeline(prompt: str, test_case: Dict[str, Any]) -> Dict[str, Any]:
-    """Test Direct to Mcode pipeline with specific prompt"""
+    """Test Direct to mCODE pipeline with specific prompt"""
     try:
         logger.info(f"Testing Direct pipeline: prompt='{prompt}'")
         
@@ -117,7 +117,7 @@ def test_direct_pipeline(prompt: str, test_case: Dict[str, Any]) -> Dict[str, An
         logger.info(f"✅ Direct pipeline '{prompt}' succeeded with {mapped_count} mappings")
         return {
             'success': True,
-            'pipeline_type': 'Direct to Mcode',
+            'pipeline_type': 'Direct to mCODE',
             'direct_prompt': prompt,
             'mapped_count': mapped_count,
             'error': None
@@ -127,7 +127,7 @@ def test_direct_pipeline(prompt: str, test_case: Dict[str, Any]) -> Dict[str, An
         logger.error(f"❌ Direct pipeline '{prompt}' failed: {e}")
         return {
             'success': False,
-            'pipeline_type': 'Direct to Mcode',
+            'pipeline_type': 'Direct to mCODE',
             'direct_prompt': prompt,
             'mapped_count': 0,
             'error': str(e)
@@ -147,15 +147,15 @@ def main():
         # Test all prompt combinations
         results = []
         
-        # Test NLP to Mcode pipeline combinations
-        logger.info("Testing NLP to Mcode pipeline combinations...")
+        # Test NLP to mCODE pipeline combinations
+        logger.info("Testing NLP to mCODE pipeline combinations...")
         for extraction_prompt in prompt_groups['NLP_EXTRACTION']:
             for mapping_prompt in prompt_groups['MCODE_MAPPING']:
                 result = test_nlp_pipeline(extraction_prompt, mapping_prompt, test_case)
                 results.append(result)
         
-        # Test Direct to Mcode pipeline
-        logger.info("Testing Direct to Mcode pipeline...")
+        # Test Direct to mCODE pipeline
+        logger.info("Testing Direct to mCODE pipeline...")
         for direct_prompt in prompt_groups['DIRECT_MCODE']:
             result = test_direct_pipeline(direct_prompt, test_case)
             results.append(result)
@@ -176,7 +176,7 @@ def main():
             logger.info("\nFailed tests:")
             for result in results:
                 if not result['success']:
-                    if result['pipeline_type'] == 'NLP to Mcode':
+                    if result['pipeline_type'] == 'NLP to mCODE':
                         logger.info(f"  - NLP Pipeline: extraction='{result['extraction_prompt']}', mapping='{result['mapping_prompt']}'")
                     else:
                         logger.info(f"  - Direct Pipeline: prompt='{result['direct_prompt']}'")
@@ -185,7 +185,7 @@ def main():
         logger.info("\nSuccessful tests:")
         for result in results:
             if result['success']:
-                if result['pipeline_type'] == 'NLP to Mcode':
+                if result['pipeline_type'] == 'NLP to mCODE':
                     logger.info(f"  - NLP Pipeline: extraction='{result['extraction_prompt']}', mapping='{result['mapping_prompt']}' -> {result['mapped_count']} mappings")
                 else:
                     logger.info(f"  - Direct Pipeline: prompt='{result['direct_prompt']}' -> {result['mapped_count']} mappings")

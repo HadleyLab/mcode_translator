@@ -15,7 +15,7 @@ from src.pipeline.prompt_model_interface import set_extraction_prompt, set_mappi
 
 def demo_process_trial():
     """Demonstrate the process-trial functionality"""
-    print("🚀 Demo: Process Clinical Trial with Mcode Pipeline")
+    print("🚀 Demo: Process Clinical Trial with mCODE Pipeline")
     print("=" * 50)
     
     # Configure the pipeline
@@ -40,9 +40,9 @@ def demo_process_trial():
     print(f"   🆔 NCT ID: {nct_id}")
     print(f"   📋 Title: {title[:100]}{'...' if len(title) > 100 else ''}")
     
-    # Process with NLP extraction and Mcode mapping
-    print("\n🧬 Processing trial with NLP extraction and Mcode mapping...")
-    print("   This will extract entities and map them to Mcode elements")
+    # Process with NLP extraction and mCODE mapping
+    print("\n🧬 Processing trial with NLP extraction and mCODE mapping...")
+    print("   This will extract entities and map them to mCODE elements")
     print("   Using the new strict dynamic extraction pipeline")
     
     # This would normally be called from the fetcher with --process-trial flag

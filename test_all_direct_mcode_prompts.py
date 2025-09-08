@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify that all fixed direct Mcode prompts work correctly.
+Test script to verify that all fixed direct mCODE prompts work correctly.
 """
 
 import sys
@@ -40,18 +40,18 @@ def load_test_data() -> Dict[str, Any]:
     return test_case
 
 def get_all_direct_mcode_prompts() -> list:
-    """Get all direct Mcode prompt names"""
+    """Get all direct mCODE prompt names"""
     loader = PromptLoader()
     all_prompts = loader.list_available_prompts()
     
-    # Filter for direct Mcode prompts
+    # Filter for direct mCODE prompts
     direct_prompts = []
     for prompt_name, prompt_config in all_prompts.items():
         prompt_type = prompt_config.get('prompt_type', '')
         if prompt_type == 'DIRECT_MCODE':
             direct_prompts.append(prompt_name)
     
-    logger.info(f"Found {len(direct_prompts)} direct Mcode prompts: {direct_prompts}")
+    logger.info(f"Found {len(direct_prompts)} direct mCODE prompts: {direct_prompts}")
     return direct_prompts
 
 def test_prompt(prompt_name: str, test_case: Dict[str, Any]) -> Dict[str, Any]:
@@ -86,14 +86,14 @@ def test_prompt(prompt_name: str, test_case: Dict[str, Any]) -> Dict[str, Any]:
         }
 
 def main():
-    """Main function to test all direct Mcode prompts"""
-    logger.info("Starting test of all direct Mcode prompts...")
+    """Main function to test all direct mCODE prompts"""
+    logger.info("Starting test of all direct mCODE prompts...")
     
     try:
         # Load test data
         test_case = load_test_data()
         
-        # Get all direct Mcode prompts
+        # Get all direct mCODE prompts
         prompt_names = get_all_direct_mcode_prompts()
         
         # Test each prompt

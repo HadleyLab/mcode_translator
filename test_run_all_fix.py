@@ -40,9 +40,9 @@ def test_create_and_queue_task():
     with patch('src.optimization.pipeline_task_tracker.background_tasks') as mock_bg_tasks:
         mock_bg_tasks.create = Mock()
         
-        # Test creating a NLP to Mcode task
+        # Test creating a NLP to mCODE task
         task_config = {
-            'pipeline_type': 'NLP to Mcode',
+            'pipeline_type': 'NLP to mCODE',
             'extraction_prompt': 'generic_extraction',
             'mapping_prompt': 'generic_mapping'
         }
@@ -52,7 +52,7 @@ def test_create_and_queue_task():
         # Verify task was created and added to tasks list
         assert len(ui.tasks) == 1, f"Expected 1 task, got {len(ui.tasks)}"
         task = ui.tasks[0]
-        assert task.pipeline_type == 'NLP to Mcode'
+        assert task.pipeline_type == 'NLP to mCODE'
         assert task.prompt_info['extraction_prompt'] == 'generic_extraction'
         assert task.prompt_info['mapping_prompt'] == 'generic_mapping'
         assert task.status == TaskStatus.PENDING
@@ -60,11 +60,11 @@ def test_create_and_queue_task():
         # Verify background task was created
         assert mock_bg_tasks.create.called, "background_tasks.create should have been called"
         
-        print("✓ NLP to Mcode task creation test passed")
+        print("✓ NLP to mCODE task creation test passed")
         
-        # Test creating a Direct to Mcode task
+        # Test creating a Direct to mCODE task
         task_config2 = {
-            'pipeline_type': 'Direct to Mcode',
+            'pipeline_type': 'Direct to mCODE',
             'direct_prompt': 'direct_text_to_mcode_mapping'
         }
         
@@ -73,10 +73,10 @@ def test_create_and_queue_task():
         # Verify second task was created
         assert len(ui.tasks) == 2, f"Expected 2 tasks, got {len(ui.tasks)}"
         task2 = ui.tasks[1]
-        assert task2.pipeline_type == 'Direct to Mcode'
+        assert task2.pipeline_type == 'Direct to mCODE'
         assert task2.prompt_info['direct_prompt'] == 'direct_text_to_mcode_mapping'
         
-        print("✓ Direct to Mcode task creation test passed")
+        print("✓ Direct to mCODE task creation test passed")
     
     print("All _create_and_queue_task tests passed!")
 
@@ -125,15 +125,15 @@ def test_run_selected_tasks():
                 # Verify _create_and_queue_task was called for the selected combinations
                 assert mock_create_task.call_count == 2, f"Expected 2 calls, got {mock_create_task.call_count}"
                 
-                # Check the first call (NLP to Mcode)
+                # Check the first call (NLP to mCODE)
                 first_call_args = mock_create_task.call_args_list[0][0][0]
-                assert first_call_args['pipeline_type'] == 'NLP to Mcode'
+                assert first_call_args['pipeline_type'] == 'NLP to mCODE'
                 assert first_call_args['extraction_prompt'] == 'generic_extraction'
                 assert first_call_args['mapping_prompt'] == 'generic_mapping'
                 
-                # Check the second call (Direct to Mcode)
+                # Check the second call (Direct to mCODE)
                 second_call_args = mock_create_task.call_args_list[1][0][0]
-                assert second_call_args['pipeline_type'] == 'Direct to Mcode'
+                assert second_call_args['pipeline_type'] == 'Direct to mCODE'
                 assert second_call_args['direct_prompt'] == 'direct_text_to_mcode_mapping'
                 
                 print("✓ _run_selected_tasks test passed")

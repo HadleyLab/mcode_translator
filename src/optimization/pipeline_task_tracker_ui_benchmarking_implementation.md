@@ -60,14 +60,14 @@ def _create_task_card(self, task: PipelineTask):
         with ui.expansion('Details', icon='info').classes('w-full'):
             # Pipeline information
             with ui.row().classes('w-full text-sm text-gray-600 dark:text-gray-400 mb-2'):
-                if task.pipeline_type == 'Direct to Mcode' and hasattr(task, 'prompt_info'):
+                if task.pipeline_type == 'Direct to mCODE' and hasattr(task, 'prompt_info'):
                     ui.label(f'Prompt: {task.prompt_info.get("direct_prompt", "N/A")}')
                 elif hasattr(task, 'prompt_info'):
                     ui.label(f'Extraction Prompt: {task.prompt_info.get("extraction_prompt", "N/A")}')
                     ui.label(f'Mapping Prompt: {task.prompt_info.get("mapping_prompt", "N/A")}')
             
             # Sub-tasks with validation and benchmarking metrics
-            if task.pipeline_type == 'Direct to Mcode':
+            if task.pipeline_type == 'Direct to mCODE':
                 self._create_subtask_row(task.mcode_mapping)
             else:
                 self._create_subtask_row(task.nlp_extraction)

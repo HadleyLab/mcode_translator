@@ -256,7 +256,7 @@ class ClinicalBenchmarkUI:
                 validation['prompt_key'] not in self.nlp_prompt_filter.value):
                 matches = False
                 
-            # Apply Mcode prompt filter - if filter has values, only include selected prompts
+            # Apply mCODE prompt filter - if filter has values, only include selected prompts
             if matches and (hasattr(self, 'Mcode_prompt_filter') and self.mcode_prompt_filter.value and
                 validation['prompt_type'] == 'MCODE_MAPPING' and
                 validation['prompt_key'] not in self.mcode_prompt_filter.value):
@@ -593,7 +593,7 @@ class ClinicalBenchmarkUI:
                 Mcode_prompts[key] = prompt_name
         
         self.nlp_prompt_filter = ui.select(options=nlp_prompts, label='NLP Prompts', multiple=True, on_change=self._apply_filters).classes('w-full')
-        self.mcode_prompt_filter = ui.select(options=Mcode_prompts, label='Mcode Prompts', multiple=True, on_change=self._apply_filters).classes('w-full')
+        self.mcode_prompt_filter = ui.select(options=Mcode_prompts, label='mCODE Prompts', multiple=True, on_change=self._apply_filters).classes('w-full')
         
         # Use model loader to get model information
         model_options = {key: info.get('name', key) for key, info in self.available_models.items()}
