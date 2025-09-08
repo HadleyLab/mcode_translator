@@ -1,7 +1,7 @@
 # Benchmark Task Tracker Implementation Plan
 
 ## Overview
-This document provides a detailed implementation plan for the Benchmark Task Tracker, which extends the existing functionality with Mcode-optimize integration. The implementation will be done in phases to ensure a robust and maintainable solution.
+This document provides a detailed implementation plan for the Benchmark Task Tracker, which extends the existing functionality with mCODE-optimize integration. The implementation will be done in phases to ensure a robust and maintainable solution.
 
 ## Phase 1: Core UI Extension
 
@@ -22,11 +22,11 @@ This document provides a detailed implementation plan for the Benchmark Task Tra
  - Live logging display
   - Results visualization area
 - Modify task creation to support benchmark tasks
-- Update task execution to use Mcode-optimize framework
+- Update task execution to use mCODE-optimize framework
 
 ### 1.3 Implement Control Panel
 - Design a user-friendly interface for selecting:
-  - Prompts (NLP extraction and Mcode mapping)
+  - Prompts (NLP extraction and mCODE mapping)
   - Models (various LLM providers)
   - Trials (clinical trial data)
 - Add filtering capabilities for prompts and models
@@ -35,7 +35,7 @@ This document provides a detailed implementation plan for the Benchmark Task Tra
   - Top N combinations to consider
   - Concurrency level
 
-## Phase 2: Integration with Mcode-optimize
+## Phase 2: Integration with mCODE-optimize
 
 ### 2.1 Framework Integration
 - Integrate PromptOptimizationFramework into the UI
@@ -180,7 +180,7 @@ src/optimization/
 
 ## Dependencies
 - NiceGUI for web interface
-- Mcode-optimize framework
+- mCODE-optimize framework
 - pandas for data analysis
 - psutil for system monitoring
 - Required Python packages listed in requirements.txt
@@ -194,7 +194,7 @@ src/optimization/
 
 ### Integration Tests
 - Test end-to-end benchmark execution
-- Verify integration with Mcode-optimize framework
+- Verify integration with mCODE-optimize framework
 - Validate results against gold standard data
 
 ### UI Tests

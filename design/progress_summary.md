@@ -1,14 +1,14 @@
-# Mcode Translator - Default Prompt Functionality and Unified CLI
+# mCODE Translator - Default Prompt Functionality and Unified CLI
 ## Progress Summary
 
 ### Completed Work
 
 #### 1. Analysis and Design Phase
-- ✅ **Codebase Analysis**: Completed thorough analysis of existing Mcode Translator system including:
+- ✅ **Codebase Analysis**: Completed thorough analysis of existing mCODE Translator system including:
   - `PromptOptimizationFramework` in `src/optimization/prompt_optimization_framework.py`
   - `PromptLoader` in `src/utils/prompt_loader.py`
   - `OptimizationUI` in `src/optimization/optimization_ui.py`
-  - Current CLI implementation in `Mcode-cli.py`
+  - Current CLI implementation in `mCODE-cli.py`
   - Prompt configuration in `prompts/prompts_config.json`
   - Model configuration in `models/models_config.json`
   - Test data structures in example files
@@ -117,16 +117,16 @@
 #### New CLI Commands
 ```
 # Run full optimization
-Mcode-optimize run --test-cases data/test_cases.json --gold-standard data/gold_standard.json --output results/
+mCODE-optimize run --test-cases data/test_cases.json --gold-standard data/gold_standard.json --output results/
 
 # Set best prompt as default
-Mcode-optimize set-default --from-results --metric f1_score
+mCODE-optimize set-default --from-results --metric f1_score
 
 # View optimization results
-Mcode-optimize view-results --metric f1_score --top-n 10
+mCODE-optimize view-results --metric f1_score --top-n 10
 
 # List prompts
-Mcode-optimize list-prompts --default-only
+mCODE-optimize list-prompts --default-only
 ```
 
 ### Success Criteria

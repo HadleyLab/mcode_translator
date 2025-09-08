@@ -326,7 +326,7 @@
         "unmapped_entities": [
           {
             "entity_index": 6,
-            "reason": "Exclusion criteria - prior treatment is not a Mcode element for current condition"
+            "reason": "Exclusion criteria - prior treatment is not a mCODE element for current condition"
           },
           {
             "entity_index": 7,
@@ -334,11 +334,11 @@
           },
           {
             "entity_index": 8,
-            "reason": "Exclusion criteria - pregnancy status is not a Mcode oncology element"
+            "reason": "Exclusion criteria - pregnancy status is not a mCODE oncology element"
           },
           {
             "entity_index": 9,
-            "reason": "Exclusion criteria - breastfeeding status is not a Mcode oncology element"
+            "reason": "Exclusion criteria - breastfeeding status is not a mCODE oncology element"
           }
         ],
         "metadata": {

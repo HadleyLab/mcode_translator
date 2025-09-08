@@ -58,7 +58,7 @@ async def _process_pipeline_task(self, task: PipelineTask):
             expected_mappings = gold_data.get('expected_mcode_mappings', {}).get('mapped_elements', [])
         
         # Create pipeline instance with selected prompts
-        if self.pipeline_selector.value == 'Direct to Mcode':
+        if self.pipeline_selector.value == 'Direct to mCODE':
             prompt_name = self.direct_mcode_prompt_selector.value
             pipeline = McodePipeline(prompt_name=prompt_name)
         else:
@@ -148,7 +148,7 @@ def _calculate_extraction_metrics(self, subtask: LLMCallTask, actual_entities: L
 
 def _calculate_mapping_metrics(self, subtask: LLMCallTask, actual_mappings: List[Dict[str, Any]], 
                               expected_mappings: List[Dict[str, Any]]) -> None:
-    """Calculate mapping metrics using Mcode element matching"""
+    """Calculate mapping metrics using mCODE element matching"""
     try:
         # Create sets of (Mcode_element, value) tuples for comparison
         actual_tuples = set((m.get('Mcode_element', ''), m.get('value', '')) for m in actual_mappings)
@@ -181,7 +181,7 @@ Add validation metrics fields to the `LLMCallTask` data class:
 @dataclass
 class LLMCallTask:
     """Represents a single LLM call task (extraction or mapping)"""
-    name: str  # "NLP Extraction" or "Mcode Mapping"
+    name: str  # "NLP Extraction" or "mCODE Mapping"
     status: TaskStatus = TaskStatus.PENDING
     start_time: Optional[float] = None
     end_time: Optional[float] = None

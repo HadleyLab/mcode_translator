@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Debug script to understand what's happening with the direct Mcode prompt.
+Debug script to understand what's happening with the direct mCODE prompt.
 """
 
 import sys
@@ -71,7 +71,7 @@ def test_prompt_formatting():
 
 def main():
     """Main function to debug the prompt"""
-    logger.info("Starting debug of direct Mcode prompt...")
+    logger.info("Starting debug of direct mCODE prompt...")
     
     try:
         # Test prompt formatting

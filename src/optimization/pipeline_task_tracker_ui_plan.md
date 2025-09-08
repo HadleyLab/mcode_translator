@@ -24,7 +24,7 @@ Enhance the main task cards to show key validation and benchmarking information:
 #### Summary Metrics
 - Display key metrics directly on the task card:
   - F1-score for entity extraction
-  - F1-score for Mcode mapping
+  - F1-score for mCODE mapping
   - Compliance score
   - Processing time
   - Token usage
@@ -43,7 +43,7 @@ Enhance the expandable details section with comprehensive validation and benchma
   - List of missed entities
   - List of false positives
 
-- **Mcode Mapping Validation**:
+- **mCODE Mapping Validation**:
   - Table showing expected vs actual mappings
   - Precision, recall, F1-score metrics
   - List of incorrect mappings
@@ -117,13 +117,13 @@ An expandable panel for comprehensive metrics:
 [Detailed Metrics Panel]
 ▼ Validation Results
   Entity Extraction: F1=0.92, Precision=0.89, Recall=0.95
-  Mcode Mapping: F1=0.88, Precision=0.85, Recall=0.91
+  mCODE Mapping: F1=0.88, Precision=0.85, Recall=0.91
   Compliance Score: 95%
 
 ▼ Performance Metrics
   Total Time: 2.4s
   NLP Extraction: 1.1s
-  Mcode Mapping: 1.3s
+  mCODE Mapping: 1.3s
   Token Usage: 1,247 (Prompt: 892, Completion: 355)
 
 ▼ Resource Usage

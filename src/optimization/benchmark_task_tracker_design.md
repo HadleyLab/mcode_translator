@@ -1,13 +1,13 @@
 # Benchmark Task Tracker Design
 
 ## Overview
-This document outlines the design for a new benchmark task tracker that extends the existing functionality with Mcode-optimize integration. The new system will provide a GUI interface for running benchmark validations using the Mcode-optimize CLI functionality.
+This document outlines the design for a new benchmark task tracker that extends the existing functionality with mCODE-optimize integration. The new system will provide a GUI interface for running benchmark validations using the mCODE-optimize CLI functionality.
 
 ## Requirements
 1. Extend the existing task management functionality to handle benchmark validation tasks
 2. Implement a control panel for selecting prompts, models, and trials
 3. Add live color logging for all LLM calls, caches, etc.
-4. Integrate the Mcode-optimize CLI functionality with the GUI
+4. Integrate the mCODE-optimize CLI functionality with the GUI
 5. Use the provided test files for trials and gold standard validation
 
 ## Architecture
@@ -17,7 +17,7 @@ This document outlines the design for a new benchmark task tracker that extends 
 1. **BenchmarkTaskTrackerUI** - Main UI class that extends the existing AdvancedTaskTrackerUI
 2. **ControlPanel** - Interface for selecting prompts, models, and trials
 3. **LiveLogger** - Component for displaying live color logging
-4. **BenchmarkRunner** - Integration with Mcode-optimize framework
+4. **BenchmarkRunner** - Integration with mCODE-optimize framework
 5. **ResultsAnalyzer** - Component for analyzing and displaying benchmark results
 
 ### File Structure
@@ -35,7 +35,7 @@ src/optimization/
 - Add benchmark-specific task types
 - Implement control panel for prompt/model/trial selection
 
-### Phase 2: Integration with Mcode-optimize
+### Phase 2: Integration with mCODE-optimize
 - Integrate PromptOptimizationFramework
 - Implement benchmark execution functionality
 - Add live logging capabilities
@@ -75,7 +75,7 @@ class BenchmarkTaskTrackerUI(AdvancedTaskTrackerUI):
 
 ### Control Panel
 The control panel will include:
-- Prompt selection (NLP extraction and Mcode mapping prompts)
+- Prompt selection (NLP extraction and mCODE mapping prompts)
 - Model selection (various LLM models)
 - Trial selection (clinical trial data)
 - Run configuration options (metrics, top N combinations, etc.)
@@ -87,7 +87,7 @@ The live logger will:
 - Show LLM calls, cache hits/misses, token usage, etc.
 
 ### Benchmark Runner Integration
-Integration points with Mcode-optimize:
+Integration points with mCODE-optimize:
 - Loading prompt and model libraries
 - Running benchmark combinations
 - Processing gold standard validation
@@ -98,7 +98,7 @@ Integration points with Mcode-optimize:
 1. User configures benchmark parameters via control panel
 2. System loads selected prompts, models, and trial data
 3. Benchmark tasks are created and added to the task queue
-4. Tasks are executed using the Mcode-optimize framework
+4. Tasks are executed using the mCODE-optimize framework
 5. Live logging is captured and displayed in real-time
 6. Results are collected and analyzed
 7. User can view detailed results and export data
@@ -190,7 +190,7 @@ Integration points with Mcode-optimize:
 
 ### Integration Tests
 - Test end-to-end benchmark execution
-- Verify integration with Mcode-optimize framework
+- Verify integration with mCODE-optimize framework
 - Validate results against gold standard data
 
 ### UI Tests
@@ -202,7 +202,7 @@ Integration points with Mcode-optimize:
 
 ### Dependencies
 - NiceGUI for web interface
-- Mcode-optimize framework
+- mCODE-optimize framework
 - Required Python packages (pandas, etc.)
 
 ### Configuration

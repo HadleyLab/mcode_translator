@@ -1,3 +1,3 @@
 """
-Optimization package for Mcode Translator
+Optimization package for mCODE Translator
 """

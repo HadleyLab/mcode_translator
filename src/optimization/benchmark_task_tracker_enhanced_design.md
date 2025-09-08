@@ -34,7 +34,7 @@ We'll add tracking for:
 
 ### 3. Pipeline and Prompt Information
 Enhanced display of:
-- Pipeline type (NLP to Mcode vs Direct to Mcode)
+- Pipeline type (NLP to mCODE vs Direct to mCODE)
 - Prompt names and versions
 - Model information with provider details
 - Trial data context
@@ -67,7 +67,7 @@ Implementation of:
 ### Enhanced Task Card
 ```
 +-------------------------------------------------------------+
-| Task: abc123 - NLP to Mcode Pipeline              [Status: 🔄]|
+| Task: abc123 - NLP to mCODE Pipeline              [Status: 🔄]|
 | Prompt: nlp_extraction_comprehensive              [F1: 0.87] |
 | Model: gpt-4-turbo                                [Tokens: 1247]|
 +-------------------------------------------------------------+
@@ -78,7 +78,7 @@ Implementation of:
 | Live Consumption Log:                                       |
 | 🔄 [12:45:23] Starting NLP extraction                        |
 | ✅ [12:45:35] Extracted 15 entities                          |
-| 🔄 [12:45:36] Starting Mcode mapping                         |
+| 🔄 [12:45:36] Starting mCODE mapping                         |
 | ❌ [12:45:45] Mapping failed: API timeout                   |
 +-------------------------------------------------------------+
 ```

@@ -5,14 +5,15 @@ System Status Monitoring Components for Modern Optimization UI
 import psutil
 import os
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from datetime import datetime
 
 class SystemMonitor:
     """Monitor system resources and status"""
     
-    def __init__(self, cache_dir: str = "./cache"):
-        self.cache_dir = Path(cache_dir)
+    def __init__(self, cache_dir: Optional[str] = None):
+        from src.utils.config import Config
+        self.cache_dir = Path(cache_dir) if cache_dir else Path(Config().get_api_cache_directory())
     
     def get_resource_usage(self) -> Dict[str, Any]:
         """Get current system resource usage"""

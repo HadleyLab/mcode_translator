@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Debug script to understand what's happening with the direct Mcode prompt.
+Debug script to understand what's happening with the direct mCODE prompt.
 """
 
 import sys

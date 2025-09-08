@@ -23,14 +23,14 @@ def test_nlp_extraction_generic():
         return False
 
 def test_mcode_mapping_generic():
-    """Test the Mcode mapping generic prompt validation"""
-    print("\nTesting Mcode mapping generic prompt...")
+    """Test the mCODE mapping generic prompt validation"""
+    print("\nTesting mCODE mapping generic prompt...")
     
     loader = PromptLoader()
     try:
         # Load the prompt
         prompt_content = loader.get_prompt('generic_mapping')
-        print('✓ Mcode mapping generic prompt loaded successfully')
+        print('✓ mCODE mapping generic prompt loaded successfully')
         return True
         
     except Exception as e:
@@ -38,14 +38,14 @@ def test_mcode_mapping_generic():
         return False
 
 def test_direct_mcode_direct():
-    """Test the direct Mcode direct prompt validation"""
-    print("\nTesting direct Mcode direct prompt...")
+    """Test the direct mCODE direct prompt validation"""
+    print("\nTesting direct mCODE direct prompt...")
     
     loader = PromptLoader()
     try:
         # Load the prompt
         prompt_content = loader.get_prompt('direct_mcode')
-        print('✓ Direct Mcode direct prompt loaded successfully')
+        print('✓ Direct mCODE direct prompt loaded successfully')
         return True
         
     except Exception as e:

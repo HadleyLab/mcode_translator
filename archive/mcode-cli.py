@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mcode Translator - Unified Command Line Interface
+mCODE Translator - Unified Command Line Interface
 
 STRICT implementation that consolidates all runner scripts into a single CLI
 with comprehensive prompt library integration and strict validation.
@@ -240,7 +240,7 @@ class GoldStandardTester:
         }
     
     def _calculate_mapping_metrics(self, actual: List[Dict], expected: List[Dict]) -> Dict[str, float]:
-        """Calculate metrics for Mcode mapping using semantic similarity"""
+        """Calculate metrics for mCODE mapping using semantic similarity"""
         # Debug: Check what types we're getting in helper method
         logger.info(f"DEBUG: _calculate_mapping_metrics called with actual type: {type(actual)}, expected type: {type(expected)}")
         
@@ -464,7 +464,7 @@ class PromptManager:
 # CLI Command Groups
 @click.group()
 def cli():
-    """Mcode Translator - Unified Command Line Interface"""
+    """mCODE Translator - Unified Command Line Interface"""
     pass
 
 
@@ -500,7 +500,7 @@ def benchmark():
               help='Path to gold standard validation JSON file')
 @click.option('--output', type=click.Path(), help='Save detailed validation results to file')
 def gold_standard(test_cases, gold_standard, output):
-    """Validate Mcode extraction and mapping against gold standard using all test cases"""
+    """Validate mCODE extraction and mapping against gold standard using all test cases"""
     logger.info("🧪 Starting STRICT Gold Standard Validation")
     logger.info("=" * 60)
     
@@ -1062,7 +1062,7 @@ def requirements(config):
         
         logger.info("💡 Usage examples:")
         logger.info("  - NLP_EXTRACTION: Extract entities from clinical text")
-        logger.info("  - MCODE_MAPPING: Map extracted entities to Mcode FHIR standard")
+        logger.info("  - MCODE_MAPPING: Map extracted entities to mCODE FHIR standard")
         logger.info("")
         logger.info("⚠️  Prompts missing required placeholders will generate warnings")
         

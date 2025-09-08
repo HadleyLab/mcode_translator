@@ -97,7 +97,7 @@ class BenchmarkResult:
             if expected_count > 0:
                 self.extraction_completeness = self.entities_extracted / expected_count
         
-        # Use validation results from Mcode mapping
+        # Use validation results from mCODE mapping
         if self.validation_results:
             self.compliance_score = self.validation_results.get('compliance_score', None)
         
@@ -123,7 +123,10 @@ class BenchmarkResult:
                 self.recall = true_positives_ext / (true_positives_ext + false_negatives_ext) if (true_positives_ext + false_negatives_ext) > 0 else None
                 self.f1_score = 2 * (self.precision * self.recall) / (self.precision + self.recall) if (self.precision is not None and self.recall is not None and (self.precision + self.recall) > 0) else None
                 
-                framework.logger.debug(f"Calculated metrics: precision={self.precision:.3f}, recall={self.recall:.3f}, f1={self.f1_score:.3f}")
+                precision_str = f"{self.precision:.3f}" if self.precision is not None else "None"
+                recall_str = f"{self.recall:.3f}" if self.recall is not None else "None"
+                f1_str = f"{self.f1_score:.3f}" if self.f1_score is not None else "None"
+                framework.logger.debug(f"Calculated metrics: precision={precision_str}, recall={recall_str}, f1={f1_str}")
             else:
                 # Handle case where one or both lists are empty
                 framework.logger.debug(f"One or both lists are empty: expected={len(expected_entities)}, extracted={len(self.extracted_entities)}")
@@ -137,7 +140,7 @@ class BenchmarkResult:
             self.recall = None
             self.f1_score = None
             
-        # Calculate mapping accuracy using Mcode-based matching for Mcode elements
+        # Calculate mapping accuracy using mCODE-based matching for mCODE elements
         framework.logger.debug(f"Mapping validation: expected_mappings={expected_mappings is not None}, mcode_mappings={self.mcode_mappings is not None}, len={len(self.mcode_mappings) if self.mcode_mappings else 0}")
         framework.logger.debug(f"Mapping validation: expected_mappings type={type(expected_mappings)}, mcode_mappings type={type(self.mcode_mappings)}")
         framework.logger.debug(f"Mapping validation: expected_mappings value={expected_mappings}, mcode_mappings value={self.mcode_mappings}")
@@ -147,10 +150,10 @@ class BenchmarkResult:
         framework.logger.debug(f"Mapping validation: self.mcode_mappings bool: {self.mcode_mappings is not None}")
         if expected_mappings is not None and self.mcode_mappings is not None:
             framework.logger.debug(f"Expected mappings length: {len(expected_mappings)}")
-            framework.logger.debug(f"Mcode mappings length: {len(self.mcode_mappings)}")
+            framework.logger.debug(f"mCODE mappings length: {len(self.mcode_mappings)}")
             if len(expected_mappings) > 0 and len(self.mcode_mappings) > 0:
                 framework.logger.debug(f"Calculating mapping metrics with {len(self.mcode_mappings)} mapped and {len(expected_mappings)} expected mappings")
-                # Use node-based matching for Mcode metrics (compare all fields including metadata)
+                # Use node-based matching for mCODE metrics (compare all fields including metadata)
                 true_positives_map, false_positives_map, false_negatives_map = BenchmarkResult._calculate_mcode_matches(
                     self.mcode_mappings, expected_mappings, framework, debug=True
                 )
@@ -165,7 +168,10 @@ class BenchmarkResult:
                 
                 self.mapping_accuracy = 2 * (mapping_precision * mapping_recall) / (mapping_precision + mapping_recall) if (mapping_precision is not None and mapping_recall is not None and (mapping_precision + mapping_recall) > 0) else None
                 
-                framework.logger.debug(f"  Mapping accuracy calculation: precision={mapping_precision:.3f}, recall={mapping_recall:.3f}, accuracy={self.mapping_accuracy:.3f}")
+                mapping_precision_str = f"{mapping_precision:.3f}" if mapping_precision is not None else "None"
+                mapping_recall_str = f"{mapping_recall:.3f}" if mapping_recall is not None else "None"
+                mapping_accuracy_str = f"{self.mapping_accuracy:.3f}" if self.mapping_accuracy is not None else "None"
+                framework.logger.debug(f"  Mapping accuracy calculation: precision={mapping_precision_str}, recall={mapping_recall_str}, accuracy={mapping_accuracy_str}")
             else:
                 # Handle case where one or both lists are empty
                 framework.logger.debug(f"One or both mapping lists are empty: expected={len(expected_mappings)}, mcode={len(self.mcode_mappings)}")
@@ -175,7 +181,11 @@ class BenchmarkResult:
             framework.logger.debug(f"One or both mapping parameters are None: expected_mappings={expected_mappings is not None}, mcode_mappings={self.mcode_mappings is not None}")
             self.mapping_accuracy = None
             
-        framework.logger.debug(f"Final metrics: precision={self.precision:.3f}, recall={self.recall:.3f}, f1={self.f1_score:.3f}, mapping_accuracy={self.mapping_accuracy:.3f}")
+        precision_final_str = f"{self.precision:.3f}" if self.precision is not None else "None"
+        recall_final_str = f"{self.recall:.3f}" if self.recall is not None else "None"
+        f1_final_str = f"{self.f1_score:.3f}" if self.f1_score is not None else "None"
+        mapping_accuracy_final_str = f"{self.mapping_accuracy:.3f}" if self.mapping_accuracy is not None else "None"
+        framework.logger.debug(f"Final metrics: precision={precision_final_str}, recall={recall_final_str}, f1={f1_final_str}, mapping_accuracy={mapping_accuracy_final_str}")
 
 
     @staticmethod
@@ -279,7 +289,7 @@ class BenchmarkResult:
                                 framework: Loggable = None,
                                 debug: bool = False) -> Tuple[int, int, int]:
         """
-        Calculate Mcode matches using node-based matching to handle clinical concept comparison
+        Calculate mCODE matches using node-based matching to handle clinical concept comparison
         Compares all fields including Mcode_element, value, source_entity_index, confidence, and mapping_rationale
         
         Returns:
@@ -317,7 +327,7 @@ class BenchmarkResult:
                     matched_actual.add(i)
                     matched_expected.add(j)
                     if debug and framework:
-                        framework.logger.warning(f"   ✅ Exact Mcode match: '{actual_element}'='{actual_value}' -> '{expected_element}'='{expected_value}'")
+                        framework.logger.warning(f"   ✅ Exact mCODE match: '{actual_element}'='{actual_value}' -> '{expected_element}'='{expected_value}'")
                     continue
         
         # Second pass: relaxed matching for clinical concepts (same Mcode_element + value)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mcode Optimize - Unified Command Line Interface for Prompt and Model Optimization
+mCODE Optimize - Unified Command Line Interface for Prompt and Model Optimization
 
 This CLI provides comprehensive optimization capabilities across all prompts and models
 with the ability to set the best performing combinations as defaults in their respective libraries.
@@ -249,7 +249,7 @@ class GoldStandardTester:
         }
     
     def _calculate_mapping_metrics(self, actual: List[Dict], expected: List[Dict]) -> Dict[str, float]:
-        """Calculate metrics for Mcode mapping using semantic similarity"""
+        """Calculate metrics for mCODE mapping using semantic similarity"""
         # Debug: Check what types we're getting in helper method
         logger.info(f"DEBUG: _calculate_mapping_metrics called with actual type: {type(actual)}, expected type: {type(expected)}")
         
@@ -514,7 +514,7 @@ class ModelManager:
 # CLI Command Groups
 @click.group()
 def cli():
-    """Mcode Optimize - Unified Command Line Interface for Prompt and Model Optimization"""
+    """mCODE Optimize - Unified Command Line Interface for Prompt and Model Optimization"""
     pass
 
 

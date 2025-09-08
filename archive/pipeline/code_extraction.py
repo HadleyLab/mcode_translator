@@ -5,7 +5,7 @@ from src.utils.logging_config import Loggable
 
 class CodeExtractionModule(Loggable):
     """
-    Code Extraction Module for Mcode Translator
+    Code Extraction Module for mCODE Translator
     Identifies and validates medical codes (ICD-10-CM, CPT, LOINC, RxNorm) from clinical trial eligibility criteria
     """
     
@@ -39,7 +39,7 @@ class CodeExtractionModule(Loggable):
             'RxNorm': ['123456', '789012', '345678', '987654', '456789']
         }
         
-        # Sample Mcode required codes
+        # Sample mCODE required codes
         self.mcode_required_codes = {
             'ICD10CM': ['C50.911', 'C34.90'],
             'CPT': ['12345', '67890']
@@ -298,16 +298,16 @@ class CodeExtractionModule(Loggable):
     
     def validate_mcode_compliance(self, code: str, system: str) -> bool:
         """
-        Validate that a code is Mcode compliant
+        Validate that a code is mCODE compliant
         
         Args:
             code: Code to validate
             system: Coding system
             
         Returns:
-            True if code is Mcode compliant, False otherwise
+            True if code is mCODE compliant, False otherwise
         """
-        # Check if code is part of Mcode required or recommended codes
+        # Check if code is part of mCODE required or recommended codes
         if system in self.mcode_required_codes:
             return code in self.mcode_required_codes[system]
         
@@ -367,7 +367,7 @@ class CodeExtractionModule(Loggable):
         if code_info.get('validated', True):  # Default to validated
             confidence += 0.2
         
-        # Increase for Mcode compliance
+        # Increase for mCODE compliance
         if code_info.get('validation', {}).get('Mcode_compliant', False):
             confidence += 0.1
         
