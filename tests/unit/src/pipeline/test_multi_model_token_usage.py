@@ -12,9 +12,10 @@ from pathlib import Path
 # Add the project root to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
 from src.utils.logging_config import get_logger
 from src.utils.config import Config
+from src.utils.model_loader import model_loader
 
 # Set up logging
 logger = get_logger(__name__)
@@ -51,7 +52,7 @@ def test_model_token_usage(model_name):
     test_data = create_test_data()
     
     # Initialize pipeline with specific model
-    pipeline = StrictDynamicExtractionPipeline()
+    pipeline = NlpMcodePipeline()
     
     # Override the model in the pipeline components
     pipeline.nlp_extractor.model_name = model_name
@@ -91,9 +92,8 @@ def main():
     logger.info("=" * 60)
     
     # Get available models from configuration
-    config = Config()
-    llm_providers = config.get_llm_providers()
-    model_names = [provider.get('model') for provider in llm_providers if provider.get('model')]
+    available_models = model_loader.list_available_models()
+    model_names = list(available_models.keys())
     
     logger.info(f"📋 Testing token usage tracking for {len(model_names)} models: {model_names}")
     
@@ -108,7 +108,7 @@ def main():
                 logger.info(f"\n📊 Results for {model_name}:")
                 logger.info(f"  Duration: {model_result['duration_seconds']:.2f} seconds")
                 logger.info(f"  Entities extracted: {model_result['entities_extracted']}")
-                logger.info(f"  Mcode mappings: {model_result['mcode_mappings']}")
+                logger.info(f"  mCODE mappings: {model_result['mcode_mappings']}")
                 logger.info(f"  Total tokens: {model_result['aggregate_token_usage'].get('total_tokens', 0)}")
                 logger.info(f"  Prompt tokens: {model_result['aggregate_token_usage'].get('prompt_tokens', 0)}")
                 logger.info(f"  Completion tokens: {model_result['aggregate_token_usage'].get('completion_tokens', 0)}")

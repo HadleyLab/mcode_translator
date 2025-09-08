@@ -21,11 +21,11 @@ class TestMcodeMapper(unittest.TestCase):
         nlp_entities = [{"text": "ER Positive", "type": "Biomarker"}]
         
         # Mocking the LLM call
-        self.mapper.llm_client.chat.completions.create = MagicMock(return_value=MagicMock(choices=[MagicMock(message=MagicMock(content='{"Mcode": "some_mcode"}'))]))
+        self.mapper.llm_client.chat.completions.create = MagicMock(return_value=MagicMock(choices=[MagicMock(message=MagicMock(content='{"mCODE": "some_mcode"}'))]))
 
         result = self.mapper.map_to_mcode(nlp_entities)
-        self.assertIn("Mcode", result)
-        self.assertEqual(result["Mcode"], "some_mcode")
+        self.assertIn("mCODE", result)
+        self.assertEqual(result["mCODE"], "some_mcode")
 
 if __name__ == '__main__':
     unittest.main()

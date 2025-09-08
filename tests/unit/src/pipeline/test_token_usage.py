@@ -12,7 +12,7 @@ from pathlib import Path
 # Add the project root to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
 from src.utils.logging_config import get_logger
 from src.utils.token_tracker import global_token_tracker
 
@@ -65,7 +65,7 @@ def test_token_usage():
     test_data = create_test_data()
     
     # Initialize pipeline
-    pipeline = StrictDynamicExtractionPipeline()
+    pipeline = NlpMcodePipeline()
     
     # Process the clinical trial
     logger.info("🚀 Processing clinical trial...")
@@ -128,7 +128,7 @@ def main():
         logger.info("\n📋 Test Results Summary:")
         logger.info(f"  Duration: {results['duration_seconds']:.2f} seconds")
         logger.info(f"  Entities extracted: {results['entities_extracted']}")
-        logger.info(f"  Mcode mappings: {results['mcode_mappings']}")
+        logger.info(f"  mCODE mappings: {results['mcode_mappings']}")
         logger.info(f"  Total tokens: {results['aggregate_token_usage'].get('total_tokens', 0)}")
         logger.info(f"  Prompt tokens: {results['aggregate_token_usage'].get('prompt_tokens', 0)}")
         logger.info(f"  Completion tokens: {results['aggregate_token_usage'].get('completion_tokens', 0)}")

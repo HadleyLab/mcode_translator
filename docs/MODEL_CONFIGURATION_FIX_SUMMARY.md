@@ -1,7 +1,7 @@
 # Model Configuration Fix Summary
 
 ## Problem Description
-The Mcode Translator optimization framework was failing with the error:
+The mCODE Translator optimization framework was failing with the error:
 ```
 ValueError: Model key 'model_deepseek_coder' not found in config
 ```
@@ -41,14 +41,14 @@ def __init__(self, name: str, model: Optional[str] = None):
 ## Verification
 The fix was verified by running the optimization command:
 ```bash
-source activate mcode_translator && python Mcode-optimize.py run --test-cases tests/data/test_cases/multi_cancer.json --gold-standard tests/data/gold_standard/multi_cancer.json --output results
+source activate mcode_translator && python mCODE-optimize.py run --test-cases tests/data/test_cases/multi_cancer.json --gold-standard tests/data/gold_standard/multi_cancer.json --output results
 ```
 
 ### Results
 - ✅ **Success**: Benchmark completed successfully with `"success": true`
 - ✅ **Model Configuration**: Correctly using `"api_config_name": "model_deepseek_coder"` 
 - ✅ **Performance**: 100% compliance score (`"compliance_score": 1.0`)
-- ✅ **Entity Processing**: Extracted 45 entities and mapped 33 Mcode elements
+- ✅ **Entity Processing**: Extracted 45 entities and mapped 33 mCODE elements
 - ✅ **Token Tracking**: Proper token usage tracking with 10,578 total tokens
 
 ## Impact

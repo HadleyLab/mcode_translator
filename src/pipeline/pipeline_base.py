@@ -34,6 +34,6 @@ class ProcessingPipeline(ABC):
             trial_data: Raw clinical trial data from API or source.
 
         Returns:
-            PipelineResult with extracted entities, Mcode mappings, and source tracking.
+            PipelineResult with extracted entities, mCODE mappings, and source tracking.
         """
         pass

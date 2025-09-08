@@ -62,7 +62,7 @@ The strict framework detects and rejects the following placeholder patterns:
 
 ### 1. Running the Strict Demo
 ```bash
-python Mcode-cli.py optimization demo
+python mCODE-cli.py optimization demo
 ```
 
 **Expected Behavior**: Fails immediately if any API configuration contains placeholder keys.

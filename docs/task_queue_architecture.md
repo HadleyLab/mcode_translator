@@ -48,7 +48,7 @@ Data structure representing a single benchmark task with:
    - Results are collected and stored in the task
 
 3. **Metric Calculation**
-   - Extracted entities and Mcode mappings are compared against gold standard
+   - Extracted entities and mCODE mappings are compared against gold standard
    - Performance metrics are calculated using the shared `BenchmarkResult` class
    - Metrics are stored in the task for reporting
 

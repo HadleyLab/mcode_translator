@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This guide provides comprehensive documentation for the new file-based prompt library system implemented in the Mcode Translator project. The library centralizes all LLM prompts, eliminates hardcoded strings, and provides a robust system for prompt management and experimentation.
+This guide provides comprehensive documentation for the new file-based prompt library system implemented in the mCODE Translator project. The library centralizes all LLM prompts, eliminates hardcoded strings, and provides a robust system for prompt management and experimentation.
 
 ## Architecture Overview
 
@@ -46,7 +46,7 @@ prompts/
 ├── prompts_config.json          # Master configuration
 ├── txt/
 │   ├── nlp_extraction/          # 6 NLP extraction prompts
-│   └── Mcode_mapping/           # 6 Mcode mapping prompts
+│   └── mcode_mapping/           # 6 mCODE mapping prompts
 └── README.md                    # Library documentation
 ```
 
@@ -86,7 +86,7 @@ Located all hardcoded prompts across the codebase:
 ### Step 2: Create File Structure
 Organized prompts into logical categories:
 - `nlp_extraction/` - Entity extraction prompts
-- `Mcode_mapping/` - Mcode mapping prompts
+- `mcode_mapping/` - mCODE mapping prompts
 
 ### Step 3: Migrate Content
 Moved all prompt content from code to text files while preserving:
@@ -139,7 +139,7 @@ def extract_entities(self, text: str, prompt_name: str = "generic_extraction"):
     formatted = template.format(text=text)
     return self.llm_client.generate(formatted)
 
-# Mcode Mapper
+# mCODE Mapper
 def map_to_mcode(self, entities: List, prompt_name: str = "generic_mapping"):
     template = self.prompt_loader.load_prompt(prompt_name)
     formatted = template.format(entities=json.dumps(entities))
@@ -173,8 +173,8 @@ variants = [
 - **basic_extraction**: Optimization framework baseline
 - **minimal_extraction_optimization**: Minimal optimization variant
 
-### Mcode Mapping Prompts (6 total)  
-- **generic_mapping**: Primary Mcode mapping
+### mCODE Mapping Prompts (6 total)  
+- **generic_mapping**: Primary mCODE mapping
 - **standard_mapping**: Standard mapping approach
 - **detailed_mapping**: Comprehensive mapping instructions
 - **error_robust_mapping**: Error handling and fallbacks

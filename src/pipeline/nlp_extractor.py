@@ -136,12 +136,12 @@ class NlpLlm(NlpBase, LlmBase):
             
             # Call LLM for entity extraction
             self.logger.info("🤖 Calling LLM for entity extraction...")
-            llm_response, metrics = self._call_llm_extraction(prompt)
+            parsed_response, metrics = self._call_llm_extraction(prompt)
             self.logger.info("✅ LLM extraction call completed")
             
             # Parse and validate LLM response with strict validation
             self.logger.info("📋 Parsing and validating LLM response...")
-            parsed_result = self._parse_llm_response(llm_response, clinical_text, section_context)
+            parsed_result = self._parse_llm_response(parsed_response, clinical_text, section_context)
             
             
             # Add token usage to processing result
@@ -172,7 +172,7 @@ class NlpLlm(NlpBase, LlmBase):
         if len(clinical_text.strip()) < 10:
             raise ValueError("Clinical text must be at least 10 characters long")
     
-    def _call_llm_extraction(self, prompt: str) -> Tuple[str, 'LLMCallMetrics']:
+    def _call_llm_extraction(self, prompt: str) -> Tuple[Dict[str, Any], 'LLMCallMetrics']:
         """
         Call LLM API for entity extraction with strict error handling
         
@@ -202,25 +202,25 @@ class NlpLlm(NlpBase, LlmBase):
             self.logger.error(f"❌ LLM extraction call failed: {str(e)}")
             raise
     
-    def _parse_llm_response(self, response_text: str, original_text: str,
+    def _parse_llm_response(self, parsed_response: Dict[str, Any], original_text: str,
                           section_context: Dict[str, Any] = None) -> ProcessingResult:
         """
         Parse and validate LLM extraction response with strict error handling
         
         Args:
-            response_text: Raw LLM response
+            parsed_response: Parsed JSON response from LLM
             original_text: Original clinical text for context
             section_context: Optional section context
-            
+        
         Returns:
             ProcessingResult with parsed entities
-            
+        
         Raises:
-            LlmResponseError: If JSON parsing fails or response is invalid
+            LlmResponseError: If response structure is invalid
         """
         try:
-            # Parse and validate JSON response
-            parsed = self._parse_and_validate_json_response(response_text)
+            # Use the already parsed response
+            parsed = parsed_response
             
             # Validate required structure
             self._validate_extraction_response_structure(parsed)

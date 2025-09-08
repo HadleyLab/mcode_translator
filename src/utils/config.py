@@ -18,7 +18,7 @@ class ConfigurationError(Exception):
 
 class Config:
     """
-    STRICT Configuration class for the Mcode Translator
+    STRICT Configuration class for the mCODE Translator
     Single source of truth with no fallbacks - throws exceptions for missing configuration
     """
     

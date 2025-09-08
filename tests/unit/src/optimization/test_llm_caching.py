@@ -11,13 +11,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from pipeline.llm_base import LlmBase
-from utils.api_manager import UnifiedAPIManager
-
-class TestLLM(LlmBase):
-    """Test implementation of LlmBase for testing caching"""
-    
-    def process_request(self, *args, **kwargs):
-        return {"test": "response"}
+from utils.api_manager import UnifiedAPIManager, APICache
 
 def test_llm_caching():
     """Test that LLM calls are properly cached"""
@@ -29,28 +23,18 @@ def test_llm_caching():
     llm_cache.clear()
     print("🗑️  Cleared LLM cache")
     
-    # Create test LLM instance
-    llm = TestLLM(
-        model_name="deepseek-chat",
-        temperature=0.1,
-        max_tokens=100
-    )
-    
-    # Create test messages and cache key data
-    messages = [{"role": "user", "content": "Test message for caching"}]
+    # Create test cache key data (simulating LLM parameters)
     cache_key_data = {
         "test": "data",
         "purpose": "caching verification",
-        "model": llm.model_name,
-        "temperature": llm.temperature,
-        "max_tokens": llm.max_tokens
+        "model": "deepseek-chat",
+        "temperature": 0.1,
+        "max_tokens": 100
     }
     
     # Check if entry exists in cache (should not)
     cached_result = llm_cache.get_by_key(cache_key_data)
-    if cached_result is not None:
-        print("❌ Unexpected cache hit before first call")
-        return False
+    assert cached_result is None, "Unexpected cache hit before first call"
     
     # Create test result data
     test_result = {
@@ -70,21 +54,13 @@ def test_llm_caching():
     
     # Try to retrieve from cache
     retrieved_result = llm_cache.get_by_key(cache_key_data)
-    if retrieved_result is None:
-        print("❌ Cache miss after storing entry")
-        return False
+    assert retrieved_result is not None, "Cache miss after storing entry"
     
-    
-    if retrieved_result != test_result:
-        print("❌ Retrieved result doesn't match stored result")
-        print(f"   Stored: {test_result}")
-        print(f"   Retrieved: {retrieved_result}")
-        return False
+    assert retrieved_result == test_result, f"Retrieved result doesn't match stored result\nStored: {test_result}\nRetrieved: {retrieved_result}"
     
     print("✅ Cache hit - retrieved result matches stored result")
     
     print("🎉 All LLM caching tests passed!")
-    return True
 
 if __name__ == "__main__":
     success = test_llm_caching()

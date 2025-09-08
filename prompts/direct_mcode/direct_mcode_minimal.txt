@@ -1,4 +1,4 @@
-Extract Mcode FHIR resources from clinical text.
+Extract mCODE FHIR resources from clinical text.
 
 Text: {clinical_text}
 
@@ -17,7 +17,7 @@ Return JSON with "mcode_mappings" array containing FHIR resources. Each resource
   "mcode_mappings": [
     {{
       "resourceType": "FHIR resource type",
-      "Mcode_element": "Mcode element name",
+      "Mcode_element": "mCODE element name",
       "code": {{
         "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
         "code": "standard code from appropriate terminology",

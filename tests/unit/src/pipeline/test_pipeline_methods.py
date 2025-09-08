@@ -10,7 +10,7 @@ import json
 # Add the project root to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
 from src.utils.logging_config import get_logger
 
 # Set up logging
@@ -21,7 +21,7 @@ def test_clinical_text_processing():
     logger.info("Testing clinical text processing...")
     
     # Initialize pipeline
-    pipeline = StrictDynamicExtractionPipeline()
+    pipeline = NlpMcodePipeline()
     
     # Sample clinical text
     clinical_text = """
@@ -35,7 +35,7 @@ def test_clinical_text_processing():
         result = pipeline.process_clinical_text(clinical_text)
         logger.info(f"✅ Clinical text processing successful!")
         logger.info(f"Extracted {len(result.extracted_entities)} entities")
-        logger.info(f"Mapped {len(result.mcode_mappings)} Mcode elements")
+        logger.info(f"Mapped {len(result.mcode_mappings)} mCODE elements")
         
         # Show some sample results
         if result.extracted_entities:
@@ -44,7 +44,7 @@ def test_clinical_text_processing():
                 logger.info(f"  - {entity.get('entity_type', 'N/A')}: {entity.get('text', 'N/A')}")
         
         if result.mcode_mappings:
-            logger.info("Sample Mcode mappings:")
+            logger.info("Sample mCODE mappings:")
             for mapping in result.mcode_mappings[:3]:
                 logger.info(f"  - {mapping.get('resourceType', 'N/A')}: {mapping.get('element_name', 'N/A')}")
                 
@@ -59,7 +59,7 @@ def test_clinical_trial_processing():
     logger.info("Testing clinical trial processing...")
     
     # Initialize pipeline
-    pipeline = StrictDynamicExtractionPipeline()
+    pipeline = NlpMcodePipeline()
     
     # Sample clinical trial data
     trial_data = {
@@ -103,7 +103,7 @@ def test_clinical_trial_processing():
         result = pipeline.process_clinical_trial(trial_data)
         logger.info(f"✅ Clinical trial processing successful!")
         logger.info(f"Extracted {len(result.extracted_entities)} entities")
-        logger.info(f"Mapped {len(result.mcode_mappings)} Mcode elements")
+        logger.info(f"Mapped {len(result.mcode_mappings)} mCODE elements")
         logger.info(f"Compliance score: {result.validation_results.get('compliance_score', 'N/A')}")
         
         return True
@@ -117,7 +117,7 @@ def test_eligibility_criteria_processing():
     logger.info("Testing eligibility criteria processing...")
     
     # Initialize pipeline
-    pipeline = StrictDynamicExtractionPipeline()
+    pipeline = NlpMcodePipeline()
     
     # Sample eligibility criteria
     criteria_text = """
@@ -139,7 +139,7 @@ def test_eligibility_criteria_processing():
         result = pipeline.process_eligibility_criteria(criteria_text)
         logger.info(f"✅ Eligibility criteria processing successful!")
         logger.info(f"Extracted {len(result.extracted_entities)} entities")
-        logger.info(f"Mapped {len(result.mcode_mappings)} Mcode elements")
+        logger.info(f"Mapped {len(result.mcode_mappings)} mCODE elements")
         
         return True
         
@@ -153,9 +153,9 @@ def test_custom_prompts():
     
     try:
         # Initialize with custom prompts
-        pipeline = StrictDynamicExtractionPipeline(
+        pipeline = NlpMcodePipeline(
             extraction_prompt_name="nlp_extraction/comprehensive_extraction",
-            mapping_prompt_name="Mcode_mapping/comprehensive_mapping"
+            mapping_prompt_name="mcode_mapping/comprehensive_mapping"
         )
         
         clinical_text = "Patient with metastatic breast cancer, HER2 positive, ECOG 1"
@@ -172,7 +172,7 @@ def test_custom_prompts():
 
 def main():
     """Run all pipeline method tests"""
-    logger.info("🚀 Starting StrictDynamicExtractionPipeline method tests")
+    logger.info("🚀 Starting NlpMcodePipeline method tests")
     logger.info("=" * 60)
     
     results = {}

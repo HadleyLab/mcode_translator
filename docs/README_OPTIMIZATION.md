@@ -30,18 +30,18 @@ python src/optimization/benchmark_task_tracker.py
 
 ### Supported Prompt Types
 - **NLP Extraction**: Clinical entity extraction from trial protocols
-- **Mcode Mapping**: Transformation to Mcode standard format
+- **mCODE Mapping**: Transformation to mCODE standard format
 
 ## 🏗️ Architecture
 
 ### Key Components
 - **ProcessingPipeline**: Abstract base class for all pipelines.
-- **NlpMcodePipeline**: A two-step pipeline that first extracts NLP entities from clinical text and then maps those entities to the Mcode standard.
-- **McodePipeline**: A single-step pipeline that maps clinical text directly to Mcode entities.
+- **NlpMcodePipeline**: A two-step pipeline that first extracts NLP entities from clinical text and then maps those entities to the mCODE standard.
+- **McodePipeline**: A single-step pipeline that maps clinical text directly to mCODE entities.
 - **LlmBase**: Foundation for LLM operations with cache isolation.
 - **NlpLlm**: Strict NLP extraction component.
-- **McodeMapper**: Strict Mcode mapping component.
-- **BenchmarkTaskTracker**: Standalone benchmarking execution.
+- **McodeMapper**: Strict mCODE mapping component.
+- **BenchmarkTaskTrackerUI**: Standalone benchmarking execution.
 
 ### File Structure
 ```
@@ -55,7 +55,7 @@ src/pipeline/
 ├── Mcode_pipeline.py                 # Single-step pipeline
 ├── llm_base.py                # LLM foundation with cache isolation
 ├── nlp_extractor.py                     # Strict NLP extraction component
-└── Mcode_mapper.py                   # Strict Mcode mapping component
+└── Mcode_mapper.py                   # Strict mCODE mapping component
 
 tests/unit/test_optimization_framework.py        # Comprehensive test harness
 docs/prompt_optimization_framework.md # Detailed documentation
@@ -130,7 +130,7 @@ The framework tracks comprehensive metrics:
 - **Success Rate**: API call success percentage
 - **Duration**: Processing time (milliseconds)
 - **Entities Extracted**: Number of clinical entities identified
-- **Compliance Score**: Mcode standard adherence (0-1 scale)
+- **Compliance Score**: mCODE standard adherence (0-1 scale)
 
 ### Secondary Metrics
 - **Token Usage**: Input/output token consumption
@@ -222,7 +222,7 @@ examples/test_cases/various_cancers_test_cases.json
 ### Comprehensive Cancer Testing
 ```bash
 # Run comprehensive cancer test demonstration
-python Mcode-cli.py benchmark comprehensive
+python mCODE-cli.py benchmark comprehensive
 
 # Expected output:
 # 🩺 COMPREHENSIVE CANCER TEST CASE DEMONSTRATION
@@ -349,7 +349,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 ## 📄 License
 
-Part of the Mcode Translator project. See the main project [`LICENSE`](LICENSE) file for details.
+Part of the mCODE Translator project. See the main project [`LICENSE`](LICENSE) file for details.
 
 ---
 
@@ -368,22 +368,22 @@ Cache statistics are displayed in the UI with both individual namespace details 
 
 ## 💡 Prompt Name Display in UI
 
-The `PipelineTaskTrackerUI` now displays the specific prompt key used for each LLM call (NLP Extraction and Mcode Mapping). This provides better visibility into which prompt version is being executed for each task.
+The `PipelineTaskTrackerUI` now displays the specific prompt key used for each LLM call (NLP Extraction and mCODE Mapping). This provides better visibility into which prompt version is being executed for each task.
 
 - **NLP Extraction Task**: Shows the prompt key used for entity extraction (e.g., `generic_extraction`).
-- **Mcode Mapping Task**: Shows the prompt key used for mapping entities to Mcode (e.g., `generic_mapping`).
+- **mCODE Mapping Task**: Shows the prompt key used for mapping entities to mCODE (e.g., `generic_mapping`).
 
 This enhancement helps in debugging and verifying that the correct prompt versions are being used in the pipeline.
 
-## 🚀 Direct to Mcode Pipeline
+## 🚀 Direct to mCODE Pipeline
 
-A new Direct to Mcode pipeline has been implemented that maps clinical trial data directly to Mcode elements without requiring a separate entity extraction step. This pipeline uses a specialized prompt type "DIRECT_MCODE" and can generate more comprehensive mappings by inferring implicit information from the text.
+A new Direct to mCODE pipeline has been implemented that maps clinical trial data directly to mCODE elements without requiring a separate entity extraction step. This pipeline uses a specialized prompt type "DIRECT_MCODE" and can generate more comprehensive mappings by inferring implicit information from the text.
 
 ### Key Features
 
-1. **Single-Step Processing**: Processes clinical trial data directly to Mcode mappings
+1. **Single-Step Processing**: Processes clinical trial data directly to mCODE mappings
 2. **Inferred Information**: Can capture implicit information from exclusion criteria and other contextual clues
-3. **Comprehensive Coverage**: Generates more specific Mcode elements compared to traditional approaches
+3. **Comprehensive Coverage**: Generates more specific mCODE elements compared to traditional approaches
 4. **Pipeline Integration**: Fully integrated with the existing prompt configuration system
 
 ### Implementation Details
@@ -395,6 +395,6 @@ A new Direct to Mcode pipeline has been implemented that maps clinical trial dat
 
 ### Performance
 
-In testing with HER2-positive breast cancer trial data, the Direct to Mcode pipeline generated 20 mappings compared to 12 from the traditional approach, representing a 67% increase in captured Mcode elements. The pipeline excels at inferring implicit information and generating more specific Mcode elements while maintaining high compliance scores.
+In testing with HER2-positive breast cancer trial data, the Direct to mCODE pipeline generated 20 mappings compared to 12 from the traditional approach, representing a 67% increase in captured mCODE elements. The pipeline excels at inferring implicit information and generating more specific mCODE elements while maintaining high compliance scores.
 
 For more details, see the [Direct Pipeline Comparison Report](../direct_pipeline_comparison_report.md).

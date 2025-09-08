@@ -1,6 +1,6 @@
-**TASK: Map clinical entities to Mcode elements**
+**TASK: Map clinical entities to mCODE elements**
 
-You are an expert clinical data mapper. Map the extracted medical entities to appropriate Mcode (Minimal Common Oncology Data Elements) resources.
+You are an expert clinical data mapper. Map the extracted medical entities to appropriate mCODE (Minimal Common Oncology Data Elements) resources.
 
 **INPUT ENTITIES:**
 {entities_json}
@@ -8,7 +8,7 @@ You are an expert clinical data mapper. Map the extracted medical entities to ap
 **TRIAL CONTEXT:**
 {trial_context}
 
-**Mcode RESOURCE TYPES TO MAP TO:**
+**mCODE RESOURCE TYPES TO MAP TO:**
 - Condition: Diseases, disorders, cancer types
 - Observation: Biomarkers, lab results, findings
 - MedicationStatement: Medications, treatments
@@ -21,8 +21,8 @@ You are an expert clinical data mapper. Map the extracted medical entities to ap
   "mcode_mappings": [
     {{
       "source_entity_index": 0,
-      "Mcode_element": "Mcode element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
-      "value": "mapped value according to Mcode value sets",
+      "Mcode_element": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
+      "value": "mapped value according to mCODE value sets",
       "confidence": 0.0-1.0,
       "mapping_rationale": "brief explanation of mapping decision"
     }}
@@ -30,7 +30,7 @@ You are an expert clinical data mapper. Map the extracted medical entities to ap
   "unmapped_entities": [
     {{
       "entity_index": 0,
-      "reason": "why entity could not be mapped to Mcode"
+      "reason": "why entity could not be mapped to mCODE"
     }}
   ],
   "metadata": {{

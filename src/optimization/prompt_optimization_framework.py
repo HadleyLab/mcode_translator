@@ -31,7 +31,8 @@ from src.shared.benchmark_result import BenchmarkResult
 class PromptType(Enum):
     """Types of prompts that can be optimized"""
     NLP_EXTRACTION = "nlp_extraction"
-    MCODE_MAPPING = "Mcode_mapping"
+    MCODE_MAPPING = "mcode_mapping"
+    DIRECT_MCODE = "direct_mcode"
 
 
 class APIConfig:
@@ -130,7 +131,7 @@ class PromptOptimizationFramework(Loggable):
         self.test_cases: Dict[str, Dict[str, Any]] = {}
         self.benchmark_results: List[BenchmarkResult] = []
         
-        # Initialize Mcode mapper for validation
+        # Initialize mCODE mapper for validation
         self.mcode_mapper = McodeMapper()
         
         # Automatically add all models from configuration
@@ -148,12 +149,10 @@ class PromptOptimizationFramework(Loggable):
                     config_name = f"model_{model_key.replace('-', '_').replace('.', '_')}"
                     api_config = APIConfig(name=config_name, model=model_key)
                     self.add_api_config(api_config)
-                    self.logger.info(f"Automatically added model '{model_key}' from configuration")
+                    pass
                 except ValueError as e:
-                    self.logger.warning(f"Failed to create API config for {model_key}: {str(e)}")
                     continue
         except Exception as e:
-            self.logger.error(f"Failed to automatically add models from configuration: {str(e)}")
             raise
     
     def _validate_api_config(self, config: APIConfig) -> None:
@@ -179,7 +178,6 @@ class PromptOptimizationFramework(Loggable):
         """Add and validate API configuration"""
         self._validate_api_config(config)
         self.api_configs[config.name] = config
-        self.logger.info(f"Added VALIDATED API config: {config.name} (model: {config.model})")
     
     def create_model_config(self, model_name: str, config_name: Optional[str] = None) -> APIConfig:
         """Create a new API configuration for a specific model"""
@@ -205,27 +203,24 @@ class PromptOptimizationFramework(Loggable):
             raise ValueError(f"Prompt key '{variant.prompt_key}' not found or inaccessible in prompt library: {str(e)}")
         
         self.prompt_variants[variant.id] = variant
-        self.logger.info(f"Added VALIDATED prompt variant: {variant.name} ({variant.prompt_type.value}) -> {variant.prompt_key}")
     
     def add_test_case(self, case_id: str, test_data: Dict[str, Any]) -> None:
         """Add a test case"""
         self.test_cases[case_id] = test_data
-        self.logger.info(f"Added test case: {case_id}")
     
     def _convert_entities_to_mcode(self, entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Convert extracted entities to Mcode format using the Mcode mapper
-        This allows for proper Mcode-based validation instead of exact text matching
+        Convert extracted entities to mCODE format using the mCODE mapper
+        This allows for proper mCODE-based validation instead of exact text matching
         """
         if not entities:
             return []
         
         try:
-            # Use the Mcode mapper to convert entities to Mcode format
+            # Use the mCODE mapper to convert entities to mCODE format
             mapping_result = self.mcode_mapper.map_to_mcode(entities)
             return mapping_result.get('mapped_elements', [])
         except Exception as e:
-            self.logger.warning(f"Failed to convert entities to Mcode format: {str(e)}")
             # Return empty list if conversion fails
             return []
     
@@ -238,9 +233,7 @@ class PromptOptimizationFramework(Loggable):
             for case_id, case_data in test_cases.items():
                 self.add_test_case(case_id, case_data)
             
-            self.logger.info(f"Loaded {len(test_cases)} test cases from {file_path}")
         except Exception as e:
-            self.logger.error(f"Failed to load test cases: {str(e)}")
             raise
     
     async def run_benchmark_async(self,
@@ -278,11 +271,6 @@ class PromptOptimizationFramework(Loggable):
             
             # Get the actual prompt content from the prompt library
             prompt_content = prompt_variant.get_prompt_content()
-            
-            self.logger.info(f"🧪 Starting async benchmark:")
-            self.logger.info(f"   📋 Prompt: {prompt_variant.name} ({prompt_variant.prompt_key})")
-            self.logger.info(f"   🤖 Model: {api_config.model}")
-            self.logger.info(f"   📊 Test Case: {test_case_id}")
             
             # Create pipeline callback
             def pipeline_callback(test_data):
@@ -326,15 +314,9 @@ class PromptOptimizationFramework(Loggable):
             # Calculate metrics using provided gold standard data
             result.calculate_metrics(expected_entities, expected_mappings, self)
             
-            self.logger.info(f"✅ Async benchmark completed in {result.duration_ms:.2f}ms")
-            self.logger.info(f"   📊 Extraction: {result.entities_extracted} entities")
-            self.logger.info(f"   🗺️  Mapping: {result.entities_mapped} Mcode elements")
-            self.logger.info(f"   🎯 Metrics: F1={result.f1_score:.3f}")
-            
         except Exception as e:
             result.success = False
             result.error_message = str(e)
-            self.logger.error(f"❌ Async benchmark FAILED: {str(e)}")
             raise
         
         result.end_time = datetime.now()
@@ -407,12 +389,6 @@ class PromptOptimizationFramework(Loggable):
             if api_config.max_tokens is not None:
                 model_info += f", max_tokens={api_config.max_tokens}"
             
-            self.logger.info(f"🧪{progress_info} Starting STRICT benchmark:")
-            self.logger.info(f"   📋 Prompt: {prompt_variant.name} ({prompt_variant.prompt_key})")
-            self.logger.info(f"   🤖 Model: {model_info}")
-            self.logger.info(f"   📊 Test Case: {test_case_id}")
-            self.logger.info(f"   🔄 Prompt Type: {prompt_variant.prompt_type.value}")
-            
             # Note: The pipeline callback should use the Config class directly for API configuration
             # Environment variables are no longer needed since the pipeline components use Config class
             
@@ -432,7 +408,6 @@ class PromptOptimizationFramework(Loggable):
             if hasattr(pipeline_result, 'mcode_mappings'):
                 result.mcode_mappings = pipeline_result.mcode_mappings
                 result.entities_mapped = len(pipeline_result.mcode_mappings)
-                self.logger.debug(f"Set mcode_mappings: {len(result.mcode_mappings)} mappings")
             
             if hasattr(pipeline_result, 'validation_results'):
                 result.validation_results = pipeline_result.validation_results
@@ -455,9 +430,6 @@ class PromptOptimizationFramework(Loggable):
             aggregate_token_usage = global_token_tracker.get_total_usage()
             if aggregate_token_usage.total_tokens > 0:
                 result.token_usage = aggregate_token_usage.total_tokens
-                self.logger.info(f"   📊 Aggregate token usage: {aggregate_token_usage.total_tokens} tokens")
-                self.logger.info(f"      Prompt tokens: {aggregate_token_usage.prompt_tokens}")
-                self.logger.info(f"      Completion tokens: {aggregate_token_usage.completion_tokens}")
             
             # Mark the result as successful before calculating metrics
             result.success = True
@@ -478,12 +450,6 @@ class PromptOptimizationFramework(Loggable):
                 remaining_seconds = avg_time_per_test * remaining_tests
                 time_remaining = f" ⏰ ETR: {self._format_time_remaining(remaining_seconds)}"
             
-            self.logger.info(f"{completion_status} STRICT benchmark completed in {result.duration_ms:.2f}ms{time_remaining}")
-            self.logger.info(f"   📊 Extraction: {result.entities_extracted} entities")
-            self.logger.info(f"   🗺️  Mapping: {result.entities_mapped} Mcode elements")
-            self.logger.info(f"   🎯 Metrics: F1={result.f1_score:.3f}, Precision={result.precision:.3f}, Recall={result.recall:.3f}")
-            self.logger.info(f"   ✅ Compliance: {result.compliance_score:.2%}")
-            
         except Exception as e:
             result.success = False
             result.error_message = str(e)
@@ -501,7 +467,6 @@ class PromptOptimizationFramework(Loggable):
                     remaining_seconds = avg_time_per_test * remaining_tests
                     time_remaining = f" ⏰ ETR: {self._format_time_remaining(remaining_seconds)}"
             
-            self.logger.error(f"{error_status} STRICT benchmark FAILED in {result.duration_ms:.2f}ms{time_remaining}: {str(e)}")
         
         result.end_time = datetime.now()
         self.benchmark_results.append(result)
@@ -558,7 +523,6 @@ class PromptOptimizationFramework(Loggable):
                 self.benchmark_results.append(result)
                 
             except Exception as e:
-                self.logger.error(f"Failed to load benchmark result {result_file}: {str(e)}")
                 raise
     
     def get_results_dataframe(self) -> pd.DataFrame:
@@ -610,6 +574,7 @@ class PromptOptimizationFramework(Loggable):
         return pd.DataFrame(data)
     
     def run_all_combinations(self, test_case_ids: List[str], pipeline_callback: Callable,
+                           pipeline_type: str,
                            expected_entities: List[Dict[str, Any]] = None,
                            expected_mappings: List[Dict[str, Any]] = None) -> None:
         """
@@ -619,7 +584,7 @@ class PromptOptimizationFramework(Loggable):
             test_case_ids: List of test case IDs to run
             pipeline_callback: Callback function that executes the pipeline
             expected_entities: Gold standard entities for validation
-            expected_mappings: Gold standard Mcode mappings for validation
+            expected_mappings: Gold standard mCODE mappings for validation
         """
         if not self.prompt_variants:
             raise ValueError("No prompt variants configured")
@@ -632,11 +597,6 @@ class PromptOptimizationFramework(Loggable):
         current_index = 0
         benchmark_start_time = time.time()
         
-        self.logger.info(f"🧪 Starting optimization across {len(self.prompt_variants)} prompts × {len(self.api_configs)} models × {len(test_case_ids)} test cases = {total_combinations} combinations")
-        self.logger.info(f"   Models: {[config.model for config in self.api_configs.values()]}")
-        self.logger.info(f"   Prompts: {[variant.name for variant in self.prompt_variants.values()]}")
-        self.logger.info(f"   Test Cases: {test_case_ids}")
-        
         for prompt_id, prompt_variant in self.prompt_variants.items():
             for config_name, api_config in self.api_configs.items():
                 for test_case_id in test_case_ids:
@@ -647,6 +607,7 @@ class PromptOptimizationFramework(Loggable):
                             api_config_name=config_name,
                             test_case_id=test_case_id,
                             pipeline_callback=pipeline_callback,
+                            pipeline_type=pipeline_type,
                             expected_entities=expected_entities,
                             expected_mappings=expected_mappings,
                             current_index=current_index,
@@ -654,8 +615,8 @@ class PromptOptimizationFramework(Loggable):
                             benchmark_start_time=benchmark_start_time
                         )
                     except Exception as e:
-                        self.logger.error(f"❌ Failed combination {current_index}/{total_combinations}: {prompt_variant.name} + {config_name} + {test_case_id}: {str(e)}")
                         # Continue with other combinations despite failures
+                        pass
     
     def get_best_combinations(self, metric: str = 'f1_score', top_n: int = 5) -> pd.DataFrame:
         """
@@ -782,7 +743,6 @@ class PromptOptimizationFramework(Loggable):
         
         # Update the prompt configuration file to mark this prompt as default
         self._update_prompt_config_default(prompt_type, prompt_name)
-        self.logger.info(f"Set '{prompt_name}' as default prompt for type '{prompt_type}'")
     
     def _update_prompt_config_default(self, prompt_type: str, prompt_name: str) -> None:
         """
@@ -897,7 +857,7 @@ class PromptOptimizationFramework(Loggable):
             from src.utils import reload_models_config
             reload_models_config()
         except Exception as e:
-            self.logger.warning(f"Failed to reload model configuration: {str(e)}")
+            pass
     
     def get_default_model(self) -> Optional[str]:
         """
@@ -1016,7 +976,7 @@ class PromptOptimizationFramework(Loggable):
             pipeline_callback: Callback function that executes the pipeline
             pipeline_type: Type of pipeline being used
             expected_entities: Gold standard entities for validation
-            expected_mappings: Gold standard Mcode mappings for validation
+            expected_mappings: Gold standard mCODE mappings for validation
             current_index: Current test index (for progress tracking)
             total_count: Total number of tests (for progress tracking)
             benchmark_start_time: Start time of the overall benchmark run (for ETR calculation)
@@ -1027,21 +987,12 @@ class PromptOptimizationFramework(Loggable):
         """
         def _log_with_callback(message: str, level: str = "INFO"):
             """Log message and send to callback if provided"""
-            if level == "INFO":
-                self.logger.info(message)
-            elif level == "DEBUG":
-                self.logger.debug(message)
-            elif level == "WARNING":
-                self.logger.warning(message)
-            elif level == "ERROR":
-                self.logger.error(message)
-            
             # Send to callback for live streaming
             if log_callback:
                 try:
                     log_callback(message)
                 except Exception as e:
-                    self.logger.warning(f"Failed to send log to callback: {str(e)}")
+                    pass
         
         # Create result object
         result = BenchmarkResult(
@@ -1110,7 +1061,7 @@ class PromptOptimizationFramework(Loggable):
             if hasattr(pipeline_result, 'mcode_mappings'):
                 result.mcode_mappings = pipeline_result.mcode_mappings
                 result.entities_mapped = len(pipeline_result.mcode_mappings)
-                _log_with_callback(f"   🗺️  Mapped {result.entities_mapped} Mcode elements")
+                _log_with_callback(f"   🗺️  Mapped {result.entities_mapped} mCODE elements")
                 self.logger.debug(f"Set mcode_mappings: {len(result.mcode_mappings)} mappings")
             
             if hasattr(pipeline_result, 'validation_results'):
@@ -1162,8 +1113,10 @@ class PromptOptimizationFramework(Loggable):
             
             _log_with_callback(f"{completion_status} STRICT benchmark completed in {result.duration_ms:.2f}ms{time_remaining}")
             _log_with_callback(f"   📊 Extraction: {result.entities_extracted} entities")
-            _log_with_callback(f"   🗺️  Mapping: {result.entities_mapped} Mcode elements")
-            _log_with_callback(f"   🎯 Metrics: F1={result.f1_score:.3f}, Precision={result.precision:.3f}, Recall={result.recall:.3f}")
+            _log_with_callback(f"   🗺️  Mapping: {result.entities_mapped} mCODE elements")
+            _log_with_callback(f"   🎯 Metrics: F1={result.f1_score:.3f}, Precision={result.precision:.3f}, Recall={result.recall:.3f}"
+                              if result.f1_score is not None and result.precision is not None and result.recall is not None
+                              else "   🎯 Metrics: F1=N/A, Precision=N/A, Recall=N/A")
             _log_with_callback(f"   ✅ Compliance: {result.compliance_score:.2%}")
             
         except Exception as e:

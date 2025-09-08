@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides a comprehensive overview of the significant improvements made to the Mcode Translator framework, focusing on three major areas:
+This document provides a comprehensive overview of the significant improvements made to the mCODE Translator framework, focusing on three major areas:
 
 1. **Unified Token Tracking System**: Standardized token usage reporting across all LLM providers
 2. **File-Based Model Library**: Centralized management of LLM model configurations
@@ -31,7 +31,7 @@ Implement a standardized token usage tracking system that works across all LLM p
 #### Integration Points
 - `LlmBase`: Base class that extracts token usage from LLM responses
 - `NlpLlm`: NLP engine that tracks extraction token usage
-- `McodeMapper`: Mcode mapper that tracks mapping token usage
+- `McodeMapper`: mCODE mapper that tracks mapping token usage
 - `StrictDynamicExtractionPipeline`: Pipeline that aggregates and reports token usage
 
 ### Results
@@ -169,7 +169,7 @@ All new functionality has been thoroughly tested:
 
 ## Conclusion
 
-The comprehensive system improvements have successfully modernized the Mcode Translator framework with:
+The comprehensive system improvements have successfully modernized the mCODE Translator framework with:
 
 1. **Unified Token Tracking**: Standardized, cross-provider token usage reporting
 2. **File-Based Model Library**: Centralized, maintainable model configuration management

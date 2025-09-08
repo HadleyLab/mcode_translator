@@ -1,6 +1,6 @@
 # Testing Structure
 
-This directory contains all tests for the Mcode Translator project, organized by module and test type.
+This directory contains all tests for the mCODE Translator project, organized by module and test type.
 
 ## Directory Structure
 

@@ -298,7 +298,7 @@ def get_study_fields():
 @click.option('--process-trial', '-t', is_flag=True, help='Process complete trial with NLP engine')
 def main(condition, nct_id, limit, count, export, process_criteria, process_trial):
     """
-    Clinical Trial Data Fetcher for Mcode Translator
+    Clinical Trial Data Fetcher for mCODE Translator
     
     Examples:
       python fetcher.py --condition "breast cancer" --limit 10
@@ -373,7 +373,7 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
             study = result
             
         try:
-            # Import the NLP extraction to Mcode mapping pipeline
+            # Import the NLP extraction to mCODE mapping pipeline
             from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
             
             # Create a configured pipeline using the prompt/model interface
@@ -399,7 +399,7 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
             # Log detailed processing information
             logger.info(f"✅ NLP processing completed for complete trial")
             logger.info(f"   📊 Extracted {len(pipeline_result.extracted_entities)} entities")
-            logger.info(f"   🗺️  Mapped {len(pipeline_result.mcode_mappings)} Mcode elements")
+            logger.info(f"   🗺️  Mapped {len(pipeline_result.mcode_mappings)} mCODE elements")
             logger.info(f"   📈 Validation score: {pipeline_result.validation_results.get('compliance_score', 0):.2%}")
             
             # Log token usage if available
@@ -429,7 +429,7 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
             
             # Show sample mappings if available
             if pipeline_result.mcode_mappings:
-                logger.info("   🔍 Sample Mcode mappings:")
+                logger.info("   🔍 Sample mCODE mappings:")
                 for i, mapping in enumerate(pipeline_result.mcode_mappings[:3]):
                     logger.info(f"     {i+1}. {mapping.get('resourceType', 'Unknown')} - "
                                f"{mapping.get('element_name', 'No name')} - "
@@ -488,7 +488,7 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
                             # Log detailed processing information
                             logger.info(f"✅ NLP processing completed for {section_context['source_id']}")
                             logger.info(f"   📊 Extracted {len(pipeline_result.extracted_entities)} entities")
-                            logger.info(f"   🗺️  Mapped {len(pipeline_result.mcode_mappings)} Mcode elements")
+                            logger.info(f"   🗺️  Mapped {len(pipeline_result.mcode_mappings)} mCODE elements")
                             logger.info(f"   📈 Validation score: {pipeline_result.validation_results.get('compliance_score', 0):.2%}")
                             
                             # Log token usage if available
@@ -518,7 +518,7 @@ def display_single_study(result, export_path=None, process_criteria=False, proce
                             
                             # Show sample mappings if available
                             if pipeline_result.mcode_mappings:
-                                logger.info("   🔍 Sample Mcode mappings:")
+                                logger.info("   🔍 Sample mCODE mappings:")
                                 for i, mapping in enumerate(pipeline_result.mcode_mappings[:3]):
                                     logger.info(f"     {i+1}. {mapping.get('resourceType', 'Unknown')} - "
                                                f"{mapping.get('element_name', 'No name')} - "

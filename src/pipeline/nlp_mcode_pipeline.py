@@ -1,5 +1,5 @@
 """
-NLP Extraction to Mcode Mapping Pipeline - A two-step pipeline that first extracts NLP entities and then maps them to Mcode.
+NLP Extraction to mCODE Mapping Pipeline - A two-step pipeline that first extracts NLP entities and then maps them to mCODE.
 """
 
 import json
@@ -23,16 +23,16 @@ from src.utils import (
 class NlpMcodePipeline(ProcessingPipeline, Loggable):
     """
     A two-step pipeline that first extracts NLP entities from clinical text and then
-    maps those entities to the Mcode standard.
+    maps those entities to the mCODE standard.
     """
 
     def __init__(self, extraction_prompt_name: str = "generic_extraction", mapping_prompt_name: str = "generic_mapping"):
         """
-        Initialize the NLP Extraction to Mcode Mapping Pipeline.
+        Initialize the NLP Extraction to mCODE Mapping Pipeline.
 
         Args:
             extraction_prompt_name: Name of the prompt template for entity extraction.
-            mapping_prompt_name: Name of the prompt template for Mcode mapping.
+            mapping_prompt_name: Name of the prompt template for mCODE mapping.
         """
         super().__init__()
         self.extraction_prompt_name = extraction_prompt_name
@@ -55,7 +55,7 @@ class NlpMcodePipeline(ProcessingPipeline, Loggable):
             task_id: Optional task ID for associating with a BenchmarkTask
             
         Returns:
-            PipelineResult with extracted entities and Mcode mappings
+            PipelineResult with extracted entities and mCODE mappings
         """
         try:
             self.logger.info("🧬 Processing clinical text with ATOMIC processor")
@@ -81,7 +81,7 @@ class NlpMcodePipeline(ProcessingPipeline, Loggable):
                 type_summary = ", ".join([f"{count} {etype}" for etype, count in entity_types.items()])
                 self.logger.info(f"   📊 Entity types: {type_summary}")
             
-            # Step 2: Map entities to Mcode elements
+            # Step 2: Map entities to mCODE elements
             mapping_result = self.llm_mapper.map_to_mcode(
                 entities=entities,
                 trial_context=context or {}
@@ -123,7 +123,7 @@ class NlpMcodePipeline(ProcessingPipeline, Loggable):
             task_id: Optional task ID for associating with a BenchmarkTask
             
         Returns:
-            PipelineResult with extracted entities, Mcode mappings, and source tracking
+            PipelineResult with extracted entities, mCODE mappings, and source tracking
         """
         try:
             self.logger.info("🚀 Starting STRICT clinical trial processing")
@@ -202,8 +202,8 @@ class NlpMcodePipeline(ProcessingPipeline, Loggable):
                 type_summary = ", ".join([f"{count} {etype}" for etype, count in entity_types.items()])
                 self.logger.info(f"   📊 Total entity types: {type_summary}")
             
-            # Step 3: Map entities to Mcode elements with source tracking
-            self.logger.info("🗺️  Starting Mcode mapping phase...")
+            # Step 3: Map entities to mCODE elements with source tracking
+            self.logger.info("🗺️  Starting mCODE mapping phase...")
             self.logger.info(f"   📊 Input: {len(all_entities)} entities to map")
             self.logger.info(f"   📋 Source references: {len(source_references)}")
             
@@ -213,7 +213,7 @@ class NlpMcodePipeline(ProcessingPipeline, Loggable):
                 source_references=source_references
             )
             
-            self.logger.info(f"✅ Mapped {len(mapping_result['mapped_elements'])} Mcode elements")
+            self.logger.info(f"✅ Mapped {len(mapping_result['mapped_elements'])} mCODE elements")
             self.logger.info(f"   🎯 Compliance score: {mapping_result['validation_results'].get('compliance_score', 0):.2%}")
             
             # Step 4: Prepare comprehensive result
@@ -253,7 +253,7 @@ class NlpMcodePipeline(ProcessingPipeline, Loggable):
             section_context: Optional context about the criteria section
             
         Returns:
-            PipelineResult with extracted entities and Mcode mappings
+            PipelineResult with extracted entities and mCODE mappings
         """
         try:
             self.logger.info("📋 Processing eligibility criteria with STRICT pipeline")
@@ -368,7 +368,7 @@ if __name__ == "__main__":
         
         logger.info("STRICT Dynamic Extraction Pipeline Results:")
         logger.info(f"Extracted entities: {len(result.extracted_entities)}")
-        logger.info(f"Mapped Mcode elements: {len(result.mcode_mappings)}")
+        logger.info(f"Mapped mCODE elements: {len(result.mcode_mappings)}")
         logger.info(f"Validation valid: {result.validation_results['valid']}")
         logger.info(f"Compliance score: {result.validation_results['compliance_score']}")
         

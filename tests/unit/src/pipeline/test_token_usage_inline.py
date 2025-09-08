@@ -8,7 +8,7 @@ from pathlib import Path
 # Add the project root to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
 from src.optimization.prompt_optimization_framework import (
     PromptOptimizationFramework, PromptVariant, PromptType, APIConfig
 )
@@ -95,7 +95,7 @@ def main():
 
     # Define pipeline callback
     def pipeline_callback(test_data, prompt_content, prompt_variant_id):
-        pipeline = StrictDynamicExtractionPipeline()
+        pipeline = NlpMcodePipeline()
         variant = framework.prompt_variants.get(prompt_variant_id)
         if variant.prompt_type == PromptType.NLP_EXTRACTION:
             pipeline.nlp_extractor.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content

@@ -11,7 +11,8 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from optimization.prompt_optimization_framework import PromptOptimizationFramework, BenchmarkResult
+from src.shared.benchmark_result import BenchmarkResult
+from optimization.prompt_optimization_framework import PromptOptimizationFramework
 
 def test_strict_validation():
     """STRICT test of validation logic using actual framework components"""
@@ -24,10 +25,10 @@ def test_strict_validation():
     with open(gold_standard_path, 'r') as f:
         gold_data = json.load(f)
     
-    # Extract the Mcode mappings from the gold standard
+    # Extract the mCODE mappings from the gold standard
     gold_standard = gold_data['gold_standard']['breast_cancer_her2_positive']['expected_mcode_mappings']['mapped_elements']
     
-    print(f"Gold standard contains {len(gold_standard)} expected Mcode mappings")
+    print(f"Gold standard contains {len(gold_standard)} expected mCODE mappings")
     
     # Create the actual framework instance
     framework = PromptOptimizationFramework()
@@ -96,12 +97,12 @@ def test_strict_validation():
         if expected_entities and benchmark.extracted_entities and framework:
             print("✅ Validation condition met - proceeding with calculation")
             
-            # Convert both extracted and expected entities to Mcode format
+            # Convert both extracted and expected entities to mCODE format
             extracted_mcode = framework._convert_entities_to_mcode(benchmark.extracted_entities)
             expected_mcode_elements = framework._convert_entities_to_mcode(expected_entities)
             
-            print(f"Extracted Mcode elements: {[m.get('element_name', '') for m in extracted_mcode]}")
-            print(f"Expected Mcode elements: {[m.get('element_name', '') for m in expected_mcode_elements]}")
+            print(f"Extracted mCODE elements: {[m.get('element_name', '') for m in extracted_mcode]}")
+            print(f"Expected mCODE elements: {[m.get('element_name', '') for m in expected_mcode_elements]}")
             
             # Calculate metrics
             true_positives_ext = len(set(m.get('element_name', '') for m in extracted_mcode) &
@@ -131,15 +132,15 @@ def test_strict_validation():
     )
     
     print(f"\nSTRICT Validation Results:")
-    print(f"Precision: {benchmark.precision:.3f}")
-    print(f"Recall: {benchmark.recall:.3f}")
-    print(f"F1 Score: {benchmark.f1_score:.3f}")
-    print(f"Extraction Completeness: {benchmark.extraction_completeness:.3f}")
-    print(f"Mapping Accuracy: {benchmark.mapping_accuracy:.3f}")
+    print(f"Precision: {benchmark.precision:.3f}" if benchmark.precision is not None else "Precision: N/A")
+    print(f"Recall: {benchmark.recall:.3f}" if benchmark.recall is not None else "Recall: N/A")
+    print(f"F1 Score: {benchmark.f1_score:.3f}" if benchmark.f1_score is not None else "F1 Score: N/A")
+    print(f"Extraction Completeness: {benchmark.extraction_completeness:.3f}" if benchmark.extraction_completeness is not None else "Extraction Completeness: N/A")
+    print(f"Mapping Accuracy: {benchmark.mapping_accuracy:.3f}" if benchmark.mapping_accuracy is not None else "Mapping Accuracy: N/A")
     
     # Debug: Show what's being compared
     print(f"\nDebug - Element Comparison:")
-    # Get the actual extracted Mcode elements from the conversion
+    # Get the actual extracted mCODE elements from the conversion
     extracted_mcode = framework._convert_entities_to_mcode(benchmark.extracted_entities)
     extracted_elements = {m.get('element_name', '') for m in extracted_mcode}
     

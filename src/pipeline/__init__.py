@@ -1,5 +1,5 @@
 """
-Pipeline module for Mcode extraction system.
+Pipeline module for mCODE extraction system.
 Contains the main extraction pipeline components.
 """
 

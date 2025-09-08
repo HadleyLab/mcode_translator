@@ -14,16 +14,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
 from src.pipeline.fetcher import search_trials, get_full_study, calculate_total_studies
-from src.pipeline.llm_base import LlmBase
+from src.pipeline.mcode_mapper import McodeMapper
 from src.utils.api_manager import UnifiedAPIManager
-from src.optimization.benchmark_task_tracker import BenchmarkTaskTracker
+from src.optimization.benchmark_task_tracker import BenchmarkTaskTrackerUI
 
 def test_api_caching():
     """Test API caching functionality"""
     print("🧪 Testing API Caching...")
     
-    # Clear API cache to start fresh
-    api_cache = APICache(".api_cache")
+    # Clear API cache to start fresh using UnifiedAPIManager
+    api_cache = UnifiedAPIManager().get_cache("api")
     api_cache.clear_cache()
     
     # Test first call (should miss cache)
@@ -44,20 +44,21 @@ def test_api_caching():
     
     if stats['hits'] > 0 and time_2 < time_1:
         print("✅ API caching working correctly!")
-        return True
+        assert True, "API caching working correctly"
     else:
         print("❌ API caching not working as expected")
-        return False
+        assert False, f"API caching not working: hits={stats['hits']}, time_1={time_1:.3f}s, time_2={time_2:.3f}s"
 
 def test_llm_caching():
     """Test LLM caching functionality"""
     print("\n🧪 Testing LLM Caching...")
     
-    # Create LLM instance
-    llm = LlmBase(model_name="gpt-3.5-turbo")
+    # Create LLM instance using concrete implementation
+    llm = McodeMapper(model_name="gpt-3.5-turbo")
     
-    # Clear LLM cache to start fresh
-    llm.llm_cache.clear_cache()
+    # Clear LLM cache to start fresh using UnifiedAPIManager
+    llm_cache = UnifiedAPIManager().get_cache("llm")
+    llm_cache.clear_cache()
     
     # Test prompt
     test_prompt = "Translate this medical term: Hypertension"
@@ -73,17 +74,17 @@ def test_llm_caching():
     time_2 = time.time() - start_time
     
     # Verify cache hit
-    stats = llm.llm_cache.get_stats()
+    stats = llm_cache.get_stats()
     print(f"LLM Cache Stats: {stats}")
     print(f"First call time: {time_1:.3f}s")
     print(f"Second call time: {time_2:.3f}s")
     
     if stats['hits'] > 0 and time_2 < time_1:
         print("✅ LLM caching working correctly!")
-        return True
+        assert True, "LLM caching working correctly"
     else:
         print("❌ LLM caching not working as expected")
-        return False
+        assert False, f"LLM caching not working: hits={stats['hits']}, time_1={time_1:.3f}s, time_2={time_2:.3f}s"
 
 def test_across_models():
     """Test prompt benchmarks across different models"""
@@ -100,7 +101,7 @@ def test_across_models():
     
     for model in models:
         print(f"\nTesting model: {model}")
-        llm = LlmBase(model_name=model)
+        llm = McodeMapper(model_name=model)
         
         model_results = []
         for i, prompt in enumerate(prompts):
@@ -133,7 +134,7 @@ def test_benchmark_tracker():
     """Test benchmark task tracker functionality"""
     print("\n🧪 Testing Benchmark Task Tracker...")
     
-    tracker = BenchmarkTaskTracker()
+    tracker = BenchmarkTaskTrackerUI()
     
     # Test cache statistics display
     print("Cache Statistics:")
@@ -143,9 +144,9 @@ def test_benchmark_tracker():
     print("\nClearing caches...")
     tracker.clear_caches()
     
-    # Verify caches are cleared
-    api_cache = APICache(".api_cache")
-    llm_cache = APICache(".llm_cache")
+    # Verify caches are cleared using UnifiedAPIManager
+    api_cache = UnifiedAPIManager().get_cache("api")
+    llm_cache = UnifiedAPIManager().get_cache("llm")
     
     api_stats = api_cache.get_stats()
     llm_stats = llm_cache.get_stats()
@@ -155,10 +156,10 @@ def test_benchmark_tracker():
     
     if api_stats['total_items'] == 0 and llm_stats['total_items'] == 0:
         print("✅ Caches cleared successfully!")
-        return True
+        assert True, "Caches cleared successfully"
     else:
         print("❌ Caches not cleared properly")
-        return False
+        assert False, f"Caches not cleared properly: API items={api_stats['total_items']}, LLM items={llm_stats['total_items']}"
 
 def main():
     """Main test function"""

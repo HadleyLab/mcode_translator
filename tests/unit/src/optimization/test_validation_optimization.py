@@ -15,9 +15,9 @@ from datetime import datetime
 # Add the project root to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
 from src.optimization.prompt_optimization_framework import (
-    PromptOptimizationFramework, PromptVariant, PromptType, APIConfig
+    PromptOptimizationFramework, PromptVariant, PromptType
 )
 from src.utils.logging_config import get_logger
 from src.utils.config import Config
@@ -220,7 +220,7 @@ def test_validation_with_gold_standard():
     trial_data, gold_standard = load_breast_cancer_data()
     
     # Initialize pipeline
-    pipeline = StrictDynamicExtractionPipeline()
+    pipeline = NlpMcodePipeline()
     
     # Process the trial data
     test_case = trial_data['test_cases']['breast_cancer_her2_positive']
@@ -280,8 +280,8 @@ def test_validation_with_gold_standard():
     mapping_completeness = mapped_count / expected_mapped_count if expected_mapped_count > 0 else 0
     
     logger.info(f"Mapping validation:")
-    logger.info(f"  - Mapped: {mapped_count} Mcode elements")
-    logger.info(f"  - Expected: {expected_mapped_count} Mcode elements")
+    logger.info(f"  - Mapped: {mapped_count} mCODE elements")
+    logger.info(f"  - Expected: {expected_mapped_count} mCODE elements")
     logger.info(f"  - Completeness: {mapping_completeness:.2%}")
     
     # Compliance validation
@@ -340,13 +340,14 @@ def test_optimization_framework():
 
     # API configs are now automatically loaded from configuration
     # The framework automatically adds all models from the configuration
-    config = Config()
+    from src.utils.model_loader import ModelLoader
+    model_loader = ModelLoader()
     
     # Log information about the loaded API configs
-    llm_providers = config.get_llm_providers()
-    logger.info(f"Loaded {len(llm_providers)} LLM providers from configuration:")
-    for provider in llm_providers:
-        logger.info(f"  - {provider.get('name')}: {provider.get('model')}")
+    available_models = model_loader.get_all_models()
+    logger.info(f"Loaded {len(available_models)} LLM providers from configuration:")
+    for model_key, model_config in available_models.items():
+        logger.info(f"  - {model_key}: {model_config.model_identifier}")
 
     # Load prompt library configuration - STRICT MODE
     prompt_config_path = Path("prompts/prompts_config.json")
@@ -366,6 +367,8 @@ def test_optimization_framework():
             prompt_type = PromptType.NLP_EXTRACTION
         elif prompt_type_str == 'MCODE_MAPPING':
             prompt_type = PromptType.MCODE_MAPPING
+        elif prompt_type_str == 'DIRECT_MCODE':
+            prompt_type = PromptType.DIRECT_MCODE
         else:
             raise ValueError(f"STRICT: Unknown prompt type '{prompt_type_str}' for prompt '{prompt_name}'")
         
@@ -394,14 +397,14 @@ def test_optimization_framework():
     expected_mappings = expected_data['expected_mcode_mappings']['mapped_elements']
 
     # Define pipeline callback with prompt library integration
-    def pipeline_callback(test_data, prompt_content, prompt_variant_id):
+    def pipeline_callback(test_data, prompt_content, prompt_variant_id, api_config_name):
         # Get the prompt variant to determine prompt type
         variant = framework.prompt_variants.get(prompt_variant_id)
         if not variant:
             raise ValueError(f"Prompt variant {prompt_variant_id} not found")
         
         # Create pipeline instance
-        pipeline = StrictDynamicExtractionPipeline()
+        pipeline = NlpMcodePipeline()
         
         # Set the prompt content directly on the NLP engine based on prompt type
         if variant.prompt_type == PromptType.NLP_EXTRACTION:
@@ -411,6 +414,11 @@ def test_optimization_framework():
             # For mapping prompts, set the mapping prompt template
             # Note: This would require similar changes to McodeMapper
             pipeline.llm_mapper.MCODE_MAPPING_PROMPT_TEMPLATE = prompt_content
+        elif variant.prompt_type == PromptType.DIRECT_MCODE:
+            # For direct mCODE prompts, set the direct mCODE prompt template
+            # Note: This would require changes to support direct mCODE processing
+            # For now, use extraction prompt template as fallback
+            pipeline.nlp_extractor.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
         else:
             # Default to extraction prompt if type is unknown
             pipeline.nlp_extractor.ENTITY_EXTRACTION_PROMPT_TEMPLATE = prompt_content
@@ -428,7 +436,8 @@ def test_optimization_framework():
         test_case_ids=["breast_cancer_test"],
         pipeline_callback=pipeline_callback,
         expected_entities=expected_entities,
-        expected_mappings=expected_mappings
+        expected_mappings=expected_mappings,
+        pipeline_type="NLP_MCODE"
     )
     
     # Get the results from the framework
