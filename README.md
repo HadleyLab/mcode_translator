@@ -1,12 +1,12 @@
-# Mcode Translator
+# mCODE Translator
 
-A comprehensive clinical trial data processing pipeline that extracts and maps eligibility criteria to standardized Mcode elements using LLM-based natural language processing.
+A comprehensive clinical trial data processing pipeline that extracts and maps eligibility criteria to standardized mCODE elements using LLM-based natural language processing.
 
 ## Overview
 
-The Mcode Translator is a sophisticated system that processes clinical trial eligibility criteria from ClinicalTrials.gov and maps them to standardized Mcode (Minimal Common Oncology Data Elements) format. The system features:
+The mCODE Translator is a sophisticated system that processes clinical trial eligibility criteria from ClinicalTrials.gov and maps them to standardized mCODE (Minimal Common Oncology Data Elements) format. The system features:
 
-- **NLP Extraction to Mcode Mapping Pipeline**: LLM-based entity extraction with no fallbacks
+- **NLP Extraction to mCODE Mapping Pipeline**: LLM-based entity extraction with no fallbacks
 - **Patient-Trial Matching**: Interactive web application for matching patient profiles to clinical trials
 - **Prompt Optimization Framework**: Advanced prompt engineering for improved extraction accuracy
 - **Source Provenance Tracking**: Comprehensive tracking of extraction sources and confidence scores
@@ -47,34 +47,34 @@ The Mcode Translator is a sophisticated system that processes clinical trial eli
    # Edit .env with your API keys and configuration
    ```
 
-### Running the Mcode Translator CLI
+### Running the mCODE Translator CLI
 
 The project now uses a unified CLI interface for all functionality:
 
 ```bash
 # Show CLI help
-python Mcode-cli.py --help
+python mCODE-cli.py --help
 
 # Run optimization demo
-python Mcode-cli.py optimization demo
+python mCODE-cli.py optimization demo
 
 # Run comprehensive benchmark
-python Mcode-cli.py benchmark comprehensive
+python mCODE-cli.py benchmark comprehensive
 
 # Run prompt library demo
-python Mcode-cli.py prompt demo
+python mCODE-cli.py prompt demo
 
 # Run patient-trial matcher web application
-python Mcode-cli.py webapp start
+python mCODE-cli.py webapp start
 
 # Run pipeline task tracker with gold standard validation
-python Mcode-cli.py pipeline-tracker start
+python mCODE-cli.py pipeline-tracker start
 ```
 
 ### Running the Patient-Trial Matcher Web Application
 
 ```bash
-python Mcode-cli.py webapp start
+python mCODE-cli.py webapp start
 ```
 
 The application will be accessible at:
@@ -84,7 +84,7 @@ The application will be accessible at:
 ### Running the Pipeline Task Tracker with Gold Standard Validation
 
 ```bash
-python Mcode-cli.py pipeline-tracker start
+python mCODE-cli.py pipeline-tracker start
 ```
 
 The pipeline task tracker provides:
@@ -108,13 +108,13 @@ The pipeline task tracker provides:
 - **Features**: Pattern-based extraction, confidence scoring, strict validation
 - **Key Classes**: `NlpLlm`
 
-#### 3. NLP Extraction to Mcode Mapping Pipeline ([`src/pipeline/nlp_mcode_pipeline.py`](src/pipeline/nlp_mcode_pipeline.py:33))
+#### 3. NLP Extraction to mCODE Mapping Pipeline ([`src/pipeline/nlp_mcode_pipeline.py`](src/pipeline/nlp_mcode_pipeline.py:33))
 - **Purpose**: Main processing pipeline for clinical trial data
-- **Features**: LLM-based entity extraction, Mcode mapping, source provenance tracking
+- **Features**: LLM-based entity extraction, mCODE mapping, source provenance tracking
 - **Key Classes**: `NlpMcodePipeline`, `PipelineResult`
 
-#### 4. Mcode Mapper ([`src/pipeline/Mcode_mapper.py`](src/pipeline/Mcode_mapper.py))
-- **Purpose**: Map extracted entities to standardized Mcode elements
+#### 4. mCODE Mapper ([`src/pipeline/Mcode_mapper.py`](src/pipeline/Mcode_mapper.py))
+- **Purpose**: Map extracted entities to standardized mCODE elements
 - **Features**: Rule-based mapping, validation, compliance scoring
 
 #### 5. Document Ingestor ([`src/pipeline/document_ingestor.py`](src/pipeline/document_ingestor.py))
@@ -136,7 +136,7 @@ The pipeline task tracker provides:
 The project uses a **strict framework** approach with no fallbacks:
 
 - **No Legacy Code**: All components use the latest LLM-based extraction
-- **Direct Integration**: Tight coupling between NLP engine and Mcode mapper
+- **Direct Integration**: Tight coupling between NLP engine and mCODE mapper
 - **Hard Failures**: Invalid configurations result in immediate failures
 - **Source Provenance**: Comprehensive tracking of extraction sources
 - **Cache Isolation**: Proper cache separation between different model configurations
@@ -167,7 +167,7 @@ sources = result.source_references
 
 - **Patient Profile Management**: Edit cancer type, stage, biomarkers
 - **Clinical Trial Search**: Advanced filtering and pagination
-- **NLP to Mcode Visualization**: Interactive mapping visualization
+- **NLP to mCODE Visualization**: Interactive mapping visualization
 - **Matching Analysis**: Biomarker-based compatibility scoring
 - **Source Provenance**: Detailed extraction source tracking
 - **Gold Standard Validation**: Precision, recall, and F1-score metrics
@@ -192,7 +192,7 @@ LOG_LEVEL=INFO
 The system uses a file-based prompt library located in [`prompts/`](prompts/):
 
 - **Extraction Prompts**: [`prompts/txt/nlp_extraction/`](prompts/txt/nlp_extraction/)
-- **Mapping Prompts**: [`prompts/txt/Mcode_mapping/`](prompts/txt/Mcode_mapping/)
+- **Mapping Prompts**: [`prompts/txt/mcode_mapping/`](prompts/txt/mcode_mapping/)
 
 ## Testing
 
@@ -245,7 +245,7 @@ mcode_translator/
 ├── prompts/             # Prompt library
 │   ├── txt/
 │   │   ├── nlp_extraction/
-│   │   └── Mcode_mapping/
+│   │   └── mcode_mapping/
 │   └── prompts_config.json
 ├── examples/            # Usage examples and configurations
 ├── docs/               # Documentation
@@ -333,7 +333,7 @@ See [`CHANGELOG.md`](CHANGELOG.md) for recent changes and updates.
 ## Acknowledgments
 
 - ClinicalTrials.gov for providing the clinical trial data API
-- Mcode initiative for standardized oncology data elements
+- mCODE initiative for standardized oncology data elements
 - DeepSeek for LLM API services
 - NiceGUI for the web application framework
 

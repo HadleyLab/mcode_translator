@@ -5,7 +5,7 @@
 - **Gold Standard Validation System**: Comprehensive validation framework for pipeline results
   - Precision, recall, and F1-score metrics calculation
   - Fuzzy text matching with fuzzywuzzy (85% threshold) and difflib SequenceMatcher (0.8 threshold)
-  - Tuple comparison for Mcode mapping validation
+  - Tuple comparison for mCODE mapping validation
   - Color-coded validation badges in UI (green/red/yellow)
 - **Benchmarking Metrics Collection**: Performance monitoring system
   - Processing time tracking (total, per-task, per-engine)
@@ -31,7 +31,7 @@
 ### Added
 - Engine selection system (Regex/SpaCy/LLM)
 - Benchmark mode for comparing NLP engines
-- Visual feedback for extracted Mcode elements
+- Visual feedback for extracted mCODE elements
 
 ### Changed
 - Updated ExtractionPipeline to properly handle engine types
@@ -53,5 +53,5 @@
 ## [0.1.0] - 2025-07-01
 ### Initial Release
 - Basic NLP processing capabilities
-- Mcode mapping functionality
+- mCODE mapping functionality
 - Clinical Trials API integration
