@@ -1,0 +1,72 @@
+{
+  "cross_validation_presets": {
+    "quick": {
+      "description": "Quick validation with representative combinations",
+      "combinations": [
+        ["direct_mcode_evidence_based_concise", "deepseek-coder"],
+        ["direct_mcode_simple", "gpt-4o"],
+        ["direct_mcode_structured", "claude-3-5-sonnet"],
+        ["direct_mcode_clinical_focus", "deepseek-coder"],
+        ["direct_mcode_comprehensive", "gpt-4o"]
+      ],
+      "max_trials": 3,
+      "concurrent": true,
+      "workers": 2
+    },
+    "comprehensive": {
+      "description": "Full cross-validation across all available combinations",
+      "use_all_prompts": true,
+      "use_all_models": true,
+      "max_trials": 5,
+      "concurrent": true,
+      "workers": 3
+    },
+    "model_comparison": {
+      "description": "Compare all models with best prompt",
+      "fixed_prompt": "direct_mcode_evidence_based_concise",
+      "use_all_models": true,
+      "max_trials": 5,
+      "concurrent": true,
+      "workers": 3
+    },
+    "prompt_comparison": {
+      "description": "Compare all prompts with best model",
+      "fixed_model": "deepseek-coder",
+      "use_all_prompts": true,
+      "max_trials": 5,
+      "concurrent": false
+    },
+    "top_performers": {
+      "description": "Test only the highest-performing combinations",
+      "combinations": [
+        ["direct_mcode_evidence_based_concise", "deepseek-coder"],
+        ["direct_mcode_evidence_based_concise", "gpt-4o"],
+        ["direct_mcode_evidence_based_concise", "claude-3-5-sonnet"],
+        ["direct_mcode_structured", "deepseek-coder"],
+        ["direct_mcode_clinical_focus", "gpt-4o"]
+      ],
+      "max_trials": 5,
+      "concurrent": true,
+      "workers": 3
+    }
+  },
+  "validation_settings": {
+    "cache_enabled": true,
+    "timeout_per_trial": 300,
+    "retry_failed": true,
+    "max_retries": 2,
+    "detailed_logging": true
+  },
+  "output_settings": {
+    "save_raw_results": true,
+    "generate_report": true,
+    "include_token_usage": true,
+    "export_formats": ["json", "csv"]
+  },
+  "analysis_settings": {
+    "quality_threshold": 0.7,
+    "mapping_threshold": 5,
+    "success_rate_threshold": 0.8,
+    "statistical_significance": true
+  }
+}

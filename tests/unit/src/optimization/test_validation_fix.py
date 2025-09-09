@@ -206,9 +206,9 @@ def test_validation_fix():
     # Create a mock framework instance for the conversion method
     class MockFramework:
         def __init__(self):
-            from src.pipeline.mcode_mapper import McodeMapper
+            from pipeline.mcode_llm import McodeMapper
             from src.utils.logging_config import get_logger
-            self.mcode_mapper = McodeMapper()
+            self.mcode_llm = McodeMapper()
             self.logger = get_logger(__name__)
             # Enable debug logging for the framework logger
             self.logger.setLevel(logging.DEBUG)

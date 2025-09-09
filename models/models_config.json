@@ -8,7 +8,7 @@
     "base_url": "https://api.deepseek.com/v1",
     "default_parameters": {
       "temperature": 0.1,
-      "max_tokens": 4000
+      "max_tokens": 8000
     }
   },
   "deepseek-chat": {
@@ -19,7 +19,7 @@
     "base_url": "https://api.deepseek.com/v1",
     "default_parameters": {
       "temperature": 0.1,
-      "max_tokens": 4000
+      "max_tokens": 8000
     }
   },
   "deepseek-reasoner": {
@@ -30,7 +30,7 @@
     "base_url": "https://api.deepseek.com/v1",
     "default_parameters": {
       "temperature": 0.1,
-      "max_tokens": 4000
+      "max_tokens": 8000
     }
   },
   "gpt-4o": {

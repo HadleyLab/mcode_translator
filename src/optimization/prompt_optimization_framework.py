@@ -24,7 +24,7 @@ from src.utils import (
     model_loader,
     global_token_tracker
 )
-from src.pipeline.mcode_mapper import McodeMapper
+from pipeline.mcode_llm import McodeMapper
 from src.shared.benchmark_result import BenchmarkResult
 
 
@@ -48,8 +48,17 @@ class APIConfig:
         model_config = config.get_model_config(model_key)
         self.base_url = model_config.base_url
         self.model = model_config.model_identifier
-        self.temperature = model_config.default_parameters.get('temperature', 0.1)
-        self.max_tokens = model_config.default_parameters.get('max_tokens', 4000)
+        
+        # STRICT: No fallbacks allowed - all parameters must be explicitly configured
+        temperature = model_config.default_parameters.get('temperature')
+        if temperature is None:
+            raise ValueError(f"Temperature not configured for model '{model_key}' - strict mode requires explicit configuration")
+        self.temperature = temperature
+        
+        max_tokens = model_config.default_parameters.get('max_tokens')
+        if max_tokens is None:
+            raise ValueError(f"Max tokens not configured for model '{model_key}' - strict mode requires explicit configuration")
+        self.max_tokens = max_tokens
         
         self.timeout = 30  # Default timeout, can be configured if needed
     
@@ -132,7 +141,7 @@ class PromptOptimizationFramework(Loggable):
         self.benchmark_results: List[BenchmarkResult] = []
         
         # Initialize mCODE mapper for validation
-        self.mcode_mapper = McodeMapper()
+        self.mcode_llm = McodeMapper()
         
         # Automatically add all models from configuration
         self._add_all_models_from_config()
@@ -218,7 +227,7 @@ class PromptOptimizationFramework(Loggable):
         
         try:
             # Use the mCODE mapper to convert entities to mCODE format
-            mapping_result = self.mcode_mapper.map_to_mcode(entities)
+            mapping_result = self.mcode_llm.map_to_mcode(entities)
             return mapping_result.get('mapped_elements', [])
         except Exception as e:
             # Return empty list if conversion fails

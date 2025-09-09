@@ -48,12 +48,14 @@ env/
 */.ipynb_checkpoints/*
 *.ipynb.bak
 
-# pytest
+# pytest and testing
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
 .nox/
+test_results/
+*.test.log
 
 # IDEs and editors
 .vscode/settings.json
@@ -73,6 +75,7 @@ Icon?
 ._*
 .Spotlight-V100
 .Trashes
+.localized
 
 # Windows
 Thumbs.db
@@ -85,10 +88,10 @@ $RECYCLE.BIN/
 logs/
 benchmark_tracker.log
 
-# Data and results (comment out if you want to track results)
+# Development artifacts
+.kilocode/
 optimization_results/
-test_benchmark_results/
-results/
+focused_experiment_results/
 *.json.bak
 *_backup.json
 
@@ -133,3 +136,8 @@ auto_generated/
 *~
 *.bak
 *.orig
+
+# Production data (keep in data/ directory)
+# Uncomment to ignore data files in production
+# data/*.json
+# data/*.csv

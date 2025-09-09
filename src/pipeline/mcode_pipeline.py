@@ -1,12 +1,23 @@
-"""
-A single-step pipeline to map clinical text directly to mCODE entities.
+"""Direct mCODE Pipeline Module.
+
+This module provides a high-performance single-step pipeline that maps clinical text
+directly to standardized mCODE elements using evidence-based LLM processing.
+
+Classes:
+    McodePipeline: Main pipeline class for direct clinical text to mCODE mapping.
+
+Example:
+    >>> from src.pipeline import McodePipeline
+    >>> pipeline = McodePipeline(prompt_name="direct_mcode_evidence_based_concise")
+    >>> result = pipeline.process_clinical_trial(trial_data)
+    >>> print(f"Generated {len(result.mcode_mappings)} mCODE mappings")
 """
 
 import json
 from typing import Dict, List, Any, Optional
 
 from .pipeline_base import ProcessingPipeline, PipelineResult
-from .mcode_mapper import McodeMapper, McodeMappingError, McodeConfigurationError
+from .mcode_llm import McodeMapper, McodeMappingError, McodeConfigurationError
 from .document_ingestor import DocumentIngestor, DocumentSection
 import sys
 import os
@@ -20,36 +31,61 @@ from src.utils import (
     global_token_tracker
 )
 
+
 class McodePipeline(ProcessingPipeline, Loggable):
-    """
-    A single-step pipeline that maps clinical text directly to mCODE entities.
+    """High-performance pipeline for direct clinical text to mCODE mapping.
+    
+    This pipeline provides a single-step process that maps clinical trial text
+    directly to standardized mCODE elements without intermediate entity extraction.
+    Optimized for accuracy and evidence-based mappings.
+    
+    Attributes:
+        prompt_name (str): Name of the prompt template for mCODE mapping.
+        model_name (str): Name of the LLM model for processing.
+        document_ingestor (DocumentIngestor): Component for processing trial documents.
+        llm_mapper (McodeMapper): LLM-based mCODE mapping component.
     """
 
-    def __init__(self, prompt_name: str = "direct_mcode"):
-        """
-        Initialize the mCODE pipeline.
+    def __init__(self, prompt_name: str = "direct_mcode_evidence_based_concise", 
+                 model_name: Optional[str] = None) -> None:
+        """Initialize the mCODE pipeline with specified configuration.
 
         Args:
             prompt_name: Name of the prompt template for mCODE mapping.
+                Defaults to evidence-based concise prompt for optimal quality.
+            model_name: Name of the model to use for LLM operations.
+                If None, uses default from configuration.
+                
+        Raises:
+            ValueError: If McodeMapper initialization fails due to configuration issues.
         """
         super().__init__()
         self.prompt_name = prompt_name
+        self.model_name = model_name
         self.document_ingestor = DocumentIngestor()
         try:
-            self.llm_mapper = McodeMapper(prompt_name=self.prompt_name)
+            self.llm_mapper = McodeMapper(prompt_name=self.prompt_name, model_name=self.model_name)
         except McodeConfigurationError as e:
             raise ValueError(f"Failed to initialize McodeMapper: {str(e)}")
 
-    def process_clinical_trial(self, trial_data: Dict[str, Any], task_id: Optional[str] = None) -> PipelineResult:
-        """
-        Process complete clinical trial data through the mCODE pipeline.
+    def process_clinical_trial(self, trial_data: Dict[str, Any], 
+                             task_id: Optional[str] = None) -> PipelineResult:
+        """Process clinical trial data to extract mCODE mappings.
 
         Args:
-            trial_data: Raw clinical trial data from API or source.
-            task_id: Optional task ID for associating with a BenchmarkTask.
+            trial_data: Raw clinical trial data containing protocol sections.
+            task_id: Optional task identifier for benchmarking and tracking.
 
         Returns:
-            PipelineResult with mCODE mappings and source tracking.
+            PipelineResult containing:
+                - mcode_mappings: List of standardized mCODE elements
+                - source_references: Provenance tracking for mappings
+                - validation_results: Quality metrics and compliance scores
+                - metadata: Processing statistics and configuration info
+
+        Raises:
+            McodeMappingError: If LLM-based mapping fails.
+            ValueError: If trial data format is invalid.
         """
         try:
             self.logger.info("🚀 Starting mCODE pipeline processing")

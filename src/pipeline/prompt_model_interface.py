@@ -17,7 +17,7 @@ from src.utils import (
     Config
 )
 from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
-from src.pipeline.mcode_mapper import McodeMapper
+from pipeline.mcode_llm import McodeMapper
 from pipeline.nlp_extractor import NlpLlm
 
 # Global instances for easy access

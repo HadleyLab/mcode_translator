@@ -1,12 +1,5 @@
 {
   "pipelines": {
-    "NlpMcodePipeline": {
-      "name": "NLP to mCODE Pipeline",
-      "description": "Two-step pipeline: NLP extraction followed by mCODE mapping",
-      "pipeline_type": "NLP_MCODE",
-      "required_prompt_types": ["NLP_EXTRACTION", "MCODE_MAPPING"],
-      "prompt_combinations": "multiplicative"
-    },
     "McodePipeline": {
       "name": "Direct mCODE Pipeline",
       "description": "Single-step pipeline: Direct text to mCODE mapping",
@@ -16,120 +9,12 @@
     }
   },
   "prompts": {
-    "nlp_extraction": [
-      {
-        "name": "generic_extraction",
-        "prompt_type": "NLP_EXTRACTION",
-        "prompt_file": "nlp_extraction/nlp_extraction_generic.txt",
-        "default": true,
-        "description": "Main extraction prompt for clinical entity recognition",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "comprehensive_extraction",
-        "prompt_type": "NLP_EXTRACTION",
-        "prompt_file": "nlp_extraction/nlp_extraction_comprehensive.txt",
-        "default": false,
-        "description": "Comprehensive extraction with detailed JSON schema",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "basic_extraction",
-        "prompt_type": "NLP_EXTRACTION",
-        "prompt_file": "nlp_extraction/nlp_extraction_basic.txt",
-        "default": false,
-        "description": "Basic extraction for optimization framework",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "minimal_extraction",
-        "prompt_type": "NLP_EXTRACTION",
-        "prompt_file": "nlp_extraction/nlp_extraction_minimal.txt",
-        "default": false,
-        "description": "Minimalist extraction prompt",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "minimal_extraction_optimization",
-        "prompt_type": "NLP_EXTRACTION",
-        "prompt_file": "nlp_extraction/nlp_extraction_minimal_optimization.txt",
-        "default": false,
-        "description": "Minimal extraction for optimization",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "structured_extraction",
-        "prompt_type": "NLP_EXTRACTION",
-        "prompt_file": "nlp_extraction/nlp_extraction_structured.txt",
-        "default": false,
-        "description": "Structured extraction with specific formatting",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      }
-    ],
-    "mcode_mapping": [
-      {
-        "name": "generic_mapping",
-        "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_generic.txt",
-        "default": true,
-        "description": "Main mCODE mapping prompt",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "comprehensive_mapping",
-        "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_comprehensive.txt",
-        "default": false,
-        "description": "Comprehensive mapping for optimization",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "detailed_mapping",
-        "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_detailed.txt",
-        "default": false,
-        "description": "Detailed mapping with comprehensive instructions",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "error_robust_mapping",
-        "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_error_robust.txt",
-        "default": false,
-        "description": "Error-robust mapping with fallback handling",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "minimal_mapping",
-        "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_minimal.txt",
-        "default": false,
-        "description": "Minimal mapping prompt",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "simple_mapping",
-        "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_simple.txt",
-        "default": false,
-        "description": "Simple mapping for optimization",
-        "compatible_pipelines": ["NlpMcodePipeline"]
-      },
-      {
-        "name": "standard_mapping",
-        "prompt_type": "MCODE_MAPPING",
-        "prompt_file": "mcode_mapping/mcode_mapping_standard.txt",
-        "default": false,
-        "description": "Standard mCODE mapping",
-        "compatible_pipelines": "NlpMcodePipeline"
-      }
-    ],
     "direct_mcode": [
       {
         "name": "direct_mcode",
         "prompt_type": "DIRECT_MCODE",
         "prompt_file": "direct_mcode/direct_mcode_direct.txt",
-        "default": true,
+        "default": false,
         "description": "Direct text to mCODE mapping",
         "compatible_pipelines": ["McodePipeline"]
       },
@@ -179,6 +64,22 @@
         "prompt_file": "direct_mcode/direct_mcode_improved.txt",
         "default": false,
         "description": "Improved direct text to mCODE mapping with better JSON structure",
+        "compatible_pipelines": ["McodePipeline"]
+      },
+      {
+        "name": "direct_mcode_evidence_based",
+        "prompt_type": "DIRECT_MCODE",
+        "prompt_file": "direct_mcode/direct_mcode_evidence_based.txt",
+        "default": false,
+        "description": "Evidence-based direct text to mCODE mapping with strict fidelity to source content",
+        "compatible_pipelines": ["McodePipeline"]
+      },
+      {
+        "name": "direct_mcode_evidence_based_concise",
+        "prompt_type": "DIRECT_MCODE",
+        "prompt_file": "direct_mcode/direct_mcode_evidence_based_concise.txt",
+        "default": true,
+        "description": "Concise evidence-based direct mCODE mapping with strict textual fidelity and conservative approach",
         "compatible_pipelines": ["McodePipeline"]
       }
     ]

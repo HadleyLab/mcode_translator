@@ -4,7 +4,7 @@ import os
 from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
-from src.pipeline.mcode_mapper import McodeMapper
+from pipeline.mcode_llm import McodeMapper
 
 class TestMcodeMapper(unittest.TestCase):
 
