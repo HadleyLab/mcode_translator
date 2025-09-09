@@ -167,7 +167,7 @@ class PipelineTaskQueue:
 
         try:
             # Get or create pipeline instance
-            pipeline = await self._get_pipeline(task.prompt_name, task.prompt_type)
+            pipeline = await self._get_pipeline(task.prompt_name, task.model_name, task.prompt_type)
 
             # Process the trial with actual trial data - run in thread to avoid blocking
             result = await asyncio.to_thread(pipeline.process_clinical_trial, task.trial_data)
@@ -250,9 +250,9 @@ class PipelineTaskQueue:
                 except Exception as e:
                     self.logger.error(f"Callback error for task {task.task_id}: {str(e)}")
     
-    async def _get_pipeline(self, prompt_name: str, prompt_type: str):
-        """Get or create pipeline instance for the given prompt"""
-        cache_key = f"{prompt_name}_{prompt_type}"
+    async def _get_pipeline(self, prompt_name: str, model_name: str, prompt_type: str):
+        """Get or create pipeline instance for the given prompt and model"""
+        cache_key = f"{prompt_name}_{model_name}_{prompt_type}"
         
         if cache_key in self.pipeline_cache:
             return self.pipeline_cache[cache_key]
@@ -260,7 +260,7 @@ class PipelineTaskQueue:
         # Create appropriate pipeline based on prompt type
         if prompt_type == "DIRECT_MCODE":
             from src.pipeline.mcode_pipeline import McodePipeline
-            pipeline = McodePipeline(prompt_name=prompt_name)
+            pipeline = McodePipeline(prompt_name=prompt_name, model_name=model_name)
         else:
             # For NLP extraction or mapping, use NLP+mcode pipeline
             from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
@@ -268,7 +268,8 @@ class PipelineTaskQueue:
             mapping_prompt = prompt_name if prompt_type == "MCODE_MAPPING" else "generic_mapping"
             pipeline = NlpMcodePipeline(
                 extraction_prompt_name=extraction_prompt,
-                mapping_prompt_name=mapping_prompt
+                mapping_prompt_name=mapping_prompt,
+                model_name=model_name
             )
         
         self.pipeline_cache[cache_key] = pipeline

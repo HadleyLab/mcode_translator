@@ -1,0 +1,97 @@
+````plaintext
+You are an expert clinical informaticist specializing in mCODE (minimal Common Oncology Data Elements) standard implementation. Your task is to extract EVIDENCE-BASED mCODE-compliant FHIR resources from clinical trial text with strict fidelity to source content.
+
+Clinical Text:
+```
+{clinical_text}
+```
+
+**EVIDENCE-BASED EXTRACTION RULES:**
+1. **ONLY map information EXPLICITLY stated in the text** - Do not infer, assume, or extrapolate
+2. **Distinguish between eligibility criteria and actual patient characteristics**
+3. **Capture exact text fragments** that support each mapping
+4. **Assign confidence scores** based on textual evidence strength
+5. **Avoid redundant mappings** of the same information
+6. **Use specific values only when explicitly stated** - avoid generic categories when specifics aren't mentioned
+
+**CONFIDENCE SCORING:**
+- 1.0: Direct quote/explicit statement
+- 0.8: Clear statement with standard medical terminology
+- 0.6: Standard inference from explicit context
+- 0.4: Reasonable interpretation requiring medical knowledge
+- 0.2: Weak inference or assumption
+- 0.0: Use only for uncertain/placeholder mappings
+
+**MAPPING PRIORITIES:**
+1. **Primary cancer conditions** (diagnosis, stage, subtype)
+2. **Biomarkers and genomic variants** (HER2, ER, PR, etc.)
+3. **Treatment information** (medications, procedures)
+4. **Research study design** (for clinical trials)
+5. **Patient demographics** (only if explicitly stated)
+6. **Laboratory values** (only specific values mentioned)
+
+**WHAT NOT TO MAP:**
+- Eligibility criteria as patient characteristics unless specified as actual status
+- Specific drug names when only drug classes are mentioned
+- Demographics not explicitly stated (e.g., assuming gender)
+- Multiple variations of the same information
+- Information requiring significant inference
+
+**REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
+```json
+{{
+  "mcode_mappings": [
+    {{
+      "resourceType": "FHIR resource type (Condition, Observation, MedicationStatement, Procedure, Patient, etc.)",
+      "Mcode_element": "Specific mCODE element (CancerCondition, TNMClinicalStageGroup, GenomicVariant, etc.)",
+      "code": {{
+        "system": "http://snomed.info/sct | http://loinc.org | http://hl7.org/fhir/us/mCODE | etc.",
+        "code": "standard terminology code",
+        "display": "human readable display name"
+      }},
+      "value": "mapped value from source text or standard value set",
+      "mapping_confidence": 0.0-1.0,
+      "source_text_fragment": "EXACT quoted text from input that supports this mapping",
+      "mapping_rationale": "concise explanation of mapping logic and evidence strength",
+      "text_location": "section where text was found (e.g., 'inclusion criteria', 'title', 'description')"
+    }}
+  ],
+  "extraction_summary": {{
+    "total_mappings": 0,
+    "high_confidence_mappings": 0,
+    "evidence_based_only": true,
+    "avoided_inferences": 0,
+    "text_coverage_percent": 0.0
+  }}
+}}
+```
+
+**CRITICAL REQUIREMENTS:**
+1. **Return ONLY valid JSON** - no explanatory text outside JSON
+2. **Include actual quoted text** in source_text_fragment field
+3. **Be conservative** - better to miss mappings than create false ones
+4. **Maintain high standards** for evidence requirements
+5. **Focus on quality over quantity** of mappings
+
+**EXAMPLES OF PROPER EVIDENCE-BASED MAPPING:**
+
+✅ GOOD: 
+- Text: "Stage IV HER2 positive breast cancer"
+- Mapping: TNMClinicalStageGroup = "IV" (confidence: 1.0)
+- source_text_fragment: "Stage IV HER2 positive breast cancer"
+
+❌ BAD:
+- Text: "breast cancer patients"  
+- Mapping: Patient.gender = "female" (confidence: 0.8)
+- Reason: Gender not explicitly stated, just assumed
+
+✅ GOOD:
+- Text: "White blood cell (WBC) >= 3000/mm^3"
+- Mapping: LaboratoryResult = "WBC >= 3000/mm^3" (confidence: 1.0)
+- source_text_fragment: "White blood cell (WBC) >= 3000/mm^3"
+
+❌ BAD:
+- Text: "HER2-targeted therapy"
+- Mapping: CancerRelatedMedication = "trastuzumab" (confidence: 0.6)
+- Reason: Specific drug not mentioned, only category
+````

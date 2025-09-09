@@ -1,0 +1,58 @@
+{
+  "timestamp": "2025-09-08T21:03:33.941420",
+  "duration": 294.11986804008484,
+  "combinations_tested": 5,
+  "trials_per_combination": 3,
+  "results": [
+    {
+      "prompt": "direct_mcode_evidence_based_concise",
+      "model": "deepseek-coder",
+      "successful_trials": 3,
+      "total_trials": 3,
+      "success_rate": 1.0,
+      "total_mappings": 84,
+      "avg_mappings": 28.0,
+      "duration": 2.0859010219573975
+    },
+    {
+      "prompt": "direct_mcode_simple",
+      "model": "gpt-4o",
+      "successful_trials": 3,
+      "total_trials": 3,
+      "success_rate": 1.0,
+      "total_mappings": 99,
+      "avg_mappings": 33.0,
+      "duration": 167.20462799072266
+    },
+    {
+      "prompt": "direct_mcode_structured",
+      "model": "claude-3-5-sonnet",
+      "successful_trials": 0,
+      "total_trials": 3,
+      "success_rate": 0.0,
+      "total_mappings": 0,
+      "avg_mappings": 0.0,
+      "duration": 0.0017132759094238281
+    },
+    {
+      "prompt": "direct_mcode_clinical_focus",
+      "model": "deepseek-coder",
+      "successful_trials": 0,
+      "total_trials": 3,
+      "success_rate": 0.0,
+      "total_mappings": 0,
+      "avg_mappings": 0.0,
+      "duration": 2.4712860584259033
+    },
+    {
+      "prompt": "direct_mcode_comprehensive",
+      "model": "gpt-4o",
+      "successful_trials": 3,
+      "total_trials": 3,
+      "success_rate": 1.0,
+      "total_mappings": 65,
+      "avg_mappings": 21.666666666666668,
+      "duration": 122.35525894165039
+    }
+  ]
+}

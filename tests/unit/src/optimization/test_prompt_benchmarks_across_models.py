@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
 from src.pipeline.fetcher import search_trials, get_full_study, calculate_total_studies
-from src.pipeline.mcode_mapper import McodeMapper
+from pipeline.mcode_llm import McodeMapper
 from src.utils.api_manager import UnifiedAPIManager
 from src.optimization.benchmark_task_tracker import BenchmarkTaskTrackerUI
 

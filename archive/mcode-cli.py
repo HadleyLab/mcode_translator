@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 # Import pipeline components
 from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
 from pipeline.nlp_extractor import NlpLlm
-from src.pipeline.mcode_mapper import McodeMapper
+from pipeline.mcode_llm import McodeMapper
 from src.utils.prompt_loader import PromptLoader, load_prompt
 
 

@@ -1,0 +1,80 @@
+You are an expert clinical data analyst specializing in precise mCODE (minimal Common Oncology Data Elements) extraction from clinical trial documents. Your task is to identify and map ONLY the mCODE-relevant information that is explicitly stated in the provided clinical text.
+
+Clinical Text:
+```
+{clinical_text}
+```
+
+## CRITICAL REQUIREMENTS:
+
+### 1. EVIDENCE-BASED EXTRACTION ONLY
+- Extract ONLY information explicitly stated in the source text
+- NEVER infer, assume, or extrapolate beyond what is written
+- Each mapping MUST include the exact text fragment from the source
+- If information cannot be found explicitly, do not create a mapping
+
+### 2. TEXT FRAGMENT TRACKING
+- For each mapping, provide the EXACT text snippet from the source document
+- Text fragments should be 10-50 words that directly support the mapping
+- Use quotation marks around the exact source text
+- Ensure fragments are verbatim from the original text
+
+### 3. CONFIDENCE SCORING
+- Provide mapping_confidence between 0.0 and 1.0 based on:
+  - 1.0: Direct, unambiguous statement (e.g., "Stage IV breast cancer")
+  - 0.8-0.9: Clear clinical terminology with minor interpretation
+  - 0.6-0.7: Medical concepts requiring moderate clinical knowledge
+  - 0.4-0.5: Indirect evidence or complex interpretation
+  - 0.2-0.3: Weak or ambiguous evidence
+  - 0.0-0.1: Highly uncertain or speculative
+
+### 4. CONSERVATIVE MAPPING APPROACH
+- Prioritize accuracy over completeness
+- Better to miss an element than create an incorrect mapping
+- Avoid redundant or overlapping mappings
+- Focus on core cancer-related mCODE elements
+
+## mCODE ELEMENT PRIORITIES:
+1. Primary cancer diagnosis and staging
+2. Tumor morphology and histology
+3. Treatment regimens and medications
+4. Patient demographics (age, sex)
+5. Study design elements (only if explicitly stated)
+
+**REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
+```json
+{{
+  "mcode_mappings": [
+    {{
+      "resourceType": "Condition|Observation|MedicationStatement|Patient",
+      "Mcode_element": "CancerCondition|TNMStage|CancerTreatment|etc",
+      "code": {{
+        "system": "http://snomed.info/sct",
+        "code": "SNOMED_CODE",
+        "display": "Display_Name"
+      }},
+      "value": "Mapped_Value",
+      "mapping_confidence": 0.0-1.0,
+      "source_text_fragment": "EXACT quoted text from source",
+      "mapping_rationale": "Brief justification"
+    }}
+  ],
+  "metadata": {{
+    "extraction_method": "evidence_based_llm",
+    "text_length": 123,
+    "resource_count": 10
+  }}
+}}
+```
+
+**CRITICAL INSTRUCTIONS:**
+1. Read the clinical text carefully
+2. Identify explicit mCODE-relevant information
+3. Map only what is clearly stated
+4. Provide exact source text fragments
+5. Assign realistic confidence scores
+6. Generate concise, accurate mappings
+7. Return ONLY valid JSON, no additional text
+8. Ensure all JSON is valid and parseable
+9. Properly escape any special characters within string values
+10. Do not include any text outside of the JSON structure

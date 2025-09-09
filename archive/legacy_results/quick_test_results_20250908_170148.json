@@ -1,0 +1,122 @@
+{
+  "timestamp": "2025-09-08T17:01:48.025328",
+  "duration_seconds": 887.7094421386719,
+  "models_tested": [
+    "gpt-4o-mini",
+    "deepseek-coder",
+    "gpt-4o"
+  ],
+  "prompts_tested": [
+    "direct_mcode",
+    "direct_mcode_simple",
+    "direct_mcode_improved"
+  ],
+  "trials_tested": [
+    "NCT01922921",
+    "NCT01026116",
+    "NCT06650748",
+    "NCT00109785",
+    "NCT00616135"
+  ],
+  "results": [
+    {
+      "model": "gpt-4o-mini",
+      "prompt": "direct_mcode",
+      "success_rate": 1.0,
+      "duration_seconds": 1.2721638679504395,
+      "successful_trials": 5,
+      "total_trials": 5,
+      "processing_rate": 3.930311279831749,
+      "total_entities": 0,
+      "total_mappings": 193
+    },
+    {
+      "model": "gpt-4o-mini",
+      "prompt": "direct_mcode_simple",
+      "success_rate": 1.0,
+      "duration_seconds": 465.7859447002411,
+      "successful_trials": 5,
+      "total_trials": 5,
+      "processing_rate": 0.010734544605500657,
+      "total_entities": 0,
+      "total_mappings": 212
+    },
+    {
+      "model": "gpt-4o-mini",
+      "prompt": "direct_mcode_improved",
+      "success_rate": 1.0,
+      "duration_seconds": 406.7651069164276,
+      "successful_trials": 5,
+      "total_trials": 5,
+      "processing_rate": 0.012292106463859696,
+      "total_entities": 0,
+      "total_mappings": 167
+    },
+    {
+      "model": "deepseek-coder",
+      "prompt": "direct_mcode",
+      "success_rate": 1.0,
+      "duration_seconds": 1.0354349613189697,
+      "successful_trials": 5,
+      "total_trials": 5,
+      "processing_rate": 4.828888522008994,
+      "total_entities": 0,
+      "total_mappings": 193
+    },
+    {
+      "model": "deepseek-coder",
+      "prompt": "direct_mcode_simple",
+      "success_rate": 1.0,
+      "duration_seconds": 0.43584609031677246,
+      "successful_trials": 5,
+      "total_trials": 5,
+      "processing_rate": 11.471939547205771,
+      "total_entities": 0,
+      "total_mappings": 212
+    },
+    {
+      "model": "deepseek-coder",
+      "prompt": "direct_mcode_improved",
+      "success_rate": 1.0,
+      "duration_seconds": 0.942845344543457,
+      "successful_trials": 5,
+      "total_trials": 5,
+      "processing_rate": 5.303096662603867,
+      "total_entities": 0,
+      "total_mappings": 167
+    },
+    {
+      "model": "gpt-4o",
+      "prompt": "direct_mcode",
+      "success_rate": 1.0,
+      "duration_seconds": 0.4624011516571045,
+      "successful_trials": 5,
+      "total_trials": 5,
+      "processing_rate": 10.813121857680343,
+      "total_entities": 0,
+      "total_mappings": 193
+    },
+    {
+      "model": "gpt-4o",
+      "prompt": "direct_mcode_simple",
+      "success_rate": 1.0,
+      "duration_seconds": 1.0086970329284668,
+      "successful_trials": 5,
+      "total_trials": 5,
+      "processing_rate": 4.9568897664781595,
+      "total_entities": 0,
+      "total_mappings": 212
+    },
+    {
+      "model": "gpt-4o",
+      "prompt": "direct_mcode_improved",
+      "success_rate": 1.0,
+      "duration_seconds": 0.9753499031066895,
+      "successful_trials": 5,
+      "total_trials": 5,
+      "processing_rate": 5.126365403917071,
+      "total_entities": 0,
+      "total_mappings": 167
+    }
+  ]
+}

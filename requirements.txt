@@ -1,13 +1,33 @@
-requests>=2.25.1
-click>=7.1.2
-python-dotenv>=0.15.0
-spacy==3.7.5
-scispacy==0.5.4
-https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_core_sci_md-0.5.4.tar.gz
+# Core dependencies for mCODE Translator v2.0
+# Production-ready, lean, and optimized package list
+
+# HTTP and API communication
+requests>=2.31.0
+
+# Environment configuration
+python-dotenv>=1.0.0
+
+# Natural Language Processing (core NLP components only)
+# spacy>=3.7.0,<3.8.0
+# scispacy>=0.5.4
+
+# Scientific NLP models (install via: python -m spacy download en_core_sci_md)
+# Alternative download: pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_core_sci_md-0.5.4.tar.gz
+
+# LLM API clients
+openai>=1.12.0
+
+# Logging and output formatting
 colorlog>=6.7.0
-pytrials==0.3.0
-openai>=1.0.0
-pandas>=1.5.0
-nicegui>=1.4.0
-flask>=2.0.0
-uuid>=1.30
+
+# Data processing (lightweight, core only)
+pandas>=2.0.0
+
+# Standard library enhancements
+typing-extensions>=4.5.0
+
+# Development and testing (optional, comment out for production)
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+# black>=23.0.0
+# flake8>=6.0.0

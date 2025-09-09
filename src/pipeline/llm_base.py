@@ -107,6 +107,9 @@ class LlmBase(Loggable, ABC):
         else:
             self.model_name = config.get_model_name()
 
+        # Get the full model configuration to access model_identifier
+        self.model_config = config.get_model_config(self.model_name)
+        
         # Set temperature - use provided or default from config
         if temperature is not None:
             self.temperature = self._validate_temperature(temperature)
@@ -221,7 +224,7 @@ class LlmBase(Loggable, ABC):
             
             # Make the actual LLM call
             response = self.client.chat.completions.create(
-                model=self.model_name,
+                model=self.model_config.model_identifier,  # Use model_identifier for API call
                 messages=messages,
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
@@ -286,22 +289,41 @@ class LlmBase(Loggable, ABC):
             raise LlmExecutionError(f"Unexpected error during LLM call: {str(e)}")
     
     def _initialize_openai_client(self) -> openai.OpenAI:
-        """Initialize OpenAI client with validation"""
+        """Initialize OpenAI client with validation, supporting Anthropic auth"""
         try:
-            client = openai.OpenAI(
-                base_url=self.base_url,
-                api_key=self.api_key
-            )
+            # Check if this is an Anthropic model based on base URL
+            is_anthropic = "anthropic.com" in self.base_url
+            
+            if is_anthropic:
+                # For Anthropic, use their specific authentication method
+                client = openai.OpenAI(
+                    base_url=self.base_url,
+                    api_key=self.api_key,
+                    default_headers={"x-api-key": self.api_key}
+                )
+            else:
+                # Standard OpenAI-compatible authentication
+                client = openai.OpenAI(
+                    base_url=self.base_url,
+                    api_key=self.api_key
+                )
             
             # Test client connectivity with a simple operation
             # This will raise an exception if the client can't be initialized
             # We use a minimal operation to validate the client
             # Note: Some API providers may not support the 'limit' parameter
             try:
-                client.models.list(limit=1)
+                if not is_anthropic:  # Skip model listing for Anthropic as it may not be supported
+                    client.models.list(limit=1)
             except TypeError:
                 # Fallback to simple list without limit parameter
-                client.models.list()
+                if not is_anthropic:
+                    client.models.list()
+            except Exception as e:
+                # If model listing fails, it's not critical for Anthropic
+                if not is_anthropic:
+                    raise e
+                self.logger.warning(f"Model listing not supported for provider, continuing: {e}")
             
             return client
         except Exception as e:

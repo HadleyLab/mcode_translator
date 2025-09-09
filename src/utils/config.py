@@ -105,12 +105,12 @@ class Config:
         """Get clinical trials API base URL"""
         return self.config_data['apis']['clinical_trials']['base_url']
     
-    def get_api_key(self, model_name: Optional[str] = None) -> str:
+    def get_api_key(self, model_name: str) -> str:
         """
         Get API key for specified LLM model from environment variables.
         
         Args:
-            model_name: Optional name of the LLM model.
+            model_name: REQUIRED name of the LLM model.
         
         Returns:
             API key string.
@@ -118,6 +118,9 @@ class Config:
         Raises:
             ConfigurationError: If API key is missing or invalid.
         """
+        if not model_name:
+            raise ConfigurationError("Model name is required - no fallback to default model allowed in strict mode")
+            
         model_config = self.get_model_config(model_name)
         api_key_env_var = model_config.api_key_env_var
 
@@ -131,12 +134,12 @@ class Config:
         
         return api_key
     
-    def get_base_url(self, model_name: Optional[str] = None) -> str:
+    def get_base_url(self, model_name: str) -> str:
         """
         Get base URL for specified LLM model
         
         Args:
-            model_name: Optional name of the LLM model
+            model_name: REQUIRED name of the LLM model
             
         Returns:
             Base URL string
@@ -144,6 +147,9 @@ class Config:
         Raises:
             ConfigurationError: If base URL is missing or invalid
         """
+        if not model_name:
+            raise ConfigurationError("Model name is required - no fallback to default model allowed in strict mode")
+            
         model_config = self.get_model_config(model_name)
         base_url = model_config.base_url
         
@@ -152,12 +158,12 @@ class Config:
         
         return base_url
     
-    def get_model_name(self, model_name: Optional[str] = None) -> str:
+    def get_model_name(self, model_name: str) -> str:
         """
         Get model name for specified LLM model
         
         Args:
-            model_name: Optional name of the LLM model
+            model_name: REQUIRED name of the LLM model
             
         Returns:
             Model name string
@@ -165,20 +171,23 @@ class Config:
         Raises:
             ConfigurationError: If model name is missing or invalid
         """
+        if not model_name:
+            raise ConfigurationError("Model name is required - no fallback to default model allowed in strict mode")
+            
         model_config = self.get_model_config(model_name)
-        model_name = model_config.name
+        validated_model_name = model_config.name
         
-        if not model_name or not isinstance(model_name, str):
+        if not validated_model_name or not isinstance(validated_model_name, str):
             raise ConfigurationError(f"Invalid or missing model name for model '{model_name}'")
         
-        return model_name
+        return validated_model_name
     
-    def get_temperature(self, model_name: Optional[str] = None) -> float:
+    def get_temperature(self, model_name: str) -> float:
         """
         Get temperature for specified LLM model
         
         Args:
-            model_name: Optional name of the LLM model
+            model_name: REQUIRED name of the LLM model
             
         Returns:
             Temperature float
@@ -186,6 +195,9 @@ class Config:
         Raises:
             ConfigurationError: If temperature is missing or invalid
         """
+        if not model_name:
+            raise ConfigurationError("Model name is required - no fallback to default model allowed in strict mode")
+            
         model_config = self.get_model_config(model_name)
         temperature = model_config.default_parameters.get('temperature')
         
@@ -194,12 +206,12 @@ class Config:
         
         return float(temperature)
     
-    def get_max_tokens(self, model_name: Optional[str] = None) -> int:
+    def get_max_tokens(self, model_name: str) -> int:
         """
         Get max tokens for specified LLM model
         
         Args:
-            model_name: Optional name of the LLM model
+            model_name: REQUIRED name of the LLM model
             
         Returns:
             Max tokens integer
@@ -207,6 +219,9 @@ class Config:
         Raises:
             ConfigurationError: If max tokens is missing or invalid
         """
+        if not model_name:
+            raise ConfigurationError("Model name is required - no fallback to default model allowed in strict mode")
+            
         model_config = self.get_model_config(model_name)
         max_tokens = model_config.default_parameters.get('max_tokens')
         
@@ -223,12 +238,12 @@ class Config:
         """Check if API keys are required"""
         return self.config_data['validation']['require_api_keys']
     
-    def get_model_config(self, model_key: Optional[str]) -> ModelConfig:
+    def get_model_config(self, model_key: str) -> ModelConfig:
         """
         Get model configuration from the file-based model library
         
         Args:
-            model_key: The key identifying the model in the model library
+            model_key: REQUIRED key identifying the model in the model library
             
         Returns:
             ModelConfig object with the model configuration
@@ -236,11 +251,8 @@ class Config:
         Raises:
             ConfigurationError: If model configuration is missing or invalid
         """
-        # If no model_key is provided, use the default model from the model library
-        if model_key is None:
-            model_key = model_loader.get_default_model()
-            if not model_key:
-                raise ConfigurationError("No default model set and no model key provided.")
+        if not model_key:
+            raise ConfigurationError("Model key is required - no fallback to default model allowed in strict mode")
 
         # STRICT: Load model configuration from file-based model library - throw exception if not found
         return model_loader.get_model(model_key)

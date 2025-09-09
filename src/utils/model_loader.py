@@ -154,12 +154,13 @@ class ModelLoader:
         
         return self.models_config.copy()
 
-    def get_default_model(self) -> Optional[str]:
-        """Get the default model from the configuration"""
-        for model_key, model_config in self.models_config.items():
-            if model_config.get("default"):
-                return model_key
-        return None
+    def get_default_model(self) -> None:
+        """REMOVED: Default model fallbacks not allowed in strict implementation
+        
+        Raises:
+            ValueError: Always - no default model allowed in strict mode
+        """
+        raise ValueError("Default model fallbacks not allowed in strict implementation - model must be explicitly specified")
 
 
 # Global instance for easy access

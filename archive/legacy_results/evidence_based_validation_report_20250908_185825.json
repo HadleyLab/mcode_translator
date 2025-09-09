@@ -1,0 +1,83 @@
+{
+  "validation_metadata": {
+    "timestamp": "20250908_185825",
+    "test_model": "deepseek-coder",
+    "prompts_tested": [
+      "direct_mcode_simple",
+      "direct_mcode_evidence_based"
+    ],
+    "trials_count": 2,
+    "validation_version": "1.0"
+  },
+  "results": {
+    "direct_mcode_simple": {
+      "prompt_name": "direct_mcode_simple",
+      "model_name": "deepseek-coder",
+      "trials_processed": 2,
+      "total_processing_time": 0,
+      "trial_results": [
+        {
+          "error": "'McodePipeline' object has no attribute 'process_trial'",
+          "trial_id": "NCT01922921",
+          "processing_time": 0,
+          "mcode_mappings": []
+        },
+        {
+          "error": "'McodePipeline' object has no attribute 'process_trial'",
+          "trial_id": "NCT01026116",
+          "processing_time": 0,
+          "mcode_mappings": []
+        }
+      ],
+      "quality_analysis": {
+        "total_mappings": 0,
+        "avg_confidence": 0.0,
+        "high_confidence_count": 0,
+        "with_source_text": 0,
+        "source_text_ratio": 0.0,
+        "confidence_distribution": {},
+        "quality_score": 0.0
+      }
+    },
+    "direct_mcode_evidence_based": {
+      "prompt_name": "direct_mcode_evidence_based",
+      "model_name": "deepseek-coder",
+      "trials_processed": 2,
+      "total_processing_time": 0,
+      "trial_results": [
+        {
+          "error": "'McodePipeline' object has no attribute 'process_trial'",
+          "trial_id": "NCT01922921",
+          "processing_time": 0,
+          "mcode_mappings": []
+        },
+        {
+          "error": "'McodePipeline' object has no attribute 'process_trial'",
+          "trial_id": "NCT01026116",
+          "processing_time": 0,
+          "mcode_mappings": []
+        }
+      ],
+      "quality_analysis": {
+        "total_mappings": 0,
+        "avg_confidence": 0.0,
+        "high_confidence_count": 0,
+        "with_source_text": 0,
+        "source_text_ratio": 0.0,
+        "confidence_distribution": {},
+        "quality_score": 0.0
+      }
+    }
+  },
+  "validation_analysis": {
+    "improvements_detected": [],
+    "concerns_identified": [],
+    "overall_assessment": "mixed_results"
+  },
+  "recommendations": [
+    "\ud83e\uddea Results are mixed - requires manual analysis",
+    "\ud83d\udcca Consider additional test cases and metrics",
+    "\ud83d\udd27 Improve source text fragment capture mechanism",
+    "\ud83d\udd27 Refine confidence scoring calibration"
+  ]
+}

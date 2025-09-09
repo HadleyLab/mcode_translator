@@ -1,0 +1,2536 @@
+{
+  "validation_metadata": {
+    "timestamp": "20250908_193159",
+    "test_model": "deepseek-coder",
+    "prompts_tested": [
+      "direct_mcode_simple",
+      "direct_mcode_evidence_based_concise"
+    ],
+    "trials_count": 2,
+    "validation_version": "1.0"
+  },
+  "results": {
+    "direct_mcode_simple": {
+      "prompt_name": "direct_mcode_simple",
+      "model_name": "deepseek-coder",
+      "trials_processed": 2,
+      "total_processing_time": 0.052803993225097656,
+      "trial_results": [
+        {
+          "trial_id": "NCT01922921",
+          "processing_time": 0.04288196563720703,
+          "mcode_mappings": [
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "interventional",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "TREATMENT purpose indicates an interventional study type per FHIR ResearchStudy",
+              "id": "99bdcb7f-a62b-4083-9ab7-4925ede59b96"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "RANDOMIZED",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "RANDOMIZED allocation directly maps to FHIR ResearchStudy design",
+              "id": "b65e4579-b0ba-43fc-aad2-500ce1a32d0d"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "PARALLEL",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "PARALLEL intervention model directly maps to FHIR ResearchStudy design",
+              "id": "033a5bff-2d00-4eb2-b6ba-d152204300bd"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "DOUBLE",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "DOUBLE masking directly maps to FHIR ResearchStudy masking type",
+              "id": "3e0152f8-3eca-4267-aa1c-97b3062a2f54"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "PARTICIPANT",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "PARTICIPANT role directly maps to FHIR ResearchStudy masked roles",
+              "id": "3385d277-2614-4b22-b483-e7f4df247d51"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "INVESTIGATOR",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "INVESTIGATOR role directly maps to FHIR ResearchStudy masked roles",
+              "id": "31f0cac0-daa5-4efe-b77f-79af0c2789aa"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "active",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Mapped to SNOMED CT code for malignant breast neoplasm, with 'recurrent' indicating active disease status",
+              "id": "34a06994-c029-4f42-99d9-475ef42ef9df"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "active",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Mapped to SNOMED CT code for malignant breast neoplasm, with stage IV indicating advanced active disease",
+              "id": "52b2f674-d2ef-40d7-8b20-7e57862bfb39"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "recurrence",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "'Recurrent' indicates disease recurrence status per mCODE value set",
+              "id": "b0518162-ca4c-427c-9b14-d1e52413242e"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TNMStageGroup",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tnmstagegroup",
+                "display": "TNMStageGroup"
+              },
+              "value": "IV",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mapping of 'Stage IV' to TNM stage group using cancer staging terminology",
+              "id": "b8f76976-8984-4b1c-bc07-c52283ffabb5"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "GenomicVariant",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "genomicvariant",
+                "display": "GenomicVariant"
+              },
+              "value": "positive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2/Neu maps to ERBB2 gene (HGNC:3430), 'Positive' indicates variant presence",
+              "id": "baa7d6ca-3da6-400a-9dcd-8a3cc798d63a"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "stage IV HER2+ breast cancer",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mapping to cancer condition with stage and HER2 status specified",
+              "id": "b19831b6-28a1-49c8-9792-d1048a83a65a"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "No evidence of disease (NED)",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Clear disease status observation from inclusion criteria",
+              "id": "7c8f066f-3833-495c-9564-a481c174b183"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "Stable bone only disease",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Clear disease status observation with metastatic site specified",
+              "id": "27851024-5626-4232-b73e-6174d41c7cd0"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "GenomicVariant",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "genomicvariant",
+                "display": "GenomicVariant"
+              },
+              "value": "HER2 overexpression by immunohistochemistry (IHC) of 2+ or 3+",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2 genomic variant testing results with specific IHC scores",
+              "id": "354f94a6-7d07-41e1-912a-a287229b1841"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "GenomicVariant",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "genomicvariant",
+                "display": "GenomicVariant"
+              },
+              "value": "HER2 gene amplification documented by FISH analysis",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2 genomic variant testing using FISH methodology",
+              "id": "4b6ede1c-1c79-4aab-a91d-e364aafae18b"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationadministration",
+                "display": "CancerRelatedMedicationAdministration"
+              },
+              "value": "trastuzumab monotherapy",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2-targeted monoclonal antibody therapy specified in treatment criteria",
+              "id": "143fc7eb-ceb9-4c4c-b814-370174d0b5d3"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationadministration",
+                "display": "CancerRelatedMedicationAdministration"
+              },
+              "value": "trastuzumab and pertuzumab combination therapy",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2-targeted combination therapy specified in treatment criteria",
+              "id": "9a2d9780-5f92-4805-909a-87e050fda0fc"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ECOGPerformanceStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "ecogperformancestatus",
+                "display": "ECOGPerformanceStatus"
+              },
+              "value": "Zubrod performance status score of =< 2",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Performance status assessment using Zubrod/ECOG scale with score threshold",
+              "id": "8fe94b6b-2349-485e-899c-5a1c2f7df542"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "LaboratoryResult",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "laboratoryresult",
+                "display": "LaboratoryResult"
+              },
+              "value": "White blood cell (WBC) >= 3000/mm^3",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Laboratory result threshold for white blood cell count",
+              "id": "3a621b6a-9410-491c-a40d-f36458259357"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "LaboratoryResult",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "laboratoryresult",
+                "display": "LaboratoryResult"
+              },
+              "value": "Hemoglobin (Hgb) >= 10 g/dl",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Laboratory result threshold for hemoglobin level",
+              "id": "b7ab8718-dcb5-4b09-a3ab-bf10ef580135"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "LaboratoryResult",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "laboratoryresult",
+                "display": "LaboratoryResult"
+              },
+              "value": "Serum creatinine =< 2.0 mg/dl",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Laboratory result threshold for serum creatinine",
+              "id": "bd2c1b00-91c5-4527-b025-34fd7feba985"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "LaboratoryResult",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "laboratoryresult",
+                "display": "LaboratoryResult"
+              },
+              "value": "Total bilirubin =< 1.5 mg/dl",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Laboratory result threshold for total bilirubin",
+              "id": "dfa1c414-8498-4cf5-995a-f9344972bdbc"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "LaboratoryResult",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "laboratoryresult",
+                "display": "LaboratoryResult"
+              },
+              "value": "SGOT =< 2.5 times the upper limit of normal",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Laboratory result threshold for SGOT/AST liver enzyme",
+              "id": "6b10d61f-e472-4642-b863-ddc1e37f19fa"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CardiacFunction",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cardiacfunction",
+                "display": "CardiacFunction"
+              },
+              "value": "normal left ventricular ejection fraction (LVEF) >= the lower limit of normal",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Cardiac function assessment with LVEF measurement and normal range specification",
+              "id": "c7371359-e89d-44b3-90b4-e6b3b41a3d6a"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Comorbidity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "comorbidity",
+                "display": "Comorbidity"
+              },
+              "value": "Restrictive cardiomyopathy",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Cardiac comorbidity listed in exclusion criteria",
+              "id": "825b6f26-b8f6-4da3-b6f1-9c75babd2bda"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Comorbidity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "comorbidity",
+                "display": "Comorbidity"
+              },
+              "value": "Unstable angina within 6 months prior to enrollment",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Cardiac comorbidity with temporal constraint in exclusion criteria",
+              "id": "94375394-e7e6-44f8-bf63-f684d20301dc"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Comorbidity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "comorbidity",
+                "display": "Comorbidity"
+              },
+              "value": "New York Heart Association functional class III-IV heart failure",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Cardiac comorbidity with severity classification in exclusion criteria",
+              "id": "f208dce0-83d9-4bbc-9863-874aa6306bb4"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Comorbidity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "comorbidity",
+                "display": "Comorbidity"
+              },
+              "value": "Symptomatic pericardial effusion",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Cardiac comorbidity with symptom specification in exclusion criteria",
+              "id": "1da26f68-d808-4048-bf06-27a26576b703"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Patient",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patient",
+                "display": "Patient"
+              },
+              "value": "minimumAge: 18 Years",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Minimum age requirement for patient eligibility",
+              "id": "7a0e4843-5274-4509-9837-270d56772c0c"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "stage IV human epidermal growth factor receptor 2 (HER2) positive breast cancer",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Text clearly describes cancer condition with stage and HER2 status",
+              "id": "62203913-95ae-4422-a6b1-43501988d7f8"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "unknown",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Text indicates disease status/outcome is unknown for the treatment comparison",
+              "id": "74162a27-7217-4879-9d3e-f64e7d666af3"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "trastuzumab",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Trastuzumab is explicitly mentioned as HER2-targeted therapy",
+              "id": "c5f20af2-4605-44c6-b72a-21cc35851df2"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "pertuzumab",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Pertuzumab is mentioned as alternative or combination therapy",
+              "id": "f6e76fb3-bacf-4a8d-bb30-863541bbfe8e"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "polysaccharide-K",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Polysaccharide-K is an investigational medication in the trial",
+              "id": "381943a2-d5bb-41ec-a337-cfa5f29430d0"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedsurgicalprocedure",
+                "display": "CancerRelatedSurgicalProcedure"
+              },
+              "value": "vaccine therapy",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Vaccine therapy is a form of cancer immunotherapy procedure",
+              "id": "28c84b4e-ba48-46c0-8380-a71e545c29ee"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TumorMarker",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tumormarker",
+                "display": "TumorMarker"
+              },
+              "value": "positive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2 positive status is a key tumor marker for patient selection",
+              "id": "5b38361a-b851-4571-96a5-ccc55eef14ed"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TumorMarker",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tumormarker",
+                "display": "TumorMarker"
+              },
+              "value": "natural killer (NK) cell functional activity",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "NK cell activity is measured as a secondary objective biomarker",
+              "id": "06fa0003-39f0-4671-b51c-7f30253c6b0e"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TumorMarker",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tumormarker",
+                "display": "TumorMarker"
+              },
+              "value": "serum transforming growth factor (TGF)-beta levels",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "TGF-beta is measured as a tertiary objective biomarker",
+              "id": "863de1c1-aa57-45a6-99d1-14f911549d3a"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "progression free survival (PFS)",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "PFS is explicitly mentioned as a tertiary outcome measure",
+              "id": "4a7fe107-b9bc-4897-bc56-6fbdbc5c91c0"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "overall survival (OS)",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "OS is explicitly mentioned as a tertiary outcome measure",
+              "id": "47b380fd-e634-4838-8748-9d1bd1dd13a7"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "RadiationProcedure",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "radiationprocedure",
+                "display": "RadiationProcedure"
+              },
+              "value": "phase I/II trial",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Clinical trial phase indicates radiation/oncology procedure context",
+              "id": "9c420f45-2dd7-4fb4-ba94-441d0f3ea2f3"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Text explicitly states breast cancer diagnosis with stage IV and HER2 positive status",
+              "id": "5b3038c9-94e5-4ff9-aa52-878cfb341f37"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "IV",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Clear staging information provided as Stage IV breast cancer",
+              "id": "b6c0ec72-f183-4adf-bdf5-6f16df01d57b"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "GenomicVariant",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "genomicvariant",
+                "display": "GenomicVariant"
+              },
+              "value": "positive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2 positive status explicitly stated, indicating genomic variant status",
+              "id": "a22d8889-9ccc-4bcf-bf4c-d6be0fee79b5"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationadministration",
+                "display": "CancerRelatedMedicationAdministration"
+              },
+              "value": "administered",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2-targeted therapy mentioned as current treatment regimen",
+              "id": "2e133b9f-04a4-415d-b004-03fa5b3ed070"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedsurgicalprocedure",
+                "display": "CancerRelatedSurgicalProcedure"
+              },
+              "value": "planned",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Vaccine therapy mentioned as part of the treatment approach",
+              "id": "465a30f4-e96f-4e65-ba93-fa28bf513145"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationadministration",
+                "display": "CancerRelatedMedicationAdministration"
+              },
+              "value": "under investigation",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Polysaccharide-K mentioned as investigational therapy component",
+              "id": "517d57b3-8865-4b30-a693-d8c59cabafd6"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "GenomicVariant",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "genomicvariant",
+                "display": "GenomicVariant"
+              },
+              "value": "HER2 positive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2 status is a key genomic variant inclusion criterion for the study",
+              "id": "68d6997e-de73-4ab2-ae8c-cb84adf018fd"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "stage IV",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Study specifically targets patients with stage IV breast cancer",
+              "id": "3297321b-ae95-49e2-9703-87a0e000fbb1"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "HER2 ICD peptide-based vaccine clinical trial",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Clinical trial description with treatment arms and interventions",
+              "id": "8fa2dfa8-12ea-4b38-96fa-e3769a961f18"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "administered per standard of care",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2-targeted therapy medication mentioned in treatment protocol",
+              "id": "00ddffed-8d9f-449c-a77b-f00df7cfec56"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "administered per standard of care",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2-targeted therapy medication explicitly listed",
+              "id": "0ac0a434-31ac-44f4-b496-c97625b3c87c"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "positive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2-targeted vaccine implies HER2-positive cancer status",
+              "id": "757e3c34-3af4-4471-b6b0-554d8dc3b6fc"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TumorMarker",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tumormarker",
+                "display": "TumorMarker"
+              },
+              "value": "positive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "HER2-targeted therapy indicates HER2 biomarker positivity",
+              "id": "bb068221-6cfe-4a76-8a38-0e47d7b5ac25"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TNMClinicalStageGroup",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tnmclinicalstagegroup",
+                "display": "TNMClinicalStageGroup"
+              },
+              "value": "metastatic or advanced (inferred)",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Dual HER2 blockade typically used in metastatic setting",
+              "id": "a28af5d8-636b-4cb9-9e37-52d230e47f9a"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchSubject",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchsubject",
+                "display": "ResearchSubject"
+              },
+              "value": "clinical trial participant",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Clinical trial participants described in treatment arms",
+              "id": "5bb4a948-191f-4c10-8070-fdd9b8c6f60c"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedlaboratorytest",
+                "display": "CancerRelatedLaboratoryTest"
+              },
+              "value": "correlative studies",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit mention of laboratory biomarker analysis",
+              "id": "d6d30c3b-67ef-4ebf-bca7-c1d91b81b89f"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "PerformanceStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "performancestatus",
+                "display": "PerformanceStatus"
+              },
+              "value": "adequate for clinical trial (inferred)",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Clinical trial participation implies adequate performance status",
+              "id": "a7845d4a-3729-49ee-9a42-4cfd19bb216a"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedsurgicalprocedure",
+                "display": "CancerRelatedSurgicalProcedure"
+              },
+              "value": "intradermal administration",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Vaccine administration method specified as intradermal",
+              "id": "1015d210-d5db-4e71-8e3a-31a1620e56e3"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Toxicity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "toxicity",
+                "display": "Toxicity"
+              },
+              "value": "Grade 3 or higher",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mapping to toxicity grading using CTCAE v4.0 terminology",
+              "id": "dec573e2-7d80-4c82-9cd4-44888e6eeeb5"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Toxicity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "toxicity",
+                "display": "Toxicity"
+              },
+              "value": "Present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Specific toxicity event mentioned in population description",
+              "id": "b116d58c-3065-407c-a89d-70fdd0d911a3"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedlaboratorytest",
+                "display": "CancerRelatedLaboratoryTest"
+              },
+              "value": "Quantitative",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Flow cytometry analysis of NK cell markers CD56 and CD16",
+              "id": "1b779fa2-d39e-4aba-a1eb-29c0064934d1"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedlaboratorytest",
+                "display": "CancerRelatedLaboratoryTest"
+              },
+              "value": "Quantitative",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Flow cytometry analysis of NK cell markers CD56 and CD16",
+              "id": "86d80401-62f5-4b4a-8eda-4e580fca095c"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedlaboratorytest",
+                "display": "CancerRelatedLaboratoryTest"
+              },
+              "value": "Quantitative",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct measurement of IFN-gamma production in NK cells",
+              "id": "03384852-3f1e-4b0f-9b7b-b13861dad1bf"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedlaboratorytest",
+                "display": "CancerRelatedLaboratoryTest"
+              },
+              "value": "Quantitative",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct measurement of CD107a expression as marker of NK cell activity",
+              "id": "a68b7399-82a4-4f0d-bd1a-979d36f13eb5"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedlaboratorytest",
+                "display": "CancerRelatedLaboratoryTest"
+              },
+              "value": "Quantitative",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "ELISPOT assay for IFN-gamma to assess T cell response",
+              "id": "c4289424-4f01-4613-ae7c-8a9f1d5498a0"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedlaboratorytest",
+                "display": "CancerRelatedLaboratoryTest"
+              },
+              "value": "Quantitative",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "ELISA measurement of TGF-beta levels as cancer biomarker",
+              "id": "d9ec291f-7213-497f-92b4-89c165979dc3"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "Measured",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Overall survival as key oncology outcome measure",
+              "id": "d7cf84d5-4eba-4fae-979e-e417aab86bd1"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "Measured",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Progression-free survival as key oncology outcome measure",
+              "id": "65ae9c13-0666-4851-b755-bb54ca2676ec"
+            }
+          ],
+          "source_references": [],
+          "validation_results": {
+            "valid": true,
+            "errors": [],
+            "warnings": [],
+            "compliance_score": 1.0
+          },
+          "metadata": {
+            "pipeline_version": "Mcode_pipeline_v1",
+            "engine_type": "LLM",
+            "entities_count": 0,
+            "mapped_count": 70,
+            "compliance_score": 1.0,
+            "token_usage": {
+              "prompt_tokens": 2976,
+              "completion_tokens": 1321,
+              "total_tokens": 4297
+            },
+            "aggregate_token_usage": {
+              "prompt_tokens": 0,
+              "completion_tokens": 0,
+              "total_tokens": 0,
+              "model_name": "",
+              "provider_name": ""
+            }
+          }
+        },
+        {
+          "trial_id": "NCT01026116",
+          "processing_time": 0.009922027587890625,
+          "mcode_mappings": [
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "interventional",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "TREATMENT purpose indicates an interventional study type per mCODE ResearchStudy profile",
+              "id": "c9f705ed-181a-457d-bfb3-9b9ca53849a8"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "randomized",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mapping of RANDOMIZED to FHIR randomized allocation type",
+              "id": "5bccfc45-99be-45fb-99c9-0a612afa9b8a"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "parallel",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mapping of PARALLEL to FHIR parallel study design",
+              "id": "840712e6-98c5-427c-aa2e-8668122e8cfc"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "none",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mapping of NONE to FHIR no masking type",
+              "id": "24f1b510-82e3-44d2-8518-c67694ee1c3d"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "active",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "The term 'Breast Neoplasms' maps to SNOMED CT code 254837009 for malignant neoplasm of breast, which is a primary cancer condition in mCODE",
+              "id": "fb61a56c-1327-430d-817e-8325f5922351"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Text confirms breast cancer diagnosis with histological verification",
+              "id": "dc76a258-5564-4c86-b684-b9ac5c5d7db1"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Cancer stage range includes stage I, mapped to SNOMED CT code for stage I breast cancer",
+              "id": "97f65b6c-3203-458a-a398-bda9131f4ad9"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Cancer stage range includes stage II, mapped to SNOMED CT code for stage II breast cancer",
+              "id": "058e30d7-70ff-4881-ad44-e067f8778593"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Cancer stage range includes stage III, mapped to SNOMED CT code for stage III breast cancer",
+              "id": "3d76c62f-f1d6-4d5b-bdcb-60c9f5ff25e7"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedsurgicalprocedure",
+                "display": "CancerRelatedSurgicalProcedure"
+              },
+              "value": "performed",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Describes surgical procedure for breast cancer treatment including margin clearance and axillary dissection",
+              "id": "793dfed7-c190-4d35-8600-153b8f00775f"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ERStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "erstatus",
+                "display": "ERStatus"
+              },
+              "value": "positive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicitly states ER positive status with specific immunohistochemical criteria",
+              "id": "22e7ec0e-3de6-45bf-ac06-59bb30c51509"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "HER2Status",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "her2status",
+                "display": "HER2Status"
+              },
+              "value": "negative",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicitly states HER2 negative status with specific test criteria",
+              "id": "88fbc7ad-dddc-4266-b654-a300910c61c2"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "RegionalNodesPositive",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "regionalnodespositive",
+                "display": "RegionalNodesPositive"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Confirms presence of positive regional lymph nodes in breast cancer",
+              "id": "58d2a744-7359-46d0-a4d2-68101795b323"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ECOGPerformanceStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "ecogperformancestatus",
+                "display": "ECOGPerformanceStatus"
+              },
+              "value": "0-1",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mapping of ECOG performance status score range",
+              "id": "89fa8af2-1243-4b1f-96c9-c5186289265c"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Patient",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patient",
+                "display": "Patient"
+              },
+              "value": "female",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit gender specification for patient population",
+              "id": "dd2f1194-3345-41da-88df-ee3cb0ccd64e"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Patient",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patient",
+                "display": "Patient"
+              },
+              "value": "18-40",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Age range specification for patient eligibility",
+              "id": "2058c7c1-4c8f-42ff-9e05-9e70a46d5cbc"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Comorbidity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "comorbidity",
+                "display": "Comorbidity"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Indicates absence of significant cardiac comorbidity through adequate function assessment",
+              "id": "44c8842c-90b5-4d50-8c62-00379ce9f58f"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Comorbidity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "comorbidity",
+                "display": "Comorbidity"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Indicates absence of significant renal comorbidity through adequate function assessment",
+              "id": "77af6e3d-91f1-41b6-a43e-88fc3e60044b"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Comorbidity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "comorbidity",
+                "display": "Comorbidity"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Indicates absence of significant hepatic comorbidity through adequate function assessment",
+              "id": "56b219e5-7440-4222-b73e-465c94517fba"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "absent",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Exclusion of metastatic disease implies absence of metastasis for included patients",
+              "id": "4097ed60-61b5-4939-96b8-23378c0dca66"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Text explicitly mentions breast cancer patients, indicating presence of cancer condition",
+              "id": "86c00aee-748b-4ab8-a690-00ac7a76c8c0"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "active",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Reference to patients implies active disease status requiring treatment",
+              "id": "b116c53c-ec37-4161-98d5-cc1d426253e4"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "planned",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Paclitaxel is explicitly mentioned as part of the treatment strategy being evaluated",
+              "id": "383b7cfb-4cb2-40d3-a195-d829d3802202"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "planned",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Anthracycline-based regimens are mentioned as the foundation for treatment strategies",
+              "id": "aa7437eb-6cce-4a46-9f4c-c352bdfecf8a"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TumorMarker",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tumormarker",
+                "display": "TumorMarker"
+              },
+              "value": "aggressive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Text describes patients as having aggressive clinical history, which is a tumor marker characteristic",
+              "id": "79265162-969d-43c7-a98d-5f07cb520be7"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Patient",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patient",
+                "display": "Patient"
+              },
+              "value": "young",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Text specifies 'young' patients, indicating age is a relevant demographic factor",
+              "id": "b799a94e-c1fa-4210-8b42-515c17d9feb1"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ResearchStudy",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "researchstudy",
+                "display": "ResearchStudy"
+              },
+              "value": "true",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Text explicitly describes a research study purpose and objectives",
+              "id": "89580238-2b3b-4ac8-bdec-455d57658201"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "present",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Text explicitly mentions 'Breast Cancer' which maps to SNOMED CT code for malignant neoplasm of breast",
+              "id": "f2faa2be-65f9-44cd-9aae-2e3d07c6141e"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerDiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerdiseasestatus",
+                "display": "CancerDiseaseStatus"
+              },
+              "value": "post-operative",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "'Operable' implies the cancer is in a state where surgery is possible, indicating post-operative status for adjuvant therapy",
+              "id": "dd75b029-a515-426f-81be-7fd5f61e8555"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "administered",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "'EC' in chemotherapy regimen typically refers to Epirubicin + Cyclophosphamide",
+              "id": "dc557674-1d4a-443c-ab8d-f5a26b362648"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "administered",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "'EC' in chemotherapy regimen typically refers to Epirubicin + Cyclophosphamide",
+              "id": "b6e09632-eafc-45e7-9bed-14a39f786b9f"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "administered",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "'wP' likely refers to weekly Paclitaxel regimen in adjuvant chemotherapy",
+              "id": "004f1e7a-2300-45ec-893d-ea5fbd33ab7e"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationStatement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationstatement",
+                "display": "CancerRelatedMedicationStatement"
+              },
+              "value": "administered",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "'EP' could refer to Epirubicin + Platinum agent (likely Cisplatin) in chemotherapy regimen",
+              "id": "f6637212-5f1d-4f4e-826b-13e6a83fa681"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedsurgicalprocedure",
+                "display": "CancerRelatedSurgicalProcedure"
+              },
+              "value": "performed",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "'Operable' implies surgical intervention is planned or has occurred for breast cancer treatment",
+              "id": "d7a3a7c1-4ac4-4cff-a2cc-41933daa659b"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TNMClinicalStageGroup",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tnmclinicalstagegroup",
+                "display": "TNMClinicalStageGroup"
+              },
+              "value": "unknown",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "'Operable' suggests early stage cancer but specific TNM stage is not provided in text",
+              "id": "8f99d4de-0186-458b-8166-4e117f5e3d07"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "GenomicVariant",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "genomicvariant",
+                "display": "GenomicVariant"
+              },
+              "value": "not assessed",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Clinical trial context suggests genomic variants may be assessed but no specific variants mentioned in provided text",
+              "id": "d510b81d-f8dc-4793-993a-1e3609bcf2d7"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Patient",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patient",
+                "display": "Patient"
+              },
+              "value": "age < 40 years",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Text specifies patient population as breast cancer patients under 40 years old",
+              "id": "bc113cda-8f3d-48a6-bb89-9e35a2988bf5"
+            }
+          ],
+          "source_references": [],
+          "validation_results": {
+            "valid": true,
+            "errors": [],
+            "warnings": [],
+            "compliance_score": 1.0
+          },
+          "metadata": {
+            "pipeline_version": "Mcode_pipeline_v1",
+            "engine_type": "LLM",
+            "entities_count": 0,
+            "mapped_count": 37,
+            "compliance_score": 1.0,
+            "token_usage": {
+              "prompt_tokens": 558,
+              "completion_tokens": 1312,
+              "total_tokens": 1870
+            },
+            "aggregate_token_usage": {
+              "prompt_tokens": 0,
+              "completion_tokens": 0,
+              "total_tokens": 0,
+              "model_name": "",
+              "provider_name": ""
+            }
+          }
+        }
+      ],
+      "quality_analysis": {
+        "total_mappings": 107,
+        "avg_confidence": 0.0,
+        "high_confidence_count": 0,
+        "with_source_text": 0,
+        "source_text_ratio": 0.0,
+        "confidence_distribution": {
+          "high (0.8-1.0)": 0,
+          "medium (0.5-0.8)": 0,
+          "low (0.0-0.5)": 107
+        },
+        "quality_score": 0.0
+      }
+    },
+    "direct_mcode_evidence_based_concise": {
+      "prompt_name": "direct_mcode_evidence_based_concise",
+      "model_name": "deepseek-coder",
+      "trials_processed": 2,
+      "total_processing_time": 377.98866605758667,
+      "trial_results": [
+        {
+          "trial_id": "NCT01922921",
+          "processing_time": 258.19813203811646,
+          "mcode_mappings": [
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "Breast Carcinoma",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement of cancer diagnosis with recurrence status",
+              "id": "2055c098-73ad-4708-961a-e9ce88cf1123"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TNMStage",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tnmstage",
+                "display": "TNMStage"
+              },
+              "value": "Stage IV",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit staging information for breast cancer",
+              "id": "e2180359-bcf4-4ec7-af85-f9560a096405"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerMarker",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancermarker",
+                "display": "CancerMarker"
+              },
+              "value": "HER2/Neu Positive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement of HER2/Neu biomarker status",
+              "id": "6e7b2b1f-9ed3-4e1a-9ed7-961bd18cded0"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "HER2+ breast cancer",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement of cancer diagnosis with HER2 status",
+              "id": "7c168c85-5ac6-406a-9c27-1866ff696d32"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TNMStage",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tnmstage",
+                "display": "TNMStage"
+              },
+              "value": "Stage IV",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit staging information provided",
+              "id": "3cadcfff-42f5-4b19-b2c2-137b19d9d7e1"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "HER2ReceptorStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "her2receptorstatus",
+                "display": "HER2ReceptorStatus"
+              },
+              "value": "HER2+",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct evidence of HER2 positive status with specific criteria",
+              "id": "a5d5b462-d301-454b-ae4e-eb4313601f7a"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "trastuzumab monotherapy",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit medication name and treatment type",
+              "id": "9b92f125-21a7-470a-ac6c-18490ba1157b"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "trastuzumab and pertuzumab combination therapy",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit medication combination therapy",
+              "id": "2f5103f5-8aa1-4055-97f3-2384140cf9cb"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Age",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "age",
+                "display": "Age"
+              },
+              "value": ">=18 years",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit minimum age requirement stated",
+              "id": "7128eb99-391d-409a-8cf1-b5b89052cb18"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "ECOGPerformanceStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "ecogperformancestatus",
+                "display": "ECOGPerformanceStatus"
+              },
+              "value": "<=2",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement of performance status requirement",
+              "id": "8593eb1d-21b7-49a9-824c-216aae9322de"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "LVEF",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "lvef",
+                "display": "LVEF"
+              },
+              "value": ">= lower limit of normal",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Clear cardiac function requirement with specific LVEF criteria",
+              "id": "51c6228e-87d1-4373-beb5-eb7b404dacd8"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "Stable bone only disease",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct reference to bone metastasis status",
+              "id": "5914e99c-9ab9-41b8-9745-a55b726dece8"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "DiseaseStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "diseasestatus",
+                "display": "DiseaseStatus"
+              },
+              "value": "No evidence of disease (NED)",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit disease status criteria for eligibility",
+              "id": "dcca432e-1624-4084-bb0d-58b71604c477"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "stage IV human epidermal growth factor receptor 2 (HER2) positive breast cancer",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement of cancer diagnosis with staging and biomarker status",
+              "id": "e5405d48-fd0d-4cda-a0a2-496eb55e7103"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TNMStage",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tnmstage",
+                "display": "TNMStage"
+              },
+              "value": "Stage IV",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit staging information provided for breast cancer",
+              "id": "b1fef108-1dbb-449a-8734-dcecb3d85732"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerBiomarker",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerbiomarker",
+                "display": "CancerBiomarker"
+              },
+              "value": "HER2 positive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement of HER2 biomarker status",
+              "id": "5035a442-73b9-47ab-840e-5d40cbdc5482"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "trastuzumab",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit mention of trastuzumab as part of treatment regimen",
+              "id": "caf40a85-f6fe-41d1-b6e8-83b69dc95385"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "pertuzumab",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Pertuzumab mentioned as alternative or combination therapy option",
+              "id": "8e2df0d8-cf50-42d1-a571-c7c6010cd9e5"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "polysaccharide-K",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mention of polysaccharide-K as investigational treatment",
+              "id": "aaa1fd41-fd28-41d6-aba3-22ce1f3826fd"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "HER2 ICD peptide-based vaccine",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit description of vaccine therapy component",
+              "id": "4785c460-c50b-46a1-a483-074d1b6f1826"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedsurgicalprocedure",
+                "display": "CancerRelatedSurgicalProcedure"
+              },
+              "value": "intradermally (ID)",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Administration route specified for vaccine therapy",
+              "id": "ce39ed3f-3bc9-4fcd-89f9-d3ee0ea98ba4"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerrelatedmedicationadministration",
+                "display": "CancerRelatedMedicationAdministration"
+              },
+              "value": "orally (PO)",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Administration route specified for polysaccharide-K",
+              "id": "8fdd34a6-dc34-446a-8f63-da3055947f7a"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "Stage IV HER2 Positive Breast Cancer",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement of cancer diagnosis and stage",
+              "id": "606bb48f-c291-4f31-8d1a-8fecf826eddd"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TNMStage",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tnmstage",
+                "display": "TNMStage"
+              },
+              "value": "Stage IV",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit staging information provided",
+              "id": "9dea5b6d-4162-439e-a2d9-7ef09aaf70da"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "HER2ReceptorStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "her2receptorstatus",
+                "display": "HER2ReceptorStatus"
+              },
+              "value": "HER2 Positive",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement of HER2 receptor status",
+              "id": "792bbf55-0ed5-4e1a-a580-2085485a54d9"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "HER2-targeted monoclonal antibody therapy",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit statement of current treatment regimen",
+              "id": "bcfcbeb6-bc0c-4666-9763-368c1850b320"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "HER2-targeted monoclonal antibody therapy",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement of ongoing treatment",
+              "id": "95af6c6d-e513-4c1e-9d6f-d9526c3234a1"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "PatientDemographics",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patientdemographics",
+                "display": "PatientDemographics"
+              },
+              "value": "Median 52 years (range 33-75)",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit age data provided with median and range values for all participant groups",
+              "id": "96356aa1-a3b7-4ad5-9b5a-4cc64d7c1591"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "PatientDemographics",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patientdemographics",
+                "display": "PatientDemographics"
+              },
+              "value": "Female: 31, Male: 0",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit sex distribution data showing all participants are female",
+              "id": "cdf00fc4-d799-4c40-a3ac-1cae89033855"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "PatientDemographics",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patientdemographics",
+                "display": "PatientDemographics"
+              },
+              "value": "Not Hispanic or Latino: 31",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit ethnicity data showing all participants are not Hispanic or Latino",
+              "id": "aa10cb71-248e-412a-b36c-cb1a1f1c4157"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "PatientDemographics",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patientdemographics",
+                "display": "PatientDemographics"
+              },
+              "value": "White: 27, Asian: 4",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit race distribution data showing White and Asian participants only",
+              "id": "8286c321-5173-475f-825c-83f55a77395d"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "Given per standard of care",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit mention of trastuzumab administration as part of treatment regimen",
+              "id": "f6e1c472-ca27-4b43-bca9-576c98d569f3"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "Given per standard of care",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit mention of pertuzumab administration as part of treatment regimen",
+              "id": "d0b2b202-8d72-47ca-923e-2021526eb6a9"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "HER2 ICD peptide-based vaccine ID once monthly for 3 months",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit description of HER2 vaccine administration schedule and route",
+              "id": "d0a3c3e7-6c98-41a2-8e77-aec9339d1812"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "Trastuzumab",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicitly stated medication used in cancer treatment",
+              "id": "184f2157-03b7-4a6e-a728-baadafee8d13"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "Pertuzumab",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicitly stated medication used in cancer treatment",
+              "id": "9edc1802-7e54-4a5c-a961-9978211fa9ca"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "HER2 ICD peptide-based vaccine",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicitly stated cancer vaccine treatment",
+              "id": "fd7d50a6-1aa3-4ae4-8741-bf3b0d47dd4c"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Toxicity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "toxicity",
+                "display": "Toxicity"
+              },
+              "value": "Grade 3 or Higher Toxicity",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicitly stated toxicity grading using CTCAE criteria",
+              "id": "cc5a4852-b4c4-4099-bfcf-2bec69181e0d"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Toxicity",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "toxicity",
+                "display": "Toxicity"
+              },
+              "value": "Vomiting",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicitly stated adverse event of vomiting, though relationship to treatment is qualified as 'possibly related'",
+              "id": "6a61f500-da76-48a2-9e27-a2d5c3e41dc6"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Biomarker",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "biomarker",
+                "display": "Biomarker"
+              },
+              "value": "Interferon (IFN)-Gamma Production",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicitly stated biomarker measurement for immune response assessment",
+              "id": "c967a4ad-ae5c-480a-a714-4a5331e6738a"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Biomarker",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "biomarker",
+                "display": "Biomarker"
+              },
+              "value": "CD107a Expression",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicitly stated biomarker measurement for immune response assessment",
+              "id": "af30996b-d582-44d3-9d14-d913e0440798"
+            }
+          ],
+          "source_references": [],
+          "validation_results": {
+            "valid": true,
+            "errors": [],
+            "warnings": [],
+            "compliance_score": 1.0
+          },
+          "metadata": {
+            "pipeline_version": "Mcode_pipeline_v1",
+            "engine_type": "LLM",
+            "entities_count": 0,
+            "mapped_count": 41,
+            "compliance_score": 1.0,
+            "token_usage": {
+              "prompt_tokens": 3247,
+              "completion_tokens": 978,
+              "total_tokens": 4225
+            },
+            "aggregate_token_usage": {
+              "prompt_tokens": 11035,
+              "completion_tokens": 5679,
+              "total_tokens": 16714,
+              "model_name": "deepseek-coder",
+              "provider_name": "deepseek"
+            }
+          }
+        },
+        {
+          "trial_id": "NCT01026116",
+          "processing_time": 119.79053401947021,
+          "mcode_mappings": [
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "Breast Neoplasms",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement of cancer condition using standard oncology terminology",
+              "id": "72342666-7d4b-422f-b887-43d2cb7b4da9"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "PatientSex",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patientsex",
+                "display": "PatientSex"
+              },
+              "value": "Female",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicitly states female patients",
+              "id": "928bde9d-79f7-4a9d-b690-14a720cc934a"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "Adenocarcinoma of breast",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit diagnosis of breast adenocarcinoma",
+              "id": "a2f91bf5-4994-4404-a664-e52bb7e872f6"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "ER+ breast cancer",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit ER+ status confirmation",
+              "id": "3276d853-54ca-4c4d-8cf0-f46e081be309"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "HER-2 negative",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit HER-2 negative status",
+              "id": "9deee858-6662-479e-ab34-cde81a8c5f49"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TNMStage",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tnmstage",
+                "display": "TNMStage"
+              },
+              "value": "Stage I-III",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit cancer stage range",
+              "id": "852a3c5d-f99f-4237-bdd0-784fdcf48e31"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "TumorSize",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "tumorsize",
+                "display": "TumorSize"
+              },
+              "value": ">10 mm or >20 mm",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit tumor size criteria for high-risk factors",
+              "id": "b413c349-f06a-4cef-960c-eddd9d87492b"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "LymphNodeInvolvement",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "lymphnodeinvolvement",
+                "display": "LymphNodeInvolvement"
+              },
+              "value": "Node-positive or node-negative with high-risk factors",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit lymph node status criteria",
+              "id": "16b3d9aa-e43f-494e-96aa-262036a468b5"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "Primary surgery with clear margins plus axillary dissection",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit surgical treatment description",
+              "id": "1bd04e54-b809-42cd-b161-e2c6454bb428"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "Chemotherapy",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Mentions chemotherapy in context of HER2 testing",
+              "id": "88318731-04c7-4f3f-899e-32ae4b7354d7"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "breast cancer",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mention of breast cancer diagnosis",
+              "id": "fdce1d70-0640-44e5-a953-290306aa148e"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "PatientAgeGroup",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "patientagegroup",
+                "display": "PatientAgeGroup"
+              },
+              "value": "young",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit mention of young patient population",
+              "id": "f01b9887-064b-4236-bae5-620280613e57"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "paclitaxel",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mention of paclitaxel as part of treatment regimen",
+              "id": "7ebd60ac-2d84-4ca7-8703-673916220a50"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "anthracycline-based regimens",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mention of anthracycline-based treatment regimens",
+              "id": "3bb72b0b-1ba0-47ad-9d76-0fd9faa283e3"
+            },
+            {
+              "resourceType": "Condition",
+              "Mcode_element": "CancerCondition",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancercondition",
+                "display": "CancerCondition"
+              },
+              "value": "Breast Cancer",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct mention of breast cancer in clinical context",
+              "id": "ea44cfca-0599-4f5c-a4b3-9d71173df242"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "Age",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "age",
+                "display": "Age"
+              },
+              "value": "Less Than 40 Years Old",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Explicit age range specification for patient population",
+              "id": "72c431b2-975b-4260-840c-f6cf5756b8ab"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "EC-wP",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "EC-wP is a recognized chemotherapy regimen for breast cancer",
+              "id": "32d3aba7-2de3-484b-ac8c-02339c5e0c13"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerTreatment",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancertreatment",
+                "display": "CancerTreatment"
+              },
+              "value": "EP-wP",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "EP-wP is a recognized chemotherapy regimen for breast cancer",
+              "id": "1ed3caea-b3cd-4a5b-b322-ec9ea60ea6e9"
+            },
+            {
+              "resourceType": "Observation",
+              "Mcode_element": "CancerConditionStatus",
+              "code": {
+                "system": "http://hl7.org/fhir/us/mCODE",
+                "code": "cancerconditionstatus",
+                "display": "CancerConditionStatus"
+              },
+              "value": "Operable",
+              "mapping_confidence": 0.0,
+              "source_text_fragment": "Entity index unknown",
+              "mapping_rationale": "Direct statement that patients have operable breast cancer",
+              "id": "6910f6b7-a9ae-4183-af09-8c3026bc70f6"
+            }
+          ],
+          "source_references": [],
+          "validation_results": {
+            "valid": true,
+            "errors": [],
+            "warnings": [],
+            "compliance_score": 1.0
+          },
+          "metadata": {
+            "pipeline_version": "Mcode_pipeline_v1",
+            "engine_type": "LLM",
+            "entities_count": 0,
+            "mapped_count": 19,
+            "compliance_score": 1.0,
+            "token_usage": {
+              "prompt_tokens": 829,
+              "completion_tokens": 650,
+              "total_tokens": 1479
+            },
+            "aggregate_token_usage": {
+              "prompt_tokens": 4346,
+              "completion_tokens": 2562,
+              "total_tokens": 6908,
+              "model_name": "deepseek-coder",
+              "provider_name": "deepseek"
+            }
+          }
+        }
+      ],
+      "quality_analysis": {
+        "total_mappings": 60,
+        "avg_confidence": 0.0,
+        "high_confidence_count": 0,
+        "with_source_text": 0,
+        "source_text_ratio": 0.0,
+        "confidence_distribution": {
+          "high (0.8-1.0)": 0,
+          "medium (0.5-0.8)": 0,
+          "low (0.0-0.5)": 60
+        },
+        "quality_score": 0.0
+      }
+    }
+  },
+  "validation_analysis": {
+    "improvements_detected": [
+      "Reduced over-mapping: 60 vs 107 mappings (quality over quantity)"
+    ],
+    "concerns_identified": [],
+    "overall_assessment": "moderate_improvement"
+  },
+  "recommendations": [
+    "\u2705 Evidence-based prompt shows promise",
+    "\ud83d\udd27 Consider additional refinements based on specific improvements",
+    "\ud83e\uddea Run larger-scale validation before production deployment",
+    "\ud83d\udd27 Improve source text fragment capture mechanism",
+    "\ud83d\udd27 Refine confidence scoring calibration"
+  ]
+}

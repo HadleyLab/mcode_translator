@@ -1,0 +1,270 @@
+{
+  "studies": [
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT01922921",
+          "briefTitle": "Vaccine Therapy With or Without Polysaccharide-K in Patients With Stage IV HER2 Positive Breast Cancer Receiving HER2-Targeted Monoclonal Antibody Therapy"
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": {
+            "date": "2014-02-05"
+          },
+          "completionDateStruct": {
+            "date": "2021-09-01"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "This randomized phase I/II trial studies the side effects of vaccine therapy with or without polysaccharide-K and to see how well it works in treating patients with stage IV human epidermal growth factor receptor 2 (HER2) positive breast cancer who are receiving HER2-targeted monoclonal antibody therapy. Vaccines made from HER2 intracellular domain (ICD) peptide may help the body build an effective immune response to kill tumor cells that express HER2. Polysaccharide-K may stimulate the immune system in different ways and stop tumor cells from growing. It is not yet known whether vaccine therapy works better when given with or without polysaccharide-K in treating breast cancer."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "HER2/Neu Positive",
+            "Recurrent Breast Carcinoma",
+            "Stage IV Breast Cancer"
+          ]
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT01026116",
+          "briefTitle": "A Randomized Trial Comparing EC-wPversus EP-wP as Adjuvant Therapy for Operable Breast Cancer Patients Less Than 40 Years Old"
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": {
+            "date": "2009-12"
+          },
+          "completionDateStruct": {
+            "date": "2016-12-23"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "Manifold data revealed that young breast cancer patients are characterized by aggressive clinical history. The purpose of this study is to evaluate the efficacy and safety of different strategies incorporating paclitaxel to anthracycline-based regimens in young breast cancer patients."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Breast Neoplasms"
+          ]
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT00169533",
+          "briefTitle": "Rollover Study Of Lapatinib In Cancer Patients"
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": {
+            "date": "2004-08-19"
+          },
+          "completionDateStruct": {
+            "date": "2009-05-05"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "The EGF19060 study is a rollover study to evaluate the long term safety of lapatinib and to provide lapatinib to patients who had a positive response in previous lapatinib studies until lapatinib is available pending FDA approval."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Neoplasms, Breast"
+          ]
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT03300349",
+          "briefTitle": "Interhospital Variability in Programmes to Prevent Axillary Lymphadenectomy Sequels in Breast Cancer Patients."
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": {
+            "date": "2017-09-27"
+          },
+          "completionDateStruct": {
+            "date": "2017-12-31"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "This study aims to determine the effectiveness of the different programmes of four Spanish hospitals about prevention of axillary lymphadenectomy sequels in breast cancer patients."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Breast Cancer Lymphedema",
+            "Shoulder Injury"
+          ]
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT06650748",
+          "briefTitle": "Multigene Risk Score Combined With Ki-67 Dynamic Assessment in Stratified Neoadjuvant Endocrine Therapy Treatment With or Without CDK4/6 Inhibitors in HR+/HER2- Breast Cancer"
+        },
+        "statusModule": {
+          "overallStatus": "NOT_YET_RECRUITING",
+          "startDateStruct": {
+            "date": "2024-11-15"
+          },
+          "completionDateStruct": {
+            "date": "2028-04-01"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "This is a prospective, single-center, randomize-controlled study. The purpose of this study is to evaluate the efficacy of neoadjuvant CDK4/6 inhibitors in patients with high-risk EPclin multigene risk analysis and non-response to Ki-67 2W, and to explore predictive biomarkers for sensitivity to CDK4/6 inhibitor therapy."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Breast Cancer",
+            "Early-stage Breast Cancer"
+          ]
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT00135226",
+          "briefTitle": "ASCEND: A Study of Cardiovascular Events iN Diabetes"
+        },
+        "statusModule": {
+          "overallStatus": "ACTIVE_NOT_RECRUITING",
+          "startDateStruct": {
+            "date": "2005-03"
+          },
+          "completionDateStruct": {
+            "date": "2037-07-31"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "The purpose of this study is to determine whether 100mg daily aspirin versus placebo and/or supplementation with 1 gram daily omega-3 fatty acids or placebo prevents \"serious vascular events\" (i.e. non-fatal heart attack, non-fatal stroke or transient ischaemic attack, or death from vascular causes) in patients with diabetes who are not known to have occlusive arterial disease and to assess the effects on serious bleeding or other adverse events."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Diabetes Mellitus"
+          ]
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT03664778",
+          "briefTitle": "Abbreviated Breast MRI After Cancer Treatment"
+        },
+        "statusModule": {
+          "overallStatus": "ACTIVE_NOT_RECRUITING",
+          "startDateStruct": {
+            "date": "2018-09-07"
+          },
+          "completionDateStruct": {
+            "date": "2025-09-30"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "500 patients will be prospectively recruited to undergo a fast breast MRI examination. The women will be recruited for the study will meet the following criteria: 1. status post primary breast cancer treated with breast conservation therapy 3 years prior to recruitment 2. negative DBT examination six months prior to recruitment 3. all breast densities 4. clinically asymptomatic - no palpable masses, focalthickening, or clinically significant discharge We will identify these patients EPIC database utilizing the date of their last mammogram. The patients will be sent a letter explaining the study and the opportunity to enroll in the study. Interested patients may contact our research coordinators by the phone number provided in the letter. The study recruitment information will also be shared with referring physicians. Physicians may also directly refer patients to the study."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Breast Neoplasms",
+            "Carcinoma, Intraductal, Noninfiltrating"
+          ]
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT00109785",
+          "briefTitle": "PET Scans in Patients With Locally Advanced Breast Cancer"
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": {
+            "date": "1997-03"
+          },
+          "completionDateStruct": {
+            "date": "2008-12"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "RATIONALE: Imaging procedures such as PET scans may improve the ability to monitor the effectiveness of chemotherapy for locally advanced breast cancer.\n\nPURPOSE: This clinical trial is studying how well PET scans work in patients with locally advanced breast cancer who will undergo chemotherapy."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Breast Cancer"
+          ]
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT04418115",
+          "briefTitle": "Fatigue As a Late Effect in Breast Cancer Survivors - is Acupuncture a Treatment Option?"
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": {
+            "date": "2021-09-01"
+          },
+          "completionDateStruct": {
+            "date": "2024-12-31"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "The success of treatment of breast cancer has improved, hence the prevalence of survivors have increased. However, experienced late effects from the cancer itself or from cancer treatment is substantial. Anti-cancer treatment can have a number of side effects including nausea, fatigue, vomiting, anorexia and alopecia. Late effects such as cancer related fatigue (CRF) are very persistent. CRF is a common side effect of cancer therapy, and affects the quality of life of patients and their families. It is important to point out that CRF is a form of fatigue that are different from normal fatigue which everyone can experience every now and then. Acupuncture is increasingly used in cancer centers both in the US and Europe, and that patients are positive to using acupuncture. Albeit the emerging evidence for acupuncture and CRF, acupuncture has neither been offered as a treatment for CRF within a Norwegian hospital nor in general practice. Hence the investigators think there is a need for a large randomized controlled trial (RCT) in a Norwegian health care setting."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Fatigue",
+            "Depression, Anxiety",
+            "Insomnia",
+            "Hot Flashes",
+            "Quality of Life"
+          ]
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT00616135",
+          "briefTitle": "Study of Autologous Fat Enhanced w/ Regenerative Cells Transplanted to Reconstruct Breast Deformities After Lumpectomy"
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": {
+            "date": "2008-06"
+          },
+          "completionDateStruct": {
+            "date": "2010-11"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "A post-marketing study evaluating the transplantation of autologous fat augmented with Adipose Derived Regenerative Cells (ADRCs), in patients with functional and cosmetic breast deformities post segmental mastectomy or quadrantectomy (lumpectomy)."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Breast Neoplasms",
+            "Carcinoma, Ductal, Breast",
+            "Mammaplasty",
+            "Mastectomy, Segmental, Lumpectomy, Breast Reconstruction,"
+          ]
+        }
+      }
+    }
+  ],
+  "nextPageToken": "ZVNj7o2Eke8v3lpjXcCqua72mpOQJJxuYvmt0A",
+  "pagination": {
+    "max_results": 10
+  }
+}
