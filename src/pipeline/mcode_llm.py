@@ -363,17 +363,17 @@ class McodeMapper(LlmBase, Loggable):
         if 'mcode_mappings' not in parsed_response:
             raise LlmResponseError("Missing 'mcode_mappings' field in LLM response")
         
-        # Validate each mapping has required Mcode_element field
+        # Validate each mapping has required mcode_element field
         for mapping in parsed_response['mcode_mappings']:
-            if 'Mcode_element' not in mapping:
-                raise LlmResponseError("Each mapping must contain 'Mcode_element' field")
+            if 'mcode_element' not in mapping:
+                raise LlmResponseError("Each mapping must contain 'mcode_element' field")
     
     def _validate_mcode_element_strict(self, element: Dict[str, Any]) -> McodeValidationResult:
         """Validate a single mCODE element with detailed error reporting"""
         result = McodeValidationResult(valid=True)
         
         # Check required fields
-        required_fields = ['resourceType', 'Mcode_element']
+        required_fields = ['resourceType', 'mcode_element']
         for field in required_fields:
             if field not in element:
                 result.valid = False
@@ -470,7 +470,7 @@ class McodeMapper(LlmBase, Loggable):
         Returns:
             FHIR resource format mapping
         """
-        # Map Mcode_element to resourceType
+        # Map mcode_element to resourceType
         Mcode_to_resource = {
             'CancerCondition': 'Condition',
             'CancerDiseaseStatus': 'Observation',
@@ -482,16 +482,16 @@ class McodeMapper(LlmBase, Loggable):
             'KarnofskyPerformanceStatus': 'Observation'
         }
         
-        resource_type = Mcode_to_resource.get(mapping.get('Mcode_element', ''), 'Observation')
+        resource_type = Mcode_to_resource.get(mapping.get('mcode_element', ''), 'Observation')
         
         # Create FHIR-compliant element
         fhir_element = {
             'resourceType': resource_type,
-            'Mcode_element': mapping.get('Mcode_element', ''),
+            'mcode_element': mapping.get('mcode_element', ''),
             'code': {
                 'system': 'http://hl7.org/fhir/us/mCODE',
-                'code': mapping.get('Mcode_element', '').lower().replace(' ', '-'),
-                'display': mapping.get('Mcode_element', '')
+                'code': mapping.get('mcode_element', '').lower().replace(' ', '-'),
+                'display': mapping.get('mcode_element', '')
             },
             'value': mapping.get('value', ''),
             'mapping_confidence': mapping.get('mapping_confidence', mapping.get('confidence', 0.0)),

@@ -24,7 +24,7 @@ pip install -r requirements.txt
 
 ### 4. Verify Installation
 ```bash
-python mcode_translator.py --help
+python mcode_translate.py --help
 ```
 
 ## 📁 Production Directory Structure
@@ -112,19 +112,19 @@ The system includes comprehensive quality validation:
 
 ### 1. Single File Processing
 ```bash
-python mcode_translator.py input.json -o output.json
+python mcode_translate.py input.json -o output.json
 ```
 
 ### 2. Batch Processing
 ```bash
 for file in data/*.json; do
-  python mcode_translator.py "$file" -o "results/$(basename "$file")"
+  python mcode_translate.py "$file" -o "results/$(basename "$file")"
 done
 ```
 
 ### 3. High-Quality Processing
 ```bash
-python mcode_translator.py input.json \
+python mcode_translate.py input.json \
   --model deepseek-coder \
   --prompt direct_mcode_evidence_based_concise \
   --output high_quality_results.json \
@@ -171,7 +171,7 @@ python mcode_translator.py input.json \
 ```bash
 # Ensure Python path is correct
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-python mcode_translator.py --help
+python mcode_translate.py --help
 ```
 
 **API Key Issues**

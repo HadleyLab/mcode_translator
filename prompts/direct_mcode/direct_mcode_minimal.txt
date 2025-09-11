@@ -4,7 +4,7 @@ Text: {clinical_text}
 
 Return JSON with "mcode_mappings" array containing FHIR resources. Each resource must have:
 - resourceType
-- Mcode_element
+- mcode_element
 - code
 - value
 - mapping_confidence
@@ -17,7 +17,7 @@ Return JSON with "mcode_mappings" array containing FHIR resources. Each resource
   "mcode_mappings": [
     {{
       "resourceType": "FHIR resource type",
-      "Mcode_element": "mCODE element name",
+      "mcode_element": "mCODE element name",
       "code": {{
         "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
         "code": "standard code from appropriate terminology",

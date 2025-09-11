@@ -274,3 +274,18 @@ class Config:
         """Reload model configurations from the file-based model library"""
         # STRICT: Reload model configurations - throw exception if reload fails
         model_loader.reload_config()
+
+    def get_core_memory_api_key(self) -> str:
+        """
+        Get CORE Memory API key from environment variables.
+
+        Returns:
+            CORE Memory API key string.
+
+        Raises:
+            ConfigurationError: If API key is missing or invalid.
+        """
+        api_key = os.getenv("COREAI_API_KEY")
+        if not api_key or not isinstance(api_key, str) or len(api_key.strip()) < 20:
+            raise ConfigurationError("Invalid or missing API key in environment variable 'COREAI_API_KEY'.")
+        return api_key

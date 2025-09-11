@@ -33,7 +33,7 @@ You are an expert clinical data mapper. Map the extracted medical entities to ap
  "mcode_mappings": [
     {{
       "source_entity_index": 0,
-      "Mcode_element": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
+      "mcode_element": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
       "value": "mapped value according to mCODE value sets",
       "confidence": 0.0-1.0,
       "mapping_rationale": "brief explanation of mapping decision"

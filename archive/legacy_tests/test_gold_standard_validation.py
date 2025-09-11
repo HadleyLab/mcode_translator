@@ -48,13 +48,13 @@ def create_test_gold_standard():
                     "mapped_elements": [
                         {
                             "source_entity_index": 0,
-                            "Mcode_element": "CancerCondition",
+                            "mcode_element": "CancerCondition",
                             "value": "Test Cancer",
                             "confidence": 0.95
                         },
                         {
                             "source_entity_index": 1,
-                            "Mcode_element": "CancerRelatedMedication",
+                            "mcode_element": "CancerRelatedMedication",
                             "value": "Test Medication",
                             "confidence": 0.9
                         }
@@ -101,13 +101,13 @@ def create_test_pipeline_result():
             "mapped_elements": [
                 {
                     "source_entity_index": 0,
-                    "Mcode_element": "CancerCondition",
+                    "mcode_element": "CancerCondition",
                     "value": "Test Cancer",
                     "confidence": 0.92
                 },
                 {
                     "source_entity_index": 1,
-                    "Mcode_element": "CancerRelatedMedication",
+                    "mcode_element": "CancerRelatedMedication",
                     "value": "Different Medication",
                     "confidence": 0.85
                 }
@@ -141,9 +141,9 @@ def calculate_validation_metrics(pipeline_result, gold_standard_case):
     recall_extraction = true_positives_extraction / (true_positives_extraction + false_negatives_extraction) if (true_positives_extraction + false_negatives_extraction) > 0 else 0.0
     f1_extraction = 2 * (precision_extraction * recall_extraction) / (precision_extraction + recall_extraction) if (precision_extraction + recall_extraction) > 0 else 0.0
     
-    # Extract mappings for comparison - compare both Mcode_element AND value
-    pipeline_mappings = [(mapping["Mcode_element"], mapping["value"]) for mapping in pipeline_result["mcode_mappings"]["mapped_elements"]]
-    gold_mappings = [(mapping["Mcode_element"], mapping["value"]) for mapping in gold_standard_case["expected_mcode_mappings"]["mapped_elements"]]
+    # Extract mappings for comparison - compare both mcode_element AND value
+    pipeline_mappings = [(mapping["mcode_element"], mapping["value"]) for mapping in pipeline_result["mcode_mappings"]["mapped_elements"]]
+    gold_mappings = [(mapping["mcode_element"], mapping["value"]) for mapping in gold_standard_case["expected_mcode_mappings"]["mapped_elements"]]
     
     # Calculate mapping metrics
     true_positives_mapping = len(set(pipeline_mappings) & set(gold_mappings))

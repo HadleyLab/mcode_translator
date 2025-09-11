@@ -234,7 +234,7 @@ class ConcurrentFetcher:
             task = BenchmarkTask(
                 task_id=str(uuid.uuid4()),
                 prompt_name=self.config.prompt_name,
-                model_name=self.config.model_name or "default",
+                model_name=self.config.model_name,
                 trial_id=nct_id,
                 trial_data=trial,
                 prompt_type="DIRECT_MCODE",

@@ -127,7 +127,7 @@ The benchmarking phase expects the following data structure for gold standard da
       "expected_mcode_mappings": {
         "mapped_elements": [
           {
-            "Mcode_element": "string",
+            "mcode_element": "string",
             "value": "string",
             "confidence": "number",
             "mapping_rationale": "string"

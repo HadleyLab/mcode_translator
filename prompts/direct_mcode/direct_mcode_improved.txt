@@ -14,7 +14,7 @@ Clinical Text:
   "mcode_mappings": [
     {{
       "resourceType": "FHIR resource type (e.g., Condition, Observation, MedicationStatement, Procedure, GenomicVariant, Patient)",
-      "Mcode_element": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
+      "mcode_element": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
       "code": {{
         "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
         "code": "standard code from appropriate terminology",

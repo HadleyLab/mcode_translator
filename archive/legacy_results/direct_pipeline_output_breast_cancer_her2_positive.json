@@ -3,7 +3,7 @@
   "generated_mappings": [
     {
       "resourceType": "Observation",
-      "Mcode_element": "PrimaryCancerCondition",
+      "mcode_element": "PrimaryCancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "primarycancercondition",
@@ -17,7 +17,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "SecondaryCancerCondition",
+      "mcode_element": "SecondaryCancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "secondarycancercondition",
@@ -31,7 +31,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerDiseaseStatus",
+      "mcode_element": "CancerDiseaseStatus",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerdiseasestatus",
@@ -45,7 +45,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "HER2Status",
+      "mcode_element": "HER2Status",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "her2status",
@@ -59,7 +59,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerDiseaseStatus",
+      "mcode_element": "CancerDiseaseStatus",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerdiseasestatus",
@@ -73,7 +73,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "HER2ReceptorStatus",
+      "mcode_element": "HER2ReceptorStatus",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "her2receptorstatus",
@@ -87,7 +87,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "ECOGPerformanceStatus",
+      "mcode_element": "ECOGPerformanceStatus",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "ecogperformancestatus",
@@ -101,7 +101,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerRelatedComorbidities",
+      "mcode_element": "CancerRelatedComorbidities",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedcomorbidities",
@@ -115,7 +115,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerRelatedMedicationStatement",
+      "mcode_element": "CancerRelatedMedicationStatement",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedicationstatement",
@@ -129,7 +129,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "PregnancyStatus",
+      "mcode_element": "PregnancyStatus",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "pregnancystatus",
@@ -143,7 +143,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "PrimaryCancerCondition",
+      "mcode_element": "PrimaryCancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "primarycancercondition",
@@ -157,7 +157,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerDiseaseStatus",
+      "mcode_element": "CancerDiseaseStatus",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerdiseasestatus",
@@ -171,7 +171,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "HER2Status",
+      "mcode_element": "HER2Status",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "her2status",
@@ -185,7 +185,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerRelatedMedicationStatement",
+      "mcode_element": "CancerRelatedMedicationStatement",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedicationstatement",
@@ -199,7 +199,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerRelatedMedicationStatement",
+      "mcode_element": "CancerRelatedMedicationStatement",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedicationstatement",
@@ -213,7 +213,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "PrimaryCancerCondition",
+      "mcode_element": "PrimaryCancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "primarycancercondition",
@@ -227,7 +227,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerDiseaseStatus",
+      "mcode_element": "CancerDiseaseStatus",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerdiseasestatus",
@@ -241,7 +241,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "GenomicVariant",
+      "mcode_element": "GenomicVariant",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "genomicvariant",
@@ -255,7 +255,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerRelatedSurgicalProcedure",
+      "mcode_element": "CancerRelatedSurgicalProcedure",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedsurgicalprocedure",
@@ -269,7 +269,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerRelatedMedicationStatement",
+      "mcode_element": "CancerRelatedMedicationStatement",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedicationstatement",
@@ -285,84 +285,84 @@
   "expected_mappings": [
     {
       "source_entity_index": 0,
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "value": "HER2-Positive Breast Cancer",
       "confidence": 0.95,
       "mapping_rationale": "Primary cancer diagnosis with HER2 biomarker status"
     },
     {
       "source_entity_index": 1,
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "value": "Metastatic Breast Cancer",
       "confidence": 0.95,
       "mapping_rationale": "Metastatic cancer condition"
     },
     {
       "source_entity_index": 2,
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "value": "HER2-positive metastatic breast cancer",
       "confidence": 0.9,
       "mapping_rationale": "Specific cancer diagnosis with biomarker and metastatic status"
     },
     {
       "source_entity_index": 3,
-      "Mcode_element": "CancerDiseaseStatus",
+      "mcode_element": "CancerDiseaseStatus",
       "value": "Measurable disease present",
       "confidence": 0.85,
       "mapping_rationale": "Disease status indicating measurable disease"
     },
     {
       "source_entity_index": 4,
-      "Mcode_element": "ECOGPerformanceStatus",
+      "mcode_element": "ECOGPerformanceStatus",
       "value": "0-1",
       "confidence": 0.9,
       "mapping_rationale": "ECOG performance status score range"
     },
     {
       "source_entity_index": 5,
-      "Mcode_element": "Observation",
+      "mcode_element": "Observation",
       "value": "Adequate organ function",
       "confidence": 0.8,
       "mapping_rationale": "General observation about organ function status"
     },
     {
       "source_entity_index": 10,
-      "Mcode_element": "CancerRelatedMedication",
+      "mcode_element": "CancerRelatedMedication",
       "value": "Trastuzumab Deruxtecan",
       "confidence": 0.95,
       "mapping_rationale": "HER2-targeted antibody-drug conjugate medication"
     },
     {
       "source_entity_index": 11,
-      "Mcode_element": "CancerRelatedMedication",
+      "mcode_element": "CancerRelatedMedication",
       "value": "Trastuzumab",
       "confidence": 0.9,
       "mapping_rationale": "Standard HER2-targeted therapy medication"
     },
     {
       "source_entity_index": 12,
-      "Mcode_element": "CancerRelatedMedication",
+      "mcode_element": "CancerRelatedMedication",
       "value": "Taxane chemotherapy",
       "confidence": 0.85,
       "mapping_rationale": "Chemotherapy backbone medication"
     },
     {
       "source_entity_index": 13,
-      "Mcode_element": "CancerRelatedMedication",
+      "mcode_element": "CancerRelatedMedication",
       "value": "HER2-targeted therapy",
       "confidence": 0.9,
       "mapping_rationale": "General category of HER2-targeted treatments"
     },
     {
       "source_entity_index": 14,
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "value": "HER2-positive metastatic breast cancer",
       "confidence": 0.95,
       "mapping_rationale": "Cancer condition from description section"
     },
     {
       "source_entity_index": 15,
-      "Mcode_element": "CancerRelatedMedication",
+      "mcode_element": "CancerRelatedMedication",
       "value": "Trastuzumab-based therapy",
       "confidence": 0.9,
       "mapping_rationale": "Prior treatment regimen based on trastuzumab"

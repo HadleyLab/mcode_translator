@@ -8,7 +8,7 @@ Clinical text: {clinical_text}
   "mcode_mappings": [
     {{
       "resourceType": "FHIR resource type",
-      "Mcode_element": "mCODE element name",
+      "mcode_element": "mCODE element name",
       "code": {{
         "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
         "code": "standard code from appropriate terminology",

@@ -159,8 +159,8 @@ def calculate_metrics(result: Any, gold_standard: Dict[str, Any]) -> Dict[str, f
                 key_parts.append(f"element_name:{mapping['element_name']}")
             
             # Include mCODE element if available (from gold standard)
-            if mapping.get('Mcode_element'):
-                key_parts.append(f"Mcode_element:{mapping['Mcode_element']}")
+            if mapping.get('mcode_element'):
+                key_parts.append(f"mcode_element:{mapping['mcode_element']}")
             
             # Include code if available
             if mapping.get('code'):

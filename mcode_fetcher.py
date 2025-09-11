@@ -18,6 +18,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+import os
 from typing import Dict, Any, List, Optional
 
 from src.pipeline.concurrent_fetcher import (
@@ -34,6 +35,117 @@ from src.pipeline.fetcher import (
 )
 from src.utils.config import Config
 from src.utils.logging_config import get_logger, setup_logging
+from src.utils.core_memory_client import CoreMemoryClient, CoreMemoryError
+
+
+def store_in_core_memory(results: Dict[str, Any], api_key: str) -> None:
+    """Store results in CORE Memory."""
+    logger = get_logger(__name__)
+    logger.info("🧠 Storing results in CORE Memory")
+
+    try:
+        client = CoreMemoryClient(api_key=api_key)
+        
+        # Handle different result structures
+        trial_list = []
+        if "successful_trials" in results:
+            # Concurrent processing results
+            trial_list = results["successful_trials"]
+            summary_message = f"mCODE Fetcher processed {results.get('summary', {}).get('total_trials', 0)} trials. " \
+                              f"Successful: {results.get('summary', {}).get('successful_trials', 0)}, " \
+                              f"Failed: {results.get('summary', {}).get('failed_trials', 0)}"
+        elif "trials" in results:
+            # Sequential search results
+            trial_list = results["trials"]
+            summary_message = f"mCODE Fetcher processed {results.get('total_found', 0)} trials."
+        elif "trial" in results:
+            # Single trial results
+            trial_list = [results["trial"]]
+            nct_id = results.get("nct_id", "unknown")
+            summary_message = f"mCODE Fetcher processed 1 trial (NCT ID: {nct_id})."
+        else:
+            # Unknown structure
+            logger.warning("Unknown results structure, storing raw results")
+            summary_message = f"mCODE Fetcher processed results: {json.dumps(results)}"
+        
+        # Ingest a summary of the results
+        client.ingest(summary_message)
+
+        # Ingest each trial
+        for trial in trial_list:
+            nct_id = trial.get("protocolSection", {}).get("identificationModule", {}).get("nctId", "unknown")
+            brief_title = trial.get('protocolSection', {}).get('identificationModule', {}).get('briefTitle', 'N/A')
+            mcode_results = trial.get('McodeResults', {})
+            
+            # Store trial in CORE Memory
+            logger.info(f"💾 Storing trial {nct_id} in CORE Memory")
+            
+            # Create a detailed summary with mCODE mappings
+            if mcode_results:
+                # Extract mCODE mappings for detailed storage
+                mappings = mcode_results.get('mcode_mappings', [])
+                validation = mcode_results.get('validation', {})
+                
+                # Create a comprehensive summary
+                summary_lines = [
+                    f"Clinical Trial {nct_id}: {brief_title}",
+                ]
+                
+                # Add study description if available
+                brief_summary = trial.get('protocolSection', {}).get('descriptionModule', {}).get('briefSummary')
+                if brief_summary:
+                    summary_lines.append(f"This is {brief_summary}")
+                else:
+                    # Try to get enrollment info
+                    enrollment_info = trial.get('protocolSection', {}).get('designModule', {}).get('enrollmentInfo')
+                    if enrollment_info:
+                        count = enrollment_info.get('count', 'N/A')
+                        summary_lines.append(f"This is a Phase 4 post-market study with an estimated enrollment of {count} patients.")
+                
+                # Group mappings by mcode_element for better organization
+                grouped_mappings = {}
+                for mapping in mappings:
+                    if isinstance(mapping, dict):
+                        mcode_element = mapping.get('mcode_element', 'Unknown')
+                        value = mapping.get('value', 'Unknown')
+                        if mcode_element not in grouped_mappings:
+                            grouped_mappings[mcode_element] = []
+                        grouped_mappings[mcode_element].append(value)
+                
+                # Add mCODE mappings
+                if grouped_mappings:
+                    mapping_strings = []
+                    for mcode_element, values in grouped_mappings.items():
+                        # Format values as a comma-separated list
+                        if len(values) == 1:
+                            mapping_strings.append(f"{mcode_element} ({values[0]})")
+                        else:
+                            values_str = ", ".join(values)
+                            mapping_strings.append(f"{mcode_element} ({values_str})")
+                    summary_lines.append("MCODE mappings include: " + ", ".join(mapping_strings) + ".")
+                
+                # Add validation info
+                if validation:
+                    compliance_score = validation.get('compliance_score', 'N/A')
+                    summary_lines.append(f"Compliance Score: {compliance_score}")
+                
+                summary = ". ".join(summary_lines) + "."
+            else:
+                # Fallback to simple summary
+                summary = (
+                    f"Trial: {nct_id} - {brief_title}\n"
+                    f"Mappings: {len(mcode_results.get('mcode_mappings', []))}, "
+                    f"Compliance: {mcode_results.get('validation', {}).get('compliance_score', 'N/A')}"
+                )
+            
+            client.ingest(summary)
+
+        logger.info("✅ Successfully stored results in CORE Memory")
+
+    except CoreMemoryError as e:
+        logger.error(f"❌ Failed to store results in CORE Memory: {e}")
+    except Exception as e:
+        logger.error(f"❌ An unexpected error occurred while storing to CORE Memory: {e}")
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -161,7 +273,21 @@ Examples:
         default="INFO",
         help="Set logging level (default: INFO)"
     )
+
+    # New: Split output into per-trial files
+    parser.add_argument(
+        "--split-output",
+        action="store_true",
+        help="Save each trial's result as a separate file with NCTID and model name in the filename (in fetcher_output directory)"
+    )
     
+    # CORE Memory options
+    parser.add_argument(
+        "--store-in-core-memory",
+        action="store_true",
+        help="Store results in CORE Memory"
+    )
+
     return parser
 
 
@@ -178,7 +304,7 @@ async def fetch_and_process_concurrent(args: argparse.Namespace) -> Dict[str, An
             batch_size=args.batch_size,
             process_criteria=args.process,
             process_trials=args.process,
-            model_name=args.model,
+            model_name=args.model or "deepseek-coder",
             prompt_name=args.prompt,
             export_path=None,  # We'll handle export separately
             progress_updates=not args.no_progress
@@ -265,6 +391,15 @@ def fetch_and_process_sequential(args: argparse.Namespace) -> Dict[str, Any]:
             pipeline = McodePipeline(prompt_name=args.prompt, model_name=args.model)
             processed_trials = []
             
+            # Initialize CORE Memory client if needed for real-time storage
+            core_memory_client = None
+            if args.store_in_core_memory:
+                try:
+                    api_key = config.get_core_memory_api_key()
+                    core_memory_client = CoreMemoryClient(api_key=api_key)
+                except Exception as e:
+                    logger.warning(f"Could not initialize CORE Memory client for real-time storage: {e}")
+            
             for i, trial in enumerate(trials):
                 try:
                     logger.info(f"Processing trial {i+1}/{len(trials)}")
@@ -281,6 +416,23 @@ def fetch_and_process_sequential(args: argparse.Namespace) -> Dict[str, Any]:
                         'error': result.error
                     }
                     processed_trials.append(enhanced_trial)
+                    
+                    # Store in CORE Memory in real-time if requested
+                    if core_memory_client:
+                        try:
+                            nct_id = enhanced_trial.get("protocolSection", {}).get("identificationModule", {}).get("nctId", "unknown")
+                            brief_title = enhanced_trial.get('protocolSection', {}).get('identificationModule', {}).get('briefTitle', 'N/A')
+                            mcode_results = enhanced_trial.get('McodeResults', {})
+                            
+                            summary = (
+                                f"Trial: {nct_id} - {brief_title}\n"
+                                f"Mappings: {len(mcode_results.get('mcode_mappings', []))}, "
+                                f"Compliance: {mcode_results.get('validation', {}).get('compliance_score', 'N/A')}"
+                            )
+                            core_memory_client.ingest(summary)
+                            logger.info(f"✅ Stored trial {nct_id} in CORE Memory in real-time")
+                        except Exception as e:
+                            logger.warning(f"Failed to store trial {nct_id} in CORE Memory: {e}")
                     
                 except Exception as e:
                     logger.error(f"Failed to process trial {i+1}: {e}")
@@ -318,6 +470,26 @@ def fetch_and_process_sequential(args: argparse.Namespace) -> Dict[str, Any]:
                 'metadata': result.metadata,
                 'error': result.error
             }
+            
+            # Store in CORE Memory in real-time if requested
+            if args.store_in_core_memory:
+                try:
+                    api_key = config.get_core_memory_api_key()
+                    core_memory_client = CoreMemoryClient(api_key=api_key)
+                    
+                    nct_id = trial.get("protocolSection", {}).get("identificationModule", {}).get("nctId", "unknown")
+                    brief_title = trial.get('protocolSection', {}).get('identificationModule', {}).get('briefTitle', 'N/A')
+                    mcode_results = trial.get('McodeResults', {})
+                    
+                    summary = (
+                        f"Trial: {nct_id} - {brief_title}\n"
+                        f"Mappings: {len(mcode_results.get('mcode_mappings', []))}, "
+                        f"Compliance: {mcode_results.get('validation', {}).get('compliance_score', 'N/A')}"
+                    )
+                    core_memory_client.ingest(summary)
+                    logger.info(f"✅ Stored trial {nct_id} in CORE Memory in real-time")
+                except Exception as e:
+                    logger.warning(f"Failed to store trial {args.nct_id} in CORE Memory: {e}")
         
         return {
             "nct_id": args.nct_id,
@@ -332,6 +504,15 @@ def fetch_and_process_sequential(args: argparse.Namespace) -> Dict[str, Any]:
         
         trials = []
         failed_trials = []
+        
+        # Initialize CORE Memory client if needed for real-time storage
+        core_memory_client = None
+        if args.store_in_core_memory:
+            try:
+                api_key = config.get_core_memory_api_key()
+                core_memory_client = CoreMemoryClient(api_key=api_key)
+            except Exception as e:
+                logger.warning(f"Could not initialize CORE Memory client for real-time storage: {e}")
         
         for nct_id in nct_id_list:
             try:
@@ -356,6 +537,23 @@ def fetch_and_process_sequential(args: argparse.Namespace) -> Dict[str, Any]:
                 
                 trials.append(trial)
                 logger.info(f"✅ Successfully processed {nct_id}")
+                
+                # Store in CORE Memory in real-time if requested
+                if core_memory_client and args.process:
+                    try:
+                        nct_id = trial.get("protocolSection", {}).get("identificationModule", {}).get("nctId", "unknown")
+                        brief_title = trial.get('protocolSection', {}).get('identificationModule', {}).get('briefTitle', 'N/A')
+                        mcode_results = trial.get('McodeResults', {})
+                        
+                        summary = (
+                            f"Trial: {nct_id} - {brief_title}\n"
+                            f"Mappings: {len(mcode_results.get('mcode_mappings', []))}, "
+                            f"Compliance: {mcode_results.get('validation', {}).get('compliance_score', 'N/A')}"
+                        )
+                        core_memory_client.ingest(summary)
+                        logger.info(f"✅ Stored trial {nct_id} in CORE Memory in real-time")
+                    except Exception as e:
+                        logger.warning(f"Failed to store trial {nct_id} in CORE Memory: {e}")
                 
             except Exception as e:
                 logger.error(f"❌ Failed to process {nct_id}: {e}")
@@ -412,18 +610,16 @@ async def main() -> None:
         # Initialize configuration
         config = Config()
         if args.config:
-            # Config class may not support config_path parameter, handle this differently if needed
             logger.info(f"Custom config specified: {args.config}")
-        
+
         # Handle count-only requests
         if args.count_only:
             if not args.condition:
                 parser.error("--count-only requires --condition")
-            
             results = count_studies(args)
             output_results(results, args.output)
             return
-        
+
         # Handle concurrent vs sequential processing
         if args.concurrent and args.process:
             logger.info("🔄 Using concurrent processing with mCODE mapping")
@@ -433,12 +629,47 @@ async def main() -> None:
                 logger.warning("⚠️  --concurrent specified but --process not enabled. Using sequential processing.")
             logger.info("📝 Using sequential processing")
             results = fetch_and_process_sequential(args)
-        
+
         # Output results
         output_results(results, args.output)
-        
+
+        # New: Split output into per-trial files if requested
+        if args.split_output:
+            import os
+            output_dir = os.path.join("data", "fetcher_output")
+            os.makedirs(output_dir, exist_ok=True)
+            model_name = args.model if args.model else "model"
+            # Support both concurrent and sequential output formats
+            trial_list = []
+            if "successful_trials" in results:
+                trial_list = results["successful_trials"]
+            elif "trials" in results:
+                trial_list = results["trials"]
+            elif "trial" in results:
+                trial_list = [results["trial"]]
+            for trial in trial_list:
+                # Extract NCTID
+                nct_id = None
+                try:
+                    nct_id = trial["protocolSection"]["identificationModule"]["nctId"]
+                except Exception:
+                    nct_id = "unknown"
+                filename = f"{nct_id}.{model_name}.results.json"
+                filepath = os.path.join(output_dir, filename)
+                with open(filepath, "w") as f:
+                    json.dump(trial, f, indent=2)
+                print(f"✅ Saved per-trial result: {filepath}")
+
+        # Store in CORE Memory if requested
+        if args.store_in_core_memory:
+            try:
+                api_key = config.get_core_memory_api_key()
+                store_in_core_memory(results, api_key)
+            except ConfigurationError as e:
+                logger.error(f"❌ Could not store to CORE Memory: {e}")
+
         logger.info("✅ mCODE Fetcher completed successfully")
-        
+
     except ClinicalTrialsAPIError as e:
         logger.error(f"❌ ClinicalTrials.gov API Error: {e}")
         sys.exit(1)

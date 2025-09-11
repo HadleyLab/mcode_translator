@@ -91,7 +91,7 @@ def main():
             
             # Show first few mappings as examples
             for i, mapping in enumerate(mappings[:3]):
-                print(f"  {i+1}. {mapping.get('Mcode_element', 'Unknown')} - {mapping.get('value', 'No value')}")
+                print(f"  {i+1}. {mapping.get('mcode_element', 'Unknown')} - {mapping.get('value', 'No value')}")
             
             # Save result to file for inspection
             output_file = Path("direct_pipeline_output_breast_cancer_her2_positive_improved.json")

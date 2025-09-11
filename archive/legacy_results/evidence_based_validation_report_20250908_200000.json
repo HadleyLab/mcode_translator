@@ -22,7 +22,7 @@
           "mcode_mappings": [
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -36,7 +36,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -50,7 +50,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -64,7 +64,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -78,7 +78,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -92,7 +92,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -106,7 +106,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -120,7 +120,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -134,7 +134,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -148,7 +148,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMStageGroup",
+              "mcode_element": "TNMStageGroup",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmstagegroup",
@@ -162,7 +162,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -176,7 +176,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -190,7 +190,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -204,7 +204,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -218,7 +218,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -232,7 +232,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -246,7 +246,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "mcode_element": "CancerRelatedMedicationAdministration",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationadministration",
@@ -260,7 +260,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "mcode_element": "CancerRelatedMedicationAdministration",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationadministration",
@@ -274,7 +274,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ECOGPerformanceStatus",
+              "mcode_element": "ECOGPerformanceStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "ecogperformancestatus",
@@ -288,7 +288,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "LaboratoryResult",
+              "mcode_element": "LaboratoryResult",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "laboratoryresult",
@@ -302,7 +302,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "LaboratoryResult",
+              "mcode_element": "LaboratoryResult",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "laboratoryresult",
@@ -316,7 +316,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "LaboratoryResult",
+              "mcode_element": "LaboratoryResult",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "laboratoryresult",
@@ -330,7 +330,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "LaboratoryResult",
+              "mcode_element": "LaboratoryResult",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "laboratoryresult",
@@ -344,7 +344,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "LaboratoryResult",
+              "mcode_element": "LaboratoryResult",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "laboratoryresult",
@@ -358,7 +358,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CardiacFunction",
+              "mcode_element": "CardiacFunction",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cardiacfunction",
@@ -372,7 +372,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Comorbidity",
+              "mcode_element": "Comorbidity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "comorbidity",
@@ -386,7 +386,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Comorbidity",
+              "mcode_element": "Comorbidity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "comorbidity",
@@ -400,7 +400,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Comorbidity",
+              "mcode_element": "Comorbidity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "comorbidity",
@@ -414,7 +414,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Comorbidity",
+              "mcode_element": "Comorbidity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "comorbidity",
@@ -428,7 +428,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Patient",
+              "mcode_element": "Patient",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patient",
@@ -442,7 +442,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -456,7 +456,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -470,7 +470,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -484,7 +484,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -498,7 +498,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -512,7 +512,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -526,7 +526,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -540,7 +540,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -554,7 +554,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -568,7 +568,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -582,7 +582,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -596,7 +596,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "RadiationProcedure",
+              "mcode_element": "RadiationProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "radiationprocedure",
@@ -610,7 +610,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -624,7 +624,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -638,7 +638,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -652,7 +652,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "mcode_element": "CancerRelatedMedicationAdministration",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationadministration",
@@ -666,7 +666,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -680,7 +680,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "mcode_element": "CancerRelatedMedicationAdministration",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationadministration",
@@ -694,7 +694,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -708,7 +708,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -722,7 +722,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -736,7 +736,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -750,7 +750,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -764,7 +764,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -778,7 +778,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -792,7 +792,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMClinicalStageGroup",
+              "mcode_element": "TNMClinicalStageGroup",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmclinicalstagegroup",
@@ -806,7 +806,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchSubject",
+              "mcode_element": "ResearchSubject",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchsubject",
@@ -820,7 +820,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -834,7 +834,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PerformanceStatus",
+              "mcode_element": "PerformanceStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "performancestatus",
@@ -848,7 +848,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -862,7 +862,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Toxicity",
+              "mcode_element": "Toxicity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "toxicity",
@@ -876,7 +876,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Toxicity",
+              "mcode_element": "Toxicity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "toxicity",
@@ -890,7 +890,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -904,7 +904,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -918,7 +918,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -932,7 +932,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -946,7 +946,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -960,7 +960,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -974,7 +974,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -988,7 +988,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -1034,7 +1034,7 @@
           "mcode_mappings": [
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -1048,7 +1048,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -1062,7 +1062,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -1076,7 +1076,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -1090,7 +1090,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1104,7 +1104,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1118,7 +1118,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1132,7 +1132,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1146,7 +1146,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1160,7 +1160,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -1174,7 +1174,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ERStatus",
+              "mcode_element": "ERStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "erstatus",
@@ -1188,7 +1188,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "HER2Status",
+              "mcode_element": "HER2Status",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "her2status",
@@ -1202,7 +1202,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "RegionalNodesPositive",
+              "mcode_element": "RegionalNodesPositive",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "regionalnodespositive",
@@ -1216,7 +1216,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ECOGPerformanceStatus",
+              "mcode_element": "ECOGPerformanceStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "ecogperformancestatus",
@@ -1230,7 +1230,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Patient",
+              "mcode_element": "Patient",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patient",
@@ -1244,7 +1244,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Patient",
+              "mcode_element": "Patient",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patient",
@@ -1258,7 +1258,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Comorbidity",
+              "mcode_element": "Comorbidity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "comorbidity",
@@ -1272,7 +1272,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Comorbidity",
+              "mcode_element": "Comorbidity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "comorbidity",
@@ -1286,7 +1286,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Comorbidity",
+              "mcode_element": "Comorbidity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "comorbidity",
@@ -1300,7 +1300,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -1314,7 +1314,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1328,7 +1328,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -1342,7 +1342,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -1356,7 +1356,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -1370,7 +1370,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -1384,7 +1384,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Patient",
+              "mcode_element": "Patient",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patient",
@@ -1398,7 +1398,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -1412,7 +1412,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1426,7 +1426,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -1440,7 +1440,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -1454,7 +1454,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -1468,7 +1468,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -1482,7 +1482,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -1496,7 +1496,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -1510,7 +1510,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMClinicalStageGroup",
+              "mcode_element": "TNMClinicalStageGroup",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmclinicalstagegroup",
@@ -1524,7 +1524,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -1538,7 +1538,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Patient",
+              "mcode_element": "Patient",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patient",
@@ -1584,7 +1584,7 @@
           "mcode_mappings": [
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -1598,7 +1598,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -1612,7 +1612,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -1626,7 +1626,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -1640,7 +1640,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1654,7 +1654,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1668,7 +1668,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Patient",
+              "mcode_element": "Patient",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patient",
@@ -1682,7 +1682,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1696,7 +1696,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -1710,7 +1710,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -1724,7 +1724,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -1738,7 +1738,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerStage",
+              "mcode_element": "CancerStage",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerstage",
@@ -1752,7 +1752,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -1766,7 +1766,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -1780,7 +1780,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -1794,7 +1794,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -1808,7 +1808,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1822,7 +1822,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -1836,7 +1836,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -1850,7 +1850,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -1864,7 +1864,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarkerTest",
+              "mcode_element": "TumorMarkerTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarkertest",
@@ -1878,7 +1878,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarkerTest",
+              "mcode_element": "TumorMarkerTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarkertest",
@@ -1892,7 +1892,7 @@
             },
             {
               "resourceType": "MedicationStatement",
-              "Mcode_element": "CancerRelatedMedication",
+              "mcode_element": "CancerRelatedMedication",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedication",
@@ -1906,7 +1906,7 @@
             },
             {
               "resourceType": "MedicationStatement",
-              "Mcode_element": "CancerRelatedMedication",
+              "mcode_element": "CancerRelatedMedication",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedication",
@@ -1920,7 +1920,7 @@
             },
             {
               "resourceType": "MedicationStatement",
-              "Mcode_element": "CancerRelatedMedication",
+              "mcode_element": "CancerRelatedMedication",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedication",
@@ -1934,7 +1934,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -1948,7 +1948,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -1962,7 +1962,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -1976,7 +1976,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -1990,7 +1990,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedLaboratoryTest",
+              "mcode_element": "CancerRelatedLaboratoryTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedlaboratorytest",
@@ -2004,7 +2004,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -2018,7 +2018,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -2032,7 +2032,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -2046,7 +2046,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2060,7 +2060,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerClinicalTrial",
+              "mcode_element": "CancerClinicalTrial",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerclinicaltrial",
@@ -2074,7 +2074,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerClinicalTrial",
+              "mcode_element": "CancerClinicalTrial",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerclinicaltrial",
@@ -2120,7 +2120,7 @@
           "mcode_mappings": [
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedResearchStudy",
+              "mcode_element": "CancerRelatedResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedresearchstudy",
@@ -2134,7 +2134,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedResearchStudy",
+              "mcode_element": "CancerRelatedResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedresearchstudy",
@@ -2148,7 +2148,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedResearchStudy",
+              "mcode_element": "CancerRelatedResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedresearchstudy",
@@ -2162,7 +2162,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -2176,7 +2176,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -2190,7 +2190,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerStageGroup",
+              "mcode_element": "CancerStageGroup",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerstagegroup",
@@ -2204,7 +2204,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Patient",
+              "mcode_element": "Patient",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patient",
@@ -2218,7 +2218,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Patient",
+              "mcode_element": "Patient",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patient",
@@ -2232,7 +2232,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ECOGPerformanceStatus",
+              "mcode_element": "ECOGPerformanceStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "ecogperformancestatus",
@@ -2246,7 +2246,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Comorbidity",
+              "mcode_element": "Comorbidity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "comorbidity",
@@ -2260,7 +2260,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PregnancyStatus",
+              "mcode_element": "PregnancyStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "pregnancystatus",
@@ -2274,7 +2274,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ContraceptiveUse",
+              "mcode_element": "ContraceptiveUse",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "contraceptiveuse",
@@ -2288,7 +2288,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2302,7 +2302,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Radiotherapy",
+              "mcode_element": "Radiotherapy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "radiotherapy",
@@ -2316,7 +2316,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -2330,7 +2330,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2344,7 +2344,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Radiotherapy",
+              "mcode_element": "Radiotherapy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "radiotherapy",
@@ -2358,7 +2358,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorSize",
+              "mcode_element": "TumorSize",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumorsize",
@@ -2372,7 +2372,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -2386,7 +2386,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Imaging",
+              "mcode_element": "Imaging",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "imaging",
@@ -2400,7 +2400,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "mcode_element": "CancerRelatedMedicationAdministration",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationadministration",
@@ -2414,7 +2414,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -2428,7 +2428,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -2442,7 +2442,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -2456,7 +2456,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -2470,7 +2470,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2484,7 +2484,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -2498,7 +2498,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -2512,7 +2512,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "mcode_element": "CancerRelatedMedicationAdministration",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationadministration",
@@ -2526,7 +2526,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "mcode_element": "CancerRelatedMedicationAdministration",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationadministration",
@@ -2540,7 +2540,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2554,7 +2554,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorSize",
+              "mcode_element": "TumorSize",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumorsize",
@@ -2568,7 +2568,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -2614,7 +2614,7 @@
           "mcode_mappings": [
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -2628,7 +2628,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -2642,7 +2642,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -2656,7 +2656,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -2670,7 +2670,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -2684,7 +2684,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -2698,7 +2698,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2712,7 +2712,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2726,7 +2726,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2740,7 +2740,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2754,7 +2754,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2768,7 +2768,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -2782,7 +2782,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerStageGroup",
+              "mcode_element": "CancerStageGroup",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerstagegroup",
@@ -2796,7 +2796,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2810,7 +2810,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -2824,7 +2824,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PerformanceStatus",
+              "mcode_element": "PerformanceStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "performancestatus",
@@ -2838,7 +2838,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Comorbidity",
+              "mcode_element": "Comorbidity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "comorbidity",
@@ -2852,7 +2852,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Comorbidity",
+              "mcode_element": "Comorbidity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "comorbidity",
@@ -2866,7 +2866,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationStatement",
+              "mcode_element": "CancerRelatedMedicationStatement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationstatement",
@@ -2880,7 +2880,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "BodyMassIndex",
+              "mcode_element": "BodyMassIndex",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "bodymassindex",
@@ -2894,7 +2894,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -2908,7 +2908,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedResearchStudy",
+              "mcode_element": "CancerRelatedResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedresearchstudy",
@@ -2922,7 +2922,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2936,7 +2936,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "mcode_element": "CancerRelatedMedicationAdministration",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationadministration",
@@ -2950,7 +2950,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -2964,7 +2964,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2978,7 +2978,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -2992,7 +2992,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3006,7 +3006,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy",
+              "mcode_element": "ResearchStudy",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy",
@@ -3020,7 +3020,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy.title",
+              "mcode_element": "ResearchStudy.title",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy.title",
@@ -3034,7 +3034,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy.title",
+              "mcode_element": "ResearchStudy.title",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy.title",
@@ -3048,7 +3048,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ResearchStudy.phase",
+              "mcode_element": "ResearchStudy.phase",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "researchstudy.phase",
@@ -3062,7 +3062,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3076,7 +3076,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -3090,7 +3090,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -3104,7 +3104,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerDiseaseStatus",
+              "mcode_element": "CancerDiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerdiseasestatus",
@@ -3118,7 +3118,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -3132,7 +3132,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "mcode_element": "CancerRelatedMedicationAdministration",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationadministration",
@@ -3199,7 +3199,7 @@
           "mcode_mappings": [
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3213,7 +3213,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMStage",
+              "mcode_element": "TNMStage",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmstage",
@@ -3227,7 +3227,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerMarker",
+              "mcode_element": "CancerMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancermarker",
@@ -3241,7 +3241,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3255,7 +3255,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMStage",
+              "mcode_element": "TNMStage",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmstage",
@@ -3269,7 +3269,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "HER2ReceptorStatus",
+              "mcode_element": "HER2ReceptorStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "her2receptorstatus",
@@ -3283,7 +3283,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3297,7 +3297,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3311,7 +3311,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Age",
+              "mcode_element": "Age",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "age",
@@ -3325,7 +3325,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "ECOGPerformanceStatus",
+              "mcode_element": "ECOGPerformanceStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "ecogperformancestatus",
@@ -3339,7 +3339,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "LVEF",
+              "mcode_element": "LVEF",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "lvef",
@@ -3353,7 +3353,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3367,7 +3367,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "DiseaseStatus",
+              "mcode_element": "DiseaseStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "diseasestatus",
@@ -3381,7 +3381,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3395,7 +3395,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMStage",
+              "mcode_element": "TNMStage",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmstage",
@@ -3409,7 +3409,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerBiomarker",
+              "mcode_element": "CancerBiomarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerbiomarker",
@@ -3423,7 +3423,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3437,7 +3437,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3451,7 +3451,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3465,7 +3465,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3479,7 +3479,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -3493,7 +3493,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedMedicationAdministration",
+              "mcode_element": "CancerRelatedMedicationAdministration",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedicationadministration",
@@ -3507,7 +3507,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3521,7 +3521,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMStage",
+              "mcode_element": "TNMStage",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmstage",
@@ -3535,7 +3535,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "HER2ReceptorStatus",
+              "mcode_element": "HER2ReceptorStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "her2receptorstatus",
@@ -3549,7 +3549,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3563,7 +3563,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3577,7 +3577,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PatientDemographics",
+              "mcode_element": "PatientDemographics",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patientdemographics",
@@ -3591,7 +3591,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PatientDemographics",
+              "mcode_element": "PatientDemographics",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patientdemographics",
@@ -3605,7 +3605,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PatientDemographics",
+              "mcode_element": "PatientDemographics",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patientdemographics",
@@ -3619,7 +3619,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PatientDemographics",
+              "mcode_element": "PatientDemographics",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patientdemographics",
@@ -3633,7 +3633,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3647,7 +3647,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3661,7 +3661,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3675,7 +3675,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3689,7 +3689,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3703,7 +3703,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3717,7 +3717,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Toxicity",
+              "mcode_element": "Toxicity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "toxicity",
@@ -3731,7 +3731,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Toxicity",
+              "mcode_element": "Toxicity",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "toxicity",
@@ -3745,7 +3745,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Biomarker",
+              "mcode_element": "Biomarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "biomarker",
@@ -3759,7 +3759,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Biomarker",
+              "mcode_element": "Biomarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "biomarker",
@@ -3805,7 +3805,7 @@
           "mcode_mappings": [
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3819,7 +3819,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PatientSex",
+              "mcode_element": "PatientSex",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patientsex",
@@ -3833,7 +3833,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3847,7 +3847,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3861,7 +3861,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3875,7 +3875,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMStage",
+              "mcode_element": "TNMStage",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmstage",
@@ -3889,7 +3889,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorSize",
+              "mcode_element": "TumorSize",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumorsize",
@@ -3903,7 +3903,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "LymphNodeInvolvement",
+              "mcode_element": "LymphNodeInvolvement",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "lymphnodeinvolvement",
@@ -3917,7 +3917,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3931,7 +3931,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3945,7 +3945,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -3959,7 +3959,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PatientAgeGroup",
+              "mcode_element": "PatientAgeGroup",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patientagegroup",
@@ -3973,7 +3973,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -3987,7 +3987,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4001,7 +4001,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4015,7 +4015,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Age",
+              "mcode_element": "Age",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "age",
@@ -4029,7 +4029,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4043,7 +4043,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4057,7 +4057,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerConditionStatus",
+              "mcode_element": "CancerConditionStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerconditionstatus",
@@ -4103,7 +4103,7 @@
           "mcode_mappings": [
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4117,7 +4117,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4131,7 +4131,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PatientSex",
+              "mcode_element": "PatientSex",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patientsex",
@@ -4145,7 +4145,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4159,7 +4159,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMStage",
+              "mcode_element": "TNMStage",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmstage",
@@ -4173,7 +4173,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -4187,7 +4187,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -4201,7 +4201,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarker",
+              "mcode_element": "TumorMarker",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarker",
@@ -4215,7 +4215,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4229,7 +4229,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4243,7 +4243,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4257,7 +4257,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4271,7 +4271,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4285,7 +4285,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4299,7 +4299,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4313,7 +4313,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4327,7 +4327,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4341,7 +4341,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4355,7 +4355,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarkerTest",
+              "mcode_element": "TumorMarkerTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarkertest",
@@ -4369,7 +4369,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4383,7 +4383,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorMarkerTest",
+              "mcode_element": "TumorMarkerTest",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumormarkertest",
@@ -4397,7 +4397,7 @@
             },
             {
               "resourceType": "MedicationStatement",
-              "Mcode_element": "CancerRelatedMedication",
+              "mcode_element": "CancerRelatedMedication",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedication",
@@ -4411,7 +4411,7 @@
             },
             {
               "resourceType": "MedicationStatement",
-              "Mcode_element": "CancerRelatedMedication",
+              "mcode_element": "CancerRelatedMedication",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedication",
@@ -4425,7 +4425,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "GenomicVariant",
+              "mcode_element": "GenomicVariant",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "genomicvariant",
@@ -4471,7 +4471,7 @@
           "mcode_mappings": [
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4485,7 +4485,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4499,7 +4499,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMStage",
+              "mcode_element": "TNMStage",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmstage",
@@ -4513,7 +4513,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PatientAge",
+              "mcode_element": "PatientAge",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patientage",
@@ -4527,7 +4527,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PatientSex",
+              "mcode_element": "PatientSex",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "patientsex",
@@ -4541,7 +4541,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "PerformanceStatus",
+              "mcode_element": "PerformanceStatus",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "performancestatus",
@@ -4555,7 +4555,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4569,7 +4569,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4583,7 +4583,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4597,7 +4597,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerTreatment",
+              "mcode_element": "CancerTreatment",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancertreatment",
@@ -4611,7 +4611,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerImaging",
+              "mcode_element": "CancerImaging",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerimaging",
@@ -4625,7 +4625,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerImaging",
+              "mcode_element": "CancerImaging",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerimaging",
@@ -4639,7 +4639,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerImaging",
+              "mcode_element": "CancerImaging",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerimaging",
@@ -4653,7 +4653,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerImaging",
+              "mcode_element": "CancerImaging",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerimaging",
@@ -4667,7 +4667,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerImaging",
+              "mcode_element": "CancerImaging",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerimaging",
@@ -4681,7 +4681,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4695,7 +4695,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4741,7 +4741,7 @@
           "mcode_mappings": [
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4755,7 +4755,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4769,7 +4769,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4783,7 +4783,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TNMStage",
+              "mcode_element": "TNMStage",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tnmstage",
@@ -4797,7 +4797,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "TumorSize",
+              "mcode_element": "TumorSize",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "tumorsize",
@@ -4811,7 +4811,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -4825,7 +4825,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Sex",
+              "mcode_element": "Sex",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "sex",
@@ -4839,7 +4839,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "Age",
+              "mcode_element": "Age",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "age",
@@ -4853,7 +4853,7 @@
             },
             {
               "resourceType": "MedicationStatement",
-              "Mcode_element": "CancerRelatedMedication",
+              "mcode_element": "CancerRelatedMedication",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedmedication",
@@ -4867,7 +4867,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4881,7 +4881,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4895,7 +4895,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -4909,7 +4909,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -4923,7 +4923,7 @@
             },
             {
               "resourceType": "Condition",
-              "Mcode_element": "CancerCondition",
+              "mcode_element": "CancerCondition",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancercondition",
@@ -4937,7 +4937,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -4951,7 +4951,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "CancerRelatedSurgicalProcedure",
+              "mcode_element": "CancerRelatedSurgicalProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "cancerrelatedsurgicalprocedure",
@@ -4965,7 +4965,7 @@
             },
             {
               "resourceType": "Observation",
-              "Mcode_element": "RadiationProcedure",
+              "mcode_element": "RadiationProcedure",
               "code": {
                 "system": "http://hl7.org/fhir/us/mCODE",
                 "code": "radiationprocedure",

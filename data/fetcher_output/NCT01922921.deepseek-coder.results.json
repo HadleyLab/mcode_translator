@@ -1,0 +1,3153 @@
+{
+  "protocolSection": {
+    "identificationModule": {
+      "nctId": "NCT01922921",
+      "orgStudyIdInfo": {
+        "id": "7866"
+      },
+      "secondaryIdInfos": [
+        {
+          "id": "NCI-2013-01377",
+          "type": "REGISTRY",
+          "domain": "CTRP (Clinical Trial Reporting Program)"
+        },
+        {
+          "id": "135"
+        },
+        {
+          "id": "7866/135"
+        },
+        {
+          "id": "7866",
+          "type": "OTHER",
+          "domain": "Fred Hutch/University of Washington Cancer Consortium"
+        },
+        {
+          "id": "P30CA015704",
+          "type": "NIH",
+          "link": "https://reporter.nih.gov/quickSearch/P30CA015704"
+        },
+        {
+          "id": "U19AT006028",
+          "type": "NIH",
+          "link": "https://reporter.nih.gov/quickSearch/U19AT006028"
+        }
+      ],
+      "organization": {
+        "fullName": "University of Washington",
+        "class": "OTHER"
+      },
+      "briefTitle": "Vaccine Therapy With or Without Polysaccharide-K in Patients With Stage IV HER2 Positive Breast Cancer Receiving HER2-Targeted Monoclonal Antibody Therapy",
+      "officialTitle": "Phase I/II Randomized Study of Combination Immunotherapy With or Without Polysaccharide Krestin (PSK\u00ae) Concurrently With a HER2 ICD Peptide-Based Vaccine in Patients With Stage IV Breast Cancer Receiving HER2-Targeted Monoclonal Antibody Therapy"
+    },
+    "statusModule": {
+      "statusVerifiedDate": "2023-04",
+      "overallStatus": "COMPLETED",
+      "expandedAccessInfo": {
+        "hasExpandedAccess": false
+      },
+      "startDateStruct": {
+        "date": "2014-02-05",
+        "type": "ACTUAL"
+      },
+      "primaryCompletionDateStruct": {
+        "date": "2019-10-31",
+        "type": "ACTUAL"
+      },
+      "completionDateStruct": {
+        "date": "2021-09-01",
+        "type": "ACTUAL"
+      },
+      "studyFirstSubmitDate": "2013-08-01",
+      "studyFirstSubmitQcDate": "2013-08-12",
+      "studyFirstPostDateStruct": {
+        "date": "2013-08-14",
+        "type": "ESTIMATED"
+      },
+      "resultsFirstSubmitDate": "2022-12-13",
+      "resultsFirstSubmitQcDate": "2023-04-15",
+      "resultsFirstPostDateStruct": {
+        "date": "2023-04-18",
+        "type": "ACTUAL"
+      },
+      "lastUpdateSubmitDate": "2023-04-15",
+      "lastUpdatePostDateStruct": {
+        "date": "2023-04-18",
+        "type": "ACTUAL"
+      }
+    },
+    "sponsorCollaboratorsModule": {
+      "responsibleParty": {
+        "type": "PRINCIPAL_INVESTIGATOR",
+        "investigatorFullName": "William Rayford Gwin III, MD",
+        "investigatorTitle": "Assistant Professor",
+        "investigatorAffiliation": "University of Washington"
+      },
+      "leadSponsor": {
+        "name": "University of Washington",
+        "class": "OTHER"
+      },
+      "collaborators": [
+        {
+          "name": "National Cancer Institute (NCI)",
+          "class": "NIH"
+        },
+        {
+          "name": "National Center for Complementary and Integrative Health (NCCIH)",
+          "class": "NIH"
+        }
+      ]
+    },
+    "oversightModule": {
+      "oversightHasDmc": false
+    },
+    "descriptionModule": {
+      "briefSummary": "This randomized phase I/II trial studies the side effects of vaccine therapy with or without polysaccharide-K and to see how well it works in treating patients with stage IV human epidermal growth factor receptor 2 (HER2) positive breast cancer who are receiving HER2-targeted monoclonal antibody therapy. Vaccines made from HER2 intracellular domain (ICD) peptide may help the body build an effective immune response to kill tumor cells that express HER2. Polysaccharide-K may stimulate the immune system in different ways and stop tumor cells from growing. It is not yet known whether vaccine therapy works better when given with or without polysaccharide-K in treating breast cancer.",
+      "detailedDescription": "PRIMARY OBJECTIVES:\n\nI. To evaluate the safety of polysaccharide-K (PSK) when given with HER2-directed immunotherapy.\n\nSECONDARY OBJECTIVES:\n\nI. To evaluate the effect of PSK on natural killer (NK) cell functional activity when given with HER2-directed immunotherapy.\n\nTERTIARY OBJECTIVES:\n\nI. To investigate the effect of PSK when given with HER2-directed immunotherapy on: serum levels of pro-inflammatory cytokine and/or chemokines; intermolecular epitope spreading; serum transforming growth factor (TGF)-beta levels; progression free survival (PFS) and overall survival (OS).\n\nOUTLINE: Patients are randomized to 1 of 2 treatment arms.\n\nARM I: Patients receive HER2 ICD peptide-based vaccine intradermally (ID) once monthly for 3 months, trastuzumab (or trastuzumab and pertuzumab) per standard of care, and placebo orally (PO) twice daily (BID) for 4 months.\n\nARM II: Patients receive HER2 ICD peptide-based vaccine ID and trastuzumab (or trastuzumab and pertuzumab) as in Arm I and polysaccharide-K PO BID for 4 months.\n\nAfter completion of study treatment, patients are followed up for 9 months and then twice annually for 3 years."
+    },
+    "conditionsModule": {
+      "conditions": [
+        "HER2/Neu Positive",
+        "Recurrent Breast Carcinoma",
+        "Stage IV Breast Cancer"
+      ]
+    },
+    "designModule": {
+      "studyType": "INTERVENTIONAL",
+      "phases": [
+        "PHASE1",
+        "PHASE2"
+      ],
+      "designInfo": {
+        "allocation": "RANDOMIZED",
+        "interventionModel": "PARALLEL",
+        "primaryPurpose": "TREATMENT",
+        "maskingInfo": {
+          "masking": "DOUBLE",
+          "whoMasked": [
+            "PARTICIPANT",
+            "INVESTIGATOR"
+          ]
+        }
+      },
+      "enrollmentInfo": {
+        "count": 31,
+        "type": "ACTUAL"
+      }
+    },
+    "armsInterventionsModule": {
+      "armGroups": [
+        {
+          "label": "Arm I (placebo)",
+          "type": "ACTIVE_COMPARATOR",
+          "description": "Patients receive HER2 ICD peptide-based vaccine ID once monthly for 3 months, trastuzumab (or trastuzumab and pertuzumab) per standard of care, and placebo PO BID for 4 months.",
+          "interventionNames": [
+            "Biological: HER-2/neu Intracellular Domain Protein",
+            "Other: Laboratory Biomarker Analysis",
+            "Biological: Pertuzumab",
+            "Other: Placebo",
+            "Biological: Trastuzumab"
+          ]
+        },
+        {
+          "label": "Arm II (polysaccharide-K)",
+          "type": "EXPERIMENTAL",
+          "description": "Patients receive HER2 ICD peptide-based vaccine ID and trastuzumab (or trastuzumab and pertuzumab) as in Arm I and polysaccharide-K PO BID for 4 months.",
+          "interventionNames": [
+            "Biological: HER-2/neu Intracellular Domain Protein",
+            "Other: Laboratory Biomarker Analysis",
+            "Biological: Pertuzumab",
+            "Biological: Polysaccharide-K",
+            "Biological: Trastuzumab"
+          ]
+        }
+      ],
+      "interventions": [
+        {
+          "type": "BIOLOGICAL",
+          "name": "HER-2/neu Intracellular Domain Protein",
+          "description": "Given ID",
+          "armGroupLabels": [
+            "Arm I (placebo)",
+            "Arm II (polysaccharide-K)"
+          ],
+          "otherNames": [
+            "HER-2 ICD Peptide",
+            "HER-2/neu ICD Protein",
+            "HER2 ICD",
+            "HER2 Intracellular Domain"
+          ]
+        },
+        {
+          "type": "OTHER",
+          "name": "Laboratory Biomarker Analysis",
+          "description": "Correlative studies",
+          "armGroupLabels": [
+            "Arm I (placebo)",
+            "Arm II (polysaccharide-K)"
+          ]
+        },
+        {
+          "type": "BIOLOGICAL",
+          "name": "Pertuzumab",
+          "description": "Given per standard of care",
+          "armGroupLabels": [
+            "Arm I (placebo)",
+            "Arm II (polysaccharide-K)"
+          ],
+          "otherNames": [
+            "2C4",
+            "2C4 Antibody",
+            "MoAb 2C4",
+            "Monoclonal Antibody 2C4",
+            "Perjeta",
+            "rhuMAb2C4",
+            "RO4368451"
+          ]
+        },
+        {
+          "type": "OTHER",
+          "name": "Placebo",
+          "description": "Given PO",
+          "armGroupLabels": [
+            "Arm I (placebo)"
+          ],
+          "otherNames": [
+            "placebo therapy",
+            "PLCB",
+            "sham therapy"
+          ]
+        },
+        {
+          "type": "BIOLOGICAL",
+          "name": "Polysaccharide-K",
+          "description": "Given PO",
+          "armGroupLabels": [
+            "Arm II (polysaccharide-K)"
+          ],
+          "otherNames": [
+            "Glycoproteins",
+            "Krestin",
+            "KS-2",
+            "PSK"
+          ]
+        },
+        {
+          "type": "BIOLOGICAL",
+          "name": "Trastuzumab",
+          "description": "Given per standard of care",
+          "armGroupLabels": [
+            "Arm I (placebo)",
+            "Arm II (polysaccharide-K)"
+          ],
+          "otherNames": [
+            "ABP 980",
+            "Anti-c-ERB-2",
+            "Anti-c-erbB2 Monoclonal Antibody",
+            "Anti-ERB-2",
+            "Anti-erbB-2",
+            "Anti-erbB2 Monoclonal Antibody",
+            "Anti-HER2/c-erbB2 Monoclonal Antibody",
+            "Anti-p185-HER2",
+            "c-erb-2 Monoclonal Antibody",
+            "HER2 Monoclonal Antibody",
+            "Herceptin",
+            "Herceptin Biosimilar PF-05280014",
+            "Herceptin Trastuzumab Biosimilar PF-05280014",
+            "MoAb HER2",
+            "Monoclonal Antibody c-erb-2",
+            "Monoclonal Antibody HER2",
+            "PF-05280014",
+            "rhuMAb HER2",
+            "RO0452317",
+            "Trastuzumab Biosimilar ABP 980",
+            "Trastuzumab Biosimilar PF-05280014"
+          ]
+        }
+      ]
+    },
+    "outcomesModule": {
+      "primaryOutcomes": [
+        {
+          "measure": "Number of Patients With Grade 3 or Higher Toxicity Per Study Arm.",
+          "description": "Evaluated using physical examinations and clinical labs by type and grade of toxicities noted during treatment, There were graded per Cancer Therapy Evaluation Program Common Terminology Criteria for Adverse Events 4.0.",
+          "timeFrame": "Up to 4 months"
+        }
+      ],
+      "secondaryOutcomes": [
+        {
+          "measure": "Induction of Interferon (IFN)-Gamma Production and Cluster of Differentiation (CD)107a Expression in NK Cells, Via Flow Cytometry",
+          "description": "Augmentation of NK cell activity is defined by a 2-fold increase (at time of maximal change) in NK cell IFN-gamma production and CD107a expression\n\nFor the results we used CD56 which is the accepted phenotypic marker for natural killer (NK) cells and CD16 which is a receptor on NK cells that facilitates antibody-dependent cellular cytotoxicity (ADCC). CD56dim are typically responsible for cytolytic activity and targets cell killing, whereas, CD56bright are the main source of cytokine production (i.e. IFN-gamma). CD56dim CD16bright NK cells represent at least 90% of all peripheral blood NK cells with a maximum of 10% as CD56bright NK cells\n\nWe compared the baseline expression of CD56brightCD16dim or CD56dimCD16bright (prior to start of study treatment) to the maximum expression of CD56brightCD16dim or CD56dimCD16bright at 1 of 4 timepoints after the start of the oral administration of study treatment (polysaccharide-K/placebo (either week 4, 8, 12 or 16).",
+          "timeFrame": "Up to 16 weeks"
+        }
+      ],
+      "otherOutcomes": [
+        {
+          "measure": "Change in Intermolecular Epitope Spreading Assessed by IFN-gamma Enzyme-linked Immunosorbent Spot Assay",
+          "description": "IFN-\u03b3 ELISPOT assay will be used to evaluate T cell precursor frequency to specific breast tumor antigens. A positive immune response will be defined as a post-vaccination T cell precursor frequency \\>1:20,000 antigen-specific PBMCs. In patients with a baseline precursor frequency \\>1:20,000, a positive post-vaccination immune response will be defined as a 2-fold increase in antigen-specific PBMC. PBMC will be cryopreserved and subsequently be thawed at time of analysis.",
+          "timeFrame": "Baseline to 12 months after completion of treatment"
+        },
+        {
+          "measure": "Change in Pro-inflammatory Serum Cytokine and/or Chemokines Assessed by Luminex Analysis",
+          "timeFrame": "Baseline to 24 hours after completion of treatment"
+        },
+        {
+          "measure": "Change in Serum TGF-beta Levels Assessed by Enzyme-linked Immunosorbent Assay",
+          "timeFrame": "Baseline to 12 months after completion of treatment"
+        },
+        {
+          "measure": "OS",
+          "timeFrame": "Up to 3 years"
+        },
+        {
+          "measure": "PFS",
+          "timeFrame": "Up to 3 years"
+        }
+      ]
+    },
+    "eligibilityModule": {
+      "eligibilityCriteria": "Inclusion Criteria:\n\n* Patients with stage IV HER2+ breast cancer treated to:\n\n  * No evidence of disease (NED), or\n  * Stable bone only disease after definitive therapy\n* HER2 overexpression by immunohistochemistry (IHC) of 2+ or 3+ in the primary tumor or metastasis; or documented gene amplification by fluorescent in situ hybridization (FISH) analysis; IHC =\\< 2+ must have HER2 gene amplification documented by FISH\n* Patients must continue HER2-targeted monoclonal antibody therapy dosing per standard of care through the entire study period (one year)\n\n  * HER2-targeted monoclonal antibody therapy is defined as either trastuzumab monotherapy, or trastuzumab and pertuzumab combination therapy administered per standard of care\n* Patients must be at least 21 days post cytotoxic chemotherapy prior to enrollment\n* Patients must be at least 28 days post immunosuppressants prior to enrollment\n* Patients must be at least 28 days from use of any mushroom supplements (examples: turkey tail, reishi, maitake, shiitake) and agree to withhold them for the entire study period (one year)\n* Patients on bisphosphonates and/or endocrine therapy are eligible\n* Patients who are having sex that could lead to pregnancy must agree to contraceptive use during the entire study period\n* Patients must have Zubrod performance status score of =\\< 2\n* Patients must have recovered from major infections and/or surgical procedures, and in the opinion of the investigator, not have significant active concurrent medical illnesses precluding study treatment\n* White blood cell (WBC) \\>= 3000/mm\\^3\n* Hemoglobin (Hgb) \\>= 10 g/dl\n* Serum creatinine =\\< 2.0 mg/dl or creatinine clearance \\> 60 ml/min\n* Total bilirubin =\\< 1.5 mg/dl\n* Serum glutamic oxaloacetic transaminase (SGOT) =\\< 2.5 times the upper limit of normal\n* Patients must have adequate cardiac function as demonstrated by normal left ventricular ejection fraction (LVEF) \\>= the lower limit of normal for the facility on multi gated acquisition (MUGA) scan or echocardiogram (ECHO) within 3 months of enrollment\n\nExclusion Criteria:\n\n* Patients with any of the following cardiac conditions:\n\n  * Restrictive cardiomyopathy\n  * Unstable angina within 6 months prior to enrollment\n  * New York Heart Association functional class III-IV heart failure\n  * Symptomatic pericardial effusion\n* Patients with any contraindication to receiving rhu granulocyte macrophage colony stimulating factor (rhuGM-CSF) based products\n* Patients with any clinically significant autoimmune disease requiring active treatment\n* Patients receiving any concurrent immunosuppressants\n* Patients who are pregnant or breast-feeding\n* Patients who are simultaneously enrolled in other treatment studies\n* Patients who have received a previous HER2 breast cancer vaccine\n* Known hypersensitivity reaction to mushroom products",
+      "healthyVolunteers": false,
+      "sex": "ALL",
+      "minimumAge": "18 Years",
+      "stdAges": [
+        "ADULT",
+        "OLDER_ADULT"
+      ]
+    },
+    "contactsLocationsModule": {
+      "overallOfficials": [
+        {
+          "name": "Lupe Salazar",
+          "affiliation": "Fred Hutch/University of Washington Cancer Consortium",
+          "role": "PRINCIPAL_INVESTIGATOR"
+        }
+      ],
+      "locations": [
+        {
+          "facility": "Fred Hutch/University of Washington Cancer Consortium",
+          "city": "Seattle",
+          "state": "Washington",
+          "zip": "98109",
+          "country": "United States",
+          "geoPoint": {
+            "lat": 47.60621,
+            "lon": -122.33207
+          }
+        }
+      ]
+    }
+  },
+  "resultsSection": {
+    "participantFlowModule": {
+      "groups": [
+        {
+          "id": "FG000",
+          "title": "Arm I (Placebo)",
+          "description": "Patients receive HER2 ICD peptide-based vaccine ID once monthly for 3 months, trastuzumab (or trastuzumab and pertuzumab) per standard of care, and placebo PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPlacebo: Given PO\n\nTrastuzumab: Given per standard of care"
+        },
+        {
+          "id": "FG001",
+          "title": "Arm II (Polysaccharide-K)",
+          "description": "Patients receive HER2 ICD peptide-based vaccine ID and trastuzumab (or trastuzumab and pertuzumab) as in Arm I and polysaccharide-K PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPolysaccharide-K: Given PO\n\nTrastuzumab: Given per standard of care"
+        }
+      ],
+      "periods": [
+        {
+          "title": "Overall Study",
+          "milestones": [
+            {
+              "type": "STARTED",
+              "achievements": [
+                {
+                  "groupId": "FG000",
+                  "numSubjects": "16"
+                },
+                {
+                  "groupId": "FG001",
+                  "numSubjects": "15"
+                }
+              ]
+            },
+            {
+              "type": "COMPLETED",
+              "achievements": [
+                {
+                  "groupId": "FG000",
+                  "numSubjects": "15"
+                },
+                {
+                  "groupId": "FG001",
+                  "numSubjects": "14"
+                }
+              ]
+            },
+            {
+              "type": "NOT COMPLETED",
+              "achievements": [
+                {
+                  "groupId": "FG000",
+                  "numSubjects": "1"
+                },
+                {
+                  "groupId": "FG001",
+                  "numSubjects": "1"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "baselineCharacteristicsModule": {
+      "groups": [
+        {
+          "id": "BG000",
+          "title": "Arm I (Placebo)",
+          "description": "Patients receive HER2 ICD peptide-based vaccine ID once monthly for 3 months, trastuzumab (or trastuzumab and pertuzumab) per standard of care, and placebo PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPlacebo: Given PO\n\nTrastuzumab: Given per standard of care"
+        },
+        {
+          "id": "BG001",
+          "title": "Arm II (Polysaccharide-K)",
+          "description": "Patients receive HER2 ICD peptide-based vaccine ID and trastuzumab (or trastuzumab and pertuzumab) as in Arm I and polysaccharide-K PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPolysaccharide-K: Given PO\n\nTrastuzumab: Given per standard of care"
+        },
+        {
+          "id": "BG002",
+          "title": "Total",
+          "description": "Total of all reporting groups"
+        }
+      ],
+      "denoms": [
+        {
+          "units": "Participants",
+          "counts": [
+            {
+              "groupId": "BG000",
+              "value": "16"
+            },
+            {
+              "groupId": "BG001",
+              "value": "15"
+            },
+            {
+              "groupId": "BG002",
+              "value": "31"
+            }
+          ]
+        }
+      ],
+      "measures": [
+        {
+          "title": "Age, Continuous",
+          "paramType": "MEDIAN",
+          "dispersionType": "FULL_RANGE",
+          "unitOfMeasure": "years",
+          "classes": [
+            {
+              "categories": [
+                {
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "52",
+                      "lowerLimit": "36",
+                      "upperLimit": "62"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "59",
+                      "lowerLimit": "33",
+                      "upperLimit": "75"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "52",
+                      "lowerLimit": "33",
+                      "upperLimit": "75"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Sex: Female, Male",
+          "paramType": "COUNT_OF_PARTICIPANTS",
+          "unitOfMeasure": "Participants",
+          "classes": [
+            {
+              "categories": [
+                {
+                  "title": "Female",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "16"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "15"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "31"
+                    }
+                  ]
+                },
+                {
+                  "title": "Male",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "0"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ethnicity (NIH/OMB)",
+          "paramType": "COUNT_OF_PARTICIPANTS",
+          "unitOfMeasure": "Participants",
+          "classes": [
+            {
+              "categories": [
+                {
+                  "title": "Hispanic or Latino",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "0"
+                    }
+                  ]
+                },
+                {
+                  "title": "Not Hispanic or Latino",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "16"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "15"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "31"
+                    }
+                  ]
+                },
+                {
+                  "title": "Unknown or Not Reported",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "0"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Race (NIH/OMB)",
+          "paramType": "COUNT_OF_PARTICIPANTS",
+          "unitOfMeasure": "Participants",
+          "classes": [
+            {
+              "categories": [
+                {
+                  "title": "American Indian or Alaska Native",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "0"
+                    }
+                  ]
+                },
+                {
+                  "title": "Asian",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "2"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "2"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "4"
+                    }
+                  ]
+                },
+                {
+                  "title": "Native Hawaiian or Other Pacific Islander",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "0"
+                    }
+                  ]
+                },
+                {
+                  "title": "Black or African American",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "0"
+                    }
+                  ]
+                },
+                {
+                  "title": "White",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "14"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "13"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "27"
+                    }
+                  ]
+                },
+                {
+                  "title": "More than one race",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "0"
+                    }
+                  ]
+                },
+                {
+                  "title": "Unknown or Not Reported",
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "0"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Region of Enrollment",
+          "paramType": "COUNT_OF_PARTICIPANTS",
+          "unitOfMeasure": "Participants",
+          "classes": [
+            {
+              "title": "United States",
+              "categories": [
+                {
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "16"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "13"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "29"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "Italy",
+              "categories": [
+                {
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "1"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "1"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "Canada",
+              "categories": [
+                {
+                  "measurements": [
+                    {
+                      "groupId": "BG000",
+                      "value": "0"
+                    },
+                    {
+                      "groupId": "BG001",
+                      "value": "1"
+                    },
+                    {
+                      "groupId": "BG002",
+                      "value": "1"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "outcomeMeasuresModule": {
+      "outcomeMeasures": [
+        {
+          "type": "PRIMARY",
+          "title": "Number of Patients With Grade 3 or Higher Toxicity Per Study Arm.",
+          "description": "Evaluated using physical examinations and clinical labs by type and grade of toxicities noted during treatment, There were graded per Cancer Therapy Evaluation Program Common Terminology Criteria for Adverse Events 4.0.",
+          "populationDescription": "Only 1 patient of the 2 patients listed below had a possibly related event of vomiting.",
+          "reportingStatus": "POSTED",
+          "paramType": "COUNT_OF_PARTICIPANTS",
+          "unitOfMeasure": "Participants",
+          "timeFrame": "Up to 4 months",
+          "groups": [
+            {
+              "id": "OG000",
+              "title": "Arm I (Placebo)",
+              "description": "Patients receive HER2 ICD peptide-based vaccine ID once monthly for 3 months, trastuzumab (or trastuzumab and pertuzumab) per standard of care, and placebo PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPlacebo: Given PO\n\nTrastuzumab: Given per standard of care"
+            },
+            {
+              "id": "OG001",
+              "title": "Arm II (Polysaccharide-K)",
+              "description": "Patients receive HER2 ICD peptide-based vaccine ID and trastuzumab (or trastuzumab and pertuzumab) as in Arm I and polysaccharide-K PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPolysaccharide-K: Given PO\n\nTrastuzumab: Given per standard of care"
+            }
+          ],
+          "denoms": [
+            {
+              "units": "Participants",
+              "counts": [
+                {
+                  "groupId": "OG000",
+                  "value": "16"
+                },
+                {
+                  "groupId": "OG001",
+                  "value": "15"
+                }
+              ]
+            }
+          ],
+          "classes": [
+            {
+              "categories": [
+                {
+                  "measurements": [
+                    {
+                      "groupId": "OG000",
+                      "value": "2"
+                    },
+                    {
+                      "groupId": "OG001",
+                      "value": "0"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "SECONDARY",
+          "title": "Induction of Interferon (IFN)-Gamma Production and Cluster of Differentiation (CD)107a Expression in NK Cells, Via Flow Cytometry",
+          "description": "Augmentation of NK cell activity is defined by a 2-fold increase (at time of maximal change) in NK cell IFN-gamma production and CD107a expression\n\nFor the results we used CD56 which is the accepted phenotypic marker for natural killer (NK) cells and CD16 which is a receptor on NK cells that facilitates antibody-dependent cellular cytotoxicity (ADCC). CD56dim are typically responsible for cytolytic activity and targets cell killing, whereas, CD56bright are the main source of cytokine production (i.e. IFN-gamma). CD56dim CD16bright NK cells represent at least 90% of all peripheral blood NK cells with a maximum of 10% as CD56bright NK cells\n\nWe compared the baseline expression of CD56brightCD16dim or CD56dimCD16bright (prior to start of study treatment) to the maximum expression of CD56brightCD16dim or CD56dimCD16bright at 1 of 4 timepoints after the start of the oral administration of study treatment (polysaccharide-K/placebo (either week 4, 8, 12 or 16).",
+          "populationDescription": "Only 9/15 patients were evaluable for this analysis in Arm 1. Only 13/14 patients we evaluable for this analysis in Arm 2.",
+          "reportingStatus": "POSTED",
+          "paramType": "COUNT_OF_PARTICIPANTS",
+          "unitOfMeasure": "Participants",
+          "timeFrame": "Up to 16 weeks",
+          "groups": [
+            {
+              "id": "OG000",
+              "title": "Arm I (Placebo) - CD56dim CD16bright",
+              "description": "Patients receive HER2 ICD peptide-based vaccine ID once monthly for 3 months, trastuzumab (or trastuzumab and pertuzumab) per standard of care, and placebo PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPlacebo: Given PO\n\nTrastuzumab: Given per standard of care"
+            },
+            {
+              "id": "OG001",
+              "title": "Arm II (Polysaccharide-K) - CD56dim CD16bright",
+              "description": "Patients receive HER2 ICD peptide-based vaccine ID and trastuzumab (or trastuzumab and pertuzumab) as in Arm I and polysaccharide-K PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPolysaccharide-K: Given PO\n\nTrastuzumab: Given per standard of care"
+            },
+            {
+              "id": "OG002",
+              "title": "Arm I (Placebo) - CD56bright CD16dim",
+              "description": "Patients receive HER2 ICD peptide-based vaccine ID once monthly for 3 months, trastuzumab (or trastuzumab and pertuzumab) per standard of care, and placebo PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPlacebo: Given PO\n\nTrastuzumab: Given per standard of care"
+            },
+            {
+              "id": "OG003",
+              "title": "Arm II (Polysaccharide-K) - CD56bright CD16dim",
+              "description": "Patients receive HER2 ICD peptide-based vaccine ID and trastuzumab (or trastuzumab and pertuzumab) as in Arm I and polysaccharide-K PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPolysaccharide-K: Given PO\n\nTrastuzumab: Given per standard of care"
+            }
+          ],
+          "denoms": [
+            {
+              "units": "Participants",
+              "counts": [
+                {
+                  "groupId": "OG000",
+                  "value": "9"
+                },
+                {
+                  "groupId": "OG001",
+                  "value": "13"
+                },
+                {
+                  "groupId": "OG002",
+                  "value": "9"
+                },
+                {
+                  "groupId": "OG003",
+                  "value": "13"
+                }
+              ]
+            }
+          ],
+          "classes": [
+            {
+              "title": "INF gamma+",
+              "categories": [
+                {
+                  "title": ">=2 fold increase",
+                  "measurements": [
+                    {
+                      "groupId": "OG000",
+                      "value": "4"
+                    },
+                    {
+                      "groupId": "OG001",
+                      "value": "9"
+                    },
+                    {
+                      "groupId": "OG002",
+                      "value": "4"
+                    },
+                    {
+                      "groupId": "OG003",
+                      "value": "7"
+                    }
+                  ]
+                },
+                {
+                  "title": "<2 fold increase",
+                  "measurements": [
+                    {
+                      "groupId": "OG000",
+                      "value": "5"
+                    },
+                    {
+                      "groupId": "OG001",
+                      "value": "4"
+                    },
+                    {
+                      "groupId": "OG002",
+                      "value": "5"
+                    },
+                    {
+                      "groupId": "OG003",
+                      "value": "6"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "CD107+",
+              "categories": [
+                {
+                  "title": ">=2 fold increase",
+                  "measurements": [
+                    {
+                      "groupId": "OG000",
+                      "value": "3"
+                    },
+                    {
+                      "groupId": "OG001",
+                      "value": "8"
+                    },
+                    {
+                      "groupId": "OG002",
+                      "value": "3"
+                    },
+                    {
+                      "groupId": "OG003",
+                      "value": "6"
+                    }
+                  ]
+                },
+                {
+                  "title": "<2 fold increase",
+                  "measurements": [
+                    {
+                      "groupId": "OG000",
+                      "value": "6"
+                    },
+                    {
+                      "groupId": "OG001",
+                      "value": "5"
+                    },
+                    {
+                      "groupId": "OG002",
+                      "value": "6"
+                    },
+                    {
+                      "groupId": "OG003",
+                      "value": "7"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "OTHER_PRE_SPECIFIED",
+          "title": "Change in Intermolecular Epitope Spreading Assessed by IFN-gamma Enzyme-linked Immunosorbent Spot Assay",
+          "description": "IFN-\u03b3 ELISPOT assay will be used to evaluate T cell precursor frequency to specific breast tumor antigens. A positive immune response will be defined as a post-vaccination T cell precursor frequency \\>1:20,000 antigen-specific PBMCs. In patients with a baseline precursor frequency \\>1:20,000, a positive post-vaccination immune response will be defined as a 2-fold increase in antigen-specific PBMC. PBMC will be cryopreserved and subsequently be thawed at time of analysis.",
+          "reportingStatus": "NOT_POSTED",
+          "timeFrame": "Baseline to 12 months after completion of treatment",
+          "denomUnitsSelected": "Participants"
+        },
+        {
+          "type": "OTHER_PRE_SPECIFIED",
+          "title": "Change in Pro-inflammatory Serum Cytokine and/or Chemokines Assessed by Luminex Analysis",
+          "reportingStatus": "NOT_POSTED",
+          "timeFrame": "Baseline to 24 hours after completion of treatment",
+          "denomUnitsSelected": "Participants"
+        },
+        {
+          "type": "OTHER_PRE_SPECIFIED",
+          "title": "Change in Serum TGF-beta Levels Assessed by Enzyme-linked Immunosorbent Assay",
+          "reportingStatus": "NOT_POSTED",
+          "timeFrame": "Baseline to 12 months after completion of treatment",
+          "denomUnitsSelected": "Participants"
+        },
+        {
+          "type": "OTHER_PRE_SPECIFIED",
+          "title": "OS",
+          "reportingStatus": "NOT_POSTED",
+          "timeFrame": "Up to 3 years",
+          "denomUnitsSelected": "Participants"
+        },
+        {
+          "type": "OTHER_PRE_SPECIFIED",
+          "title": "PFS",
+          "reportingStatus": "NOT_POSTED",
+          "timeFrame": "Up to 3 years",
+          "denomUnitsSelected": "Participants"
+        }
+      ]
+    },
+    "adverseEventsModule": {
+      "frequencyThreshold": "0",
+      "timeFrame": "Clinical and/or chemical parameters for all study patients will be evaluated for potential toxicity at baseline, before each vaccine, and 1 month after the third vaccine (total of 4 months evaluation).",
+      "description": "Toxicity grading will be evaluated per CTEP CTCAE 4.0 and monitoring of AEs will be done per FDA and NCI guidelines. AEs will be tabulated per CTCAE 4.0 system organ class and descriptive statistics will be used to summarize toxicity profiles for the PSK and placebo groups.",
+      "eventGroups": [
+        {
+          "id": "EG000",
+          "title": "Arm I (Placebo)",
+          "description": "Patients receive HER2 ICD peptide-based vaccine ID once monthly for 3 months, trastuzumab (or trastuzumab and pertuzumab) per standard of care, and placebo PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPlacebo: Given PO\n\nTrastuzumab: Given per standard of care",
+          "deathsNumAffected": 1,
+          "deathsNumAtRisk": 16,
+          "seriousNumAffected": 0,
+          "seriousNumAtRisk": 16,
+          "otherNumAffected": 16,
+          "otherNumAtRisk": 16
+        },
+        {
+          "id": "EG001",
+          "title": "Arm II (Polysaccharide-K)",
+          "description": "Patients receive HER2 ICD peptide-based vaccine ID and trastuzumab (or trastuzumab and pertuzumab) as in Arm I and polysaccharide-K PO BID for 4 months.\n\nHER-2/neu Intracellular Domain Protein: Given ID\n\nLaboratory Biomarker Analysis: Correlative studies\n\nPertuzumab: Given per standard of care\n\nPolysaccharide-K: Given PO\n\nTrastuzumab: Given per standard of care",
+          "deathsNumAffected": 2,
+          "deathsNumAtRisk": 15,
+          "seriousNumAffected": 0,
+          "seriousNumAtRisk": 15,
+          "otherNumAffected": 15,
+          "otherNumAtRisk": 15
+        }
+      ],
+      "otherEvents": [
+        {
+          "term": "Lymphocyte count decreased",
+          "organSystem": "Investigations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "4/7 events reported were related to placebo arm 4/5 events reported were related to the treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 7,
+              "numAffected": 6,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 5,
+              "numAffected": 4,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "White blood cell decreased",
+          "organSystem": "Investigations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "4/4 events reported were related to the placebo arm 1/3 events reported were related to the treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 4,
+              "numAffected": 3,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 3,
+              "numAffected": 3,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Platelet count decreased",
+          "organSystem": "Investigations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 5,
+              "numAffected": 4,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Neutrophil count decreased",
+          "organSystem": "Investigations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm 1/1 events reported was related to the treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Alanine aminotransferase increased",
+          "organSystem": "Investigations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Cough",
+          "organSystem": "Respiratory, thoracic and mediastinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Dyspnea",
+          "organSystem": "Respiratory, thoracic and mediastinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Other - rhinorrhea",
+          "organSystem": "Respiratory, thoracic and mediastinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Anemia",
+          "organSystem": "Blood and lymphatic system disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/4 events reported were related to placebo arm 1/6 events reported were related to treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 4,
+              "numAffected": 4,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 7,
+              "numAffected": 6,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Arthralgia",
+          "organSystem": "Musculoskeletal and connective tissue disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Pain in extremity",
+          "organSystem": "Musculoskeletal and connective tissue disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Sinusitis",
+          "organSystem": "Infections and infestations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Upper respiratory infection",
+          "organSystem": "Infections and infestations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Other - pneumonia",
+          "organSystem": "Infections and infestations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 2,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Cognitive disturbance",
+          "organSystem": "Nervous system disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 2,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Dizziness",
+          "organSystem": "Nervous system disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Headache",
+          "organSystem": "Nervous system disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm 6/9 events reported were related to the treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 9,
+              "numAffected": 7,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Paresthesia",
+          "organSystem": "Nervous system disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Dysesthesia",
+          "organSystem": "Nervous system disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Diarrhea",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/4 events reported were related to placebo arm 7/8 events reported were related to treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 4,
+              "numAffected": 3,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 8,
+              "numAffected": 6,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Nausea",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "3/5 events reported were related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 5,
+              "numAffected": 3,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Vomiting",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "2/4 events reported were related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 4,
+              "numAffected": 2,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Constipation",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Bloating",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Abdominal pain",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/2 events reported were related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Other - minor acid reflux after drinking tea for half hour or so",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Dry mouth",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Flatulence",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/3 events reported were related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 3,
+              "numAffected": 2,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Rash acneiform",
+          "organSystem": "Skin and subcutaneous tissue disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Rash maculo-papular",
+          "organSystem": "Skin and subcutaneous tissue disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 2,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Other - acne/rash",
+          "organSystem": "Skin and subcutaneous tissue disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Fatigue",
+          "organSystem": "General disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "2/2 events reported were related to the treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 6,
+              "numAffected": 5,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Flu like symptoms",
+          "organSystem": "General disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "5/8 events reported were related to placebo arm 12/12 events reported were related to treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 8,
+              "numAffected": 7,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 12,
+              "numAffected": 7,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Non-cardiac chest pain",
+          "organSystem": "General disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Pain",
+          "organSystem": "General disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 reported events was related to the treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Injection site reaction",
+          "organSystem": "General disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "29/29 events reported were related to placebo arm 25/26 events reported were related to treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 29,
+              "numAffected": 14,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 26,
+              "numAffected": 13,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Gait disturbance",
+          "organSystem": "General disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Hot flashes",
+          "organSystem": "Vascular disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm 1/2 events reported were related to treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 2,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Other - head sweats-daily",
+          "organSystem": "Vascular disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Hypocalcemia",
+          "organSystem": "Metabolism and nutrition disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 reported events was related to treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 5,
+              "numAffected": 5,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Hypokalemia",
+          "organSystem": "Metabolism and nutrition disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 4,
+              "numAffected": 4,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Hyponatremia",
+          "organSystem": "Metabolism and nutrition disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/2 events reported were related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Hypoalbuminemia",
+          "organSystem": "Metabolism and nutrition disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "2/3 events reported were related to treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 3,
+              "numAffected": 2,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Other - dysuria",
+          "organSystem": "Renal and urinary disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Other - engorged breast",
+          "organSystem": "Reproductive system and breast disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Allergic reaction",
+          "organSystem": "Immune system disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Other - hyperactive-increase senstivity of allergens-food, pollen, bug bite",
+          "organSystem": "Immune system disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to placebo arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Blood bilirubin increase",
+          "organSystem": "Investigations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Post nasal drip",
+          "organSystem": "Respiratory, thoracic and mediastinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "NON_SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Myalgia",
+          "organSystem": "Musculoskeletal and connective tissue disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "NON_SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Right knee pain increased",
+          "organSystem": "Musculoskeletal and connective tissue disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "NON_SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Left lip cold sores (Herpes)",
+          "organSystem": "Infections and infestations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "NON_SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Paronychia",
+          "organSystem": "Infections and infestations",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "NON_SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Palpitations",
+          "organSystem": "Cardiac disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Peripheral sensory neuropathy",
+          "organSystem": "Nervous system disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Hematochezia - 2 episodes",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Gastroesophageal reflux disease",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "3/3 events reported were related to the treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 3,
+              "numAffected": 2,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Dyspepsia",
+          "organSystem": "Gastrointestinal disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to the treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Alopecia",
+          "organSystem": "Skin and subcutaneous tissue disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Umbilical follicitis",
+          "organSystem": "Skin and subcutaneous tissue disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "NON_SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Scalp skin nodule",
+          "organSystem": "Skin and subcutaneous tissue disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Edema limbs",
+          "organSystem": "General disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Infusion related reactions",
+          "organSystem": "General disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/1 events reported was related to treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Hyperglycemia",
+          "organSystem": "Metabolism and nutrition disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "notes": "1/2 events reported were related to the treatment arm",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 2,
+              "numAffected": 2,
+              "numAtRisk": 15
+            }
+          ]
+        },
+        {
+          "term": "Cystitis - UTI",
+          "organSystem": "Renal and urinary disorders",
+          "sourceVocabulary": "CTCAE (4.0)",
+          "assessmentType": "SYSTEMATIC_ASSESSMENT",
+          "stats": [
+            {
+              "groupId": "EG000",
+              "numEvents": 0,
+              "numAffected": 0,
+              "numAtRisk": 16
+            },
+            {
+              "groupId": "EG001",
+              "numEvents": 1,
+              "numAffected": 1,
+              "numAtRisk": 15
+            }
+          ]
+        }
+      ]
+    },
+    "moreInfoModule": {
+      "certainAgreement": {
+        "piSponsorEmployee": false,
+        "restrictiveAgreement": false
+      },
+      "pointOfContact": {
+        "title": "Director of Clinical Operations",
+        "organization": "University of Washington",
+        "email": "childj@u.washington.edu",
+        "phone": "2066162305"
+      }
+    }
+  },
+  "documentSection": {
+    "largeDocumentModule": {
+      "largeDocs": [
+        {
+          "typeAbbrev": "Prot_SAP",
+          "hasProtocol": true,
+          "hasSap": true,
+          "hasIcf": false,
+          "label": "Study Protocol and Statistical Analysis Plan",
+          "date": "2021-09-03",
+          "uploadDate": "2023-01-06T12:54",
+          "filename": "Prot_SAP_000.pdf",
+          "size": 1689015
+        }
+      ]
+    }
+  },
+  "derivedSection": {
+    "miscInfoModule": {
+      "versionHolder": "2025-09-08"
+    },
+    "conditionBrowseModule": {
+      "meshes": [
+        {
+          "id": "D001943",
+          "term": "Breast Neoplasms"
+        }
+      ],
+      "ancestors": [
+        {
+          "id": "D009371",
+          "term": "Neoplasms by Site"
+        },
+        {
+          "id": "D009369",
+          "term": "Neoplasms"
+        },
+        {
+          "id": "D001941",
+          "term": "Breast Diseases"
+        },
+        {
+          "id": "D012871",
+          "term": "Skin Diseases"
+        },
+        {
+          "id": "D017437",
+          "term": "Skin and Connective Tissue Diseases"
+        }
+      ]
+    },
+    "interventionBrowseModule": {
+      "meshes": [
+        {
+          "id": "C485206",
+          "term": "pertuzumab"
+        },
+        {
+          "id": "C481039",
+          "term": "2C4 antibody"
+        },
+        {
+          "id": "D058110",
+          "term": "Counterfeit Drugs"
+        },
+        {
+          "id": "C010770",
+          "term": "polysaccharide-K"
+        },
+        {
+          "id": "D006023",
+          "term": "Glycoproteins"
+        },
+        {
+          "id": "D000068878",
+          "term": "Trastuzumab"
+        },
+        {
+          "id": "C000598430",
+          "term": "PF-05280014"
+        }
+      ],
+      "ancestors": [
+        {
+          "id": "D000078742",
+          "term": "Substandard Drugs"
+        },
+        {
+          "id": "D004364",
+          "term": "Pharmaceutical Preparations"
+        },
+        {
+          "id": "D006001",
+          "term": "Glycoconjugates"
+        },
+        {
+          "id": "D002241",
+          "term": "Carbohydrates"
+        },
+        {
+          "id": "D011506",
+          "term": "Proteins"
+        },
+        {
+          "id": "D000602",
+          "term": "Amino Acids, Peptides, and Proteins"
+        },
+        {
+          "id": "D061067",
+          "term": "Antibodies, Monoclonal, Humanized"
+        },
+        {
+          "id": "D000911",
+          "term": "Antibodies, Monoclonal"
+        },
+        {
+          "id": "D000906",
+          "term": "Antibodies"
+        },
+        {
+          "id": "D007136",
+          "term": "Immunoglobulins"
+        },
+        {
+          "id": "D007162",
+          "term": "Immunoproteins"
+        },
+        {
+          "id": "D001798",
+          "term": "Blood Proteins"
+        },
+        {
+          "id": "D012712",
+          "term": "Serum Globulins"
+        },
+        {
+          "id": "D005916",
+          "term": "Globulins"
+        }
+      ]
+    }
+  },
+  "hasResults": true,
+  "McodeResults": {
+    "extracted_entities": [],
+    "mcode_mappings": [
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Breast Carcinoma",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Recurrent Breast Carcinoma",
+        "mapping_rationale": "Direct statement of cancer diagnosis with recurrence status",
+        "id": "e3d1cac8-2d96-4a02-848d-3abfed0c2d99"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "TNMStage",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "tnmstage",
+          "display": "TNMStage"
+        },
+        "value": "Stage IV",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Stage IV Breast Cancer",
+        "mapping_rationale": "Explicit staging information for breast cancer",
+        "id": "c4d81c32-e4a6-4f55-a75d-48d477203ab6"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerMarker",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancermarker",
+          "display": "CancerMarker"
+        },
+        "value": "HER2/Neu Positive",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "HER2/Neu Positive",
+        "mapping_rationale": "Direct statement of HER2/Neu biomarker status",
+        "id": "fc90b969-da5c-4295-838e-cebb4eb158a4"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "HER2+ breast cancer",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Patients with stage IV HER2+ breast cancer treated to:",
+        "mapping_rationale": "Direct statement of cancer diagnosis with HER2 status",
+        "id": "9cbd6c1d-fb4a-4650-8a30-5d0d1ccf28b7"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "TNMStage",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "tnmstage",
+          "display": "TNMStage"
+        },
+        "value": "Stage IV",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Patients with stage IV HER2+ breast cancer treated to:",
+        "mapping_rationale": "Explicit staging information provided",
+        "id": "c388dad5-16cb-4ddb-b25c-1d8a6321453c"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "HER2ReceptorStatus",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "her2receptorstatus",
+          "display": "HER2ReceptorStatus"
+        },
+        "value": "HER2+",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "HER2 overexpression by immunohistochemistry (IHC) of 2+ or 3+ in the primary tumor or metastasis",
+        "mapping_rationale": "Direct evidence of HER2 positive status with specific criteria",
+        "id": "7b3d224d-88f7-4bdd-a155-3f7d2a521156"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "trastuzumab monotherapy",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "HER2-targeted monoclonal antibody therapy is defined as either trastuzumab monotherapy",
+        "mapping_rationale": "Explicit medication name and treatment type",
+        "id": "ce8c791a-c647-4c50-bf0d-01343365018f"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "trastuzumab and pertuzumab combination therapy",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "or trastuzumab and pertuzumab combination therapy administered per standard of care",
+        "mapping_rationale": "Explicit medication combination therapy",
+        "id": "738e72ec-7d36-48dc-94bc-e413226e5806"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Age",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "age",
+          "display": "Age"
+        },
+        "value": ">=18 years",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "minimumAge: 18 Years",
+        "mapping_rationale": "Explicit minimum age requirement stated",
+        "id": "93e53dd6-ab93-4288-a6e9-06b38866127f"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "ECOGPerformanceStatus",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "ecogperformancestatus",
+          "display": "ECOGPerformanceStatus"
+        },
+        "value": "<=2",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Patients must have Zubrod performance status score of =< 2",
+        "mapping_rationale": "Direct statement of performance status requirement",
+        "id": "f2534287-97fd-4e73-a41f-5df08185b635"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "LVEF",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "lvef",
+          "display": "LVEF"
+        },
+        "value": ">= lower limit of normal",
+        "mapping_confidence": 0.9,
+        "source_text_fragment": "normal left ventricular ejection fraction (LVEF) >= the lower limit of normal for the facility",
+        "mapping_rationale": "Clear cardiac function requirement with specific LVEF criteria",
+        "id": "7d9b49c1-b1de-455e-81dd-d553829e0b8e"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Stable bone only disease",
+        "mapping_confidence": 0.9,
+        "source_text_fragment": "Stable bone only disease after definitive therapy",
+        "mapping_rationale": "Direct reference to bone metastasis status",
+        "id": "8485e9d9-279e-4b20-a4ea-f8e5ac01d703"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "DiseaseStatus",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "diseasestatus",
+          "display": "DiseaseStatus"
+        },
+        "value": "No evidence of disease (NED)",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "No evidence of disease (NED), or Stable bone only disease after definitive therapy",
+        "mapping_rationale": "Explicit disease status criteria for eligibility",
+        "id": "adee5841-6037-4708-8834-ec2e2ddfc289"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "stage IV human epidermal growth factor receptor 2 (HER2) positive breast cancer",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "stage IV human epidermal growth factor receptor 2 (HER2) positive breast cancer",
+        "mapping_rationale": "Direct statement of cancer diagnosis with staging and biomarker status",
+        "id": "6d939686-3c3d-45f3-9ccb-aa2ad7908c29"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "TNMStage",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "tnmstage",
+          "display": "TNMStage"
+        },
+        "value": "Stage IV",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "stage IV human epidermal growth factor receptor 2 (HER2) positive breast cancer",
+        "mapping_rationale": "Explicit staging information provided for breast cancer",
+        "id": "cb5c3c84-60d2-4693-ba6c-c3bd5b1e0713"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerBiomarker",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancerbiomarker",
+          "display": "CancerBiomarker"
+        },
+        "value": "HER2 positive",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "human epidermal growth factor receptor 2 (HER2) positive breast cancer",
+        "mapping_rationale": "Direct statement of HER2 biomarker status",
+        "id": "8fcbf5ac-c10e-4ad4-a2f1-746383892169"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "trastuzumab",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "trastuzumab (or trastuzumab and pertuzumab) per standard of care",
+        "mapping_rationale": "Explicit mention of trastuzumab as part of treatment regimen",
+        "id": "2764846b-787c-48df-94a5-8c7e7964b48b"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "pertuzumab",
+        "mapping_confidence": 0.9,
+        "source_text_fragment": "trastuzumab (or trastuzumab and pertuzumab) per standard of care",
+        "mapping_rationale": "Pertuzumab mentioned as alternative or combination therapy option",
+        "id": "96f142f6-eb52-4043-87e2-59fb895ba1f3"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "polysaccharide-K",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "polysaccharide-K PO BID for 4 months",
+        "mapping_rationale": "Direct mention of polysaccharide-K as investigational treatment",
+        "id": "a6d616b9-cc31-447b-9a75-8cce20ebb7dc"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "HER2 ICD peptide-based vaccine",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "HER2 ICD peptide-based vaccine intradermally (ID) once monthly for 3 months",
+        "mapping_rationale": "Explicit description of vaccine therapy component",
+        "id": "cfa1325d-8708-4b4f-84ea-73b33ddb69a7"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerRelatedSurgicalProcedure",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancerrelatedsurgicalprocedure",
+          "display": "CancerRelatedSurgicalProcedure"
+        },
+        "value": "intradermally (ID)",
+        "mapping_confidence": 0.8,
+        "source_text_fragment": "HER2 ICD peptide-based vaccine intradermally (ID) once monthly for 3 months",
+        "mapping_rationale": "Administration route specified for vaccine therapy",
+        "id": "3d6922b4-b6b2-4da7-94b5-fbabfddd6cc9"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerRelatedMedicationAdministration",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancerrelatedmedicationadministration",
+          "display": "CancerRelatedMedicationAdministration"
+        },
+        "value": "orally (PO)",
+        "mapping_confidence": 0.8,
+        "source_text_fragment": "polysaccharide-K PO BID for 4 months",
+        "mapping_rationale": "Administration route specified for polysaccharide-K",
+        "id": "9d55f32c-982e-4d7b-9bf8-f6683764c0e9"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Stage IV HER2 Positive Breast Cancer",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Stage IV HER2 Positive Breast Cancer",
+        "mapping_rationale": "Direct statement of cancer diagnosis and stage",
+        "id": "7d065851-5609-4044-ba8e-342c01c69947"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "TNMStage",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "tnmstage",
+          "display": "TNMStage"
+        },
+        "value": "Stage IV",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Stage IV HER2 Positive Breast Cancer",
+        "mapping_rationale": "Explicit staging information provided",
+        "id": "b088b453-bd6d-40bf-8f9b-83c10729faf9"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "HER2ReceptorStatus",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "her2receptorstatus",
+          "display": "HER2ReceptorStatus"
+        },
+        "value": "HER2 Positive",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Stage IV HER2 Positive Breast Cancer",
+        "mapping_rationale": "Direct statement of HER2 receptor status",
+        "id": "03b9b897-a7c1-4367-b5d7-b5f6bf3a640c"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "HER2-targeted monoclonal antibody therapy",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "receiving HER2-targeted monoclonal antibody therapy",
+        "mapping_rationale": "Explicit statement of current treatment regimen",
+        "id": "102f8715-22ab-486f-bf4b-ccad54ade40e"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "HER2-targeted monoclonal antibody therapy",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "receiving HER2-targeted monoclonal antibody therapy",
+        "mapping_rationale": "Direct statement of ongoing treatment",
+        "id": "4f0ee610-6338-4c63-906f-cc4f0c4d22f4"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "PatientDemographics",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "patientdemographics",
+          "display": "PatientDemographics"
+        },
+        "value": "Median 52 years (range 33-75)",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"Age, Continuous\" with median values of 52, 59, and 52 years across groups, with ranges from 33 to 75 years",
+        "mapping_rationale": "Explicit age data provided with median and range values for all participant groups",
+        "id": "78092a1d-7014-45fd-80a2-3f18a170dc2b"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "PatientDemographics",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "patientdemographics",
+          "display": "PatientDemographics"
+        },
+        "value": "Female: 31, Male: 0",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"Sex: Female, Male\" with values \"Female: 31\" and \"Male: 0\" for total group BG002",
+        "mapping_rationale": "Explicit sex distribution data showing all participants are female",
+        "id": "f410866e-1818-43c1-8fbf-3fa27793ff90"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "PatientDemographics",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "patientdemographics",
+          "display": "PatientDemographics"
+        },
+        "value": "Not Hispanic or Latino: 31",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"Ethnicity (NIH/OMB)\" with \"Not Hispanic or Latino: 31\" and all other categories showing 0 for total group",
+        "mapping_rationale": "Explicit ethnicity data showing all participants are not Hispanic or Latino",
+        "id": "a7454a39-1eca-4697-b49f-96ddcee1bf60"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "PatientDemographics",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "patientdemographics",
+          "display": "PatientDemographics"
+        },
+        "value": "White: 27, Asian: 4",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"Race (NIH/OMB)\" with \"White: 27\" and \"Asian: 4\" for total group BG002, all other race categories show 0",
+        "mapping_rationale": "Explicit race distribution data showing White and Asian participants only",
+        "id": "803db453-403a-48df-89ef-444d99973f46"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Given per standard of care",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"Trastuzumab: Given per standard of care\" in both Arm I and Arm II descriptions",
+        "mapping_rationale": "Explicit mention of trastuzumab administration as part of treatment regimen",
+        "id": "9f22ad15-6974-4beb-9d27-520ba8066418"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Given per standard of care",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"Pertuzumab: Given per standard of care\" in both Arm I and Arm II descriptions",
+        "mapping_rationale": "Explicit mention of pertuzumab administration as part of treatment regimen",
+        "id": "6935ef75-e51a-41c5-b2cb-3b21ac2a9b73"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "HER2 ICD peptide-based vaccine ID once monthly for 3 months",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"Patients receive HER2 ICD peptide-based vaccine ID once monthly for 3 months\" in both Arm I and Arm II",
+        "mapping_rationale": "Explicit description of HER2 vaccine administration schedule and route",
+        "id": "99637032-8b22-42a6-afae-a4d8af0452fa"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Trastuzumab",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Trastuzumab: Given per standard of care",
+        "mapping_rationale": "Explicitly stated medication used in cancer treatment",
+        "id": "bbf38379-b599-475e-b215-136bde9befee"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Pertuzumab",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Pertuzumab: Given per standard of care",
+        "mapping_rationale": "Explicitly stated medication used in cancer treatment",
+        "id": "76fa896b-c60a-4564-9602-d8541f643c06"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "HER2 ICD peptide-based vaccine",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "HER2 ICD peptide-based vaccine ID once monthly for 3 months",
+        "mapping_rationale": "Explicitly stated cancer vaccine treatment",
+        "id": "68095d57-f37b-4c1d-84ae-f6952afe0dca"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Toxicity",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "toxicity",
+          "display": "Toxicity"
+        },
+        "value": "Grade 3 or Higher Toxicity",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Number of Patients With Grade 3 or Higher Toxicity Per Study Arm",
+        "mapping_rationale": "Explicitly stated toxicity grading using CTCAE criteria",
+        "id": "73ad140d-1d81-4209-9b26-52c5b02f2e0b"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Toxicity",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "toxicity",
+          "display": "Toxicity"
+        },
+        "value": "Vomiting",
+        "mapping_confidence": 0.9,
+        "source_text_fragment": "Only 1 patient of the 2 patients listed below had a possibly related event of vomiting",
+        "mapping_rationale": "Explicitly stated adverse event of vomiting, though relationship to treatment is qualified as 'possibly related'",
+        "id": "089e0ca3-4d1e-423f-a57a-818f0c734247"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Biomarker",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "biomarker",
+          "display": "Biomarker"
+        },
+        "value": "Interferon (IFN)-Gamma Production",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Induction of Interferon (IFN)-Gamma Production and Cluster of Differentiation (CD)107a Expression in NK Cells",
+        "mapping_rationale": "Explicitly stated biomarker measurement for immune response assessment",
+        "id": "bae327ac-5a6a-4ae7-b3ba-5866097e01da"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Biomarker",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "biomarker",
+          "display": "Biomarker"
+        },
+        "value": "CD107a Expression",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Induction of Interferon (IFN)-Gamma Production and Cluster of Differentiation (CD)107a Expression in NK Cells",
+        "mapping_rationale": "Explicitly stated biomarker measurement for immune response assessment",
+        "id": "cef506cb-a106-479c-81e3-df37863202a1"
+      }
+    ],
+    "source_references": [],
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "compliance_score": 1.0
+    },
+    "metadata": {
+      "pipeline_version": "Mcode_pipeline_v1",
+      "engine_type": "LLM",
+      "entities_count": 0,
+      "mapped_count": 41,
+      "compliance_score": 1.0,
+      "token_usage": {
+        "prompt_tokens": 3247,
+        "completion_tokens": 978,
+        "total_tokens": 4225
+      },
+      "aggregate_token_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "model_name": "",
+        "provider_name": ""
+      }
+    },
+    "error": null
+  }
+}

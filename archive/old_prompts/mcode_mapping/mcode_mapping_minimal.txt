@@ -7,7 +7,7 @@ Map extracted clinical entities to mCODE data elements.
     "mcode_mappings": [
         {{
             "source_entity_index": 0,
-            "Mcode_element": "mCODE element name",
+            "mcode_element": "mCODE element name",
             "value": "mapped value",
             "confidence": 0.0-1.0,
             "mapping_rationale": "brief explanation"

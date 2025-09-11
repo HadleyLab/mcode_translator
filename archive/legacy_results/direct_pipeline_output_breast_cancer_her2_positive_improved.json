@@ -2,7 +2,7 @@
   "mcode_mappings": [
     {
       "resourceType": "Condition",
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancercondition",
@@ -16,7 +16,7 @@
     },
     {
       "resourceType": "Condition",
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancercondition",
@@ -30,7 +30,7 @@
     },
     {
       "resourceType": "Condition",
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancercondition",
@@ -44,7 +44,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "GenomicVariant",
+      "mcode_element": "GenomicVariant",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "genomicvariant",
@@ -58,7 +58,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "ECOGPerformanceStatus",
+      "mcode_element": "ECOGPerformanceStatus",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "ecogperformancestatus",
@@ -72,7 +72,7 @@
     },
     {
       "resourceType": "MedicationStatement",
-      "Mcode_element": "CancerRelatedMedication",
+      "mcode_element": "CancerRelatedMedication",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedication",
@@ -86,7 +86,7 @@
     },
     {
       "resourceType": "Condition",
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancercondition",
@@ -100,7 +100,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerDiseaseStatus",
+      "mcode_element": "CancerDiseaseStatus",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerdiseasestatus",
@@ -114,7 +114,7 @@
     },
     {
       "resourceType": "Condition",
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancercondition",
@@ -128,7 +128,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "GenomicVariant",
+      "mcode_element": "GenomicVariant",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "genomicvariant",
@@ -142,7 +142,7 @@
     },
     {
       "resourceType": "MedicationStatement",
-      "Mcode_element": "CancerRelatedMedication",
+      "mcode_element": "CancerRelatedMedication",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedication",
@@ -156,7 +156,7 @@
     },
     {
       "resourceType": "MedicationStatement",
-      "Mcode_element": "CancerRelatedMedication",
+      "mcode_element": "CancerRelatedMedication",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedication",
@@ -170,7 +170,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "CancerDiseaseStatus",
+      "mcode_element": "CancerDiseaseStatus",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerdiseasestatus",
@@ -184,7 +184,7 @@
     },
     {
       "resourceType": "Condition",
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancercondition",
@@ -198,7 +198,7 @@
     },
     {
       "resourceType": "Condition",
-      "Mcode_element": "CancerCondition",
+      "mcode_element": "CancerCondition",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancercondition",
@@ -212,7 +212,7 @@
     },
     {
       "resourceType": "Observation",
-      "Mcode_element": "GenomicVariant",
+      "mcode_element": "GenomicVariant",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "genomicvariant",
@@ -226,7 +226,7 @@
     },
     {
       "resourceType": "Procedure",
-      "Mcode_element": "CancerRelatedProcedure",
+      "mcode_element": "CancerRelatedProcedure",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedprocedure",
@@ -240,7 +240,7 @@
     },
     {
       "resourceType": "MedicationStatement",
-      "Mcode_element": "CancerRelatedMedication",
+      "mcode_element": "CancerRelatedMedication",
       "code": {
         "system": "http://hl7.org/fhir/us/mCODE",
         "code": "cancerrelatedmedication",

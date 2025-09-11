@@ -1,0 +1,451 @@
+{
+  "protocolSection": {
+    "identificationModule": {
+      "nctId": "NCT00109785",
+      "orgStudyIdInfo": {
+        "id": "MSKCC-97046"
+      },
+      "secondaryIdInfos": [
+        {
+          "id": "CDR0000065706",
+          "type": "REGISTRY",
+          "domain": "PDQ (Physician Data Query)"
+        },
+        {
+          "id": "NCI-G97-1308"
+        }
+      ],
+      "organization": {
+        "fullName": "Memorial Sloan Kettering Cancer Center",
+        "class": "OTHER"
+      },
+      "briefTitle": "PET Scans in Patients With Locally Advanced Breast Cancer",
+      "officialTitle": "Positron Emitter I-124-Iododeoxyuridine to Follow DNA Metabolism on Scans and in Tumor Samples in Advanced Breast Cancer: Comparison to 18-F-2-Fluoro-2-Deoxy-(D)-Glucose, as a Tracer for Glycolysis"
+    },
+    "statusModule": {
+      "statusVerifiedDate": "2015-12",
+      "overallStatus": "COMPLETED",
+      "expandedAccessInfo": {
+        "hasExpandedAccess": false
+      },
+      "startDateStruct": {
+        "date": "1997-03"
+      },
+      "primaryCompletionDateStruct": {
+        "date": "2008-12",
+        "type": "ACTUAL"
+      },
+      "completionDateStruct": {
+        "date": "2008-12",
+        "type": "ACTUAL"
+      },
+      "studyFirstSubmitDate": "2005-05-03",
+      "studyFirstSubmitQcDate": "2005-05-03",
+      "studyFirstPostDateStruct": {
+        "date": "2005-05-04",
+        "type": "ESTIMATED"
+      },
+      "lastUpdateSubmitDate": "2015-12-23",
+      "lastUpdatePostDateStruct": {
+        "date": "2015-12-24",
+        "type": "ESTIMATED"
+      }
+    },
+    "sponsorCollaboratorsModule": {
+      "responsibleParty": {
+        "type": "SPONSOR"
+      },
+      "leadSponsor": {
+        "name": "Memorial Sloan Kettering Cancer Center",
+        "class": "OTHER"
+      },
+      "collaborators": [
+        {
+          "name": "National Cancer Institute (NCI)",
+          "class": "NIH"
+        }
+      ]
+    },
+    "descriptionModule": {
+      "briefSummary": "RATIONALE: Imaging procedures such as PET scans may improve the ability to monitor the effectiveness of chemotherapy for locally advanced breast cancer.\n\nPURPOSE: This clinical trial is studying how well PET scans work in patients with locally advanced breast cancer who will undergo chemotherapy.",
+      "detailedDescription": "OBJECTIVES:\n\n* Determine whether the biologic activity of locally advanced breast cancer as measured by retention of iodine I 124 iododeoxyuridine (IUdR) on positron emission tomography (PET) scans pre- and postchemotherapy is different between patients whose tumor shrinks after treatment in comparison to patients whose tumor is stable or continues to grow.\n* Demonstrate that incorporation of IUdR into tumor is in the tumor DNA at 24-36 hours post injection, as documented by tissue analysis and immunohistochemistry and that this correlates with the subsequent change in tumor dimension and proliferative activity of the tumor.\n* Compare the pre and post treatment results of fludeoxyglucose (FDG) PET scanning and IUdR PET scanning in the same breast lesions as a basis for assessment of the relative metabolic change during chemotherapy.\n* Further assess the biologic activity of metastatic tumor sites and their changes in size following chemotherapy to standard parameters that are used to evaluate change in tumor size, obtained under clinical standard of care for breast cancer, which will include CT scans as well as bone scans.\n* Assess the accuracy of noninvasive measurement of PET measurement of the left ventricular cardiac chamber clearance of radioactivity as a substitute for arterial plasma sampling for determining metabolic rates of FDG and IUdR uptake into tumors.\n* Evaluate metabolic changes in tumors as they are affected by specific chemotherapy in comparison to changes in tumor dimensions.\n\nOUTLINE: For this study, the chemotherapy administered for an individual patient is at the discretion of the patient's primary attending physician. After chemotherapy, the patient is evaluated for surgical resection of the tumor. If the tumor is unresectable, the patient may be offered radiation therapy.\n\nThe first group of positron emission tomography (PET) scans is performed within 2 weeks before the first dose of chemotherapy. The second group of PET scans occur no more than 7 weeks after chemotherapy and prior to local therapy, either surgery or radiation therapy.\n\nThe PET scan before initiation of chemotherapy consists of 4 imaging sessions. There is one iodine I-124 iododeoxyuridine (IUdR) PET scan (3 imaging sessions) at 1, 4-8, and 24 hours after IUdR infusion, followed by one fludeoxyglucose (FDG) PET scan (1 imaging session) 45 minutes after FDG infusion.\n\nPROJECTED ACCRUAL: Approximately 20 patients will be accrued for this study."
+    },
+    "conditionsModule": {
+      "conditions": [
+        "Breast Cancer"
+      ],
+      "keywords": [
+        "stage IIIA breast cancer",
+        "stage IIIB breast cancer",
+        "stage IIIC breast cancer",
+        "male breast cancer"
+      ]
+    },
+    "designModule": {
+      "studyType": "INTERVENTIONAL",
+      "phases": [
+        "PHASE1"
+      ],
+      "designInfo": {
+        "allocation": "NA",
+        "interventionModel": "SINGLE_GROUP",
+        "primaryPurpose": "DIAGNOSTIC",
+        "maskingInfo": {
+          "masking": "NONE"
+        }
+      },
+      "enrollmentInfo": {
+        "count": 8,
+        "type": "ACTUAL"
+      }
+    },
+    "armsInterventionsModule": {
+      "armGroups": [
+        {
+          "label": "PET Scans",
+          "type": "EXPERIMENTAL",
+          "description": "The first group of positron emission tomography (PET) scans is performed within 2 weeks before the first dose of chemotherapy. The second group of PET scans occur no more than 7 weeks after chemotherapy and prior to local therapy, either surgery or radiation therapy. The PET scan before initiation of chemotherapy consists of 4 imaging sessions. There is one iodine I-124 iododeoxyuridine (IUdR) PET scan (3 imaging sessions) at 1, 4-8, and 24 hours after IUdR infusion, followed by one fludeoxyglucose (FDG) PET scan (1 imaging session) 45 minutes after FDG infusion.",
+          "interventionNames": [
+            "Procedure: positron emission tomography",
+            "Radiation: fludeoxyglucose F 18",
+            "Radiation: iodine I 124 iododeoxyuridine"
+          ]
+        }
+      ],
+      "interventions": [
+        {
+          "type": "PROCEDURE",
+          "name": "positron emission tomography",
+          "armGroupLabels": [
+            "PET Scans"
+          ]
+        },
+        {
+          "type": "RADIATION",
+          "name": "fludeoxyglucose F 18",
+          "armGroupLabels": [
+            "PET Scans"
+          ]
+        },
+        {
+          "type": "RADIATION",
+          "name": "iodine I 124 iododeoxyuridine",
+          "armGroupLabels": [
+            "PET Scans"
+          ]
+        }
+      ]
+    },
+    "eligibilityModule": {
+      "eligibilityCriteria": "DISEASE CHARACTERISTICS:\n\n* Histologically confirmed locally advanced breast carcinoma\n\n  * Stage T3 T4, N2 or N3 disease\n* Hormone receptor status:\n\n  * Not specified\n\nPATIENT CHARACTERISTICS:\n\nAge:\n\n* 18 and over\n\nSex:\n\n* Male or female\n\nMenopausal status:\n\n* Not specified\n\nPerformance status:\n\n* Karnofsky 80-100%\n\nHematopoietic:\n\n* Not specified\n\nHepatic:\n\n* Not specified\n\nRenal:\n\n* Not specified\n\nOther:\n\n* No history of psychiatric illness that would preclude giving informed consent\n* Not pregnant\n* Fertile patients must use effective contraception\n\nPRIOR CONCURRENT THERAPY:\n\nBiologic therapy\n\n* Not specified\n\nChemotherapy\n\n* Not specified\n\nEndocrine therapy\n\n* Not specified\n\nRadiotherapy\n\n* Not specified\n\nSurgery\n\n* Not specified",
+      "healthyVolunteers": false,
+      "sex": "ALL",
+      "minimumAge": "18 Years",
+      "maximumAge": "120 Years",
+      "stdAges": [
+        "ADULT",
+        "OLDER_ADULT"
+      ]
+    },
+    "contactsLocationsModule": {
+      "overallOfficials": [
+        {
+          "name": "Teresa Ann Gilewski, MD",
+          "affiliation": "Memorial Sloan Kettering Cancer Center",
+          "role": "STUDY_CHAIR"
+        }
+      ],
+      "locations": [
+        {
+          "facility": "Memorial Sloan-Kettering Cancer Center",
+          "city": "New York",
+          "state": "New York",
+          "zip": "10065",
+          "country": "United States",
+          "geoPoint": {
+            "lat": 40.71427,
+            "lon": -74.00597
+          }
+        }
+      ]
+    }
+  },
+  "derivedSection": {
+    "miscInfoModule": {
+      "versionHolder": "2025-09-08"
+    },
+    "conditionBrowseModule": {
+      "meshes": [
+        {
+          "id": "D001943",
+          "term": "Breast Neoplasms"
+        },
+        {
+          "id": "D018567",
+          "term": "Breast Neoplasms, Male"
+        }
+      ],
+      "ancestors": [
+        {
+          "id": "D009371",
+          "term": "Neoplasms by Site"
+        },
+        {
+          "id": "D009369",
+          "term": "Neoplasms"
+        },
+        {
+          "id": "D001941",
+          "term": "Breast Diseases"
+        },
+        {
+          "id": "D012871",
+          "term": "Skin Diseases"
+        },
+        {
+          "id": "D017437",
+          "term": "Skin and Connective Tissue Diseases"
+        }
+      ]
+    },
+    "interventionBrowseModule": {
+      "meshes": [
+        {
+          "id": "D009682",
+          "term": "Magnetic Resonance Spectroscopy"
+        },
+        {
+          "id": "D019788",
+          "term": "Fluorodeoxyglucose F18"
+        }
+      ],
+      "ancestors": [
+        {
+          "id": "D013057",
+          "term": "Spectrum Analysis"
+        },
+        {
+          "id": "D002623",
+          "term": "Chemistry Techniques, Analytical"
+        },
+        {
+          "id": "D008919",
+          "term": "Investigative Techniques"
+        },
+        {
+          "id": "D003847",
+          "term": "Deoxyglucose"
+        },
+        {
+          "id": "D003837",
+          "term": "Deoxy Sugars"
+        },
+        {
+          "id": "D002241",
+          "term": "Carbohydrates"
+        }
+      ]
+    }
+  },
+  "hasResults": false,
+  "McodeResults": {
+    "extracted_entities": [],
+    "mcode_mappings": [
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Breast Cancer",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Conditions: Breast Cancer",
+        "mapping_rationale": "Directly stated cancer condition in the text.",
+        "id": "dcad327e-e45a-4b56-8f3a-f99d03f36ec4"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Locally advanced breast carcinoma",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Histologically confirmed locally advanced breast carcinoma",
+        "mapping_rationale": "Explicitly stated diagnosis",
+        "id": "1fb11e61-eaeb-4a7f-9919-eceb81c4fb95"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "TNMStage",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "tnmstage",
+          "display": "TNMStage"
+        },
+        "value": "T3 or T4",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Stage T3 T4, N2 or N3 disease",
+        "mapping_rationale": "Explicit T stage range stated",
+        "id": "5d9c1762-d3ca-45b3-91fe-18eabdd99ff0"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "TNMStage",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "tnmstage",
+          "display": "TNMStage"
+        },
+        "value": "N2 or N3",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Stage T3 T4, N2 or N3 disease",
+        "mapping_rationale": "Explicit N stage range stated",
+        "id": "2c0bb9c7-8d59-4a5a-b6aa-d07c2bed9368"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "PerformanceStatus",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "performancestatus",
+          "display": "PerformanceStatus"
+        },
+        "value": "80-100%",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Karnofsky 80-100%",
+        "mapping_rationale": "Explicit performance status stated",
+        "id": "c8947d39-9ebb-45cb-bec8-25a955076c6e"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Age",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "age",
+          "display": "Age"
+        },
+        "value": "18 to 120 years",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "minimumAge: 18 Years maximumAge: 120 Years",
+        "mapping_rationale": "Explicit age range stated",
+        "id": "e7444bb2-87a6-419b-af6b-47bf1713285b"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Sex",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "sex",
+          "display": "Sex"
+        },
+        "value": "Male or female",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Sex: * Male or female",
+        "mapping_rationale": "Explicit sex criteria stated",
+        "id": "2a329335-689a-49bc-9dca-fb720b41a13d"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "locally advanced breast cancer",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "patients with locally advanced breast cancer who will undergo chemotherapy",
+        "mapping_rationale": "Explicit mention of cancer diagnosis",
+        "id": "c03285e2-94e5-4bf8-a8c2-a7f63697635a"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "chemotherapy",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "chemotherapy administered for an individual patient is at the discretion of the patient's primary attending physician",
+        "mapping_rationale": "Explicit mention of chemotherapy treatment",
+        "id": "1c213b57-083e-4c7b-9b4b-87aeb9331439"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "surgical resection of the tumor",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "After chemotherapy, the patient is evaluated for surgical resection of the tumor",
+        "mapping_rationale": "Explicit mention of surgical treatment",
+        "id": "2ac1d69b-a821-45d3-9fe5-f903feafe874"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "radiation therapy",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "If the tumor is unresectable, the patient may be offered radiation therapy",
+        "mapping_rationale": "Explicit mention of radiation therapy treatment",
+        "id": "b67e1e32-d385-4f08-bc40-e2db0741933a"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Locally advanced breast cancer",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "PET Scans in Patients With Locally Advanced Breast Cancer",
+        "mapping_rationale": "The brief title explicitly states the cancer condition with staging descriptor.",
+        "id": "71d56750-37d6-469f-9265-c2035daf6113"
+      }
+    ],
+    "source_references": [],
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "compliance_score": 1.0
+    },
+    "metadata": {
+      "pipeline_version": "Mcode_pipeline_v1",
+      "engine_type": "LLM",
+      "entities_count": 0,
+      "mapped_count": 12,
+      "compliance_score": 1.0,
+      "token_usage": {
+        "prompt_tokens": 848,
+        "completion_tokens": 8138,
+        "total_tokens": 8986
+      },
+      "aggregate_token_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "model_name": "",
+        "provider_name": ""
+      }
+    },
+    "error": null
+  }
+}
