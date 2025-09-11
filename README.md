@@ -18,7 +18,7 @@ cp .env.example .env
 # Edit .env with your OPENAI_API_KEY or DEEPSEEK_API_KEY
 
 # Process clinical trial data
-python mcode_translator.py data/selected_breast_cancer_trials.json -o results.json
+python mcode_translate.py data/selected_breast_cancer_trials.json -o results.json
 ```
 
 ## 💻 Usage
@@ -27,13 +27,13 @@ python mcode_translator.py data/selected_breast_cancer_trials.json -o results.js
 
 ```bash
 # Basic processing
-python mcode_translator.py trial_data.json -o results.json
+python mcode_translate.py trial_data.json -o results.json
 
 # With specific model and prompt (using shorthands)
-python mcode_translator.py trial_data.json -m deepseek-coder -p direct_mcode_evidence_based_concise -o results.json
+python mcode_translate.py trial_data.json -m deepseek-coder -p direct_mcode_evidence_based_concise -o results.json
 
 # Batch processing
-python mcode_translator.py trials_batch.json --batch -o batch_results.json
+python mcode_translate.py trials_batch.json --batch -o batch_results.json
 ```
 
 ### mCODE Fetcher - Search and Process Trials
@@ -51,6 +51,12 @@ python mcode_fetcher.py --nct-ids "NCT001,NCT002,NCT003" --process -m deepseek-c
 
 # Count available studies
 python mcode_fetcher.py --condition "cancer" --count-only
+
+# Store processed trials in CORE Memory with automatic duplicate detection
+python mcode_fetcher.py --condition "breast cancer" --process --store-in-core-memory -m deepseek-coder
+
+# Store a specific trial in CORE Memory
+python mcode_fetcher.py --nct-id NCT00616135 --process --store-in-core-memory -m deepseek-coder
 ```
 
 ### mCODE Optimize - Cross-Validation Testing

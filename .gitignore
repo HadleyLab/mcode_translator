@@ -95,6 +95,9 @@ focused_experiment_results/
 *.json.bak
 *_backup.json
 
+# Ignore archive folder
+archive/
+
 # Temporary files
 tmp/
 temp/

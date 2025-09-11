@@ -47,7 +47,7 @@ Clinical Text:
   "mcode_mappings": [
     {{
       "resourceType": "Condition|Observation|MedicationStatement|Patient",
-      "Mcode_element": "CancerCondition|TNMStage|CancerTreatment|etc",
+      "mcode_element": "CancerCondition|TNMStage|CancerTreatment|etc",
       "code": {{
         "system": "http://snomed.info/sct",
         "code": "SNOMED_CODE",

@@ -1,0 +1,42 @@
+[
+  {
+    "trial_id": "NCT00616135",
+    "mcode_mappings": [
+      {
+        "resourceType": "CancerCondition",
+        "clinicalStatus": "remission",
+        "verificationStatus": "confirmed",
+        "code": {
+          "coding": [
+            {"system": "http://snomed.info/sct", "code": "254837009", "display": "Breast Neoplasms"},
+            {"system": "http://snomed.info/sct", "code": "254838003", "display": "Carcinoma, Ductal, Breast"}
+          ]
+        },
+        "subject": {"reference": "Patient/1"},
+        "onsetDateTime": "2008-06"
+      },
+      {
+        "resourceType": "SurgicalProcedure",
+        "procedureType": "Segmental mastectomy, quadrantectomy (lumpectomy)",
+        "method": "Surgical resection",
+        "result": "Clean margins, breast deformity",
+        "date": "2008-06"
+      },
+      {
+        "resourceType": "Treatment",
+        "treatmentType": "Autologous fat transplantation with ADRCs",
+        "agents": ["Autologous fat", "Adipose Derived Regenerative Cells (ADRCs)"],
+        "arm": "Single arm",
+        "startDate": "2008-06",
+        "endDate": "2010-11"
+      },
+      {
+        "resourceType": "Outcome",
+        "primaryOutcome": "Patient and physician satisfaction with functional and cosmetic results",
+        "secondaryOutcomes": ["Change in breast volume and shape", "Improvement in skin pigmentation", "Improvement in breast deformity"],
+        "resultSummary": "ADRC-enhanced autologous fat transplantation evaluated for breast reconstruction after lumpectomy."
+      }
+    ],
+    "source_text_fragment": "Study of Autologous Fat Enhanced w/ Regenerative Cells Transplanted to Reconstruct Breast Deformities After Lumpectomy. Post-marketing study of ADRC-enhanced autologous fat transplantation for breast reconstruction."
+  }
+]

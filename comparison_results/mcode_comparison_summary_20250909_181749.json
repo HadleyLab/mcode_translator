@@ -1,0 +1,40 @@
+{
+  "total_comparisons": 15,
+  "model_performance": {
+    "chat": {
+      "avg_precision": 0.10881118881118881,
+      "avg_recall": 0.24010989010989012,
+      "avg_f1": 0.14603279358270285,
+      "std_precision": 0.0712439507835786,
+      "std_recall": 0.08397590684877305,
+      "std_f1": 0.07696653209984158,
+      "total_trials": 5
+    },
+    "coder": {
+      "avg_precision": 0.10429031689697701,
+      "avg_recall": 0.24010989010989012,
+      "avg_f1": 0.1443019943019943,
+      "std_precision": 0.04405293959701268,
+      "std_recall": 0.08397590684877305,
+      "std_f1": 0.055508965781213976,
+      "total_trials": 5
+    },
+    "reasoner": {
+      "avg_precision": 0.10738951729663804,
+      "avg_recall": 0.22622100122100122,
+      "avg_f1": 0.14297105508870214,
+      "std_precision": 0.05536169688476258,
+      "std_recall": 0.11848541366449908,
+      "std_f1": 0.06975839425962008,
+      "total_trials": 5
+    }
+  },
+  "overall_metrics": {
+    "avg_precision": 0.1068303410016013,
+    "avg_recall": 0.23548026048026047,
+    "avg_f1": 0.1444352809911331,
+    "std_precision": 0.053704587967439425,
+    "std_recall": 0.0899260809811539,
+    "std_f1": 0.06296760647212721
+  }
+}

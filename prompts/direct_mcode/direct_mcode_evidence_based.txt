@@ -43,7 +43,7 @@ Clinical Text:
   "mcode_mappings": [
     {{
       "resourceType": "FHIR resource type (Condition, Observation, MedicationStatement, Procedure, Patient, etc.)",
-      "Mcode_element": "Specific mCODE element (CancerCondition, TNMClinicalStageGroup, GenomicVariant, etc.)",
+      "mcode_element": "Specific mCODE element (CancerCondition, TNMClinicalStageGroup, GenomicVariant, etc.)",
       "code": {{
         "system": "http://snomed.info/sct | http://loinc.org | http://hl7.org/fhir/us/mCODE | etc.",
         "code": "standard terminology code",

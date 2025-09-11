@@ -178,7 +178,7 @@ def save_results(traditional_result: Dict[str, Any], direct_result: Dict[str, An
     if traditional_result['success'] and traditional_result['result']:
         output_data['traditional_pipeline']['sample_mappings'] = [
             {
-                'Mcode_element': mapping.get('Mcode_element', 'Unknown'),
+                'mcode_element': mapping.get('mcode_element', 'Unknown'),
                 'value': mapping.get('value', 'No value'),
                 'confidence': mapping.get('mapping_confidence', 0)
             }
@@ -188,7 +188,7 @@ def save_results(traditional_result: Dict[str, Any], direct_result: Dict[str, An
     if direct_result['success'] and direct_result['result']:
         output_data['direct_pipeline']['sample_mappings'] = [
             {
-                'Mcode_element': mapping.get('Mcode_element', 'Unknown'),
+                'mcode_element': mapping.get('mcode_element', 'Unknown'),
                 'value': mapping.get('value', 'No value'),
                 'confidence': mapping.get('mapping_confidence', 0)
             }

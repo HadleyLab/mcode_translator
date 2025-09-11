@@ -1,0 +1,41 @@
+[
+  {
+    "trial_id": "NCT00109785",
+    "mcode_mappings": [
+      {
+        "resourceType": "CancerCondition",
+        "clinicalStatus": "active",
+        "verificationStatus": "confirmed",
+        "code": {
+          "coding": [
+            {"system": "http://snomed.info/sct", "code": "254837009", "display": "Locally Advanced Breast Cancer"}
+          ]
+        },
+        "subject": {"reference": "Patient/1"},
+        "onsetDateTime": "1997-03"
+      },
+      {
+        "resourceType": "ImagingTest",
+        "testType": "PET scan (IUdR, FDG)",
+        "method": "IUdR PET, FDG PET",
+        "result": "Pre- and post-chemotherapy tumor activity and metabolic change",
+        "date": "1997-03"
+      },
+      {
+        "resourceType": "Treatment",
+        "treatmentType": "Chemotherapy, Surgery, Radiation Therapy",
+        "agents": ["Chemotherapy (varied)", "Surgical resection", "Radiation therapy"],
+        "arm": "PET Scans",
+        "startDate": "1997-03",
+        "endDate": "2008-12"
+      },
+      {
+        "resourceType": "Outcome",
+        "primaryOutcome": "Tumor metabolic activity and response to chemotherapy",
+        "secondaryOutcomes": ["Tumor shrinkage", "DNA incorporation of IUdR", "Comparison of FDG and IUdR PET results", "Metabolic changes in metastatic sites"],
+        "resultSummary": "PET scans used to monitor chemotherapy effectiveness and tumor metabolism in locally advanced breast cancer."
+      }
+    ],
+    "source_text_fragment": "PET Scans in Patients With Locally Advanced Breast Cancer. Study of I-124-Iododeoxyuridine and FDG PET scans to monitor DNA metabolism and glycolysis in tumor samples before and after chemotherapy."
+  }
+]

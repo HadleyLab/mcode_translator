@@ -42,13 +42,13 @@ def create_test_gold_standard():
                     "mapped_elements": [
                         {
                             "source_entity_index": 0,
-                            "Mcode_element": "CancerCondition",
+                            "mcode_element": "CancerCondition",
                             "value": "Test Cancer",
                             "confidence": 0.95
                         },
                         {
                             "source_entity_index": 1,
-                            "Mcode_element": "CancerRelatedMedication",
+                            "mcode_element": "CancerRelatedMedication",
                             "value": "Test Medication",
                             "confidence": 0.9
                         }
@@ -95,13 +95,13 @@ def create_test_pipeline_result():
             "mapped_elements": [
                 {
                     "source_entity_index": 0,
-                    "Mcode_element": "CancerCondition",
+                    "mcode_element": "CancerCondition",
                     "value": "Test Cancer",
                     "confidence": 0.92
                 },
                 {
                     "source_entity_index": 1,
-                    "Mcode_element": "CancerRelatedMedication",
+                    "mcode_element": "CancerRelatedMedication",
                     "value": "Different Medication",
                     "confidence": 0.85
                 }
@@ -177,7 +177,7 @@ def _calculate_validation_metrics(pipeline_result, gold_standard_case):
     
     # Mapping validation
     def _mapping_match_func(actual_mapping, expected_mapping):
-        return (_fuzzy_text_match(actual_mapping["Mcode_element"], expected_mapping["Mcode_element"]) and
+        return (_fuzzy_text_match(actual_mapping["mcode_element"], expected_mapping["mcode_element"]) and
                 _fuzzy_text_match(actual_mapping["value"], expected_mapping["value"]))
     
     mapping_metrics = _calculate_precision_recall_f1(

@@ -1,0 +1,532 @@
+{
+  "protocolSection": {
+    "identificationModule": {
+      "nctId": "NCT00616135",
+      "orgStudyIdInfo": {
+        "id": "RESTORE-2"
+      },
+      "organization": {
+        "fullName": "Cytori Therapeutics",
+        "class": "INDUSTRY"
+      },
+      "briefTitle": "Study of Autologous Fat Enhanced w/ Regenerative Cells Transplanted to Reconstruct Breast Deformities After Lumpectomy",
+      "officialTitle": "A Clinical Evaluation Of Adipose Derived Regenerative Cells In The Treatment Of Patients With BrEast Deformities Post Segmental Breast ResecTion (Lumpectomy) With Or Without Radiation ThErapy. A Phase IV Post Market Study.",
+      "acronym": "RESTORE-2"
+    },
+    "statusModule": {
+      "statusVerifiedDate": "2011-05",
+      "overallStatus": "COMPLETED",
+      "expandedAccessInfo": {
+        "hasExpandedAccess": false
+      },
+      "startDateStruct": {
+        "date": "2008-06"
+      },
+      "primaryCompletionDateStruct": {
+        "date": "2010-11",
+        "type": "ACTUAL"
+      },
+      "completionDateStruct": {
+        "date": "2010-11",
+        "type": "ACTUAL"
+      },
+      "studyFirstSubmitDate": "2008-02-05",
+      "studyFirstSubmitQcDate": "2008-02-05",
+      "studyFirstPostDateStruct": {
+        "date": "2008-02-15",
+        "type": "ESTIMATED"
+      },
+      "lastUpdateSubmitDate": "2011-05-13",
+      "lastUpdatePostDateStruct": {
+        "date": "2011-05-17",
+        "type": "ESTIMATED"
+      }
+    },
+    "sponsorCollaboratorsModule": {
+      "responsibleParty": {
+        "oldNameTitle": "Sean Gemmill, MS, RAC; Clinical Research Manager",
+        "oldOrganization": "Cytori Therapeutics"
+      },
+      "leadSponsor": {
+        "name": "Cytori Therapeutics",
+        "class": "INDUSTRY"
+      }
+    },
+    "oversightModule": {
+      "oversightHasDmc": false
+    },
+    "descriptionModule": {
+      "briefSummary": "A post-marketing study evaluating the transplantation of autologous fat augmented with Adipose Derived Regenerative Cells (ADRCs), in patients with functional and cosmetic breast deformities post segmental mastectomy or quadrantectomy (lumpectomy)."
+    },
+    "conditionsModule": {
+      "conditions": [
+        "Breast Neoplasms",
+        "Carcinoma, Ductal, Breast",
+        "Mammaplasty",
+        "Mastectomy, Segmental, Lumpectomy, Breast Reconstruction,"
+      ],
+      "keywords": [
+        "Breast",
+        "Stem Cell",
+        "Adipose Derived Stem Cells",
+        "Adipose Derived Regenerative Cells",
+        "ADRC",
+        "Reconstructive Breast Surgery",
+        "Breast Reconstruction",
+        "Cancer",
+        "Carcinoma",
+        "Autologous fat transplantation",
+        "Autologous fat",
+        "Cosmetic breast deformities",
+        "Functional breast deformity",
+        "Lumpectomy",
+        "Segmental mastectomy",
+        "Quadrantectomy",
+        "breast conservation therapy"
+      ]
+    },
+    "designModule": {
+      "studyType": "INTERVENTIONAL",
+      "phases": [
+        "PHASE4"
+      ],
+      "designInfo": {
+        "allocation": "NON_RANDOMIZED",
+        "interventionModel": "SINGLE_GROUP",
+        "primaryPurpose": "TREATMENT",
+        "maskingInfo": {
+          "masking": "NONE"
+        }
+      },
+      "enrollmentInfo": {
+        "count": 71,
+        "type": "ESTIMATED"
+      }
+    },
+    "armsInterventionsModule": {
+      "interventions": [
+        {
+          "type": "PROCEDURE",
+          "name": "ADRC-Enhanced Autologous Fat Transplant",
+          "description": "Autologous fat harvested from the patient is enhanced with ADRCs derived from a portion of the harvested fat and transplanted into the breast(s) that have a volume deficit post lumpectomy. This is a single arm study with no control. All patients receive cell therapy."
+        }
+      ]
+    },
+    "outcomesModule": {
+      "primaryOutcomes": [
+        {
+          "measure": "Patient and physician satisfaction with functional and cosmetic results. Improvement in overall breast deformity measured at 12 months compared to baseline.",
+          "timeFrame": "12 months"
+        }
+      ],
+      "secondaryOutcomes": [
+        {
+          "measure": "Change in breast volume and shape at 6 and 12 Months compared to baseline. Improvement in skin pigmentation abnormalities at 6 and 12 months compared to Baseline. Improvement in overall breast deformity at 6 Months compared to Baseline.",
+          "timeFrame": "6 months and 12 months"
+        }
+      ]
+    },
+    "eligibilityModule": {
+      "eligibilityCriteria": "Inclusion Criteria:\n\n* Females with a history of T2N0M0 breast carcinoma (tumor \u22643 cm in largest dimension)\n* Surgical or endoscopic segmental mastectomy or quadrantectomy (lumpectomy)\n* Clean surgical margins\n* No prosthesis in breast(s) to undergo treatment\n* Ability to undergo lipoaspiration\n* Last treatment for breast cancer \u2265 12 months prior to enrollment with absence of recurrence (patients on anti-estrogen adjuvant therapy are NOT excluded)\n* No evidence of recurrence of cancer based on mammogram or breast exam prior to enrollment\n* Objective signs of mild breast damage post Breast Conservation Therapy\n* Type I Cosmetic Sequelae Classification\n* A minimum of 1 cm of soft tissue (e.g. breast or fat) is available between the skin and chest wall at the recipient site\n* A minimum of two-thirds of the breast is remaining post Breast Conservation Therapy\n* No continuous adhesion of skin to bone \\>3 cm in diameter\n* The volume and shape of the defect(s) must be conducive to correction during a single treatment session (maximum defect volume \u2264150 mL in breast(s) to undergo treatment)\n\nExclusion Criteria:\n\n* History of autoimmune disorder (e.g., Systemic Lupus Erythematosus \\[SLE\\])\n* History of connective, metabolic or atrophic skin disease\n* History of keloid scarring\n* Chronic use (\\>7 consecutive days) of anticoagulants (such as aspirin) or NSAIDs within 15 days prior to enrollment\n* Life expectancy \u2264 2 years\n* Recurrence or active malignancy requiring radiation or surgical treatment \u226412 months prior to enrollment\n* Presence of any other known malignancy\n* Body Mass Index (BMI) \\>30\n* Plan to undergo weight reduction surgery or foresee any significant weight changes during the study (defined as changes in BMI \\>5 compared to baseline\n* Presence of contraindications to MRI",
+      "healthyVolunteers": false,
+      "sex": "FEMALE",
+      "minimumAge": "18 Years",
+      "maximumAge": "75 Years",
+      "stdAges": [
+        "ADULT",
+        "OLDER_ADULT"
+      ]
+    },
+    "contactsLocationsModule": {
+      "locations": [
+        {
+          "facility": "Jules Bordet Institute of Cancer",
+          "city": "Brussels",
+          "country": "Belgium",
+          "geoPoint": {
+            "lat": 50.85045,
+            "lon": 4.34878
+          }
+        },
+        {
+          "facility": "Universit\u00e0 degli Studi di Firenze",
+          "city": "Florence",
+          "zip": "50134",
+          "country": "Italy",
+          "geoPoint": {
+            "lat": 43.77925,
+            "lon": 11.24626
+          }
+        },
+        {
+          "facility": "Hospital General Universitario Gregorio Mara\u00f1on",
+          "city": "Madrid",
+          "zip": "28007",
+          "country": "Spain",
+          "geoPoint": {
+            "lat": 40.4165,
+            "lon": -3.70256
+          }
+        },
+        {
+          "facility": "Instituto Valenciano Oncologia",
+          "city": "Valencia",
+          "zip": "46009",
+          "country": "Spain",
+          "geoPoint": {
+            "lat": 39.47391,
+            "lon": -0.37966
+          }
+        },
+        {
+          "facility": "Glasgow Royal Infirmary",
+          "city": "Glasgow",
+          "state": "Scotland",
+          "zip": "G4 0SF",
+          "country": "United Kingdom",
+          "geoPoint": {
+            "lat": 55.86515,
+            "lon": -4.25763
+          }
+        }
+      ]
+    }
+  },
+  "derivedSection": {
+    "miscInfoModule": {
+      "versionHolder": "2025-09-08",
+      "removedCountries": [
+        "France"
+      ]
+    },
+    "conditionBrowseModule": {
+      "meshes": [
+        {
+          "id": "D001943",
+          "term": "Breast Neoplasms"
+        },
+        {
+          "id": "D018270",
+          "term": "Carcinoma, Ductal, Breast"
+        },
+        {
+          "id": "D009369",
+          "term": "Neoplasms"
+        },
+        {
+          "id": "D002277",
+          "term": "Carcinoma"
+        }
+      ],
+      "ancestors": [
+        {
+          "id": "D009371",
+          "term": "Neoplasms by Site"
+        },
+        {
+          "id": "D001941",
+          "term": "Breast Diseases"
+        },
+        {
+          "id": "D012871",
+          "term": "Skin Diseases"
+        },
+        {
+          "id": "D017437",
+          "term": "Skin and Connective Tissue Diseases"
+        },
+        {
+          "id": "D044584",
+          "term": "Carcinoma, Ductal"
+        },
+        {
+          "id": "D000230",
+          "term": "Adenocarcinoma"
+        },
+        {
+          "id": "D009375",
+          "term": "Neoplasms, Glandular and Epithelial"
+        },
+        {
+          "id": "D009370",
+          "term": "Neoplasms by Histologic Type"
+        },
+        {
+          "id": "D018299",
+          "term": "Neoplasms, Ductal, Lobular, and Medullary"
+        }
+      ]
+    }
+  },
+  "hasResults": false,
+  "McodeResults": {
+    "extracted_entities": [],
+    "mcode_mappings": [
+      {
+        "resourceType": "Observation",
+        "mcode_element": "allocation",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "allocation",
+          "display": "allocation"
+        },
+        "value": "NON_RANDOMIZED",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"allocation\": \"NON_RANDOMIZED\"",
+        "mapping_rationale": "Direct statement of study allocation from design",
+        "id": "8c2008fb-bb7d-46a4-bdfd-6edd6f91fff6"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "interventionModel",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "interventionmodel",
+          "display": "interventionModel"
+        },
+        "value": "SINGLE_GROUP",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"interventionModel\": \"SINGLE_GROUP\"",
+        "mapping_rationale": "Explicit statement of intervention model",
+        "id": "de6aeef3-a46f-4929-8182-ac9a70000ea6"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "primaryPurpose",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "primarypurpose",
+          "display": "primaryPurpose"
+        },
+        "value": "TREATMENT",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"primaryPurpose\": \"TREATMENT\"",
+        "mapping_rationale": "Direct statement of primary purpose",
+        "id": "91ded923-493c-4c89-9976-466800b51ef2"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "masking",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "masking",
+          "display": "masking"
+        },
+        "value": "NONE",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "\"masking\": \"NONE\"",
+        "mapping_rationale": "Explicit statement of masking information",
+        "id": "f2f15ad6-be4a-45ac-8cea-b9fab31fdf45"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Breast Neoplasms",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Breast Neoplasms",
+        "mapping_rationale": "Explicitly stated cancer condition",
+        "id": "8e57c513-d0c9-4283-8e27-d714319df882"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Carcinoma, Ductal, Breast",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Carcinoma, Ductal, Breast",
+        "mapping_rationale": "Explicitly stated specific cancer type",
+        "id": "8a11cecb-4743-41d3-8658-fa1f7462c49e"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Mastectomy",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Mastectomy",
+        "mapping_rationale": "Explicitly stated surgical treatment for cancer",
+        "id": "70f3cbee-7802-4e68-8e7b-d795042ba098"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Lumpectomy",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Lumpectomy",
+        "mapping_rationale": "Explicitly stated surgical treatment for cancer",
+        "id": "97b69ea3-4da1-484e-a1f3-58a2262357bd"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Breast carcinoma",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Females with a history of T2N0M0 breast carcinoma (tumor \u22643 cm in largest dimension)",
+        "mapping_rationale": "Explicit statement of cancer diagnosis",
+        "id": "a23c7d24-ea48-4d5e-b06b-c61f3d9828dc"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "TNMStage",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "tnmstage",
+          "display": "TNMStage"
+        },
+        "value": "T2N0M0",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Females with a history of T2N0M0 breast carcinoma (tumor \u22643 cm in largest dimension)",
+        "mapping_rationale": "Explicit TNM staging information",
+        "id": "6d05e9eb-05e1-4794-bf94-c13d5dc8a8ad"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Segmental mastectomy or quadrantectomy",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Surgical or endoscopic segmental mastectomy or quadrantectomy (lumpectomy)",
+        "mapping_rationale": "Explicit description of surgical treatment",
+        "id": "bf27301d-180a-44d0-8c33-edbfe63ecf15"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Sex",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "sex",
+          "display": "Sex"
+        },
+        "value": "Female",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Females with a history of T2N0M0 breast carcinoma (tumor \u22643 cm in largest dimension)",
+        "mapping_rationale": "Explicit statement of patient sex",
+        "id": "67471cf7-edb5-4ef7-8817-e66a44bbc1fe"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "AgeMinimum",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "ageminimum",
+          "display": "AgeMinimum"
+        },
+        "value": "18",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "minimumAge: 18 Years",
+        "mapping_rationale": "Explicit minimum age for eligibility",
+        "id": "46544cf0-9f0e-41d7-abb9-a2873ac55b92"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "AgeMaximum",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "agemaximum",
+          "display": "AgeMaximum"
+        },
+        "value": "75",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "maximumAge: 75 Years",
+        "mapping_rationale": "Explicit maximum age for eligibility",
+        "id": "71322658-ae5d-4932-8f1b-6bba88bcc37c"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Segmental mastectomy or quadrantectomy (lumpectomy)",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "in patients with functional and cosmetic breast deformities post segmental mastectomy or quadrantectomy (lumpectomy)",
+        "mapping_rationale": "Explicit mention of surgical procedures performed, which are standard treatments for breast cancer.",
+        "id": "3ee2541c-1358-400e-acb6-08c2435f7962"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Lumpectomy",
+        "mapping_confidence": 0.7,
+        "source_text_fragment": "Study of Autologous Fat Enhanced w/ Regenerative Cells Transplanted to Reconstruct Breast Deformities After Lumpectomy",
+        "mapping_rationale": "Lumpectomy is explicitly mentioned as a previous procedure, commonly associated with breast cancer treatment, but not explicitly stated for cancer here.",
+        "id": "5f4bce3e-db43-4b7d-8efc-2c97a39222a9"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Radiation Therapy",
+        "mapping_confidence": 0.7,
+        "source_text_fragment": "Post Segmental Breast ResecTion (Lumpectomy) With Or Without Radiation ThErapy",
+        "mapping_rationale": "Radiation therapy is explicitly mentioned as a possible previous treatment, commonly used in cancer care, but not explicitly stated for cancer here.",
+        "id": "fff6e5f1-aecc-4dc2-9655-425810958b54"
+      }
+    ],
+    "source_references": [],
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "compliance_score": 1.0
+    },
+    "metadata": {
+      "pipeline_version": "Mcode_pipeline_v1",
+      "engine_type": "LLM",
+      "entities_count": 0,
+      "mapped_count": 17,
+      "compliance_score": 1.0,
+      "token_usage": {
+        "prompt_tokens": 855,
+        "completion_tokens": 6680,
+        "total_tokens": 7535
+      },
+      "aggregate_token_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "model_name": "",
+        "provider_name": ""
+      }
+    },
+    "error": null
+  }
+}

@@ -15,27 +15,27 @@
     "error": null,
     "sample_mappings": [
       {
-        "Mcode_element": "CancerCondition",
+        "mcode_element": "CancerCondition",
         "value": "HER2-Positive Breast Cancer",
         "confidence": 0.0
       },
       {
-        "Mcode_element": "CancerCondition",
+        "mcode_element": "CancerCondition",
         "value": "Metastatic Breast Cancer",
         "confidence": 0.0
       },
       {
-        "Mcode_element": "CancerDiseaseStatus",
+        "mcode_element": "CancerDiseaseStatus",
         "value": "metastatic",
         "confidence": 0.0
       },
       {
-        "Mcode_element": "HER2Status",
+        "mcode_element": "HER2Status",
         "value": "positive",
         "confidence": 0.0
       },
       {
-        "Mcode_element": "CancerCondition",
+        "mcode_element": "CancerCondition",
         "value": "active",
         "confidence": 0.0
       }

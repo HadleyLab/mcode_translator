@@ -73,10 +73,10 @@ Mapping Efficiency:    44.9% reduction in over-mapping
 ### Clean CLI Interface
 ```bash
 # Simple usage
-python mcode_translator.py input.json
+python mcode_translate.py input.json
 
 # Advanced configuration
-python mcode_translator.py input.json \
+python mcode_translate.py input.json \
   --model deepseek-coder \
   --prompt direct_mcode_evidence_based_concise \
   --output results.json \

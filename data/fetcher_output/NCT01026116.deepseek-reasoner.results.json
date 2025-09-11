@@ -1,0 +1,650 @@
+{
+  "protocolSection": {
+    "identificationModule": {
+      "nctId": "NCT01026116",
+      "orgStudyIdInfo": {
+        "id": "SHBCC09007"
+      },
+      "organization": {
+        "fullName": "Fudan University",
+        "class": "OTHER"
+      },
+      "briefTitle": "A Randomized Trial Comparing EC-wPversus EP-wP as Adjuvant Therapy for Operable Breast Cancer Patients Less Than 40 Years Old",
+      "officialTitle": "Comparing EC-wP Versus EP-wP as Adjuvant Therapy for Breast Cancer Patients Less Than 40 Years Old"
+    },
+    "statusModule": {
+      "statusVerifiedDate": "2020-05",
+      "overallStatus": "COMPLETED",
+      "expandedAccessInfo": {
+        "hasExpandedAccess": false
+      },
+      "startDateStruct": {
+        "date": "2009-12"
+      },
+      "primaryCompletionDateStruct": {
+        "date": "2016-01",
+        "type": "ACTUAL"
+      },
+      "completionDateStruct": {
+        "date": "2016-12-23",
+        "type": "ACTUAL"
+      },
+      "studyFirstSubmitDate": "2009-12-03",
+      "studyFirstSubmitQcDate": "2009-12-03",
+      "studyFirstPostDateStruct": {
+        "date": "2009-12-04",
+        "type": "ESTIMATED"
+      },
+      "lastUpdateSubmitDate": "2020-05-09",
+      "lastUpdatePostDateStruct": {
+        "date": "2020-05-12",
+        "type": "ACTUAL"
+      }
+    },
+    "sponsorCollaboratorsModule": {
+      "responsibleParty": {
+        "type": "PRINCIPAL_INVESTIGATOR",
+        "investigatorFullName": "Zhimin Shao",
+        "investigatorTitle": "Director of Breast Surgery Department",
+        "investigatorAffiliation": "Fudan University"
+      },
+      "leadSponsor": {
+        "name": "Fudan University",
+        "class": "OTHER"
+      }
+    },
+    "oversightModule": {
+      "oversightHasDmc": false
+    },
+    "descriptionModule": {
+      "briefSummary": "Manifold data revealed that young breast cancer patients are characterized by aggressive clinical history. The purpose of this study is to evaluate the efficacy and safety of different strategies incorporating paclitaxel to anthracycline-based regimens in young breast cancer patients."
+    },
+    "conditionsModule": {
+      "conditions": [
+        "Breast Neoplasms"
+      ]
+    },
+    "designModule": {
+      "studyType": "INTERVENTIONAL",
+      "phases": [
+        "PHASE3"
+      ],
+      "designInfo": {
+        "allocation": "RANDOMIZED",
+        "interventionModel": "PARALLEL",
+        "primaryPurpose": "TREATMENT",
+        "maskingInfo": {
+          "masking": "NONE"
+        }
+      },
+      "enrollmentInfo": {
+        "count": 521,
+        "type": "ACTUAL"
+      }
+    },
+    "armsInterventionsModule": {
+      "armGroups": [
+        {
+          "label": "EC-wP",
+          "type": "ACTIVE_COMPARATOR",
+          "description": "epirubicin/cyclophosphamide followed weekly paclitaxel",
+          "interventionNames": [
+            "Drug: Epirubicin",
+            "Drug: Cyclophosphamide",
+            "Drug: Paclitaxel"
+          ]
+        },
+        {
+          "label": "EP-wP",
+          "type": "EXPERIMENTAL",
+          "description": "epirubicin/paclitaxel followed by weekly paclitaxel",
+          "interventionNames": [
+            "Drug: Epirubicin",
+            "Drug: Cyclophosphamide",
+            "Drug: Paclitaxel"
+          ]
+        }
+      ],
+      "interventions": [
+        {
+          "type": "DRUG",
+          "name": "Epirubicin",
+          "description": "75 mg/m2 every-3-week for four cycles",
+          "armGroupLabels": [
+            "EC-wP",
+            "EP-wP"
+          ]
+        },
+        {
+          "type": "DRUG",
+          "name": "Cyclophosphamide",
+          "description": "600 mg/m2 every-3-week for four cycles",
+          "armGroupLabels": [
+            "EC-wP",
+            "EP-wP"
+          ]
+        },
+        {
+          "type": "DRUG",
+          "name": "Paclitaxel",
+          "description": "175 mg/m2 every-3-week for four cycles followed by weekly paclitaxel (80 mg/m2) for 12 weeks",
+          "armGroupLabels": [
+            "EC-wP",
+            "EP-wP"
+          ]
+        }
+      ]
+    },
+    "outcomesModule": {
+      "primaryOutcomes": [
+        {
+          "measure": "disease-free survival",
+          "timeFrame": "every one year"
+        },
+        {
+          "measure": "menstrual resumption rate",
+          "description": "Resumption of menses was defined as at least 2 consecutive menstruations, or at least 1 menstruation with a confirmed premenopausal level of FSH and estradiol after chemotherapy",
+          "timeFrame": "12 months after chemotherapy"
+        }
+      ],
+      "secondaryOutcomes": [
+        {
+          "measure": "overall survival",
+          "timeFrame": "every one year"
+        }
+      ]
+    },
+    "eligibilityModule": {
+      "eligibilityCriteria": "Inclusion Criteria:\n\n* Female patients, age 18\\~40\n* Unilateral, operable, histologically confirmed adenocarcinoma of the breast\n* Stage I-III\n* Primary surgery with clear margins plus axillary dissection\n* Able to start protocol Rx within 8 weeks of surgery\n* Histological or cytological confirmation of estrogen-receptor positive (ER+) breast cancer: the immunohistochemical cut-off for ER positive status was\n\n  1% or more staining in nuclei\n* HER-2 negative (IHC 0,1+ or 2+ with a negative in situ hybridization test by chemotherapy\n* pathologically confirmed regional node-positive disease, or node-negative disease with high-risk factors (primary tumor diameter \\>10 mm when histological grade III, or tumor diameter \\>20 mm when histological grade II)\n* ECOG performance status 0-1\n* Adequate cardiac, renal, hepatic and hematologic function\n\nExclusion Criteria:\n\n* Metastatic disease\n* Bilateral breast cancer (synchronous or metachronous)\n* Prior radiation therapy, hormonal therapy and chemotherapy for breast cancer\n* Previous cancer (except treated basal cell and squamous cell carcinoma of the skin or cancer of the uterine cervix)\n* HER-2 positive (IHC 3+ OR FISH+) and or triple-negative breast cancer\n* Documented history of cardiac disease contradiction anthracyclines\n* Concurrent serious illness\n* Peripheral neuropathy of CTC grade\\>1\n* History of hypersensitivity to drugs formulated in Cremophor EL polyoxyethylated castor oil), the vehicle used for commercial paclitaxel formulations\n* Pregnancy or lactation",
+      "healthyVolunteers": false,
+      "sex": "FEMALE",
+      "minimumAge": "18 Years",
+      "maximumAge": "40 Years",
+      "stdAges": [
+        "ADULT"
+      ]
+    },
+    "contactsLocationsModule": {
+      "overallOfficials": [
+        {
+          "name": "Zhimin Shao",
+          "affiliation": "Cancer Hospital, Fudan University",
+          "role": "PRINCIPAL_INVESTIGATOR"
+        }
+      ],
+      "locations": [
+        {
+          "facility": "Department of Breast Surgery, Cancer Hospital, Fudan University",
+          "city": "Shanghai",
+          "zip": "200032",
+          "country": "China",
+          "geoPoint": {
+            "lat": 31.22222,
+            "lon": 121.45806
+          }
+        }
+      ]
+    },
+    "referencesModule": {
+      "references": [
+        {
+          "pmid": "33822134",
+          "type": "DERIVED",
+          "citation": "Yu KD, Ge JY, Liu XY, Mo M, He M, Shao ZM; SPECTRUM Investigators. Cyclophosphamide-Free Adjuvant Chemotherapy for Ovarian Protection in Young Women With Breast Cancer: A Randomized Phase 3 Trial. J Natl Cancer Inst. 2021 Oct 1;113(10):1352-1359. doi: 10.1093/jnci/djab065."
+        }
+      ]
+    }
+  },
+  "derivedSection": {
+    "miscInfoModule": {
+      "versionHolder": "2025-09-08"
+    },
+    "conditionBrowseModule": {
+      "meshes": [
+        {
+          "id": "D001943",
+          "term": "Breast Neoplasms"
+        }
+      ],
+      "ancestors": [
+        {
+          "id": "D009371",
+          "term": "Neoplasms by Site"
+        },
+        {
+          "id": "D009369",
+          "term": "Neoplasms"
+        },
+        {
+          "id": "D001941",
+          "term": "Breast Diseases"
+        },
+        {
+          "id": "D012871",
+          "term": "Skin Diseases"
+        },
+        {
+          "id": "D017437",
+          "term": "Skin and Connective Tissue Diseases"
+        }
+      ]
+    },
+    "interventionBrowseModule": {
+      "meshes": [
+        {
+          "id": "D015251",
+          "term": "Epirubicin"
+        },
+        {
+          "id": "D003520",
+          "term": "Cyclophosphamide"
+        },
+        {
+          "id": "D017239",
+          "term": "Paclitaxel"
+        }
+      ],
+      "ancestors": [
+        {
+          "id": "D004317",
+          "term": "Doxorubicin"
+        },
+        {
+          "id": "D003630",
+          "term": "Daunorubicin"
+        },
+        {
+          "id": "D018943",
+          "term": "Anthracyclines"
+        },
+        {
+          "id": "D009279",
+          "term": "Naphthacenes"
+        },
+        {
+          "id": "D011084",
+          "term": "Polycyclic Aromatic Hydrocarbons"
+        },
+        {
+          "id": "D006841",
+          "term": "Hydrocarbons, Aromatic"
+        },
+        {
+          "id": "D006844",
+          "term": "Hydrocarbons, Cyclic"
+        },
+        {
+          "id": "D006838",
+          "term": "Hydrocarbons"
+        },
+        {
+          "id": "D009930",
+          "term": "Organic Chemicals"
+        },
+        {
+          "id": "D011083",
+          "term": "Polycyclic Compounds"
+        },
+        {
+          "id": "D000617",
+          "term": "Aminoglycosides"
+        },
+        {
+          "id": "D006027",
+          "term": "Glycosides"
+        },
+        {
+          "id": "D002241",
+          "term": "Carbohydrates"
+        },
+        {
+          "id": "D010752",
+          "term": "Phosphoramide Mustards"
+        },
+        {
+          "id": "D009588",
+          "term": "Nitrogen Mustard Compounds"
+        },
+        {
+          "id": "D009150",
+          "term": "Mustard Compounds"
+        },
+        {
+          "id": "D006846",
+          "term": "Hydrocarbons, Halogenated"
+        },
+        {
+          "id": "D063088",
+          "term": "Phosphoramides"
+        },
+        {
+          "id": "D009943",
+          "term": "Organophosphorus Compounds"
+        },
+        {
+          "id": "D043823",
+          "term": "Taxoids"
+        },
+        {
+          "id": "D043822",
+          "term": "Cyclodecanes"
+        },
+        {
+          "id": "D003516",
+          "term": "Cycloparaffins"
+        },
+        {
+          "id": "D006840",
+          "term": "Hydrocarbons, Alicyclic"
+        },
+        {
+          "id": "D004224",
+          "term": "Diterpenes"
+        },
+        {
+          "id": "D013729",
+          "term": "Terpenes"
+        }
+      ]
+    }
+  },
+  "hasResults": false,
+  "McodeResults": {
+    "extracted_entities": [],
+    "mcode_mappings": [
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Breast Neoplasms",
+        "mapping_confidence": 0.8,
+        "source_text_fragment": "Conditions: Breast Neoplasms",
+        "mapping_rationale": "Text explicitly states 'Breast Neoplasms' as a condition, commonly interpreted as malignant in oncology contexts with minor interpretation.",
+        "id": "cb81c4f6-33f9-4f3c-85cf-82ad3f0911e8"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Sex",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "sex",
+          "display": "Sex"
+        },
+        "value": "female",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Female patients, age 18~40",
+        "mapping_rationale": "Explicit statement of patient sex.",
+        "id": "61724742-6c56-4902-9785-4548e7a87e1a"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Age",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "age",
+          "display": "Age"
+        },
+        "value": "18-40 years",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "age 18~40",
+        "mapping_rationale": "Explicit age range provided.",
+        "id": "95acf4c7-a16b-4620-b0bd-4336427fdf0a"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "adenocarcinoma of the breast",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Unilateral, operable, histologically confirmed adenocarcinoma of the breast",
+        "mapping_rationale": "Direct diagnosis statement.",
+        "id": "c5e87968-bd21-4f6f-84c2-dbcb88104664"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "TNMStage",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "tnmstage",
+          "display": "TNMStage"
+        },
+        "value": "I-III",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Stage I-III",
+        "mapping_rationale": "Explicit cancer stage.",
+        "id": "04f734e7-bc1b-497f-b753-15254fa7cd29"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Biomarker",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "biomarker",
+          "display": "Biomarker"
+        },
+        "value": "positive",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Histological or cytological confirmation of estrogen-receptor positive (ER+) breast cancer: the immunohistochemical cut-off for ER positive status was 1% or more staining in nuclei",
+        "mapping_rationale": "Direct biomarker status.",
+        "id": "836a3093-eb9d-468b-b2dd-9ecded267e81"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Biomarker",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "biomarker",
+          "display": "Biomarker"
+        },
+        "value": "negative",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "HER-2 negative (IHC 0,1+ or 2+ with a negative in situ hybridization test by chemotherapy",
+        "mapping_rationale": "Direct biomarker status.",
+        "id": "a0c01c33-ecba-46b5-9a26-28367775e5b4"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "LymphNodeInvolvement",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "lymphnodeinvolvement",
+          "display": "LymphNodeInvolvement"
+        },
+        "value": "positive",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "pathologically confirmed regional node-positive disease",
+        "mapping_rationale": "Direct statement of lymph node status.",
+        "id": "f2a25804-2143-4bb5-9fa2-d9f671d51246"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "surgery",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Primary surgery with clear margins plus axillary dissection",
+        "mapping_rationale": "Explicit treatment description.",
+        "id": "d6e7e474-856e-40ed-ab77-17dfc568ec94"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "PerformanceStatus",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "performancestatus",
+          "display": "PerformanceStatus"
+        },
+        "value": "0-1",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "ECOG performance status 0-1",
+        "mapping_rationale": "Direct performance status.",
+        "id": "9504927e-f0b5-48f8-be68-3b41691badfa"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Breast cancer",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Manifold data revealed that young breast cancer patients are characterized by aggressive clinical history.",
+        "mapping_rationale": "Explicit mention of 'breast cancer' in the text.",
+        "id": "9140a424-b056-4101-97cb-d24fe2446374"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Paclitaxel",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "The purpose of this study is to evaluate the efficacy and safety of different strategies incorporating paclitaxel to anthracycline-based regimens in young breast cancer patients.",
+        "mapping_rationale": "Explicit mention of 'paclitaxel' as part of treatment strategies.",
+        "id": "d9a3d36a-2317-4e7c-b173-b9a3c1ef4c45"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Anthracycline-based regimens",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "The purpose of this study is to evaluate the efficacy and safety of different strategies incorporating paclitaxel to anthracycline-based regimens in young breast cancer patients.",
+        "mapping_rationale": "Explicit mention of 'anthracycline-based regimens' as part of treatment strategies.",
+        "id": "2e76629a-7b26-409f-b12c-d847759b3e8a"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Age",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "age",
+          "display": "Age"
+        },
+        "value": "Young",
+        "mapping_confidence": 0.6,
+        "source_text_fragment": "Manifold data revealed that young breast cancer patients are characterized by aggressive clinical history.",
+        "mapping_rationale": "Mention of 'young' describing the patient population, though not quantified, requiring moderate interpretation.",
+        "id": "5210df53-56c3-4824-92f6-75e9ab4240b4"
+      },
+      {
+        "resourceType": "Condition",
+        "mcode_element": "CancerCondition",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancercondition",
+          "display": "CancerCondition"
+        },
+        "value": "Breast Cancer",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Breast Cancer Patients",
+        "mapping_rationale": "Explicitly stated in officialTitle",
+        "id": "83b79dff-d31e-4a30-9bec-fa02e392980c"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "Adjuvant Therapy",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "as Adjuvant Therapy",
+        "mapping_rationale": "Explicitly stated in titles",
+        "id": "d45d59e0-4592-4962-aba4-26a61e6cae70"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "EC-wP",
+        "mapping_confidence": 0.7,
+        "source_text_fragment": "EC-wP",
+        "mapping_rationale": "Abbreviation for treatment regimen, explicitly stated",
+        "id": "a23458f8-0f6c-4096-8a3f-baa4ed7617e8"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "CancerTreatment",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "cancertreatment",
+          "display": "CancerTreatment"
+        },
+        "value": "EP-wP",
+        "mapping_confidence": 0.7,
+        "source_text_fragment": "EP-wP",
+        "mapping_rationale": "Abbreviation for treatment regimen, explicitly stated",
+        "id": "545e7150-e5a0-44f9-8d40-19a9d4272850"
+      },
+      {
+        "resourceType": "Observation",
+        "mcode_element": "Age",
+        "code": {
+          "system": "http://hl7.org/fhir/us/mCODE",
+          "code": "age",
+          "display": "Age"
+        },
+        "value": "less than 40 years old",
+        "mapping_confidence": 1.0,
+        "source_text_fragment": "Less Than 40 Years Old",
+        "mapping_rationale": "Explicitly stated demographic detail",
+        "id": "b4baf83e-1e5d-4245-b6b0-9908420c6d3e"
+      }
+    ],
+    "source_references": [],
+    "validation": {
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "compliance_score": 1.0
+    },
+    "metadata": {
+      "pipeline_version": "Mcode_pipeline_v1",
+      "engine_type": "LLM",
+      "entities_count": 0,
+      "mapped_count": 19,
+      "compliance_score": 1.0,
+      "token_usage": {
+        "prompt_tokens": 829,
+        "completion_tokens": 7562,
+        "total_tokens": 8391
+      },
+      "aggregate_token_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "model_name": "",
+        "provider_name": ""
+      }
+    },
+    "error": null
+  }
+}

@@ -3,6 +3,7 @@ Shared BenchmarkResult class to avoid circular imports.
 This class contains the result structure for benchmark runs.
 """
 
+import json
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -290,7 +291,7 @@ class BenchmarkResult:
                                 debug: bool = False) -> Tuple[int, int, int]:
         """
         Calculate mCODE matches using node-based matching to handle clinical concept comparison
-        Compares all fields including Mcode_element, value, source_entity_index, confidence, and mapping_rationale
+        Compares all fields including mcode_element, value, source_entity_index, confidence, and mapping_rationale
         
         Returns:
             Tuple of (true_positives, false_positives, false_negatives)
@@ -306,10 +307,13 @@ class BenchmarkResult:
                     continue
                     
                 # Compare all relevant fields for exact match
-                actual_element = actual_mapping.get('Mcode_element', '').lower()
-                expected_element = expected_mapping.get('Mcode_element', '').lower()
-                actual_value = actual_mapping.get('value', '').lower()
-                expected_value = expected_mapping.get('value', '').lower()
+                actual_element = actual_mapping.get('mcode_element', '').lower()
+                expected_element = expected_mapping.get('mcode_element', '').lower()
+                actual_value_raw = actual_mapping.get('value', '')
+                expected_value_raw = expected_mapping.get('value', '')
+
+                actual_value = json.dumps(actual_value_raw) if isinstance(actual_value_raw, dict) else str(actual_value_raw).lower()
+                expected_value = json.dumps(expected_value_raw) if isinstance(expected_value_raw, dict) else str(expected_value_raw).lower()
                 actual_source_idx = actual_mapping.get('source_entity_index', -1)
                 expected_source_idx = expected_mapping.get('source_entity_index', -1)
                 actual_confidence = actual_mapping.get('confidence', 0.0)
@@ -330,7 +334,7 @@ class BenchmarkResult:
                         framework.logger.warning(f"   ✅ Exact mCODE match: '{actual_element}'='{actual_value}' -> '{expected_element}'='{expected_value}'")
                     continue
         
-        # Second pass: relaxed matching for clinical concepts (same Mcode_element + value)
+        # Second pass: relaxed matching for clinical concepts (same mcode_element + value)
         for i, actual_mapping in enumerate(actual_mappings):
             if i in matched_actual:
                 continue
@@ -339,12 +343,15 @@ class BenchmarkResult:
                 if j in matched_expected:
                     continue
                     
-                actual_element = actual_mapping.get('Mcode_element', '').lower()
-                expected_element = expected_mapping.get('Mcode_element', '').lower()
-                actual_value = actual_mapping.get('value', '').lower()
-                expected_value = expected_mapping.get('value', '').lower()
+                actual_element = actual_mapping.get('mcode_element', '').lower()
+                expected_element = expected_mapping.get('mcode_element', '').lower()
+                actual_value_raw = actual_mapping.get('value', '')
+                expected_value_raw = expected_mapping.get('value', '')
+
+                actual_value = json.dumps(actual_value_raw) if isinstance(actual_value_raw, dict) else str(actual_value_raw).lower()
+                expected_value = json.dumps(expected_value_raw) if isinstance(expected_value_raw, dict) else str(expected_value_raw).lower()
                 
-                # Match on Mcode_element and value (clinical concept match)
+                # Match on mcode_element and value (clinical concept match)
                 if actual_element == expected_element and actual_value == expected_value:
                     matched_actual.add(i)
                     matched_expected.add(j)
@@ -366,8 +373,8 @@ class BenchmarkResult:
             framework.logger.warning(f"   Unmatched expected: {false_negatives}")
             
             # Log some unmatched examples for debugging
-            unmatched_actual = [f"{m.get('Mcode_element', '')}={m.get('value', '')}" for idx, m in enumerate(actual_mappings) if idx not in matched_actual]
-            unmatched_expected = [f"{m.get('Mcode_element', '')}={m.get('value', '')}" for idx, m in enumerate(expected_mappings) if idx not in matched_expected]
+            unmatched_actual = [f"{m.get('mcode_element', '')}={m.get('value', '')}" for idx, m in enumerate(actual_mappings) if idx not in matched_actual]
+            unmatched_expected = [f"{m.get('mcode_element', '')}={m.get('value', '')}" for idx, m in enumerate(expected_mappings) if idx not in matched_expected]
             
             if unmatched_actual:
                 framework.logger.warning(f"   Unmatched actual examples: {unmatched_actual[:3]}")
