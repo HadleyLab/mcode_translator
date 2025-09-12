@@ -105,17 +105,19 @@ def extract_patient_mcode_elements(patient_data: Dict[str, Any]) -> Dict[str, An
         },
         "ERReceptorStatus": {
             "resource_types": ["Observation"],
-            "loinc_codes": ["85313-5", "48607-9"],  # ER IHC
+            "loinc_codes": ["85313-5", "48607-9", "92136-1"],  # ER IHC, ER status
             "snomed_codes": ["445281001"],  # ER status
-            "text_patterns": ["er", "estrogen receptor"],
-            "is_biomarker": True
+            "text_patterns": ["estrogen receptor", "er receptor", "er status"],
+            "is_biomarker": True,
+            "exclude_patterns": ["m0", "n0", "t0"]  # Avoid staging observations
         },
         "PRReceptorStatus": {
             "resource_types": ["Observation"],
-            "loinc_codes": ["85314-3"],  # PR IHC
+            "loinc_codes": ["85314-3", "92142-9"],  # PR IHC, PR status
             "snomed_codes": ["445282008"],  # PR status
-            "text_patterns": ["pr", "progesterone receptor"],
-            "is_biomarker": True
+            "text_patterns": ["progesterone receptor", "pr receptor", "pr status"],
+            "is_biomarker": True,
+            "exclude_patterns": ["m0", "n0", "t0"]  # Avoid staging observations
         },
         "TumorMarkerTest": {
             "resource_types": ["Observation"],
@@ -154,9 +156,11 @@ def extract_patient_mcode_elements(patient_data: Dict[str, Any]) -> Dict[str, An
         },
         "CancerRelatedSurgicalProcedure": {
             "resource_types": ["Procedure"],
-            "snomed_codes": ["387713003", "232347006", "712946003"],  # Cancer surgery, mastectomy, reconstruction
-            "text_patterns": ["cancer surgery", "mastectomy", "lumpectomy", "resection"],
-            "multiple": True
+            "snomed_codes": ["387713003", "232347006", "712946003", "64368001", "449056005", "232153009", "232208006", "122464006", "387713003"],  # Surgical procedures: cancer surgery, mastectomy, lumpectomy, biopsy, lumpectomy, sentinel node, etc.
+            "text_patterns": ["biopsy", "mastectomy", "lumpectomy", "resection", "excision", "sentinel", "lymph node", "brachytherapy", "radiation therapy", "breast surgery"],
+            "exclude_patterns": ["medication", "reconciliation", "transfer", "administration", "consultation", "assessment", "monitoring"],
+            "multiple": True,
+            "require_cancer_context": True
         },
         "RadiationDose": {
             "resource_types": ["Observation"],
@@ -220,6 +224,7 @@ def extract_patient_mcode_elements(patient_data: Dict[str, Any]) -> Dict[str, An
     }
     
     # Process each entry in the Bundle
+    procedures_data = []  # Collect all procedures separately
     for entry in patient_data.get("entry", []):
         resource = entry.get("resource", {})
         resource_type = resource.get("resourceType")
@@ -230,9 +235,20 @@ def extract_patient_mcode_elements(patient_data: Dict[str, Any]) -> Dict[str, An
             mcode_profile.update(demographics)
             continue
         
-        # Check each mCODE mapping for other resource types
+        # Collect all Procedure resources for later processing - use improved matching
+        if resource_type == "Procedure":
+            # Check if this procedure matches cancer-related criteria
+            proc_mapping = mcode_mappings.get("CancerRelatedSurgicalProcedure", {})
+            if match_mcode_resource(resource, proc_mapping):
+                proc_value = extract_mcode_value(resource, "CancerRelatedSurgicalProcedure", proc_mapping)
+                if proc_value:
+                    procedures_data.append(proc_value)
+                    logger.debug(f"Added procedure: {proc_value.get('display', 'Unknown')}")
+            continue
+        
+        # Check each mCODE mapping for other resource types (skip procedures here)
         for mcode_key, mapping in mcode_mappings.items():
-            if resource_type in mapping.get("resource_types", []) and mcode_key not in mcode_profile:
+            if resource_type in mapping.get("resource_types", []) and mcode_key not in mcode_profile and mcode_key != "CancerRelatedSurgicalProcedure":
                 matched = match_mcode_resource(resource, mapping)
                 if matched:
                     value = extract_mcode_value(resource, mcode_key, mapping)
@@ -240,6 +256,16 @@ def extract_patient_mcode_elements(patient_data: Dict[str, Any]) -> Dict[str, An
                         mcode_profile[mcode_key] = value
                         logger.debug(f"Extracted {mcode_key}: {value}")
                         break  # One match per element
+    
+    # Add procedures as an array if we have multiple
+    if len(procedures_data) > 1:
+        mcode_profile["CancerRelatedSurgicalProcedure"] = procedures_data
+        logger.info(f"Extracted {len(procedures_data)} CancerRelatedSurgicalProcedure elements")
+    elif len(procedures_data) == 1:
+        mcode_profile["CancerRelatedSurgicalProcedure"] = procedures_data[0]
+        logger.info(f"Extracted single CancerRelatedSurgicalProcedure: {procedures_data[0].get('display', 'Unknown')}")
+    elif procedures_data:
+        logger.debug("No cancer-related procedures found in patient data")
     
     logger.info(f"Extracted {len(mcode_profile)} comprehensive mCODE elements from patient data: {list(mcode_profile.keys())}")
     return mcode_profile
@@ -249,7 +275,25 @@ def match_mcode_resource(resource: Dict, mapping: Dict) -> bool:
     """Determine if resource matches mCODE mapping criteria."""
     code = resource.get("code", {})
     coding = code.get("coding", [])
-    display = code.get("text", "").lower()
+    display = code.get("text", "").lower() if code.get("text") else ""
+    
+    # For procedures, be more specific about cancer-related context
+    if mapping.get("key") == "CancerRelatedSurgicalProcedure":
+        # Check if it's breast/cancer related
+        cancer_context = any(term in display for term in ["breast", "cancer", "tumor", "neoplasm", "malignant"])
+        if not cancer_context:
+            return False
+        
+        # Exclude non-procedural activities
+        exclude_patterns = mapping.get("exclude_patterns", [])
+        if any(pattern in display for pattern in exclude_patterns):
+            return False
+    
+    # Highest priority: mCODE profile match (most specific)
+    if mapping.get("mcode_profile"):
+        profiles = resource.get("meta", {}).get("profile", [])
+        if mapping["mcode_profile"] in profiles:
+            return True
     
     # Highest priority: mCODE profile match (most specific)
     if mapping.get("mcode_profile"):
@@ -281,10 +325,17 @@ def match_mcode_resource(resource: Dict, mapping: Dict) -> bool:
         for vc_c in vc_coding:
             if (vc_c.get("system") == "http://snomed.info/sct" and
                 vc_c.get("code") in ["260385009", "10828001", "413444009"]):  # Neg, Pos, Equivocal
-                # Also check if text patterns match (HER2, ER, PR)
+                # Also check if text patterns match (HER2, ER, PR) - be more specific
                 patterns = mapping.get("text_patterns", [])
-                if any(pattern in display.lower() for pattern in patterns):
-                    return True
+                display_lower = display.lower()
+                if any(pattern in display_lower for pattern in patterns):
+                    # Additional check for ER/PR to avoid M0/N0 staging confusion
+                    if "er" in mapping.get("key", "").lower() and any(term in display_lower for term in ["estrogen", "er receptor"]):
+                        return True
+                    elif "pr" in mapping.get("key", "").lower() and any(term in display_lower for term in ["progesterone", "pr receptor"]):
+                        return True
+                    elif any(pattern in display_lower for pattern in patterns):
+                        return True
     
     # For CancerCondition, specific cancer-related matches
     if mapping.get("key") == "CancerCondition":
@@ -300,6 +351,12 @@ def match_mcode_resource(resource: Dict, mapping: Dict) -> bool:
     # Last resort: text pattern matching (only if no exact matches above)
     patterns = mapping.get("text_patterns", [])
     if patterns and any(pattern in display for pattern in patterns):
+        # For procedures, ensure cancer context if required
+        if mapping.get("require_cancer_context"):
+            cancer_context = any(term in display for term in ["breast", "cancer", "tumor", "neoplasm", "malignant"])
+            if not cancer_context:
+                return False
+        
         # For text matches, also check if it's not a generic measurement
         if not (resource.get("valueQuantity") and mapping.get("is_biomarker")):
             return True
@@ -355,7 +412,10 @@ def extract_mcode_value(resource: Dict, mcode_key: str, mapping: Dict) -> Option
                 loinc_coding = next((c for c in coding if c.get("system") == "http://loinc.org"), coding[0])
                 value_data["system"] = loinc_coding.get("system")
                 value_data["code"] = loinc_coding.get("code")
-                value_data["display"] = loinc_coding.get("display") or code.get("text")
+                raw_display = loinc_coding.get("display") or code.get("text")
+                # Clean display text of common qualifiers
+                cleaned_display = raw_display.replace(' (disorder)', '').replace(' (procedure)', '').replace(' (finding)', '').replace(' (qualifier value)', '').replace(' (regime/therapy)', '').replace(' (morphologic abnormality)', '').strip()
+                value_data["display"] = cleaned_display
             
             # If we have an interpretation, that's our main value
             if value_data["interpretation"] and value_data["interpretation"] != "Unknown":
@@ -394,7 +454,10 @@ def extract_mcode_value(resource: Dict, mcode_key: str, mapping: Dict) -> Option
         if best_coding:
             value_data["system"] = best_coding.get("system")
             value_data["code"] = best_coding.get("code")
-            value_data["display"] = best_coding.get("display") or code.get("text")
+            raw_display = best_coding.get("display") or code.get("text")
+            # Clean display text of common qualifiers
+            cleaned_display = raw_display.replace(' (disorder)', '').replace(' (procedure)', '').replace(' (finding)', '').replace(' (qualifier value)', '').replace(' (regime/therapy)', '').replace(' (morphologic abnormality)', '').strip()
+            value_data["display"] = cleaned_display
         
         # For quantities (tumor size, etc.)
         if resource.get("valueQuantity") and mapping.get("expect_quantity", False):
@@ -409,7 +472,10 @@ def extract_mcode_value(resource: Dict, mcode_key: str, mapping: Dict) -> Option
         elif resource.get("valueCodeableConcept"):
             vc = resource.get("valueCodeableConcept")
             vc_coding = vc.get("coding", [{}])[0]
-            value_data["interpretation"] = vc_coding.get("display") or vc.get("text")
+            raw_interpretation = vc_coding.get("display") or vc.get("text")
+            # Clean interpretation text of common qualifiers
+            cleaned_interpretation = raw_interpretation.replace(' (disorder)', '').replace(' (procedure)', '').replace(' (finding)', '').replace(' (qualifier value)', '').replace(' (regime/therapy)', '').replace(' (morphologic abnormality)', '').strip()
+            value_data["interpretation"] = cleaned_interpretation
             value_data["display"] = value_data["interpretation"]
         
         # Return if we have meaningful data
@@ -599,13 +665,13 @@ def store_filtered_patients_to_memory(filtered_data: Dict[str, Any], api_key: st
                 system_url = cc.get('system', 'CodeSystem')
                 code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
                 display_text = cc.get('display', '').replace(' (disorder)', '')
-                summary_parts.append(f"The patient has a diagnosis of {display_text} (mCODE:CancerCondition, {code_system}: {cc.get('code', '')}).")
+                summary_parts.append(f"The patient has a diagnosis of {display_text} (mCODE:CancerCondition, {code_system}: {cc.get('code', '')})")
             if "TNMStage" in mcode:
                 ts = mcode["TNMStage"]
                 system_url = ts.get('system', 'CodeSystem')
                 code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
                 stage_display = ts.get('display', '').replace(' (qualifier value)', '')
-                summary_parts.append(f"The cancer is staged as {stage_display} (mCODE:TNMStage, {code_system}: {ts.get('code', '')}).")
+                summary_parts.append(f"The cancer is staged as {stage_display} (mCODE:TNMStage, {code_system}: {ts.get('code', '')})")
             if "HER2ReceptorStatus" in mcode:
                 her2 = mcode["HER2ReceptorStatus"]
                 # Prioritize interpretation, then display
@@ -616,7 +682,7 @@ def store_filtered_patients_to_memory(filtered_data: Dict[str, Any], api_key: st
                     her2_status = f"{qty['value']} {qty['unit']}"
                 system_url = her2.get('system', 'CodeSystem')
                 code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
-                summary_parts.append(f"HER2 receptor status is {her2_status} (mCODE:HER2ReceptorStatus, {code_system}: {her2.get('code', '')}).")
+                summary_parts.append(f"HER2 receptor status is {her2_status} (mCODE:HER2ReceptorStatus, {code_system}: {her2.get('code', '')})")
             if "ERReceptorStatus" in mcode:
                 er = mcode["ERReceptorStatus"]
                 er_status = er.get('interpretation') or er.get('display', 'Unknown')
@@ -625,7 +691,7 @@ def store_filtered_patients_to_memory(filtered_data: Dict[str, Any], api_key: st
                     er_status = f"{qty['value']} {qty['unit']}"
                 system_url = er.get('system', 'CodeSystem')
                 code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
-                summary_parts.append(f"Estrogen receptor status is {er_status} (mCODE:ERReceptorStatus, {code_system}: {er.get('code', '')}).")
+                summary_parts.append(f"Estrogen receptor status is {er_status} (mCODE:ERReceptorStatus, {code_system}: {er.get('code', '')})")
             if "PRReceptorStatus" in mcode:
                 pr = mcode["PRReceptorStatus"]
                 pr_status = pr.get('interpretation') or pr.get('display', 'Unknown')
@@ -634,13 +700,13 @@ def store_filtered_patients_to_memory(filtered_data: Dict[str, Any], api_key: st
                     pr_status = f"{qty['value']} {qty['unit']}"
                 system_url = pr.get('system', 'CodeSystem')
                 code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
-                summary_parts.append(f"Progesterone receptor status is {pr_status} (mCODE:PRReceptorStatus, {code_system}: {pr.get('code', '')}).")
+                summary_parts.append(f"Progesterone receptor status is {pr_status} (mCODE:PRReceptorStatus, {code_system}: {pr.get('code', '')})")
             if "TumorSize" in mcode:
                 size = mcode["TumorSize"]
                 if size.get('quantity'):
                     system_url = size.get('system', 'CodeSystem')
                     code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
-                    summary_parts.append(f"The tumor size is {size['quantity']['value']} {size['quantity']['unit']} (mCODE:TumorSize, {code_system}: {size.get('code', '')}).")
+                    summary_parts.append(f"The tumor size is {size['quantity']['value']} {size['quantity']['unit']} (mCODE:TumorSize, {code_system}: {size.get('code', '')})")
                 else:
                     summary_parts.append(f"Tumor size is {size.get('display', 'N/A')} (mCODE:TumorSize).")
             if "LymphNodeInvolvement" in mcode:
@@ -648,39 +714,49 @@ def store_filtered_patients_to_memory(filtered_data: Dict[str, Any], api_key: st
                 if lymph.get('quantity'):
                     system_url = lymph.get('system', 'CodeSystem')
                     code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
-                    summary_parts.append(f"There are {lymph['quantity']['value']} involved lymph nodes (mCODE:LymphNodeInvolvement, {code_system}: {lymph.get('code', '')}).")
+                    summary_parts.append(f"There are {lymph['quantity']['value']} involved lymph nodes (mCODE:LymphNodeInvolvement, {code_system}: {lymph.get('code', '')})")
                 else:
                     summary_parts.append(f"Lymph node involvement is {lymph.get('display', 'N/A')} (mCODE:LymphNodeInvolvement).")
-            if data["procedures"]:
-                cancer_procs = [p for p in data["procedures"] if any(term in p.lower() for term in ["cancer", "breast", "tumor", "chemo", "radiation", "surgery", "biopsy", "her2"])]
-                if cancer_procs:
-                    procs_str = ", ".join(cancer_procs[:5])
-                    proc_details = []
-                    for proc_text in cancer_procs[:5]:
-                        # Find the corresponding mcode data for the procedure
-                        proc_mcode = mcode.get("CancerRelatedSurgicalProcedure")
-                        if proc_mcode and proc_mcode.get('display') and proc_text in proc_mcode.get('display'):
-                             system_url = proc_mcode.get('system', 'CodeSystem')
-                             code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
-                             proc_details.append(f"{proc_text} (mCODE:CancerRelatedSurgicalProcedure, {code_system}: {proc_mcode.get('code')})")
-                        else:
-                            proc_details.append(proc_text)
+            # Use extracted procedure mCODE data instead of general procedures array
+            procedures_mcode = mcode.get("CancerRelatedSurgicalProcedure", [])
+            if isinstance(procedures_mcode, list):
+                # Multiple procedures extracted
+                proc_details = []
+                for proc in procedures_mcode[:5]:  # Limit to 5 procedures
+                    cleaned_proc = proc.get('display', 'Unknown procedure').replace(' (procedure)', '').replace(' (finding)', '').strip()
+                    system_url = proc.get('system', 'CodeSystem')
+                    code_system = 'SNOMED' if 'snomed' in system_url.lower() else 'LOINC' if 'loinc' in system_url.lower() else 'CodeSystem'
+                    code = proc.get('code', 'Unknown')
+                    proc_details.append(f"{cleaned_proc} (mCODE:CancerRelatedSurgicalProcedure, {code_system}: {code})")
+                
+                if proc_details:
                     procs_str = ", ".join(proc_details)
-                    summary_parts.append(f"Key cancer-related procedures include: {procs_str}.")
+                    summary_parts.append(f"Key cancer-related procedures include: {procs_str}")
+            elif isinstance(procedures_mcode, dict):
+                # Single procedure
+                cleaned_proc = procedures_mcode.get('display', 'Unknown procedure').replace(' (procedure)', '').replace(' (finding)', '').strip()
+                system_url = procedures_mcode.get('system', 'CodeSystem')
+                code_system = 'SNOMED' if 'snomed' in system_url.lower() else 'LOINC' if 'loinc' in system_url.lower() else 'CodeSystem'
+                code = procedures_mcode.get('code', 'Unknown')
+                summary_parts.append(f"Key cancer-related procedure: {cleaned_proc} (mCODE:CancerRelatedSurgicalProcedure, {code_system}: {code})")
             if data["conditions"]:
                 cancer_conds = [c for c in data["conditions"] if any(term in c.lower() for term in ["cancer", "breast", "malignant", "neoplasm", "tumor"])]
                 if cancer_conds:
                     cond_details = []
                     for cond_text in cancer_conds:
+                        # Clean condition text of common qualifiers
+                        cleaned_cond = cond_text.replace(' (disorder)', '').replace(' (finding)', '').replace(' (morphologic abnormality)', '').strip()
+                        
                         cond_mcode = mcode.get("CancerCondition")
-                        if cond_mcode and cond_mcode.get('display') and cond_text in cond_mcode.get('display'):
+                        if cond_mcode and cond_mcode.get('display') and any(cleaned_cond.lower() in cond_mcode.get('display', '').lower() for _ in [0]):
                             system_url = cond_mcode.get('system', 'CodeSystem')
-                            code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
-                            cond_details.append(f"{cond_text} (mCODE:CancerCondition, {code_system}: {cond_mcode.get('code')})")
+                            code_system = 'SNOMED' if 'snomed' in system_url.lower() else 'LOINC' if 'loinc' in system_url.lower() else 'CodeSystem'
+                            cond_details.append(f"{cleaned_cond} (mCODE:CancerCondition, {code_system}: {cond_mcode.get('code')})")
                         else:
-                            cond_details.append(cond_text)
+                            cond_details.append(cleaned_cond)
                     conds_str = ", ".join(cond_details)
-                    summary_parts.append(f"Other cancer-related conditions include: {conds_str}.")
+                    if cond_details:  # Only add if we have meaningful conditions
+                        summary_parts.append(f"Other cancer-related conditions include: {conds_str}")
 
             summary = " ".join(summary_parts)
             logger.debug(f"CORE Memory summary for patient {pid}: {summary}")
@@ -724,8 +800,8 @@ Examples:
     )
     parser.add_argument(
         "--patient-file", "-p",
-        type=str, default="patient.pruned.for_deepseek.json",
-        help="Path to single patient data file. Use --input-dir for batch."
+        type=str, default=None,
+        help="Path to single patient data file. Use --input-dir for batch. If not provided with --input-file, runs in standalone mode."
     )
     parser.add_argument(
         "--input-dir", "-d",
@@ -790,22 +866,28 @@ def main() -> None:
         if args.config:
             logger.info(f"Using custom config: {args.config}")
         
-        # Handle input selection
+        # Handle input selection - allow standalone patient processing
+        clinical_trial_file = None
         if args.input_file:
             clinical_trial_file = args.input_file
-        else:
-            clinical_trial_file = args.clinical_trial_file
+        elif not args.input_dir and not args.patient_file:
+            logger.error("Must provide either --input-file, --patient-file, or --input-dir")
+            sys.exit(1)
         
         patient_file = args.patient_file  # Always set patient_file for single mode
         
-        # Read clinical trial data (single file)
-        logger.info(f"Reading clinical trial data from: {clinical_trial_file}")
-        with open(clinical_trial_file, 'r') as f:
-            clinical_trial_data = json.load(f)
-        
-        # Extract mCODE elements from clinical trial data
-        clinical_trial_mcode_elements = extract_clinical_trial_mcode_elements(clinical_trial_data)
-        logger.info(f"Extracted {len(clinical_trial_mcode_elements)} mCODE elements from clinical trial data: {list(clinical_trial_mcode_elements.keys())}")
+        # Read clinical trial data (if provided)
+        if clinical_trial_file:
+            logger.info(f"Reading clinical trial data from: {clinical_trial_file}")
+            with open(clinical_trial_file, 'r') as f:
+                clinical_trial_data = json.load(f)
+            
+            # Extract mCODE elements from clinical trial data
+            clinical_trial_mcode_elements = extract_clinical_trial_mcode_elements(clinical_trial_data)
+            logger.info(f"Extracted {len(clinical_trial_mcode_elements)} mCODE elements from clinical trial data: {list(clinical_trial_mcode_elements.keys())}")
+        else:
+            clinical_trial_mcode_elements = {}
+            logger.info("No clinical trial data provided - running in standalone patient extraction mode")
         
         if args.input_dir:
             # Batch mode: Recurse through input_dir for .json files
@@ -856,8 +938,13 @@ def main() -> None:
             patient_mcode_elements = extract_patient_mcode_elements(patient_data)
             logger.info(f"Extracted {len(patient_mcode_elements)} mCODE elements from patient data: {list(patient_mcode_elements.keys())}")
             
-            # Filter patient mCODE elements based on clinical trial elements
-            filtered_patient_mcode_elements = filter_patient_mcode_elements(patient_mcode_elements, clinical_trial_mcode_elements)
+            # Use all elements if no clinical trial filtering, otherwise filter
+            if clinical_trial_mcode_elements:
+                filtered_patient_mcode_elements = filter_patient_mcode_elements(patient_mcode_elements, clinical_trial_mcode_elements)
+                logger.info(f"Filtered to {len(filtered_patient_mcode_elements)} elements based on clinical trial criteria")
+            else:
+                filtered_patient_mcode_elements = patient_mcode_elements
+                logger.info("Using all extracted mCODE elements (no clinical trial filtering)")
             
             # Create filtered patient data structure
             filtered_patient_data = patient_data.copy()
