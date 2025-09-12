@@ -251,37 +251,58 @@ def match_mcode_resource(resource: Dict, mapping: Dict) -> bool:
     coding = code.get("coding", [])
     display = code.get("text", "").lower()
     
-    # Check LOINC codes
-    for c in coding:
-        if c.get("system") == "http://loinc.org" and c.get("code") in mapping.get("loinc_codes", []):
+    # Highest priority: mCODE profile match (most specific)
+    if mapping.get("mcode_profile"):
+        profiles = resource.get("meta", {}).get("profile", [])
+        if mapping["mcode_profile"] in profiles:
             return True
     
-    # Check SNOMED codes
-    for c in coding:
-        if c.get("system") == "http://snomed.info/sct" and c.get("code") in mapping.get("snomed_codes", []):
-            return True
+    # Next: Exact LOINC code match (biomarkers, stages, etc.)
+    loinc_codes = mapping.get("loinc_codes", [])
+    if loinc_codes:
+        for c in coding:
+            if (c.get("system") == "http://loinc.org" and
+                c.get("code") in loinc_codes):
+                return True
     
-    # Check mCODE profile
-    if mapping.get("mcode_profile") and mapping.get("mcode_profile") in resource.get("meta", {}).get("profile", []):
-        return True
+    # Next: Exact SNOMED code match
+    snomed_codes = mapping.get("snomed_codes", [])
+    if snomed_codes:
+        for c in coding:
+            if (c.get("system") == "http://snomed.info/sct" and
+                c.get("code") in snomed_codes):
+                return True
     
-    # Text pattern matching
-    patterns = mapping.get("text_patterns", [])
-    if patterns and any(pattern in display for pattern in patterns):
-        return True
+    # For biomarkers, check if it's a tumor marker test with valueCodeableConcept (Positive/Negative)
+    if mapping.get("is_biomarker") and resource.get("valueCodeableConcept"):
+        vc = resource.get("valueCodeableConcept")
+        vc_coding = vc.get("coding", [])
+        # Look for SNOMED interpretation codes (260385009=Negative, 10828001=Positive)
+        for vc_c in vc_coding:
+            if (vc_c.get("system") == "http://snomed.info/sct" and
+                vc_c.get("code") in ["260385009", "10828001", "413444009"]):  # Neg, Pos, Equivocal
+                # Also check if text patterns match (HER2, ER, PR)
+                patterns = mapping.get("text_patterns", [])
+                if any(pattern in display.lower() for pattern in patterns):
+                    return True
     
-    # For CancerCondition, check if it's cancer-related
+    # For CancerCondition, specific cancer-related matches
     if mapping.get("key") == "CancerCondition":
         for c in coding:
-            # Breast cancer codes
-            if c.get("system") == "http://snomed.info/sct" and c.get("code") in ["254837009", "108294007"]:
+            if c.get("system") == "http://snomed.info/sct":
+                if c.get("code") in ["254837009", "108294007", "254838001"]:  # Breast cancer codes
+                    return True
+            if c.get("system") == "http://hl7.org/fhir/sid/icd-10-cm" and "C50" in c.get("code", ""):
                 return True
-            # ICD-10 breast cancer
-            if "C50" in c.get("code", ""):
+            if any(term in (c.get("display", "") or "").lower() for term in ["breast cancer", "malignant neoplasm of breast"]):
                 return True
-            # Text indicates cancer
-            if any(term in c.get("display", "").lower() for term in ["breast cancer", "malignant neoplasm"]):
-                return True
+    
+    # Last resort: text pattern matching (only if no exact matches above)
+    patterns = mapping.get("text_patterns", [])
+    if patterns and any(pattern in display for pattern in patterns):
+        # For text matches, also check if it's not a generic measurement
+        if not (resource.get("valueQuantity") and mapping.get("is_biomarker")):
+            return True
     
     return False
 
@@ -290,59 +311,110 @@ def extract_mcode_value(resource: Dict, mcode_key: str, mapping: Dict) -> Option
     """Extract structured value from resource for specific mCODE element."""
     value_data = {
         "system": None, "code": None, "display": None,
-        "interpretation": None, "quantity": None,
-        "date": resource.get("effectiveDateTime") or resource.get("issued"),
+        "interpretation": None, "interpretation_system": None, "interpretation_code": None,
+        "quantity": None, "date": resource.get("effectiveDateTime") or resource.get("issued"),
         "reference": resource.get("id")
     }
     
     code = resource.get("code", {})
     coding = code.get("coding", [])
     
-    # Find the best coding match for identification
-    best_coding = None
-    for c in coding:
-        if match_mcode_resource({"code": {"coding": [c]}}, mapping):
-            best_coding = c
-            break
-    
-    if best_coding:
-        value_data["system"] = best_coding.get("system")
-        value_data["code"] = best_coding.get("code")
-        value_data["display"] = best_coding.get("display") or code.get("text")
-    
-    # For biomarkers, prioritize valueCodeableConcept (interpretation)
-    if mapping.get("is_biomarker") and resource.get("valueCodeableConcept"):
-        vc = resource.get("valueCodeableConcept")
-        vc_coding = vc.get("coding", [{}])[0]
-        value_data["interpretation_system"] = vc_coding.get("system")
-        value_data["interpretation_code"] = vc_coding.get("code")
-        value_data["interpretation"] = vc_coding.get("display") or vc.get("text")
-        
-        # Map SNOMED interpretations
-        if vc_coding.get("system") == "http://snomed.info/sct":
+    # For biomarkers (HER2, ER, PR), prioritize valueCodeableConcept interpretation
+    if mapping.get("is_biomarker"):
+        if resource.get("valueCodeableConcept"):
+            vc = resource.get("valueCodeableConcept")
+            vc_coding = vc.get("coding", [])
+            
+            # Find the best interpretation coding (SNOMED preferred)
+            best_vc = None
             snomed_map = mapping.get("value_mappings", {})
-            mapped = snomed_map.get(vc_coding.get("code"))
-            if mapped:
-                value_data["interpretation"] = mapped
+            for vc_c in vc_coding:
+                if vc_c.get("system") == "http://snomed.info/sct":
+                    # Map SNOMED codes to readable values
+                    mapped_display = snomed_map.get(vc_c.get("code"))
+                    if mapped_display:
+                        value_data["interpretation"] = mapped_display
+                    else:
+                        value_data["interpretation"] = vc_c.get("display") or vc.get("text", "Unknown")
+                    value_data["interpretation_system"] = vc_c.get("system")
+                    value_data["interpretation_code"] = vc_c.get("code")
+                    best_vc = vc_c
+                    break  # Use first SNOMED match
+            
+            # If no SNOMED, use first coding
+            if not best_vc and vc_coding:
+                vc_c = vc_coding[0]
+                value_data["interpretation"] = vc_c.get("display") or vc.get("text", "Unknown")
+                value_data["interpretation_system"] = vc_c.get("system")
+                value_data["interpretation_code"] = vc_c.get("code")
+                best_vc = vc_c
+            
+            # Set code from resource code (the test type, e.g., HER2 [Interpretation])
+            if coding:
+                # Prefer LOINC code for the test
+                loinc_coding = next((c for c in coding if c.get("system") == "http://loinc.org"), coding[0])
+                value_data["system"] = loinc_coding.get("system")
+                value_data["code"] = loinc_coding.get("code")
+                value_data["display"] = loinc_coding.get("display") or code.get("text")
+            
+            # If we have an interpretation, that's our main value
+            if value_data["interpretation"] and value_data["interpretation"] != "Unknown":
+                value_data["display"] = f"{value_data['interpretation']} ({mcode_key})"
+                return value_data
+        
+        # If no valueCodeableConcept for biomarker, it might be a quantity (older format)
+        elif resource.get("valueQuantity"):
+            vq = resource.get("valueQuantity")
+            value_data["quantity"] = {
+                "value": vq.get("value"),
+                "unit": vq.get("unit"),
+                "code": vq.get("code")
+            }
+            # Set code from LOINC if available
+            if coding and any(c.get("system") == "http://loinc.org" for c in coding):
+                loinc_c = next(c for c in coding if c.get("system") == "http://loinc.org")
+                value_data["system"] = loinc_c.get("system")
+                value_data["code"] = loinc_c.get("code")
+                value_data["display"] = loinc_c.get("display")
+            else:
+                value_data["display"] = code.get("text", f"{vq.get('value')} {vq.get('unit')}")
+            return value_data
     
-    # For measurements, use valueQuantity
-    elif mapping.get("expect_quantity") and resource.get("valueQuantity"):
-        vq = resource.get("valueQuantity")
-        value_data["quantity"] = {
-            "value": vq.get("value"),
-            "unit": vq.get("unit"),
-            "code": vq.get("code")
-        }
-        value_data["display"] = f"{vq.get('value')} {vq.get('unit')}"
-    
-    # Default display from code text if no specific value
-    elif not value_data["display"] and code.get("text"):
-        value_data["display"] = code.get("text")
-    
-    # Return if we have meaningful data
-    if (value_data["code"] or value_data["display"] or
-        value_data["interpretation"] or value_data["quantity"]):
-        return value_data
+    # For non-biomarkers (procedures, conditions, etc.)
+    else:
+        # Find best coding match
+        best_coding = None
+        for c in coding:
+            if c.get("system") == "http://snomed.info/sct":  # Prefer SNOMED for procedures/conditions
+                best_coding = c
+                break
+        if not best_coding:
+            best_coding = coding[0] if coding else None
+        
+        if best_coding:
+            value_data["system"] = best_coding.get("system")
+            value_data["code"] = best_coding.get("code")
+            value_data["display"] = best_coding.get("display") or code.get("text")
+        
+        # For quantities (tumor size, etc.)
+        if resource.get("valueQuantity") and mapping.get("expect_quantity", False):
+            vq = resource.get("valueQuantity")
+            value_data["quantity"] = {
+                "value": vq.get("value"),
+                "unit": vq.get("unit"),
+                "code": vq.get("code")
+            }
+            value_data["display"] = f"{vq.get('value')} {vq.get('unit')}"
+        # For staging and other observations with valueCodeableConcept
+        elif resource.get("valueCodeableConcept"):
+            vc = resource.get("valueCodeableConcept")
+            vc_coding = vc.get("coding", [{}])[0]
+            value_data["interpretation"] = vc_coding.get("display") or vc.get("text")
+            value_data["display"] = value_data["interpretation"]
+        
+        # Return if we have meaningful data
+        if (value_data["code"] or value_data["display"] or value_data["quantity"]):
+            return value_data
     
     return None
 
@@ -411,55 +483,7 @@ def filter_patient_mcode_elements(patient_mcode_elements: Dict[str, Any],
     return filtered_elements
 
 
-def extract_mcode_value(resource: Dict, mcode_key: str, mapping: Dict) -> Optional[Dict]:
-    """Extract structured value from resource for specific mCODE element."""
-    value_data = {
-        "system": None, "code": None, "display": None,
-        "interpretation": None, "quantity": None,
-        "date": resource.get("effectiveDateTime") or resource.get("issued"),
-        "reference": resource.get("id")
-    }
-    
-    code = resource.get("code", {})
-    coding = code.get("coding", [{}])[0] if code.get("coding") else {}
-    
-    # Set basic coding info
-    value_data["system"] = coding.get("system")
-    value_data["code"] = coding.get("code")
-    value_data["display"] = coding.get("display") or code.get("text")
-    
-    # ValueCodeableConcept (interpretations like Positive/Negative)
-    if resource.get("valueCodeableConcept"):
-        vc = resource.get("valueCodeableConcept")
-        coding = vc.get("coding", [{}])[0]
-        value_data["system"] = coding.get("system") or value_data["system"]
-        value_data["code"] = coding.get("code") or value_data["code"]
-        value_data["display"] = coding.get("display") or vc.get("text")
-        
-        # Map SNOMED interpretations
-        if value_data["system"] == "http://snomed.info/sct":
-            snomed_map = mapping.get("value_mappings", {})
-            value_data["interpretation"] = snomed_map.get(value_data["code"], value_data["display"])
-    
-    # Quantity (measurements like tumor size)
-    elif resource.get("valueQuantity"):
-        vq = resource.get("valueQuantity")
-        value_data["quantity"] = {
-            "value": vq.get("value"),
-            "unit": vq.get("unit"),
-            "code": vq.get("code")
-        }
-        value_data["display"] = f"{vq.get('value')} {vq.get('unit')}"
-    
-    # Reference (procedures, medications)
-    elif code.get("text"):
-        value_data["display"] = code.get("text")
-    
-    # For Patient demographics, special handling
-    elif mcode_key in ["PatientSex", "Race", "Ethnicity"]:
-        pass  # Handled in extract_demographics
-    
-    return value_data if any([value_data["code"], value_data["display"], value_data["quantity"], value_data["interpretation"]]) else None
+# Duplicate function removed - using the improved version above
 
 
 def extract_demographics(patient_resource: Dict) -> Dict:
@@ -564,72 +588,105 @@ def store_filtered_patients_to_memory(filtered_data: Dict[str, Any], api_key: st
         
         # Build and ingest per-patient summaries
         for pid, data in patients.items():
-            summary_lines = [
-                f"Patient {data['name']}:",
-                f"Gender: {data['gender']}. Date of birth: {data['dob']}. Race: {data['race']}. Ethnicity: {data['ethnicity']}.",
-                "MCODE elements:"
+            summary_parts = [
+                f"Patient {data['name']} (PatientID: {pid}) is a {data['gender']} born on {data['dob']}.",
+                f"The patient's race is {data['race']} and ethnicity is {data['ethnicity']}.",
             ]
+
             mcode = data["mcode"]
             if "CancerCondition" in mcode:
                 cc = mcode["CancerCondition"]
-                summary_lines.append(f"  CancerCondition: {cc.get('display', '')} ({cc.get('code', '')})")
+                system_url = cc.get('system', 'CodeSystem')
+                code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
+                display_text = cc.get('display', '').replace(' (disorder)', '')
+                summary_parts.append(f"The patient has a diagnosis of {display_text} (mCODE:CancerCondition, {code_system}: {cc.get('code', '')}).")
             if "TNMStage" in mcode:
                 ts = mcode["TNMStage"]
-                summary_lines.append(f"  TNMStage: {ts.get('display', '')} ({ts.get('code', '')})")
-            if "TumorMarker" in mcode:
-                tm = mcode["TumorMarker"]
-                summary_lines.append(f"  TumorMarker: {tm.get('display', '')} ({tm.get('code', '')})")
+                system_url = ts.get('system', 'CodeSystem')
+                code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
+                stage_display = ts.get('display', '').replace(' (qualifier value)', '')
+                summary_parts.append(f"The cancer is staged as {stage_display} (mCODE:TNMStage, {code_system}: {ts.get('code', '')}).")
             if "HER2ReceptorStatus" in mcode:
                 her2 = mcode["HER2ReceptorStatus"]
-                her2_status = her2.get('interpretation', her2.get('display', 'Unknown'))
-                summary_lines.append(f"  HER2ReceptorStatus: {her2_status} ({her2.get('code', '')})")
+                # Prioritize interpretation, then display
+                her2_status = her2.get('interpretation') or her2.get('display', 'Unknown')
+                if her2_status == 'Unknown' and her2.get('quantity'):
+                    # Fallback to quantity if no interpretation
+                    qty = her2['quantity']
+                    her2_status = f"{qty['value']} {qty['unit']}"
+                system_url = her2.get('system', 'CodeSystem')
+                code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
+                summary_parts.append(f"HER2 receptor status is {her2_status} (mCODE:HER2ReceptorStatus, {code_system}: {her2.get('code', '')}).")
+            if "ERReceptorStatus" in mcode:
+                er = mcode["ERReceptorStatus"]
+                er_status = er.get('interpretation') or er.get('display', 'Unknown')
+                if er_status == 'Unknown' and er.get('quantity'):
+                    qty = er['quantity']
+                    er_status = f"{qty['value']} {qty['unit']}"
+                system_url = er.get('system', 'CodeSystem')
+                code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
+                summary_parts.append(f"Estrogen receptor status is {er_status} (mCODE:ERReceptorStatus, {code_system}: {er.get('code', '')}).")
+            if "PRReceptorStatus" in mcode:
+                pr = mcode["PRReceptorStatus"]
+                pr_status = pr.get('interpretation') or pr.get('display', 'Unknown')
+                if pr_status == 'Unknown' and pr.get('quantity'):
+                    qty = pr['quantity']
+                    pr_status = f"{qty['value']} {qty['unit']}"
+                system_url = pr.get('system', 'CodeSystem')
+                code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
+                summary_parts.append(f"Progesterone receptor status is {pr_status} (mCODE:PRReceptorStatus, {code_system}: {pr.get('code', '')}).")
             if "TumorSize" in mcode:
                 size = mcode["TumorSize"]
                 if size.get('quantity'):
-                    summary_lines.append(f"  TumorSize: {size['quantity']['value']} {size['quantity']['unit']} ({size.get('code', '')})")
+                    system_url = size.get('system', 'CodeSystem')
+                    code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
+                    summary_parts.append(f"The tumor size is {size['quantity']['value']} {size['quantity']['unit']} (mCODE:TumorSize, {code_system}: {size.get('code', '')}).")
                 else:
-                    summary_lines.append(f"  TumorSize: {size.get('display', 'N/A')}")
+                    summary_parts.append(f"Tumor size is {size.get('display', 'N/A')} (mCODE:TumorSize).")
             if "LymphNodeInvolvement" in mcode:
                 lymph = mcode["LymphNodeInvolvement"]
                 if lymph.get('quantity'):
-                    summary_lines.append(f"  LymphNodeInvolvement: {lymph['quantity']['value']} ({lymph.get('code', '')})")
+                    system_url = lymph.get('system', 'CodeSystem')
+                    code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
+                    summary_parts.append(f"There are {lymph['quantity']['value']} involved lymph nodes (mCODE:LymphNodeInvolvement, {code_system}: {lymph.get('code', '')}).")
                 else:
-                    summary_lines.append(f"  LymphNodeInvolvement: {lymph.get('display', 'N/A')}")
+                    summary_parts.append(f"Lymph node involvement is {lymph.get('display', 'N/A')} (mCODE:LymphNodeInvolvement).")
             if data["procedures"]:
-                # Limit procedures to cancer-related ones
                 cancer_procs = [p for p in data["procedures"] if any(term in p.lower() for term in ["cancer", "breast", "tumor", "chemo", "radiation", "surgery", "biopsy", "her2"])]
                 if cancer_procs:
-                    procs_str = ", ".join(cancer_procs[:10])  # Top 10
-                    if len(cancer_procs) > 10:
-                        procs_str += f" + {len(cancer_procs)-10} more"
-                    summary_lines.append(f"Key Cancer Procedures: {procs_str}")
-                else:
-                    procs = ", ".join(data["procedures"][:5])  # Top 5 if no cancer-specific
-                    summary_lines.append(f"Procedures: {procs}")
+                    procs_str = ", ".join(cancer_procs[:5])
+                    proc_details = []
+                    for proc_text in cancer_procs[:5]:
+                        # Find the corresponding mcode data for the procedure
+                        proc_mcode = mcode.get("CancerRelatedSurgicalProcedure")
+                        if proc_mcode and proc_mcode.get('display') and proc_text in proc_mcode.get('display'):
+                             system_url = proc_mcode.get('system', 'CodeSystem')
+                             code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
+                             proc_details.append(f"{proc_text} (mCODE:CancerRelatedSurgicalProcedure, {code_system}: {proc_mcode.get('code')})")
+                        else:
+                            proc_details.append(proc_text)
+                    procs_str = ", ".join(proc_details)
+                    summary_parts.append(f"Key cancer-related procedures include: {procs_str}.")
             if data["conditions"]:
-                # Prioritize cancer-related conditions
                 cancer_conds = [c for c in data["conditions"] if any(term in c.lower() for term in ["cancer", "breast", "malignant", "neoplasm", "tumor"])]
                 if cancer_conds:
-                    conds_str = ", ".join(cancer_conds)
-                    summary_lines.append(f"Cancer Conditions: {conds_str}")
-                else:
-                    conds = ", ".join(data["conditions"][:5])
-                    summary_lines.append(f"Conditions: {conds}")
-            if data["vitals"]:
-                # Key cancer-relevant vitals
-                key_vitals = {k: v for k, v in data["vitals"].items() if any(term in k.lower() for term in ["weight", "bmi", "height"])}
-                if key_vitals:
-                    vitals_str = ", ".join([f"{k}: {v}" for k, v in key_vitals.items()])
-                    summary_lines.append(f"Key Vitals: {vitals_str}")
-                else:
-                    vitals_str = ", ".join([f"{k}: {v}" for k, v in list(data["vitals"].items())[:5]])  # Top 5
-                    summary_lines.append(f"Vitals: {vitals_str}")
-            
-            summary = " ".join(summary_lines) + "."
+                    cond_details = []
+                    for cond_text in cancer_conds:
+                        cond_mcode = mcode.get("CancerCondition")
+                        if cond_mcode and cond_mcode.get('display') and cond_text in cond_mcode.get('display'):
+                            system_url = cond_mcode.get('system', 'CodeSystem')
+                            code_system = 'SNOMED' if 'snomed' in system_url else 'LOINC' if 'loinc' in system_url else 'CodeSystem'
+                            cond_details.append(f"{cond_text} (mCODE:CancerCondition, {code_system}: {cond_mcode.get('code')})")
+                        else:
+                            cond_details.append(cond_text)
+                    conds_str = ", ".join(cond_details)
+                    summary_parts.append(f"Other cancer-related conditions include: {conds_str}.")
+
+            summary = " ".join(summary_parts)
             logger.debug(f"CORE Memory summary for patient {pid}: {summary}")
             client.ingest(summary)
             logger.info(f"Stored summary for patient {pid} ({data['name']}) in CORE Memory")
-        
+
         logger.info("Successfully stored patient summaries in CORE Memory")
     
     except Exception as e:

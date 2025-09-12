@@ -85,59 +85,198 @@ def store_in_core_memory(results: Dict[str, Any], api_key: str) -> None:
                 # Extract mCODE mappings for detailed storage
                 mappings = mcode_results.get('mcode_mappings', [])
                 validation = mcode_results.get('validation', {})
+
+                # Extract relevant information
+                eligibility_criteria = trial.get('protocolSection', {}).get('eligibilityModule', {}).get('eligibilityCriteria', 'N/A')
+                cancer_condition = next((m.get('value', 'N/A') for m in mappings if m.get('mcode_element') == 'CancerCondition'), 'N/A')
+                # Check for TNMStage first, then CancerStage
+                cancer_stage = 'N/A'
+                for m in mappings:
+                    if m.get('mcode_element') == 'TNMStage':
+                        cancer_stage = m.get('value', 'N/A')
+                        break
+                if cancer_stage == 'N/A':
+                    for m in mappings:
+                        if m.get('mcode_element') == 'CancerStage':
+                            cancer_stage = m.get('value', 'N/A')
+                            break
+                histology = next((m.get('value', 'N/A') for m in mappings if m.get('mcode_element') == 'HistologyMorphologyBehavior'), 'N/A')
+                treatments_list = [m.get('value', 'N/A') for m in mappings if m.get('mcode_element') == 'CancerTreatment']
+                treatments = ", ".join(treatments_list) if treatments_list else 'Not specified'
                 
-                # Create a comprehensive summary
-                summary_lines = [
-                    f"Clinical Trial {nct_id}: {brief_title}",
+                # Extract sponsor and location for context
+                sponsor = trial.get('protocolSection', {}).get('sponsorCollaboratorsModule', {}).get('leadSponsor', {}).get('name', 'N/A')
+                location = trial.get('protocolSection', {}).get('contactsLocationsModule', {}).get('locations', [{}])[0].get('facility', 'N/A')
+                
+                # Create a narrative summary with all mCODE mappings in plain English
+                summary_parts = [
+                    f"Clinical Trial {nct_id} titled '{brief_title}' is recruiting patients for breast cancer treatment at {location}, sponsored by {sponsor} (mCODE:ClinicalTrial).",
+                    f"This study targets {cancer_condition.replace(' (disorder)', '')} patients (mCODE:CancerCondition)."
                 ]
                 
-                # Add study description if available
-                brief_summary = trial.get('protocolSection', {}).get('descriptionModule', {}).get('briefSummary')
-                if brief_summary:
-                    summary_lines.append(f"This is {brief_summary}")
-                else:
-                    # Try to get enrollment info
-                    enrollment_info = trial.get('protocolSection', {}).get('designModule', {}).get('enrollmentInfo')
-                    if enrollment_info:
-                        count = enrollment_info.get('count', 'N/A')
-                        summary_lines.append(f"This is a Phase 4 post-market study with an estimated enrollment of {count} patients.")
+                # Add staging information
+                if cancer_stage != 'N/A':
+                    summary_parts.append(f"Eligible patients have {cancer_stage} disease (mCODE:TNMStage).")
                 
-                # Group mappings by mcode_element for better organization
-                grouped_mappings = {}
+                # Add treatment information
+                if treatments != 'Not specified':
+                    treatment_list = [t.strip() for t in treatments.split(',') if t.strip() != 'N/A']
+                    if treatment_list:
+                        treatments_narrative = ", ".join(treatment_list[:-1]) + " and " + treatment_list[-1] if len(treatment_list) > 1 else treatment_list[0]
+                        summary_parts.append(f"The trial evaluates {treatments_narrative} as cancer treatments (mCODE:CancerTreatment).")
+                
+                # Add detailed mCODE mappings as narrative sentences with codes
+                summary_parts.append("Key eligibility and treatment criteria from mCODE analysis include:")
+                
+                # Group and narrate the 25 mappings with mCODE codes
+                mapping_groups = {
+                    "patient demographics": [],
+                    "cancer characteristics": [],
+                    "biomarker requirements": [],
+                    "treatment modalities": [],
+                    "genomic testing": [],
+                    "other criteria": []
+                }
+                
+                # Standard medical codes for common clinical trial elements
+                standard_codes = {
+                    # Patient demographics
+                    'PatientSex': {'Female': '248152002'},  # SNOMED: Female sex
+                    'PatientAge': {'Adult': '263537006'},   # SNOMED: Adult age group
+                    
+                    # Cancer conditions - common breast cancer codes
+                    'CancerCondition': {
+                        'Breast Cancer': '254837009',  # SNOMED: Malignant neoplasm of breast
+                        'Early-stage Breast Cancer': '254837009',
+                        'HR+/HER2- breast cancer': '254837009',
+                        'HR+/HER2- invasive breast cancer': '254837009',
+                        'ER+/HER2- early invasive breast cancer': '254837009',
+                        'hormone receptor-positive (HR+) breast cancer': '254837009',
+                        'breast cancer': '254837009'
+                    },
+                    
+                    # Staging
+                    'TNMStage': {
+                        'T2N1M0': '258215001'  # SNOMED: Stage I breast cancer (adjust as needed)
+                    },
+                    
+                    # Biomarkers
+                    'ERStatus': {'>50%': '108283007'},  # SNOMED: ER positive
+                    'HER2Status': {'Negative': '260385009'},  # SNOMED: Negative HER2
+                    'Ki67Index': {'≥20%': '419377000'},  # SNOMED: Ki67 proliferation index
+                    
+                    # Treatments
+                    'CancerRelatedMedication': {
+                        'palbociclib': '716061000',  # SNOMED: Palbociclib
+                        'ribociclib': '763340007',   # SNOMED: Ribociclib
+                        'letrozole': '386878001',    # SNOMED: Letrozole
+                        'anastrozole': '386871004',  # SNOMED: Anastrozole
+                        'CDK4/6 Inhibitors': '763340007',  # Generic CDK4/6
+                        'Endocrine Therapy': '278850018',  # SNOMED: Endocrine therapy
+                        'Neoadjuvant Endocrine Therapy': '278850018'
+                    },
+                    
+                    # Genomic
+                    'CancerGenomicVariant': {
+                        'Multigene Risk Score': '363344003'  # SNOMED: Multigene analysis
+                    },
+                    
+                    # Tumor markers
+                    'TumorMarker': {
+                        'Ki-67 expression': '419377000',  # SNOMED: Ki67
+                        'Ki67 dynamic changes': '419377000',
+                        'Ki-67 Dynamic Assessment': '419377000'
+                    },
+                    
+                    # Tumor marker tests
+                    'TumorMarkerTest': {
+                        'Ki-67 Dynamic Assessment': '48676-1'  # LOINC: Tumor marker test
+                    }
+                }
+                
                 for mapping in mappings:
-                    if isinstance(mapping, dict):
-                        mcode_element = mapping.get('mcode_element', 'Unknown')
-                        value = mapping.get('value', 'Unknown')
-                        if mcode_element not in grouped_mappings:
-                            grouped_mappings[mcode_element] = []
-                        grouped_mappings[mcode_element].append(value)
+                    element = mapping.get('mcode_element', '')
+                    value = mapping.get('value', '')
+                    
+                    if not value or value == 'N/A':
+                        continue
+                    
+                    # Try to get specific code from trial data first
+                    trial_code = None
+                    if element == 'CancerCondition':
+                        # Look for specific condition codes in trial data
+                        conditions = trial.get('protocolSection', {}).get('conditionsModule', {}).get('conditions', [])
+                        if value in conditions:
+                            trial_code = f"ICD10:C50"  # Generic breast cancer code
+                    elif element == 'CancerRelatedMedication':
+                        # Look for drug names in interventions
+                        interventions = trial.get('protocolSection', {}).get('armsInterventionsModule', {}).get('interventions', [])
+                        for intervention in interventions:
+                            if intervention.get('name') == value:
+                                trial_code = intervention.get('name', value)
+                                break
+                    
+                    # Use standard codes if available, otherwise raise a warning
+                    code_info = standard_codes.get(element, {}).get(value)
+                    code_system = "SNOMED" if code_info and code_info.isdigit() else "LOINC" if code_info and '-' in code_info else "ICD-10" if code_info and 'C' in code_info else "Trial-Specific"
+                    
+                    if not code_info:
+                        logger.warning(f"No specific code found for mCODE element '{element}' with value '{value}'. Skipping.")
+                        continue
+                    
+                    # Create narrative with mCODE reference including the code system
+                    mcode_ref = f"(mCODE:{element}, {code_system}: {code_info})"
+                    
+                    # Categorize and create narrative sentences
+                    if element in ['PatientSex', 'PatientAge', 'Race', 'Ethnicity']:
+                        mapping_groups["patient demographics"].append(f"{value} patients {mcode_ref}")
+                    elif element in ['CancerCondition', 'CancerStage', 'TNMStage', 'HistologyMorphologyBehavior']:
+                        mapping_groups["cancer characteristics"].append(f"{value.replace(' (disorder)', '')} {mcode_ref}")
+                    elif element in ['ERStatus', 'HER2Status', 'Ki67Index', 'TumorMarker', 'TumorMarkerTest']:
+                        mapping_groups["biomarker requirements"].append(f"{value} {mcode_ref}")
+                    elif element in ['CancerTreatment', 'CancerRelatedMedication']:
+                        mapping_groups["treatment modalities"].append(f"{value} {mcode_ref}")
+                    elif element in ['CancerGenomicVariant', 'GenomicVariant']:
+                        mapping_groups["genomic testing"].append(f"{value} {mcode_ref}")
+                    else:
+                        mapping_groups["other criteria"].append(f"{value} {mcode_ref}")
                 
-                # Add mCODE mappings
-                if grouped_mappings:
-                    mapping_strings = []
-                    for mcode_element, values in grouped_mappings.items():
-                        # Format values as a comma-separated list
-                        if len(values) == 1:
-                            mapping_strings.append(f"{mcode_element} ({values[0]})")
-                        else:
-                            values_str = ", ".join(values)
-                            mapping_strings.append(f"{mcode_element} ({values_str})")
-                    summary_lines.append("MCODE mappings include: " + ", ".join(mapping_strings) + ".")
+                # Create narrative from grouped mappings
+                for category, items in mapping_groups.items():
+                    if items:
+                        # For multiple items, clean up and format properly
+                        clean_items = []
+                        for item in items:
+                            # Remove any existing category reference that might have been added
+                            if f", {category})" in item:
+                                clean_item = item.replace(f", {category})", ")")
+                            else:
+                                clean_item = item
+                            clean_items.append(clean_item)
+                        
+                        narrative_items = ", ".join(clean_items)
+                        summary_parts.append(f"The trial requires {category}: {narrative_items}.")
                 
-                # Add validation info
-                if validation:
-                    compliance_score = validation.get('compliance_score', 'N/A')
-                    summary_lines.append(f"Compliance Score: {compliance_score}")
+                # Eligibility criteria are mapped to mCODE, so no need to include the raw text
                 
-                summary = ". ".join(summary_lines) + "."
+                summary = " ".join(summary_parts)
+                logger.debug(f"CORE Memory summary for trial {nct_id}: {summary}")
+                logger.debug(f"CORE Memory summary for trial {nct_id}: {summary}")
             else:
-                # Fallback to simple summary
+                # Fallback to simple narrative summary
+                sponsor = trial.get('protocolSection', {}).get('sponsorCollaboratorsModule', {}).get('leadSponsor', {}).get('name', 'N/A')
+                location = trial.get('protocolSection', {}).get('contactsLocationsModule', {}).get('locations', [{}])[0].get('facility', 'N/A')
+                eligibility_criteria = trial.get('protocolSection', {}).get('eligibilityModule', {}).get('eligibilityCriteria', 'N/A')
+                
                 summary = (
-                    f"Trial: {nct_id} - {brief_title}\n"
-                    f"Mappings: {len(mcode_results.get('mcode_mappings', []))}, "
-                    f"Compliance: {mcode_results.get('validation', {}).get('compliance_score', 'N/A')}"
+                    f"Clinical Trial {nct_id} titled '{brief_title}' is sponsored by {sponsor} "
+                    f"and conducted at {location}. "
+                    f"The trial focuses on breast cancer treatment and is seeking {cancer_condition.lower()} patients. "
+                    f"Eligibility criteria: {eligibility_criteria[:300]}... "
+                    f"No detailed mCODE mappings available for patient matching."
                 )
-            
+                logger.debug(f"CORE Memory summary for trial {nct_id}: {summary}")
+
             client.ingest(summary)
 
         logger.info("✅ Successfully stored results in CORE Memory")
