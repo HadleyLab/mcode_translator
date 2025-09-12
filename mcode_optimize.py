@@ -130,6 +130,16 @@ Examples:
         action="store_true",
         help="Enable verbose logging"
     )
+    parser.add_argument(
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        default="INFO",
+        help="Set logging level (default: INFO)"
+    )
+    parser.add_argument(
+        "--config",
+        help="Path to configuration file (overrides default)"
+    )
     
     return parser
 

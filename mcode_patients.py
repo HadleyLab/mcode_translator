@@ -15,7 +15,7 @@ from typing import Dict, Any, List, Optional
 
 from src.utils.logging_config import get_logger, setup_logging
 from src.utils.config import Config
-from src.utils.core_memory_client import CoreMemoryClient
+from src.utils.core_memory_client import CoreMemoryClient, CoreMemoryError
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -648,33 +648,27 @@ def create_parser() -> argparse.ArgumentParser:
         epilog="""
 Examples:
   # Single file processing
-  mcode_patients.py --clinical-trial-file data/fetcher_output/deepseek-chat.results.json \
-    --patient-file patient.pruned.for_deepseek.json --output-file patient.filtered.for_deepseek.json
+  mcode_patients.py --input-file data/fetcher_output/deepseek-chat.results.json \
+    --patient-file patient.pruned.for_deepseek.json --output patient.filtered.for_deepseek.json
 
   # Batch processing with directory recursion
-  mcode_patients.py --clinical-trial-file data/fetcher_output/deepseek-chat.results.json \
-    --root-dir data/mcode_downloads --output-dir data/mcode_filtered --workers 4
+  mcode_patients.py --input-file data/fetcher_output/deepseek-chat.results.json \
+    --input-dir data/mcode_downloads --output-dir data/mcode_filtered --workers 4
 
   # With CORE Memory storage
-  mcode_patients.py --clinical-trial-file data/fetcher_output/deepseek-chat.results.json \
+  mcode_patients.py --input-file data/fetcher_output/deepseek-chat.results.json \
     --patient-file patient.pruned.for_deepseek.json --store-in-core-memory --verbose
         """
     )
-    input_group = parser.add_mutually_exclusive_group(required=True)
-    input_group.add_argument(
-        "--clinical-trial-file", "-c",
+    parser.add_argument(
+        "--input-file", "-i",
         type=str, default="data/fetcher_output/deepseek-chat.results.json",
         help="Path to clinical trial data file (default: data/fetcher_output/deepseek-chat.results.json)"
-    )
-    input_group.add_argument(
-        "input_file",
-        nargs="?",
-        help="Patient data file (alternative to --patient-file)"
     )
     parser.add_argument(
         "--patient-file", "-p",
         type=str, default="patient.pruned.for_deepseek.json",
-        help="Path to single patient data file (default: patient.pruned.for_deepseek.json). Use --input-dir for batch."
+        help="Path to single patient data file. Use --input-dir for batch."
     )
     parser.add_argument(
         "--input-dir", "-d",
