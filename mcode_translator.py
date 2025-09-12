@@ -109,23 +109,38 @@ def process_single_trial(trial_data: Dict[str, Any], pipeline: McodePipeline, ar
     """Process a single clinical trial."""
     logger = get_logger(__name__)
     logger.info("🔬 Processing single clinical trial")
+
+    # Check if the input is wrapped in a 'trial' key
+    if 'trial' in trial_data:
+        trial = trial_data['trial']
+    else:
+        trial = trial_data
     
-    result = pipeline.process_clinical_trial(trial_data)
+    result = pipeline.process_clinical_trial(trial)
     
     # Add metadata
     output_data = {
         "input_metadata": {
-            "trial_id": trial_data.get("protocolSection", {}).get("identificationModule", {}).get("nctId", "unknown"),
+            "trial_id": trial.get("protocolSection", {}).get("identificationModule", {}).get("nctId", "unknown"),
             "processing_timestamp": pipeline.get_processing_timestamp() if hasattr(pipeline, 'get_processing_timestamp') else None,
+            # Include LLM parameters in metadata
             "model_used": args.model,
-            "prompt_used": args.prompt
+            "prompt_used": args.prompt,
+            "llm_temperature": pipeline.llm_mapper.temperature if hasattr(pipeline.llm_mapper, 'temperature') else "N/A"  # Access temperature from McodeMapper
         },
         "mcode_results": {
             "extracted_entities": result.extracted_entities,
             "mcode_mappings": result.mcode_mappings,
             "source_references": result.source_references,
             "validation_results": result.validation_results,
-            "metadata": result.metadata,
+            "metadata": {
+                "prompt": args.prompt,
+                "model": args.model,
+                "prompt": args.prompt,
+                "llm_temperature": pipeline.llm_mapper.temperature if hasattr(pipeline.llm_mapper, 'temperature') else "N/A",
+                **result.metadata,  # Include existing metadata
+
+            },
             "token_usage": result.token_usage,
             "error": result.error
         }
@@ -156,9 +171,32 @@ def process_batch_trials(trials_data: List[Dict[str, Any]], pipeline: McodePipel
                     "validation_results": result.validation_results,
                     "metadata": result.metadata,
                     "token_usage": result.token_usage,
-                    "error": result.error
+                    "error": result.error,
                 },
-                "processing_index": i
+                "processing_index": i,
+                "input_metadata": {
+                    "trial_id": trial_data.get("protocolSection", {}).get("identificationModule", {}).get("nctId", f"trial_{i}"),
+                    "processing_timestamp": pipeline.get_processing_timestamp() if hasattr(pipeline, 'get_processing_timestamp') else None,
+                    # Include LLM parameters in metadata
+                    "model_used": args.model,
+                    "prompt_used": args.prompt,
+                    "llm_temperature": pipeline.llm_mapper.temperature if hasattr(pipeline.llm_mapper, 'temperature') else "N/A"  # Access temperature from McodeMapper
+                },
+                "mcode_results": {
+                    "extracted_entities": result.extracted_entities,
+                    "mcode_mappings": result.mcode_mappings,
+                    "source_references": result.source_references,
+                    "validation_results": result.validation_results,
+                    "metadata": {
+                        "prompt": args.prompt,
+                        "model": args.model,
+                        "prompt": args.prompt,
+                        "llm_temperature": pipeline.llm_mapper.temperature if hasattr(pipeline.llm_mapper, 'temperature') else "N/A",
+                        **{k: v for k, v in result.metadata.items() if k != 'pipeline_version'}  # Include existing metadata, excluding pipeline_version
+                    },
+                    "token_usage": result.token_usage,
+                    "error": result.error
+                }
             }
             successful_results.append(trial_result)
             
@@ -221,21 +259,18 @@ def main() -> None:
             model_name=args.model
         )
         
-        # Determine processing mode
-        if args.batch or isinstance(input_data, list):
-            # Batch processing
-            if not isinstance(input_data, list):
-                logger.error("❌ --batch specified but input is not a list of trials")
-                sys.exit(1)
-            
+        # Auto-detect input format: batch wrapper or single trial
+        if 'successful_trials' in input_data and isinstance(input_data['successful_trials'], list):
+            # Handle batch wrapper format from fetcher
+            trials_data = input_data['successful_trials']
+            logger.info(f"🔬 Starting batch processing of {len(trials_data)} trials from successful_trials array")
+            output_data = process_batch_trials(trials_data, pipeline, args)
+        elif isinstance(input_data, list):
+            # Direct list of trials
             logger.info(f"🔬 Starting batch processing of {len(input_data)} trials")
             output_data = process_batch_trials(input_data, pipeline, args)
         else:
             # Single trial processing
-            if isinstance(input_data, list):
-                logger.warning("⚠️  Input contains multiple trials but --batch not specified. Processing first trial only.")
-                input_data = input_data[0]
-            
             logger.info("🔬 Starting single trial processing")
             output_data = process_single_trial(input_data, pipeline, args)
         
@@ -255,7 +290,7 @@ def main() -> None:
             json.dump(output_data, f, indent=2, ensure_ascii=False)
         
         # Print summary
-        if args.batch:
+        if 'batch_metadata' in output_data:
             batch_meta = output_data["batch_metadata"]
             print(f"\n✅ Batch processing completed successfully!")
             print(f"📄 Input: {input_path}")
@@ -265,12 +300,23 @@ def main() -> None:
             print(f"❌ Failed: {batch_meta['failed_trials']}")
             print(f"📈 Success Rate: {batch_meta['success_rate']:.1f}%")
         else:
-            mcode_results = output_data["mcode_results"]
-            print(f"\n✅ Processing completed successfully!")
-            print(f"📄 Input: {input_path}")
-            print(f"💾 Output: {output_path}")
-            print(f"🎯 mCODE Mappings: {len(mcode_results.get('mcode_mappings', []))}")
-            print(f"📊 Quality Score: {mcode_results.get('validation_results', {}).get('compliance_score', 'N/A')}")
+            if "mcode_results" in output_data:
+                mcode_results = output_data["mcode_results"]
+                print(f"\n✅ Processing completed successfully!")
+                print(f"📄 Input: {input_path}")
+                print(f"💾 Output: {output_path}")
+                if mcode_results:
+                    print(f"🎯 mCODE Mappings: {len(mcode_results.get('mcode_mappings', []))}")
+                    print(f"📊 Quality Score: {mcode_results.get('validation_results', {}).get('compliance_score', 'N/A')}")
+                else:
+                    print("🎯 No mCODE Mappings")
+                    print("📊 Quality Score: N/A")
+            else:
+                print(f"\n✅ Processing completed successfully!")
+                print(f"📄 Input: {input_path}")
+                print(f"💾 Output: {output_path}")
+                print(f"🎯 mCODE Mappings: 0")
+                print(f"📊 Quality Score: N/A")
         
         logger.info("✅ mCODE Translator completed successfully")
         

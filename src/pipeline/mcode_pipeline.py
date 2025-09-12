@@ -130,7 +130,6 @@ class McodePipeline(ProcessingPipeline, Loggable):
                 source_references=source_references,
                 validation_results=validation_results,
                 metadata={
-                    'pipeline_version': 'Mcode_pipeline_v1',
                     'engine_type': 'LLM',
                     'entities_count': 0,
                     'mapped_count': len(all_mappings),

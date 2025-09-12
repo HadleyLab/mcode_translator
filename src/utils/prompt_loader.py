@@ -191,15 +191,14 @@ class PromptLoader:
                 missing_placeholders.append(placeholder)
                 
         if missing_placeholders:
-            # TEMPLATE EXCEPTION: Allow prompts with missing placeholders for demo/experimental purposes
-            # but log a strong warning instead of failing
-            logger.warning(
-                f"TEMPLATE VALIDATION WARNING for '{prompt_config.get('name', 'unknown')}'. "
+            error_message = (
+                f"TEMPLATE VALIDATION FAILED for '{prompt_config.get('name', 'unknown')}'. "
                 f"Missing required placeholders: {missing_placeholders}. "
                 f"Prompt type '{prompt_type}' requires: {required_placeholders}. "
-                f"This prompt will still be loaded for demo purposes, but may not function correctly."
+                f"This prompt cannot be loaded."
             )
-            
+            logger.error(error_message)
+            raise ValueError(error_message)
         logger.debug(f"Prompt '{prompt_config.get('name')}' validation completed")
     
     def _validate_prompt_response_structure(self, prompt_content: str, prompt_config: Dict[str, Any]) -> None:

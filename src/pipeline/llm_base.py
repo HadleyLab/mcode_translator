@@ -25,7 +25,7 @@ from src.utils import (
     TokenUsage,
     extract_token_usage_from_response,
     global_token_tracker,
-    UnifiedAPIManager
+    APIManager
 )
 from src.pipeline.task_queue import BenchmarkTask, get_global_task_queue
 
@@ -131,8 +131,8 @@ class LlmBase(Loggable, ABC):
         # Initialize OpenAI client
         self.client = self._initialize_openai_client()
 
-        # Initialize LLM cache using UnifiedAPIManager
-        api_manager = UnifiedAPIManager()
+        # Initialize LLM cache using APIManager
+        api_manager = APIManager()
         self.llm_cache = api_manager.get_cache("llm")
 
         self.logger.info(f"✅ Strict LLM Base initialized successfully with model: {self.model_name}")
@@ -256,7 +256,7 @@ class LlmBase(Loggable, ABC):
                 'response_json': response_json,
                 'metrics': metrics.to_dict()
             }
-            self.llm_cache.set_by_key(cache_data, cache_key_data_with_model_and_api, ttl=None)
+            self.llm_cache.set_by_key(cache_data, cache_key_data_with_model_and_api)
             
             return response_json, metrics
             
