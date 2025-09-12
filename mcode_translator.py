@@ -48,7 +48,8 @@ Examples:
     
     # Input/Output
     parser.add_argument(
-        "input_file",
+        "--input-file", "-i",
+        required=True,
         help="Path to clinical trial data file (JSON format)"
     )
     

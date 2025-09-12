@@ -146,4 +146,4 @@ auto_generated/
 # data/*.csv
 data/fetcher_output/
 data/mcode_downloads/
-data/mcode_downloads_filtered/
+data/mcode_filtered/

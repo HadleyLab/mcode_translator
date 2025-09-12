@@ -51,93 +51,92 @@ def store_in_core_memory(results: Dict[str, Any], api_key: str) -> None:
         if "successful_trials" in results:
             # Concurrent processing results
             trial_list = results["successful_trials"]
+            summary_message = f"mCODE Fetcher processed {results.get('summary', {}).get('total_trials', 0)} trials. " \
+                              f"Successful: {results.get('summary', {}).get('successful_trials', 0)}, " \
+                              f"Failed: {results.get('summary', {}).get('failed_trials', 0)}"
         elif "trials" in results:
             # Sequential search results
             trial_list = results["trials"]
+            summary_message = f"mCODE Fetcher processed {results.get('total_found', 0)} trials."
         elif "trial" in results:
             # Single trial results
             trial_list = [results["trial"]]
+            nct_id = results.get("nct_id", "unknown")
+            summary_message = f"mCODE Fetcher processed 1 trial (NCT ID: {nct_id})."
         else:
             # Unknown structure
             logger.warning("Unknown results structure, storing raw results")
+            summary_message = f"mCODE Fetcher processed results: {json.dumps(results)}"
+        
+        # Log batch processing summary but don't store in CORE Memory (only store individual trials/patients)
+        logger.info(f"Batch processing summary: {summary_message}")
 
         # Ingest each trial
         for trial in trial_list:
             nct_id = trial.get("protocolSection", {}).get("identificationModule", {}).get("nctId", "unknown")
-            brief_title = trial.get('protocolSection', {}).get('descriptionModule', {}).get('briefTitle', 'N/A')
+            brief_title = trial.get('protocolSection', {}).get('identificationModule', {}).get('briefTitle', 'N/A')
             mcode_results = trial.get('McodeResults', {})
             
-            # Store trial in CORE Memory using structured approach like mcode_patients.py
+            # Store trial in CORE Memory
             logger.info(f"💾 Storing trial {nct_id} in CORE Memory")
             
-            # Extract comprehensive trial metadata
-            protocol_section = trial.get('protocolSection', {})
-            identification_module = protocol_section.get('identificationModule', {})
-            description_module = protocol_section.get('descriptionModule', {})
-            design_module = protocol_section.get('designModule', {})
-            
-            nct_id = identification_module.get('nctId', 'unknown')
-            brief_title = identification_module.get('briefTitle', 'N/A')
-            brief_summary = description_module.get('briefSummary', 'N/A')
-            
-            # Extract study phase, design, and intervention
-            phase_info = design_module.get('studyPhases', [])
-            study_phase = phase_info[0].get('phaseCode', {}).get('text', 'N/A') if phase_info else 'N/A'
-            
-            design_info = design_module.get('studyDesigns', [])
-            study_design = design_info[0].get('studyDesignCode', {}).get('text', 'N/A') if design_info else 'N/A'
-            
-            intervention_info = design_module.get('interventions', [])
-            intervention = intervention_info[0].get('interventionCode', {}).get('text', 'N/A') if intervention_info else 'N/A'
-            intervention_type = intervention_info[0].get('interventionTypeCode', {}).get('text', 'N/A') if intervention_info else 'N/A'
-            
-            # Build trial description (structured like mcode_patients.py)
-            description_lines = [
-                f"Clinical Trial: {nct_id}",
-                f"This study is a {study_phase}, {study_design} clinical trial investigating the use of {intervention} {intervention_type} in patients with advanced solid tumors. Highlights include:"
-            ]
-            
-            # Add brief summary if available
-            if brief_summary and len(brief_summary) > 50:
-                description_lines.append(f"Description: {brief_summary[:200]}...")
-            
-            # Get mCODE results
-            mcode_results = trial.get('McodeResults', {})
-            mappings = mcode_results.get('mcode_mappings', [])
-            validation = mcode_results.get('validation', {})
-            
-            # Group mCODE elements by type with full code information (matching mcode_patients.py format)
-            grouped_elements = {}
-            for mapping in mappings:
-                if isinstance(mapping, dict):
-                    element_type = mapping.get('mcode_element', 'Unknown')
-                    value = mapping.get('value', 'N/A')
-                    code_info = mapping.get('code', {})
-                    
-                    # Format code information like mcode_patients.py
-                    system = code_info.get('system', 'N/A')
-                    code = code_info.get('code', 'N/A')
-                    display = code_info.get('display', element_type)
-                    code_str = f"{{'system': '{system}', 'code': '{code}', 'display': '{display}'}}"
-                    
-                    if element_type not in grouped_elements:
-                        grouped_elements[element_type] = []
-                    grouped_elements[element_type].append(f"{value} ({code_str})")
-            
-            # Add grouped mCODE elements to summary
-            if grouped_elements:
-                description_lines.append("")
-                description_lines.append("MCODE elements:")
-                for element_type, values in grouped_elements.items():
-                    values_str = ", ".join(values)
-                    description_lines.append(f"  {element_type}: {values_str}")
-            
-            # Add compliance score
-            compliance_score = validation.get('compliance_score', 'N/A')
-            description_lines.append(f"Compliance Score: {compliance_score}.")
-            
-            # Join all lines into final summary
-            summary = "\n".join(description_lines)
+            # Create a detailed summary with mCODE mappings
+            if mcode_results:
+                # Extract mCODE mappings for detailed storage
+                mappings = mcode_results.get('mcode_mappings', [])
+                validation = mcode_results.get('validation', {})
+                
+                # Create a comprehensive summary
+                summary_lines = [
+                    f"Clinical Trial {nct_id}: {brief_title}",
+                ]
+                
+                # Add study description if available
+                brief_summary = trial.get('protocolSection', {}).get('descriptionModule', {}).get('briefSummary')
+                if brief_summary:
+                    summary_lines.append(f"This is {brief_summary}")
+                else:
+                    # Try to get enrollment info
+                    enrollment_info = trial.get('protocolSection', {}).get('designModule', {}).get('enrollmentInfo')
+                    if enrollment_info:
+                        count = enrollment_info.get('count', 'N/A')
+                        summary_lines.append(f"This is a Phase 4 post-market study with an estimated enrollment of {count} patients.")
+                
+                # Group mappings by mcode_element for better organization
+                grouped_mappings = {}
+                for mapping in mappings:
+                    if isinstance(mapping, dict):
+                        mcode_element = mapping.get('mcode_element', 'Unknown')
+                        value = mapping.get('value', 'Unknown')
+                        if mcode_element not in grouped_mappings:
+                            grouped_mappings[mcode_element] = []
+                        grouped_mappings[mcode_element].append(value)
+                
+                # Add mCODE mappings
+                if grouped_mappings:
+                    mapping_strings = []
+                    for mcode_element, values in grouped_mappings.items():
+                        # Format values as a comma-separated list
+                        if len(values) == 1:
+                            mapping_strings.append(f"{mcode_element} ({values[0]})")
+                        else:
+                            values_str = ", ".join(values)
+                            mapping_strings.append(f"{mcode_element} ({values_str})")
+                    summary_lines.append("MCODE mappings include: " + ", ".join(mapping_strings) + ".")
+                
+                # Add validation info
+                if validation:
+                    compliance_score = validation.get('compliance_score', 'N/A')
+                    summary_lines.append(f"Compliance Score: {compliance_score}")
+                
+                summary = ". ".join(summary_lines) + "."
+            else:
+                # Fallback to simple summary
+                summary = (
+                    f"Trial: {nct_id} - {brief_title}\n"
+                    f"Mappings: {len(mcode_results.get('mcode_mappings', []))}, "
+                    f"Compliance: {mcode_results.get('validation', {}).get('compliance_score', 'N/A')}"
+                )
             
             client.ingest(summary)
 
