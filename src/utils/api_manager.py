@@ -15,18 +15,20 @@ logger = logging.getLogger(__name__)
 class APICache:
     """Generic disk-based cache for API responses"""
     
-    def __init__(self, cache_dir: str = ".api_cache", namespace: str = "default"):
+    def __init__(self, cache_dir: str, namespace: str, default_ttl: int):
         """
-        Initialize the cache
+        Initialize the cache with strict TTL requirement
         
         Args:
             cache_dir: Base directory for cache files
             namespace: Namespace for this cache instance
+            default_ttl: Required TTL for this cache from config
         """
         self.cache_dir = cache_dir
         self.namespace = namespace
+        self.default_ttl = default_ttl
         os.makedirs(cache_dir, exist_ok=True)
-        logger.info(f"Initialized API cache for namespace '{namespace}' at {cache_dir}")
+        logger.info(f"Initialized API cache for namespace '{namespace}' at {cache_dir} with TTL {default_ttl}")
     
     def _get_cache_key(self, func_name: str, *args, **kwargs) -> str:
         """
@@ -125,7 +127,7 @@ class APICache:
     
     def set(self, result: Any, func_name: str, *args, **kwargs) -> None:
         """
-        Store result in cache with default TTL
+        Store result in cache with configured TTL
         
         Args:
             result: Result to cache
@@ -136,9 +138,9 @@ class APICache:
         cache_key = self._get_cache_key(func_name, *args, **kwargs)
         self._set_by_key(result, cache_key, func_name, args, kwargs)
     
-    def _set_by_key(self, result: Any, cache_key: str, func_name: str = "unknown", args: tuple = (), kwargs: dict = {}, ttl: int = None) -> None:
+    def _set_by_key(self, result: Any, cache_key: str, func_name: str = "unknown", args: tuple = (), kwargs: dict = {}) -> None:
         """
-        Store result in cache by cache key
+        Store result in cache by cache key using configured TTL
         
         Args:
             result: Result to cache
@@ -146,7 +148,6 @@ class APICache:
             func_name: Name of the function (for logging)
             args: Positional arguments (for logging)
             kwargs: Keyword arguments (for logging)
-            ttl: Time to live in seconds (default: 24 hours)
         """
         cache_path = self._get_cache_path(cache_key)
         
@@ -154,7 +155,7 @@ class APICache:
             cached_data = {
                 'result': result,
                 'timestamp': time.time(),
-                'ttl': ttl,  # None means never expire
+                'ttl': self.default_ttl,  # 0 means never expire
                 'namespace': self.namespace,
                 'function': func_name,
                 'args': str(args),
@@ -186,17 +187,16 @@ class APICache:
         key_string = json.dumps(key_data, sort_keys=True, default=str)
         return hashlib.md5(key_string.encode()).hexdigest()
     
-    def set_by_key(self, result: Any, cache_key_data: Any, ttl: int = None) -> None:
+    def set_by_key(self, result: Any, cache_key_data: Any) -> None:
         """
-        Store result in cache by cache key data (public method)
+        Store result in cache by cache key data using configured TTL
         
         Args:
             result: Result to cache
             cache_key_data: Data to generate cache key from
-            ttl: Time to live in seconds (default: 24 hours)
         """
         cache_key = self._generate_cache_key(cache_key_data)
-        self._set_by_key(result, cache_key, ttl=ttl)
+        self._set_by_key(result, cache_key)
     
     def clear(self) -> None:
         """Clear all cached data for this namespace"""
@@ -238,22 +238,26 @@ class APICache:
             }
 
 
-class UnifiedAPIManager:
+class APIManager:
     """Unified API manager handling caching for all API calls in the system"""
     
-    def __init__(self, cache_dir: str = ".api_cache", default_ttl: int = None):
+    def __init__(self, cache_dir: str = ".api_cache"):
         """
-        Initialize the unified API manager
+        Initialize the unified API manager with strict config-based TTL
         
         Args:
             cache_dir: Base directory for all cache files
-            default_ttl: Default time-to-live for cache entries in seconds
         """
+        from src.utils.config import Config
+        config = Config()
+        
         self.cache_dir = cache_dir
-        self.default_ttl = default_ttl
+        self.default_ttl = config.get_cache_ttl()
         self.caches = {}
         # Create base cache directory if it doesn't exist
         os.makedirs(cache_dir, exist_ok=True)
+        
+        logger.info(f"APIManager initialized with config TTL: {self.default_ttl} seconds")
     
     def get_cache(self, cache_namespace: str = "default") -> APICache:
         """
@@ -270,7 +274,8 @@ class UnifiedAPIManager:
             namespace_cache_dir = os.path.join(self.cache_dir, cache_namespace)
             self.caches[cache_namespace] = APICache(
                 cache_dir=namespace_cache_dir,
-                namespace=cache_namespace
+                namespace=cache_namespace,
+                default_ttl=self.default_ttl
             )
         return self.caches[cache_namespace]
     

@@ -135,6 +135,59 @@ class CoreMemoryClient:
                         return txt
         return result
     
+    def get_spaces(self) -> list:
+        """
+        Get available spaces in CORE Memory.
+        
+        Returns:
+            List of available spaces
+        """
+        if "memory_get_spaces" not in self.tools:
+            raise CoreMemoryError("Server missing required tool: memory_get_spaces")
+        
+        payload = {
+            "jsonrpc": "2.0",
+            "id": str(uuid.uuid4()),
+            "method": "tools/call",
+            "params": {
+                "name": "memory_get_spaces",
+                "arguments": {}
+            }
+        }
+        
+        try:
+            response = self._post(payload, stream=False)
+            result = self._parse_rpc(response)
+            unwrapped_result = self._unwrap_tool_result(result)
+            
+            # Extract spaces from the result
+            if isinstance(unwrapped_result, dict) and "spaces" in unwrapped_result:
+                return unwrapped_result["spaces"]
+            elif isinstance(unwrapped_result, list):
+                return unwrapped_result
+            else:
+                return []
+        except Exception as e:
+            raise CoreMemoryError(f"Failed to get spaces: {e}")
+    
+    def get_clinical_trials_space_id(self) -> str:
+        """
+        Get or create the "Clinical Trials" space ID.
+        
+        Returns:
+            Space ID for the "Clinical Trials" space
+        """
+        spaces = self.get_spaces()
+        
+        # Look for existing "Clinical Trials" space
+        for space in spaces:
+            if space.get("name") == "Clinical Trials" and space.get("writable", True):
+                return space.get("id") or space.get("spaceId")
+        
+        # If not found, we would ideally create it, but that's not supported by the current API
+        # For now, we'll return None and let the ingest method use the default space
+        return None
+    
     def ingest(self, message: str, space_id: Optional[str] = None, source: str = "Python-Script") -> dict:
         """
         Ingests a message into CORE Memory using the proper MCP protocol.
@@ -159,8 +212,13 @@ class CoreMemoryClient:
             "source": source
         }
         
+        # Use provided space_id or get the "Clinical Trials" space ID
         if space_id:
             ingest_args["spaceId"] = space_id
+        else:
+            clinical_trials_space_id = self.get_clinical_trials_space_id()
+            if clinical_trials_space_id:
+                ingest_args["spaceId"] = clinical_trials_space_id
         
         # Call memory_ingest tool
         payload = {

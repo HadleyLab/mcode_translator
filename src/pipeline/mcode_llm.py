@@ -603,33 +603,3 @@ class McodeMapper(LlmBase, Loggable):
 
 
 # Factory function for backward compatibility (with deprecation warning)
-def create_mcode_mapper(model_name: str = None,
-                       temperature: float = None,
-                       max_tokens: int = None) -> McodeMapper:
-    """
-    Factory function for creating McodeMapper instances
-    Maintains backward compatibility with existing code
-    
-    Args:
-        model_name: LLM model name
-        temperature: Generation temperature
-        max_tokens: Maximum response tokens
-    
-    Returns:
-        McodeMapper instance
-    
-    Raises:
-        McodeConfigurationError: If configuration is invalid
-    """
-    import warnings
-    warnings.warn(
-        "create_mcode_mapper() is deprecated. Use McodeMapper() directly instead.",
-        DeprecationWarning,
-        stacklevel=2
-    )
-    
-    return McodeMapper(
-        model_name=model_name,
-        temperature=temperature,
-        max_tokens=max_tokens
-    )

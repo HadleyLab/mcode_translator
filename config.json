@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "cache": {
+    "enabled": true,
+    "api_cache_directory": "cache/api",
+    "ttl_seconds": 0
+  },
+  "rate_limiting": {
+    "delay_seconds": 0.1
+  },
+  "request": {
+    "timeout_seconds": 30
+  },
+  "apis": {
+    "clinical_trials": {
+      "base_url": "https://clinicaltrials.gov/api/v2"
+    }
+  },
+  "validation": {
+    "strict_mode": true,
+    "require_api_keys": true
+  }
+}

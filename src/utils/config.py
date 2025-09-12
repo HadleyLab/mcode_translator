@@ -78,16 +78,9 @@ class Config:
         """Get API cache directory path for clinical trials and other API data"""
         if 'api_cache_directory' in self.config_data['cache']:
             return self.config_data['cache']['api_cache_directory']
-        elif 'directory' in self.config_data['cache']:
-            # Fallback to legacy directory field for backward compatibility
-            return self.config_data['cache']['directory']
         else:
             raise ConfigurationError("Missing API cache directory configuration")
     
-    def get_cache_directory(self) -> str:
-        """DEPRECATED: Get cache directory path - returns API cache directory as default
-        Use get_api_cache_directory() instead"""
-        return self.get_api_cache_directory()
     
     def get_cache_ttl(self) -> int:
         """Get cache TTL in seconds"""

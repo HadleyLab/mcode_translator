@@ -12,13 +12,13 @@ from typing import Dict, Any, List, Optional
 
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
-from src.utils.api_manager import UnifiedAPIManager
+from src.utils.api_manager import APIManager
 
 # Get logger instance
 logger = get_logger(__name__)
 
 # Initialize API manager and cache
-api_manager = UnifiedAPIManager()
+api_manager = APIManager()
 clinical_trials_cache = api_manager.get_cache("clinical_trials")
 
 
@@ -133,8 +133,8 @@ def search_trials(search_expr: str, fields=None, max_results: int = 100, page_to
     logger.info(f"Performing search for '{search_expr}', max_results={max_results}")
     result = _search_trials(search_expr, fields_str, max_results, page_token_str)
     
-    # Store result in cache with default TTL
-    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=None)
+    # Store result in cache with configured TTL
+    clinical_trials_cache.set_by_key(result, cache_key_data)
     
     return result
 
@@ -214,8 +214,8 @@ def get_full_study(nct_id: str):
     logger.info(f"Fetching study for NCT ID {nct_id}")
     result = _get_full_study(nct_id)
     
-    # Store result in cache with default TTL
-    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=None)
+    # Store result in cache with configured TTL
+    clinical_trials_cache.set_by_key(result, cache_key_data)
     
     return result
 
@@ -304,8 +304,8 @@ def calculate_total_studies(search_expr: str, fields=None, page_size: int = 100)
     logger.info(f"Calculating total studies for '{search_expr}', page_size={page_size}")
     result = _calculate_total_studies(search_expr, fields_str, page_size)
     
-    # Store result in cache with default TTL
-    clinical_trials_cache.set_by_key(result, cache_key_data, ttl=None)
+    # Store result in cache with configured TTL
+    clinical_trials_cache.set_by_key(result, cache_key_data)
     
     return result
 

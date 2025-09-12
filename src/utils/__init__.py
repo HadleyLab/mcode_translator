@@ -33,7 +33,7 @@ For detailed information on each module, please refer to the `README.md` file in
 directory.
 """
 
-from .api_manager import UnifiedAPIManager
+from .api_manager import APIManager
 from .config import Config, ConfigurationError
 from .logging_config import get_logger, setup_logging, Loggable
 from .model_loader import ModelLoader, model_loader, ModelConfig, load_model, reload_models_config
@@ -56,7 +56,7 @@ from .pattern_config import (
 
 __all__ = [
     # API Manager
-    "UnifiedAPIManager",
+    "APIManager",
     # Config
     "Config",
     "ConfigurationError",
