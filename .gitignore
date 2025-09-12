@@ -144,3 +144,6 @@ auto_generated/
 # Uncomment to ignore data files in production
 # data/*.json
 # data/*.csv
+data/fetcher_output/
+data/mcode_downloads/
+data/mcode_downloads_filtered/
