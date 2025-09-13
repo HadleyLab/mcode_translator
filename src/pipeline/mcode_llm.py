@@ -425,53 +425,34 @@ class McodeMapper(LlmBase, Loggable):
         """Validate a single mCODE element with detailed error reporting"""
         result = McodeValidationResult(valid=True)
 
-        # Check required fields
-        required_fields = ["resourceType", "mcode_element"]
+        # Check required fields for McodeElement model
+        required_fields = ["element_type"]
         for field in required_fields:
             if field not in element:
                 result.valid = False
                 result.errors.append(f"Missing required field: {field}")
 
-        # Validate resource type
-        valid_resource_types = [
-            "Condition",
-            "Observation",
-            "MedicationStatement",
-            "Procedure",
-            "GenomicVariant",
-            "Patient",
-        ]
-        if (
-            "resourceType" in element
-            and element["resourceType"] not in valid_resource_types
-        ):
+        # Validate element_type is not empty
+        if "element_type" in element and not element["element_type"]:
             result.valid = False
-            result.errors.append(f"Invalid resource type: {element['resourceType']}")
+            result.errors.append("element_type cannot be empty")
 
-        # Validate code structure if present
-        if "code" in element:
-            code = element["code"]
-            if not isinstance(code, dict):
+        # Validate code if present (should be string for McodeElement)
+        if "code" in element and not isinstance(element["code"], str):
+            result.valid = False
+            result.errors.append("Code must be a string")
+
+        # Validate confidence_score if present
+        if "confidence_score" in element:
+            if not isinstance(element["confidence_score"], (int, float)):
                 result.valid = False
-                result.errors.append("Code must be a dictionary")
-            else:
-                if "system" not in code or "code" not in code:
-                    result.valid = False
-                    result.errors.append("Code must contain 'system' and 'code' fields")
+                result.errors.append("Confidence score must be a number")
+            elif element["confidence_score"] < 0 or element["confidence_score"] > 1:
+                result.warnings.append("Confidence score should be between 0 and 1")
 
-        # Validate source_text_fragment if present
-        if "source_text_fragment" in element and not isinstance(
-            element["source_text_fragment"], str
-        ):
-            result.warnings.append("source_text_fragment should be a string")
-
-        # Validate mapping_confidence if present
-        if "mapping_confidence" in element:
-            if not isinstance(element["mapping_confidence"], (int, float)):
-                result.valid = False
-                result.errors.append("Mapping confidence must be a number")
-            elif element["mapping_confidence"] < 0 or element["mapping_confidence"] > 1:
-                result.warnings.append("Mapping confidence should be between 0 and 1")
+        # Validate evidence_text if present
+        if "evidence_text" in element and not isinstance(element["evidence_text"], str):
+            result.warnings.append("evidence_text should be a string")
 
         return result
 
@@ -534,51 +515,42 @@ class McodeMapper(LlmBase, Loggable):
 
     def _transform_mapping_to_fhir(self, mapping: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Transform LLM mapping response format to FHIR resource format
+        Transform LLM mapping response format to McodeElement-compatible format
 
         Args:
             mapping: LLM mapping in prompt template format
 
         Returns:
-            FHIR resource format mapping
+            McodeElement-compatible format mapping
         """
-        # Map mcode_element to resourceType
-        Mcode_to_resource = {
-            "CancerCondition": "Condition",
-            "CancerDiseaseStatus": "Observation",
-            "TNMClinicalStageGroup": "Observation",
-            "GenomicVariant": "Observation",
-            "CancerRelatedMedication": "MedicationStatement",
-            "CancerRelatedProcedure": "Procedure",
-            "ECOGPerformanceStatus": "Observation",
-            "KarnofskyPerformanceStatus": "Observation",
-        }
+        # Extract nested code information
+        code_info = mapping.get("code", {})
+        if isinstance(code_info, dict):
+            code_value = code_info.get("code", "")
+            display_value = code_info.get("display", "")
+            system_value = code_info.get("system", "")
+        else:
+            # Fallback if code is not a dict
+            code_value = str(code_info) if code_info else ""
+            display_value = mapping.get("mcode_element", "")
+            system_value = "http://hl7.org/fhir/us/mCODE"
 
-        resource_type = Mcode_to_resource.get(
-            mapping.get("mcode_element", ""), "Observation"
-        )
-
-        # Create FHIR-compliant element
-        fhir_element = {
-            "resourceType": resource_type,
-            "mcode_element": mapping.get("mcode_element", ""),
-            "code": {
-                "system": "http://hl7.org/fhir/us/mCODE",
-                "code": mapping.get("mcode_element", "").lower().replace(" ", "-"),
-                "display": mapping.get("mcode_element", ""),
-            },
-            "value": mapping.get("value", ""),
-            "mapping_confidence": mapping.get(
+        # Create McodeElement-compatible element
+        element = {
+            "element_type": mapping.get("mcode_element", ""),
+            "code": code_value,
+            "display": display_value,
+            "system": system_value,
+            "confidence_score": mapping.get(
                 "mapping_confidence", mapping.get("confidence", 0.0)
             ),
-            "source_text_fragment": mapping.get(
+            "evidence_text": mapping.get(
                 "source_text_fragment",
                 f"Entity index {mapping.get('source_entity_index', 'unknown')}",
             ),
-            "mapping_rationale": mapping.get("mapping_rationale", ""),
         }
 
-        return fhir_element
+        return element
 
     def _validate_mcode_compliance_strict(
         self, mapped_elements: List[Dict[str, Any]]
@@ -608,7 +580,7 @@ class McodeMapper(LlmBase, Loggable):
         # Check required fields for each element type
         compliant_count = 0
         for element in mapped_elements:
-            resource_type = element.get("resourceType")
+            element_type = element.get("element_type")
 
             # Basic compliance check
             is_compliant = self._is_fully_compliant_strict(element)
@@ -616,22 +588,10 @@ class McodeMapper(LlmBase, Loggable):
                 compliant_count += 1
 
             # Type-specific validation
-            if resource_type == "Condition":
-                if "code" not in element:
+            if element_type:
+                if "code" not in element or not element.get("code"):
                     validation_results["warnings"].append(
-                        f"Condition missing code: {element.get('element_name')}"
-                    )
-
-            elif resource_type == "Observation":
-                if "code" not in element:
-                    validation_results["warnings"].append(
-                        f"Observation missing code: {element.get('element_name')}"
-                    )
-
-            elif resource_type == "MedicationStatement":
-                if "code" not in element:
-                    validation_results["warnings"].append(
-                        f"Medication missing code: {element.get('element_name')}"
+                        f"Element missing code: {element_type}"
                     )
 
         # Calculate compliance score
@@ -652,15 +612,19 @@ class McodeMapper(LlmBase, Loggable):
         Returns:
             True if fully compliant, False otherwise
         """
-        resource_type = element.get("resourceType")
+        element_type = element.get("element_type")
 
-        if resource_type in ["Condition", "Observation", "MedicationStatement"]:
-            return (
-                "code" in element
-                and isinstance(element["code"], dict)
-                and "system" in element["code"]
-                and "code" in element["code"]
-            )
+        # Check if element has required fields for McodeElement model
+        if not element_type:
+            return False
+
+        # Check if code is present and is a string (not nested dict)
+        if "code" not in element or not isinstance(element["code"], str) or not element["code"]:
+            return False
+
+        # Check if system is present
+        if "system" not in element or not element["system"]:
+            return False
 
         return True
 

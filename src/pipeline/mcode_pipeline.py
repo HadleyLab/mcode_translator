@@ -78,6 +78,22 @@ class McodePipeline(ProcessingPipeline, Loggable):
         except McodeConfigurationError as e:
             raise ValueError(f"Failed to initialize McodeMapper: {str(e)}")
 
+    def process(
+        self, data: Dict[str, Any], **kwargs
+    ) -> PipelineResult:
+        """
+        Process clinical trial data (DataProcessor protocol implementation).
+
+        Args:
+            data: Clinical trial data dictionary
+            **kwargs: Additional processing parameters
+
+        Returns:
+            PipelineResult containing processing results
+        """
+        task_id = kwargs.get('task_id')
+        return self.process_clinical_trial(data, task_id)
+
     def process_clinical_trial(
         self, trial_data: Dict[str, Any], task_id: Optional[str] = None
     ) -> PipelineResult:

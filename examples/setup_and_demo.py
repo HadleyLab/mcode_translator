@@ -24,49 +24,56 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "src"))
 
+# Use centralized logging
+from src.utils.logging_config import setup_logging, get_logger
+
+# Setup centralized logging
+setup_logging()
+logger = get_logger("setup_and_demo")
+
 from src.utils.data_downloader import download_synthetic_patient_archives, get_archive_paths
 
 
-def print_section(title: str):
-    """Print a formatted section header."""
-    print(f"\n{'='*60}")
-    print(f"📋 {title}")
-    print('='*60)
+def log_section(title: str):
+    """Log a formatted section header."""
+    logger.info(f"\n{'='*60}")
+    logger.info(f"📋 {title}")
+    logger.info('='*60)
 
 
-def print_step(step_num: int, description: str):
-    """Print a formatted step."""
-    print(f"\n🔧 Step {step_num}: {description}")
-    print("-" * 40)
+def log_step(step_num: int, description: str):
+    """Log a formatted step."""
+    logger.info(f"\n🔧 Step {step_num}: {description}")
+    logger.info("-" * 40)
 
 
 def check_environment():
     """Check if we're in the correct environment."""
-    print_section("Environment Check")
+    log_section("Environment Check")
 
     # Check conda environment
     conda_env = os.environ.get("CONDA_DEFAULT_ENV", "")
     if "mcode_translator" in conda_env:
-        print("✅ Conda environment: mcode_translator")
+        logger.info("✅ Conda environment: mcode_translator")
     else:
-        print("⚠️  Warning: Not in mcode_translator conda environment")
-        print("   Run: conda activate mcode_translator")
+        logger.warning("⚠️  Warning: Not in mcode_translator conda environment")
+        logger.warning("   Run: conda activate mcode_translator")
         return False
 
     # Check Python version
     python_version = sys.version_info
     if python_version >= (3, 10):
-        print(f"✅ Python version: {python_version.major}.{python_version.minor}")
+        logger.info(f"✅ Python version: {python_version.major}.{python_version.minor}")
     else:
-        print(f"❌ Python version too old: {python_version.major}.{python_version.minor} (need >= 3.10)")
+        logger.error(f"❌ Python version too old: {python_version.major}.{python_version.minor} (need >= 3.10)")
         return False
 
     # Check required modules
     try:
         import requests
-        print("✅ requests library available")
+        logger.info("✅ requests library available")
     except ImportError:
-        print("❌ requests library not found")
+        logger.error("❌ requests library not found")
         return False
 
     return True
@@ -74,86 +81,86 @@ def check_environment():
 
 def download_data(force_download=False):
     """Download synthetic patient data archives."""
-    print_section("Data Download")
+    log_section("Data Download")
 
     if force_download:
-        print("📥 Force downloading synthetic patient data archives...")
-        print("   This will re-download all archives even if they exist.")
+        logger.info("📥 Force downloading synthetic patient data archives...")
+        logger.info("   This will re-download all archives even if they exist.")
     else:
-        print("📥 Downloading synthetic patient data archives...")
-        print("   This may take several minutes depending on your connection.")
-        print("   Note: Existing archives will be skipped. Use --force to re-download.")
+        logger.info("📥 Downloading synthetic patient data archives...")
+        logger.info("   This may take several minutes depending on your connection.")
+        logger.info("   Note: Existing archives will be skipped. Use --force to re-download.")
 
     try:
         downloaded = download_synthetic_patient_archives(force_download=force_download)
 
         if downloaded:
-            print("✅ Successfully downloaded archives:")
+            logger.info("✅ Successfully downloaded archives:")
             for name, path in downloaded.items():
                 file_size = os.path.getsize(path) / (1024 * 1024)  # MB
-                print(f"   • {name}: {file_size:.1f} MB")
+                logger.info(f"   • {name}: {file_size:.1f} MB")
         else:
-            print("ℹ️  No new archives to download")
+            logger.info("ℹ️  No new archives to download")
 
         # Show all available archives
         all_archives = get_archive_paths()
         if all_archives:
-            print("\n📚 Available archives:")
+            logger.info("\n📚 Available archives:")
             for name, path in all_archives.items():
-                print(f"   • {name}")
+                logger.info(f"   • {name}")
 
         return True
 
     except Exception as e:
-        print(f"❌ Download failed: {e}")
+        logger.error(f"❌ Download failed: {e}")
         return False
 
 
 def run_cli_demo():
     """Run CLI demonstration commands."""
-    print_section("CLI Demo")
+    log_section("CLI Demo")
 
     # Check if we have data
     archives = get_archive_paths()
     if not archives:
-        print("❌ No data archives found. Please run data download first.")
+        logger.error("❌ No data archives found. Please run data download first.")
         return False
 
-    print("🚀 Running CLI demonstrations...")
+    logger.info("🚀 Running CLI demonstrations...")
 
     # Demo 1: List archives
-    print_step(1, "List Available Archives")
+    log_step(1, "List Available Archives")
     os.system("python -m src.cli.patients_fetcher --list-archives")
 
     # Demo 2: Fetch trials
-    print_step(2, "Fetch Clinical Trials")
+    log_step(2, "Fetch Clinical Trials")
     os.system("python -m src.cli.trials_fetcher --condition 'breast cancer' --limit 2 -o demo_trials.json --verbose")
 
     # Demo 3: Fetch patients (if data available)
     if any('breast_cancer_10_years' in name for name in archives.keys()):
-        print_step(3, "Fetch Patient Data")
+        log_step(3, "Fetch Patient Data")
         os.system("python -m src.cli.patients_fetcher --archive breast_cancer_10_years --limit 3 -o demo_patients.json --verbose")
     else:
-        print_step(3, "Patient Data Fetch (Data Not Available)")
-        print("   Skipping patient fetch - breast_cancer_10_years archive not found")
+        log_step(3, "Patient Data Fetch (Data Not Available)")
+        logger.info("   Skipping patient fetch - breast_cancer_10_years archive not found")
 
     # Demo 4: Show help
-    print_step(4, "Show CLI Help")
-    print("Available CLI commands:")
-    print("• python -m src.cli.trials_fetcher --help")
-    print("• python -m src.cli.trials_processor --help")
-    print("• python -m src.cli.patients_fetcher --help")
-    print("• python -m src.cli.patients_processor --help")
-    print("• python -m src.cli.trials_optimizer --help")
+    log_step(4, "Show CLI Help")
+    logger.info("Available CLI commands:")
+    logger.info("• python -m src.cli.trials_fetcher --help")
+    logger.info("• python -m src.cli.trials_processor --help")
+    logger.info("• python -m src.cli.patients_fetcher --help")
+    logger.info("• python -m src.cli.patients_processor --help")
+    logger.info("• python -m src.cli.trials_optimizer --help")
 
     return True
 
 
 def show_next_steps():
     """Show next steps for full functionality."""
-    print_section("Next Steps for Full Functionality")
+    log_section("Next Steps for Full Functionality")
 
-    print("""
+    logger.info("""
 🔑 To enable full functionality:
 
 1. Set up API keys for LLM services:
@@ -182,21 +189,21 @@ def main():
     # Parse command line arguments
     force_download = "--force" in sys.argv
 
-    print("🧪 mCODE Translator - Complete Setup and Demo")
-    print("=" * 60)
+    logger.info("🧪 mCODE Translator - Complete Setup and Demo")
+    logger.info("=" * 60)
 
     if force_download:
-        print("🔄 Force download mode enabled - will re-download all archives")
-        print()
+        logger.info("🔄 Force download mode enabled - will re-download all archives")
+        logger.info("")
 
     # Check environment
     if not check_environment():
-        print("\n❌ Environment check failed. Please fix issues above and try again.")
+        logger.error("\n❌ Environment check failed. Please fix issues above and try again.")
         return 1
 
     # Download data
     if not download_data(force_download=force_download):
-        print("\n⚠️  Data download had issues, but continuing with demo...")
+        logger.warning("\n⚠️  Data download had issues, but continuing with demo...")
 
     # Run CLI demo
     run_cli_demo()
@@ -204,10 +211,10 @@ def main():
     # Show next steps
     show_next_steps()
 
-    print("\n" + "=" * 60)
-    print("🎉 Setup and demo completed!")
-    print("Check the generated files and examples for more details.")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("🎉 Setup and demo completed!")
+    logger.info("Check the generated files and examples for more details.")
+    logger.info("=" * 60)
 
     return 0
 

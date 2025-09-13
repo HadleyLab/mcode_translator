@@ -342,7 +342,7 @@ def create_mcode_results_structure(pipeline_result) -> Dict[str, Any]:
         "source_references": pipeline_result.source_references,
         "validation_results": pipeline_result.validation_results,
         "metadata": pipeline_result.metadata,
-        "token_usage": pipeline_result.token_usage,
+        "token_usage": pipeline_result.metadata.token_usage if pipeline_result.metadata else None,
         "error": pipeline_result.error,
     }
 
