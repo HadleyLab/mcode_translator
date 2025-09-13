@@ -221,7 +221,7 @@ class StreamlinedWorkflowCoordinator:
         return {
             "coordinator_type": "streamlined",
             "trial_processor": self.trial_processor.get_processing_stats(),
-            "patient_processor": self.patient_processor.get_processing_stats() if self.patient_processor else None,
+            "patient_processor": self.patient_processor.get_processing_stats() if self.patient_processor else "Not configured",
             "config": self.config
         }
 

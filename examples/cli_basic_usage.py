@@ -10,19 +10,27 @@ Usage:
 Or copy individual commands to run them manually.
 """
 
+import logging
 import os
 import sys
 
-def print_section(title: str):
-    """Print a formatted section header."""
-    print(f"\n{'='*60}")
-    print(f"📋 {title}")
-    print('='*60)
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(message)s'
+)
+logger = logging.getLogger(__name__)
+
+def log_section(title: str):
+    """Log a formatted section header."""
+    logger.info(f"\n{'='*60}")
+    logger.info(f"📋 {title}")
+    logger.info('='*60)
 
 
-def print_data_download_info():
-    """Print information about data downloads."""
-    print("""
+def log_data_download_info():
+    """Log information about data downloads."""
+    logger.info("""
 📥 DATA DOWNLOAD REQUIRED for patient workflows:
 
 Before using patient-related commands, download the synthetic data:
@@ -43,132 +51,132 @@ The download includes:
 • mixed_cancer_lifetime (~850MB)
     """)
 
-def print_command(description: str, command: str):
-    """Print a formatted command with description."""
-    print(f"\n🔧 {description}")
-    print(f"   {command}")
+def log_command(description: str, command: str):
+    """Log a formatted command with description."""
+    logger.info(f"\n🔧 {description}")
+    logger.info(f"   {command}")
 
 def main():
     """Display basic CLI usage examples."""
-    print("🧪 mCODE Translator CLI - Basic Usage Examples")
-    print("="*60)
-    print("Copy and paste these commands to get started!")
-    print("Make sure you're in the mcode_translator conda environment.")
+    logger.info("🧪 mCODE Translator CLI - Basic Usage Examples")
+    logger.info("="*60)
+    logger.info("Copy and paste these commands to get started!")
+    logger.info("Make sure you're in the mcode_translator conda environment.")
 
     # Environment check
     if "CONDA_DEFAULT_ENV" not in os.environ or "mcode_translator" not in os.environ.get("CONDA_DEFAULT_ENV", ""):
-        print("\n⚠️  WARNING: Not in mcode_translator environment!")
-        print("   Run: conda activate mcode_translator")
-        print("   Then re-run this script.")
+        logger.warning("\n⚠️  WARNING: Not in mcode_translator environment!")
+        logger.warning("   Run: conda activate mcode_translator")
+        logger.warning("   Then re-run this script.")
 
-    print_section("1. LIST AVAILABLE OPTIONS")
+    log_section("1. LIST AVAILABLE OPTIONS")
 
-    print_command(
+    log_command(
         "List available patient data archives",
         "python -m src.cli.patients_fetcher --list-archives"
     )
 
-    print_command(
+    log_command(
         "List available prompt templates",
         "python -m src.cli.trials_optimizer --list-prompts"
     )
 
-    print_command(
+    log_command(
         "List available LLM models",
         "python -m src.cli.trials_optimizer --list-models"
     )
 
-    print_section("2. FETCH CLINICAL TRIALS")
+    log_section("2. FETCH CLINICAL TRIALS")
 
-    print_command(
+    log_command(
         "Fetch trials by condition (basic)",
         "python -m src.cli.trials_fetcher --condition 'breast cancer' -o trials.json"
     )
 
-    print_command(
+    log_command(
         "Fetch specific trial by NCT ID",
         "python -m src.cli.trials_fetcher --nct-id NCT03170960 -o trial.json"
     )
 
-    print_command(
+    log_command(
         "Fetch multiple trials with verbose output",
         "python -m src.cli.trials_fetcher --nct-ids NCT03170960,NCT03805399 -o trials.json --verbose"
     )
 
-    print_section("3. FETCH PATIENT DATA")
+    log_section("3. FETCH PATIENT DATA")
 
     # Add data download info
-    print_data_download_info()
+    log_data_download_info()
 
-    print_command(
+    log_command(
         "Fetch patients from breast cancer archive",
         "python -m src.cli.patients_fetcher --archive breast_cancer_10_years -o patients.json"
     )
 
-    print_command(
+    log_command(
         "Fetch specific patient by ID",
         "python -m src.cli.patients_fetcher --archive breast_cancer_10_years --patient-id patient_001 -o patient.json"
     )
 
-    print_command(
+    log_command(
         "Fetch limited patients with verbose logging",
         "python -m src.cli.patients_fetcher --archive mixed_cancer_lifetime --limit 10 -o patients.json --verbose"
     )
 
-    print_section("4. PROCESS TRIALS WITH MCODE")
+    log_section("4. PROCESS TRIALS WITH MCODE")
 
-    print_command(
+    log_command(
         "Process trials with default settings",
         "python -m src.cli.trials_processor trials.json --store-in-core-memory"
     )
 
-    print_command(
+    log_command(
         "Process with specific model and prompt",
         "python -m src.cli.trials_processor trials.json --model deepseek-coder --prompt direct_mcode_evidence_based_concise --store-in-core-memory"
     )
 
-    print_command(
+    log_command(
         "Dry run to preview processing",
         "python -m src.cli.trials_processor trials.json --dry-run --verbose"
     )
 
-    print_section("5. PROCESS PATIENTS WITH MCODE")
+    log_section("5. PROCESS PATIENTS WITH MCODE")
 
-    print_command(
+    log_command(
         "Process patients with trial eligibility filtering",
         "python -m src.cli.patients_processor --patients patients.json --trials trials.json --store-in-core-memory"
     )
 
-    print_command(
+    log_command(
         "Process patients only (no trial filtering)",
         "python -m src.cli.patients_processor --patients patients.json --store-in-core-memory"
     )
 
-    print_command(
+    log_command(
         "Preview patient processing (dry run)",
         "python -m src.cli.patients_processor --patients patients.json --dry-run --verbose"
     )
 
-    print_section("6. OPTIMIZE PARAMETERS")
+    log_section("6. OPTIMIZE PARAMETERS")
 
-    print_command(
+    log_command(
         "Optimize with default settings",
         "python -m src.cli.trials_optimizer --trials-file trials.json"
     )
 
-    print_command(
+    log_command(
         "Test specific prompt and model combinations",
         "python -m src.cli.trials_optimizer --trials-file trials.json --prompts direct_mcode_evidence_based_concise,direct_mcode_minimal --models deepseek-coder,gpt-4 --max-combinations 4"
     )
 
-    print_command(
+    log_command(
         "Save optimal configuration",
         "python -m src.cli.trials_optimizer --trials-file trials.json --save-config optimal_config.json --verbose"
     )
 
-    print_section("7. COMPLETE WORKFLOWS")
+    log_section("7. COMPLETE WORKFLOWS")
 
-    print("""
+    logger.info("""
 🔄 Complete Workflow Example:
 # 1. Fetch trials
 python -m src.cli.trials_fetcher --condition "breast cancer" --limit 5 -o trials.json
@@ -186,9 +194,9 @@ python -m src.cli.patients_processor --patients patients.json --trials trials.js
 python -m src.cli.trials_optimizer --trials-file trials.json --save-config config.json
     """)
 
-    print_section("8. TROUBLESHOOTING")
+    log_section("8. TROUBLESHOOTING")
 
-    print("""
+    logger.info("""
 🔧 Common Issues & Solutions:
 
 1. "Module not found" errors:
@@ -215,10 +223,10 @@ python -m src.cli.trials_optimizer --trials-file trials.json --save-config confi
 - Review logs in the terminal output
     """)
 
-    print("\n" + "="*60)
-    print("🎉 Ready to start using mCODE Translator CLI!")
-    print("Copy any command above and run it in your terminal.")
-    print("="*60)
+    logger.info("\n" + "="*60)
+    logger.info("🎉 Ready to start using mCODE Translator CLI!")
+    logger.info("Copy any command above and run it in your terminal.")
+    logger.info("="*60)
 
 if __name__ == "__main__":
     main()

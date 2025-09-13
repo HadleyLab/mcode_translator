@@ -21,6 +21,13 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "src"))
 
+# Use centralized logging
+from src.utils.logging_config import setup_logging, get_logger
+
+# Setup centralized logging
+setup_logging()
+logger = get_logger("streamlined_processing_example")
+
 from src.core.data_flow_coordinator import process_clinical_trials_flow
 from src.workflows.streamlined_workflow import create_trial_processor
 from src.shared.models import WorkflowResult
@@ -29,8 +36,8 @@ from src.shared.models import WorkflowResult
 async def main():
     """Demonstrate streamlined clinical trial processing."""
 
-    print("🧪 mCODE Translator - Streamlined Processing Example")
-    print("=" * 60)
+    logger.info("🧪 mCODE Translator - Streamlined Processing Example")
+    logger.info("=" * 60)
 
     # Example trial IDs (replace with real NCT IDs)
     trial_ids = [
@@ -38,14 +45,14 @@ async def main():
         "NCT03805399",  # Example TNBC trial
     ]
 
-    print(f"📋 Processing {len(trial_ids)} clinical trials...")
-    print(f"   Trial IDs: {', '.join(trial_ids)}")
-    print()
+    logger.info(f"📋 Processing {len(trial_ids)} clinical trials...")
+    logger.info(f"   Trial IDs: {', '.join(trial_ids)}")
+    logger.info("")
 
     try:
         # Method 1: Complete streamlined data flow
-        print("🚀 Method 1: Complete Data Flow Coordinator")
-        print("-" * 40)
+        logger.info("🚀 Method 1: Complete Data Flow Coordinator")
+        logger.info("-" * 40)
 
         result = process_clinical_trials_flow(
             trial_ids=trial_ids,
@@ -61,21 +68,21 @@ async def main():
         )
 
         if result.success:
-            print("✅ Complete flow successful!")
+            logger.info("✅ Complete flow successful!")
             metadata = result.metadata
-            print(f"   📊 Trials requested: {metadata['total_trials_requested']}")
-            print(f"   📥 Trials fetched: {metadata['trials_fetched']}")
-            print(f"   🔬 Trials processed: {metadata['trials_processed']}")
-            print(".1%")
+            logger.info(f"   📊 Trials requested: {metadata['total_trials_requested']}")
+            logger.info(f"   📥 Trials fetched: {metadata['trials_fetched']}")
+            logger.info(f"   🔬 Trials processed: {metadata['trials_processed']}")
+            logger.info(".1%")
         else:
-            print("❌ Complete flow failed!")
-            print(f"   Error: {result.error_message}")
+            logger.error("❌ Complete flow failed!")
+            logger.error(f"   Error: {result.error_message}")
 
-        print()
+        logger.info("")
 
         # Method 2: Individual component usage
-        print("🔧 Method 2: Individual Component Usage")
-        print("-" * 40)
+        logger.info("🔧 Method 2: Individual Component Usage")
+        logger.info("-" * 40)
 
         processor = create_trial_processor(config={
             "processor": {
@@ -84,18 +91,18 @@ async def main():
             }
         })
 
-        print("📊 Processing statistics:")
+        logger.info("📊 Processing statistics:")
         stats = processor.get_processing_stats()
-        print(f"   Pipeline type: {stats['pipeline_type']}")
-        print(f"   Has validator: {stats['has_validator']}")
-        print(f"   Has processor: {stats['has_processor']}")
-        print(f"   Has storage: {stats['has_storage']}")
+        logger.info(f"   Pipeline type: {stats['pipeline_type']}")
+        logger.info(f"   Has validator: {stats['has_validator']}")
+        logger.info(f"   Has processor: {stats['has_processor']}")
+        logger.info(f"   Has storage: {stats['has_storage']}")
 
-        print()
+        logger.info("")
 
         # Method 3: Type-safe data handling
-        print("🛡️  Method 3: Type-Safe Data Models")
-        print("-" * 40)
+        logger.info("🛡️  Method 3: Type-Safe Data Models")
+        logger.info("-" * 40)
 
         # Example of creating validated data models
         from src.shared.models import ClinicalTrialData, McodeElement
@@ -125,25 +132,25 @@ async def main():
         # Automatic validation and type safety
         try:
             trial = ClinicalTrialData(**sample_trial_data)
-            print("✅ Clinical trial data validated successfully!")
-            print(f"   NCT ID: {trial.nct_id}")
-            print(f"   Title: {trial.brief_title}")
-            print(f"   Study type: {trial.studyType}")
+            logger.info("✅ Clinical trial data validated successfully!")
+            logger.info(f"   NCT ID: {trial.nct_id}")
+            logger.info(f"   Title: {trial.brief_title}")
+            logger.info(f"   Study type: {trial.studyType}")
         except Exception as e:
-            print(f"❌ Validation failed: {e}")
+            logger.error(f"❌ Validation failed: {e}")
 
-        print()
+        logger.info("")
 
-        print("🎉 Example completed successfully!")
-        print("\nKey Benefits Demonstrated:")
-        print("• Type-safe data validation with Pydantic")
-        print("• Streamlined fetch → validate → process → store flow")
-        print("• Dependency injection for clean architecture")
-        print("• Comprehensive error handling and logging")
-        print("• Easy-to-use high-level APIs")
+        logger.info("🎉 Example completed successfully!")
+        logger.info("\nKey Benefits Demonstrated:")
+        logger.info("• Type-safe data validation with Pydantic")
+        logger.info("• Streamlined fetch → validate → process → store flow")
+        logger.info("• Dependency injection for clean architecture")
+        logger.info("• Comprehensive error handling and logging")
+        logger.info("• Easy-to-use high-level APIs")
 
     except Exception as e:
-        print(f"💥 Example failed with error: {e}")
+        logger.error(f"💥 Example failed with error: {e}")
         import traceback
         traceback.print_exc()
         return 1

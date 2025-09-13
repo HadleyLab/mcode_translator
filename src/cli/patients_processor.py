@@ -131,6 +131,28 @@ def main() -> None:
 
         print(f"🔬 Processing {len(patients_list)} patient records...")
 
+        # Debug: Check patient data integrity
+        for i, patient in enumerate(patients_list):
+            entries = patient.get("entry", [])
+            print(f"Patient {i+1}: {len(entries)} entries")
+            for j, entry in enumerate(entries[:3]):  # Check first 3 entries
+                print(f"  Entry {j}: type={type(entry)}")
+                if isinstance(entry, dict):
+                    resource = entry.get("resource", {})
+                    print(f"    Resource: type={type(resource)}")
+                    if isinstance(resource, dict):
+                        resource_type = resource.get("resourceType", "Unknown")
+                        print(f"    ResourceType: {resource_type}")
+                        if resource_type == "Patient":
+                            name = resource.get("name", [])
+                            print(f"    Patient {i+1} name: {name}")
+                    else:
+                        print(f"    Resource content: {resource}")
+                else:
+                    print(f"    Entry content: {entry}")
+                if j >= 2:  # Only check first 3
+                    break
+
     except json.JSONDecodeError as e:
         print(f"❌ Invalid JSON in patients file: {e}")
         sys.exit(1)

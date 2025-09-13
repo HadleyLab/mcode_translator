@@ -160,10 +160,17 @@ class McodeMemoryStorage:
         demographics = mcode_data.get("demographics", {})
         mappings = mcode_data.get("mcode_mappings", [])
 
-        # Basic patient information
-        name = demographics.get("name", f"Patient {patient_id}")
+        # Basic patient information - avoid duplication
+        name = demographics.get("name", patient_id)
         age = demographics.get("age", "Unknown")
         gender = demographics.get("gender", "Unknown")
+
+        # Extract gender from mCODE mappings if not in demographics
+        if gender == "Unknown":
+            for mapping in mappings:
+                if mapping.get("mcode_element") == "PatientSex":
+                    gender = mapping.get("value", "Unknown")
+                    break
 
         summary_parts = [
             f"Patient {name} (ID: {patient_id}), {age} years old, {gender}."
@@ -185,6 +192,17 @@ class McodeMemoryStorage:
 
                         if value and value != "N/A":
                             summary_parts.append(f"  - {element}: {value} {code_info}")
+
+            # Add demographics from mappings if not already included
+            demo_mappings = [m for m in mappings if m.get("mcode_element") in ["PatientSex", "Race", "Ethnicity"]]
+            if demo_mappings:
+                summary_parts.append("Demographics:")
+                for mapping in demo_mappings:
+                    element = mapping.get("mcode_element", "")
+                    value = mapping.get("value", "")
+                    code_info = self._extract_code_info(mapping)
+                    if value and value != "N/A":
+                        summary_parts.append(f"  - {element}: {value} {code_info}")
 
         return " ".join(summary_parts)
 
