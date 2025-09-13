@@ -69,13 +69,18 @@ class McodeCLI:
     @staticmethod
     def add_processor_args(parser: argparse.ArgumentParser) -> None:
         """Add arguments specific to data processing workflows."""
-        parser.add_argument("-m", "--model", help="LLM model to use for processing")
+        parser.add_argument(
+            "-m",
+            "--model",
+            default="deepseek-coder",
+            help="LLM model to use for processing (default: deepseek-coder)"
+        )
 
         parser.add_argument(
             "-p",
             "--prompt",
             default="direct_mcode_evidence_based_concise",
-            help="Prompt template to use (default: evidence-based concise)",
+            help="Prompt template to use (default: direct_mcode_evidence_based_concise)",
         )
 
         parser.add_argument(
@@ -96,8 +101,7 @@ class McodeCLI:
 
         parser.add_argument(
             "--save-config",
-            action="store_true",
-            help="Save optimal settings to configuration file",
+            help="Path to save optimal settings configuration file",
         )
 
     @staticmethod

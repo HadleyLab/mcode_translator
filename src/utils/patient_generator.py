@@ -101,6 +101,7 @@ class PatientGenerator:
             for cancer_type, durations in archives.items():
                 for duration, archive_info in durations.items():
                     archive_name = f"{cancer_type}_{duration}.zip"
+                    archive_name_no_ext = f"{cancer_type}_{duration}"
                     full_path = os.path.join(
                         synthetic_config.get(
                             "base_directory", "data/synthetic_patients"
@@ -111,7 +112,9 @@ class PatientGenerator:
                     )
                     if (
                         archive_path.lower() == archive_name.lower()
+                        or archive_path.lower() == archive_name_no_ext.lower()
                         or archive_path.lower() == f"{cancer_type}/{duration}"
+                        or archive_path.lower() == f"{cancer_type}_{duration}"
                     ):
                         if os.path.exists(full_path):
                             self.logger.info(
