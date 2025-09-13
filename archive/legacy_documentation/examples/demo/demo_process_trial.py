@@ -3,15 +3,17 @@
 Demo script to show the process-trial functionality
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.pipeline.fetcher import get_full_study
-from src.pipeline.prompt_model_interface import set_extraction_prompt, set_mapping_prompt, set_model
+from src.pipeline.prompt_model_interface import (set_extraction_prompt,
+                                                 set_mapping_prompt, set_model)
+
 
 def demo_process_trial():
     """Demonstrate the process-trial functionality"""

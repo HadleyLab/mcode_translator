@@ -1,0 +1,42 @@
+{
+  "validation": {
+    "strict_mode": true,
+    "require_api_keys": true,
+    "validate_input_data": true,
+    "validate_output_data": true,
+    "fail_on_first_error": false,
+    "max_validation_errors": 100,
+    "validation_rules": {
+      "clinical_trials": {
+        "required_fields": ["protocolSection", "identificationModule", "nctId"],
+        "field_types": {
+          "nctId": "string",
+          "briefTitle": "string",
+          "overallStatus": "string"
+        },
+        "field_constraints": {
+          "nctId": {"pattern": "^NCT\\d{8}$"},
+          "phase": {"enum": ["Phase 1", "Phase 2", "Phase 3", "Phase 4", "N/A"]}
+        }
+      },
+      "patient_data": {
+        "required_fields": ["resourceType", "id", "name"],
+        "validate_fhir_compliance": true,
+        "check_references": true,
+        "validate_dates": true
+      },
+      "mcode_mappings": {
+        "required_elements": ["mcode_element", "value"],
+        "validate_codes": true,
+        "check_completeness": true,
+        "min_compliance_score": 0.7
+      }
+    },
+    "data_quality_checks": {
+      "duplicate_detection": true,
+      "completeness_check": true,
+      "consistency_check": true,
+      "range_validation": true
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "apis": {
+    "clinical_trials": {
+      "base_url": "https://clinicaltrials.gov/api/v2/studies",
+      "version": "v2",
+      "rate_limit_per_minute": 100,
+      "timeout_seconds": 30,
+      "retry_attempts": 3
+    },
+    "pubmed": {
+      "base_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils",
+      "email_required": true,
+      "rate_limit_per_second": 3,
+      "timeout_seconds": 15
+    },
+    "crossref": {
+      "base_url": "https://api.crossref.org",
+      "rate_limit_per_second": 50,
+      "timeout_seconds": 10
+    }
+  },
+  "external_services": {
+    "synthea": {
+      "base_url": "https://synthetichealth.github.io/synthea/",
+      "documentation_url": "https://github.com/synthetichealth/synthea/wiki",
+      "data_repository": "https://github.com/synthetichealth/synthea-sample-data"
+    },
+    "mitre_mcode": {
+      "base_url": "https://github.com/mcodeinitiative",
+      "test_data_url": "https://mitre.box.com/shared/static/",
+      "documentation_url": "https://mcodeinitiative.org/"
+    }
+  }
+}

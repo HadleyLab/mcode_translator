@@ -4,8 +4,10 @@ Benchmark Task - Extended task class for benchmark validation tasks
 
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Any
-from src.optimization.advanced_task_tracker import Task, TaskStatus, TaskPriority
+from typing import Any, Dict, List, Optional
+
+from src.optimization.advanced_task_tracker import (Task, TaskPriority,
+                                                    TaskStatus)
 
 
 class BenchmarkTask(Task):

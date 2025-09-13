@@ -2,16 +2,18 @@
 """
 Demo script to show cache functionality in action
 """
-import sys
-import os
-import time
 import json
+import os
+import sys
+import time
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
+from pipeline.fetcher import (calculate_total_studies, get_full_study,
+                              search_trials)
 from utils.api_manager import UnifiedAPIManager
-from pipeline.fetcher import search_trials, get_full_study, calculate_total_studies
+
 
 def get_cache_stats():
     """Get cache statistics from the unified API manager"""

@@ -9,14 +9,15 @@ Provides common functionality for processing and standardizing:
 
 from typing import Dict, List, Union
 
+
 def standardize_features(features: Dict) -> Dict:
     """Ensure features have consistent structure across NLP engines.
-    
+
     Parameters
     ----------
     features : Dict
         Raw extracted features from NLP processing
-        
+
     Returns
     -------
     Dict
@@ -31,22 +32,23 @@ def standardize_features(features: Dict) -> Dict:
         }
     """
     return {
-        'demographics': features.get('demographics', {}),
-        'cancer_characteristics': features.get('cancer_characteristics', {}),
-        'biomarkers': standardize_biomarkers(features.get('biomarkers', [])),
-        'genomic_variants': standardize_variants(features.get('genomic_variants', [])),
-        'treatment_history': features.get('treatment_history', {}),
-        'performance_status': features.get('performance_status', {})
+        "demographics": features.get("demographics", {}),
+        "cancer_characteristics": features.get("cancer_characteristics", {}),
+        "biomarkers": standardize_biomarkers(features.get("biomarkers", [])),
+        "genomic_variants": standardize_variants(features.get("genomic_variants", [])),
+        "treatment_history": features.get("treatment_history", {}),
+        "performance_status": features.get("performance_status", {}),
     }
+
 
 def standardize_biomarkers(biomarkers: Union[List, Dict]) -> List[Dict]:
     """Convert biomarkers to standardized list format.
-    
+
     Parameters
     ----------
     biomarkers : Union[List, Dict]
         Biomarkers in either list or dict format
-        
+
     Returns
     -------
     List[Dict]
@@ -58,17 +60,18 @@ def standardize_biomarkers(biomarkers: Union[List, Dict]) -> List[Dict]:
         }]
     """
     if isinstance(biomarkers, dict):
-        return [{'name': k, 'status': v} for k,v in biomarkers.items()]
+        return [{"name": k, "status": v} for k, v in biomarkers.items()]
     return biomarkers
+
 
 def standardize_variants(variants: List[Dict]) -> List[Dict]:
     """Ensure variants have required fields.
-    
+
     Parameters
     ----------
     variants : List[Dict]
         Raw extracted variants
-        
+
     Returns
     -------
     List[Dict]
@@ -79,8 +82,11 @@ def standardize_variants(variants: List[Dict]) -> List[Dict]:
             'significance': str
         }]
     """
-    return [{
-        'gene': v.get('gene', ''),
-        'variant': v.get('variant', ''),
-        'significance': v.get('significance', '')
-    } for v in variants]
+    return [
+        {
+            "gene": v.get("gene", ""),
+            "variant": v.get("variant", ""),
+            "significance": v.get("significance", ""),
+        }
+        for v in variants
+    ]

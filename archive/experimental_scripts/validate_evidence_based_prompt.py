@@ -9,7 +9,7 @@ import logging
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Tuple
+from typing import Any, Dict, List, Tuple
 
 # Configure logging
 logging.basicConfig(
@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 
 def setup_environment():
     """Set up the testing environment"""
-    import sys
     import os
-    
+    import sys
+
     # Add src to path for imports
     current_dir = Path(__file__).parent
     src_dir = current_dir / "src"
@@ -50,7 +50,7 @@ def run_single_extraction(trial_data: Dict[str, Any], model: str, prompt: str) -
     """Run mCODE extraction on a single trial with specified model and prompt"""
     try:
         from src.pipeline.mcode_pipeline import McodePipeline
-        
+
         # Initialize pipeline
         pipeline = McodePipeline(
             model_name=model,

@@ -1,0 +1,25 @@
+{
+  "core_memory": {
+    "api_base_url": "https://core.heysol.ai/api/v1/mcp",
+    "source": "mcode_translator",
+    "timeout_seconds": 60,
+    "max_retries": 3,
+    "retry_delay_seconds": 1,
+    "default_spaces": {
+      "clinical_trials": "Clinical Trials",
+      "patients": "Patients",
+      "research": "Research"
+    },
+    "storage_settings": {
+      "batch_size": 10,
+      "max_concurrent_requests": 5,
+      "rate_limit_per_minute": 60
+    }
+  },
+  "mcode_settings": {
+    "summary_format": "natural_language",
+    "include_codes": true,
+    "max_summary_length": 2000,
+    "embedding_model": "text-embedding-ada-002"
+  }
+}

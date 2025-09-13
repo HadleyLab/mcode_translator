@@ -7,6 +7,7 @@ from enum import Enum
 
 class TaskStatus(Enum):
     """Status of a benchmark task"""
+
     PENDING = "Pending"
     PROCESSING = "Processing"
     SUCCESS = "Success"

@@ -3,11 +3,11 @@
 Simple test script to verify that all prompts work correctly across all pipeline types.
 """
 
-import sys
 import json
 import logging
+import sys
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 # Add project root to path
 project_root = Path(__file__).resolve().parent

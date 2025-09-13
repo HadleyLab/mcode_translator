@@ -1,18 +1,21 @@
-import click
-import json
-import sys
-import time
+import asyncio
 import hashlib
+import json
 import os
 import re
-import requests
-import asyncio
+import sys
+import time
 from functools import lru_cache
-from typing import Dict, Any
+from typing import Any, Dict
+
+import click
+import requests
+
 # Add src directory to path so we can import modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-from src.utils import Config, get_logger, UnifiedAPIManager, PromptLoader, ModelLoader
 from src.pipeline.mcode_pipeline import McodePipeline
+from src.utils import (Config, ModelLoader, PromptLoader, UnifiedAPIManager,
+                       get_logger)
 
 # Get logger instance
 logger = get_logger(__name__)
@@ -119,7 +122,7 @@ def _search_trials(search_expr: str, fields_str: str, max_results: int, page_tok
         
         # Use direct API call to ClinicalTrials.gov API v2 for proper token-based pagination
         import requests
-        
+
         # Build the API URL from config
         base_url = config.get_clinical_trials_base_url()
         params = {
@@ -227,7 +230,7 @@ def _get_full_study(nct_id: str):
         
         # Use direct API call to ClinicalTrials.gov API v2
         import requests
-        
+
         # Build the API URL from config
         base_url = config.get_clinical_trials_base_url()
         # For fetching a specific study, we need to append the NCT ID to the base URL
@@ -316,7 +319,7 @@ def get_study_fields():
         
         # Use direct API call to ClinicalTrials.gov API v2
         import requests
-        
+
         # For v2 API, we need to make a search request with a small result set to get field info
         base_url = config.get_clinical_trials_base_url()
         params = {
@@ -736,7 +739,7 @@ def _calculate_total_studies(search_expr: str, fields_str: str, page_size: int):
         
         # Use direct API call to ClinicalTrials.gov API v2
         import requests
-        
+
         # Build the API URL from config
         base_url = config.get_clinical_trials_base_url()
         params = {

@@ -1,0 +1,92 @@
+{
+  "patterns": {
+    "biomarker_patterns": {
+      "ER": {
+        "pattern": "ER\\s*(?:status)?\\s*[:=]?\\s*(positive|negative|\\d+\\s*%|\\+|\\-)",
+        "flags": "IGNORECASE",
+        "description": "Estrogen receptor status patterns"
+      },
+      "PR": {
+        "pattern": "PR\\s*(?:status)?\\s*[:=]?\\s*(positive|negative|\\d+\\s*%|\\+|\\-)",
+        "flags": "IGNORECASE",
+        "description": "Progesterone receptor status patterns"
+      },
+      "HER2": {
+        "pattern": "HER2\\s*(?:status)?\\s*[:=]?\\s*(positive|negative|\\d+\\+?)",
+        "flags": "IGNORECASE",
+        "description": "HER2 receptor status patterns"
+      },
+      "PD-L1": {
+        "pattern": "PD-?L1\\s*(?:status)?\\s*[:=]?\\s*(positive|negative|\\d+\\s*%)",
+        "flags": "IGNORECASE",
+        "description": "PD-L1 expression patterns"
+      },
+      "Ki-67": {
+        "pattern": "Ki-?67\\s*(?:status)?\\s*[:=]?\\s*(positive|negative|\\d+\\s*%)",
+        "flags": "IGNORECASE",
+        "description": "Ki-67 proliferation index patterns"
+      },
+      "MSI": {
+        "pattern": "MSI\\s*(?:status)?\\s*[:=]?\\s*(high|low|stable)",
+        "flags": "IGNORECASE",
+        "description": "Microsatellite instability patterns"
+      },
+      "TMB": {
+        "pattern": "TMB\\s*(?:status)?\\s*[:=]?\\s*(high|low|\\d+\\s*mut/Mb)",
+        "flags": "IGNORECASE",
+        "description": "Tumor mutational burden patterns"
+      }
+    },
+    "genomic_patterns": {
+      "gene_pattern": {
+        "pattern": "\\b(BRCA[12]|TP53|PIK3CA|PTEN|AKT1|ERBB2|HER2|EGFR|ALK|ROS1|KRAS|NRAS|BRAF|MEK[12]?|NTRK[123])\\b",
+        "flags": "IGNORECASE",
+        "description": "Common cancer gene patterns"
+      },
+      "variant_pattern": {
+        "pattern": "\\b([A-Z0-9]+)\\s*(?:mutation|variant|alteration|amplification|fusion|rearrangement|deletion|insertion)\\b",
+        "flags": "IGNORECASE",
+        "description": "Genetic variant patterns"
+      },
+      "complex_variant_pattern": {
+        "pattern": "\\b([A-Z0-9]+)\\s*(?:p\\.)?([A-Z][a-z]{2}[0-9]+(?:[A-Za-z]|\\*)?)\\b",
+        "flags": "IGNORECASE",
+        "description": "Complex variant notation patterns"
+      }
+    },
+    "condition_patterns": {
+      "stage_pattern": {
+        "pattern": "stage\\s+(I{1,3}V?|IV)",
+        "flags": "IGNORECASE",
+        "description": "Cancer staging patterns"
+      },
+      "cancer_type_pattern": {
+        "pattern": "\\b(breast|lung|colorectal)\\s+cancer\\b",
+        "flags": "IGNORECASE",
+        "description": "Common cancer type patterns"
+      },
+      "condition_pattern": {
+        "pattern": "\\b(diabetes|hypertension|heart disease)\\b",
+        "flags": "IGNORECASE",
+        "description": "General condition patterns"
+      }
+    },
+    "demographic_patterns": {
+      "gender_pattern": {
+        "pattern": "\\b(male|female)\\b",
+        "flags": "IGNORECASE",
+        "description": "Gender identification patterns"
+      },
+      "age_pattern": {
+        "pattern": "age\\s+([0-9]+)\\s+to\\s+([0-9]+)",
+        "flags": "IGNORECASE",
+        "description": "Age range patterns"
+      },
+      "ecog_pattern": {
+        "pattern": "ECOG\\s+status?\\s*[:=]?\\s*([0-4])",
+        "flags": "IGNORECASE",
+        "description": "ECOG performance status patterns"
+      }
+    }
+  }
+}

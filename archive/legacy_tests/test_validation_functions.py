@@ -4,10 +4,10 @@ Focused test for gold standard validation and benchmarking functions.
 Tests the core logic without UI dependencies.
 """
 
-import json
 import asyncio
-import time
+import json
 import sys
+import time
 from pathlib import Path
 
 

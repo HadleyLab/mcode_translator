@@ -1,0 +1,39 @@
+{
+  "models": {
+    "default": "deepseek-coder",
+    "available": {
+      "deepseek-coder": {
+        "provider": "deepseek",
+        "model_name": "deepseek-coder",
+        "api_base": "https://api.deepseek.com",
+        "max_tokens": 4096,
+        "temperature": 0.1,
+        "timeout_seconds": 60,
+        "rate_limit_per_minute": 60
+      },
+      "gpt-4": {
+        "provider": "openai",
+        "model_name": "gpt-4",
+        "api_base": "https://api.openai.com/v1",
+        "max_tokens": 8192,
+        "temperature": 0.1,
+        "timeout_seconds": 60,
+        "rate_limit_per_minute": 200
+      },
+      "claude-3": {
+        "provider": "anthropic",
+        "model_name": "claude-3-sonnet-20240229",
+        "api_base": "https://api.anthropic.com",
+        "max_tokens": 4096,
+        "temperature": 0.1,
+        "timeout_seconds": 60,
+        "rate_limit_per_minute": 50
+      }
+    },
+    "optimization": {
+      "test_models": ["deepseek-coder", "gpt-4", "claude-3"],
+      "metrics": ["accuracy", "speed", "cost"],
+      "sample_size": 10
+    }
+  }
+}

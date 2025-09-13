@@ -13,28 +13,29 @@ Features:
 - Real-time task status tracking and display
 """
 
-import sys
-import os
 import asyncio
-import uuid
 import json
 import logging
-from enum import Enum
+import os
+import sys
+import uuid
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
-from pathlib import Path
 from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Add the parent directory to the Python path to allow absolute imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from nicegui import ui, background_tasks, run
-from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
-from src.pipeline.mcode_pipeline import McodePipeline
+from nicegui import background_tasks, run, ui
+
 from pipeline.pipeline_base import ProcessingPipeline
+from src.pipeline.mcode_pipeline import McodePipeline
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
+from src.shared.types import TaskStatus
 from src.utils import get_logger
 from src.utils.prompt_loader import PromptLoader
-from src.shared.types import TaskStatus
 
 # Configure logging
 logger = get_logger(__name__)
@@ -59,6 +60,7 @@ class LLMCallTask:
         return None
 
 from src.pipeline.task_queue import BenchmarkTask
+
 
 @dataclass
 class PipelineTask(BenchmarkTask):

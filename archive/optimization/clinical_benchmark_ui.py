@@ -4,18 +4,19 @@ Clinical Trial Benchmark UI - Modern interface for clinical trial validation opt
 Features uber list of validations with filters for prompt, model, and trial
 """
 
-import sys
-from pathlib import Path
-import logging
-import json
 import asyncio
+import json
+import logging
 import os
-from typing import Dict, List, Any, Optional, Set
-import pandas as pd
-from nicegui import ui, app, run
-from datetime import datetime
+import sys
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
+
+import pandas as pd
+from nicegui import app, run, ui
 
 # Add project root to path for proper imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -24,14 +25,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 logger = logging.getLogger(__name__)
 
 from src.optimization.prompt_optimization_framework import (
-    PromptOptimizationFramework,
-    PromptType,
-    APIConfig,
-    PromptVariant
-)
-
-from src.utils.prompt_loader import prompt_loader
+    APIConfig, PromptOptimizationFramework, PromptType, PromptVariant)
 from src.utils import model_loader
+from src.utils.prompt_loader import prompt_loader
 
 
 class ValidationStatus(Enum):
@@ -838,7 +834,8 @@ class ClinicalBenchmarkUI:
     def _create_pipeline_callback(self, prompt_content: str, prompt_type: str):
         """Create pipeline callback for benchmark execution"""
         def pipeline_callback(test_data):
-            from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
+            from src.pipeline.strict_dynamic_extraction_pipeline import \
+                StrictDynamicExtractionPipeline
             
             pipeline = StrictDynamicExtractionPipeline()
             
