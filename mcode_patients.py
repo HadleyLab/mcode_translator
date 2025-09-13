@@ -11,11 +11,12 @@ import logging
 import argparse
 import sys
 import os
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Iterator
 
 from src.utils.logging_config import get_logger, setup_logging
 from src.utils.config import Config
 from src.utils.core_memory_client import CoreMemoryClient, CoreMemoryError
+from src.utils.patient_generator import PatientGenerator, create_patient_generator
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -549,7 +550,7 @@ def filter_patient_mcode_elements(patient_mcode_elements: Dict[str, Any],
     return filtered_elements
 
 
-# Duplicate function removed - using the improved version above
+# PatientGenerator handles all ZIP archive loading - no direct ZIP handling needed here
 
 
 def extract_demographics(patient_resource: Dict) -> Dict:
@@ -784,6 +785,10 @@ Examples:
   mcode_patients.py --input-file data/fetcher_output/deepseek-chat.results.json \
     --patient-file patient.pruned.for_deepseek.json --output patient.filtered.for_deepseek.json
 
+  # Load from synthetic patient ZIP archive
+  mcode_patients.py --archive-path data/synthetic_patients/breast_cancer/10_years/breast_cancer_10_years.zip \
+    --output patient_from_archive_filtered.json
+
   # Batch processing with directory recursion
   mcode_patients.py --input-file data/fetcher_output/deepseek-chat.results.json \
     --input-dir data/mcode_downloads --output-dir data/mcode_filtered --workers 4
@@ -801,7 +806,17 @@ Examples:
     parser.add_argument(
         "--patient-file", "-p",
         type=str, default=None,
-        help="Path to single patient data file. Use --input-dir for batch. If not provided with --input-file, runs in standalone mode."
+        help="Path to single patient data file (JSON Bundle). Use --input-dir for batch or --archive-path for ZIP archives."
+    )
+    parser.add_argument(
+        "--archive-path", "-a",
+        type=str, default=None,
+        help="Path to synthetic patient ZIP archive. Overrides --patient-file for loading from archives."
+    )
+    parser.add_argument(
+        "--patient-id",
+        type=str, default=None,
+        help="Specific patient ID to load from archive (if not specified, loads all patients)."
     )
     parser.add_argument(
         "--input-dir", "-d",
@@ -870,11 +885,26 @@ def main() -> None:
         clinical_trial_file = None
         if args.input_file:
             clinical_trial_file = args.input_file
-        elif not args.input_dir and not args.patient_file:
-            logger.error("Must provide either --input-file, --patient-file, or --input-dir")
-            sys.exit(1)
         
-        patient_file = args.patient_file  # Always set patient_file for single mode
+        # Determine patient input source
+        patient_source = None
+        if args.archive_path:
+            patient_source = "archive"
+            archive_path = args.archive_path
+            patient_id = args.patient_id
+            logger.info(f"Loading patients from synthetic archive: {archive_path}")
+        elif args.patient_file:
+            patient_source = "file"
+            patient_file = args.patient_file
+            logger.info(f"Loading patient from file: {patient_file}")
+        elif args.input_dir:
+            patient_source = "directory"
+        else:
+            if clinical_trial_file:
+                logger.warning("No patient data source specified (--patient-file, --archive-path, or --input-dir). Running clinical trial extraction only.")
+            else:
+                logger.error("Must provide either --input-file (with patient source), --patient-file, --archive-path, or --input-dir")
+                sys.exit(1)
         
         # Read clinical trial data (if provided)
         if clinical_trial_file:
@@ -890,7 +920,7 @@ def main() -> None:
             logger.info("No clinical trial data provided - running in standalone patient extraction mode")
         
         if args.input_dir:
-            # Batch mode: Recurse through input_dir for .json files
+            # Batch mode: Recurse through input_dir for .json files (unchanged)
             processed_count = 0
             import os
             for root, dirs, files in os.walk(args.input_dir):
@@ -919,7 +949,7 @@ def main() -> None:
                             json.dump(filtered_patient_data, f, indent=2)
                         logger.info(f"Saved filtered data to: {output_path}")
                         
-                        # Store to CORE Memory if requested (parallelizable with --workers, but sequential for simplicity)
+                        # Store to CORE Memory if requested
                         if args.store_in_core_memory:
                             api_key = config.get_core_memory_api_key()
                             store_filtered_patients_to_memory(filtered_patient_data, api_key)
@@ -927,8 +957,94 @@ def main() -> None:
                         processed_count += 1
             
             logger.info(f"Batch processing completed: {processed_count} files processed")
+        elif patient_source == "generator":
+            # PatientGenerator mode - using new PatientGenerator class
+            try:
+                # Create generator with appropriate parameters
+                generator = create_patient_generator(
+                    archive_identifier=archive_identifier,
+                    config=config,
+                    shuffle=shuffle,
+                    seed=seed
+                )
+                
+                if random_selection:
+                    # Get single random patient
+                    patient_data = generator.get_random_patient()
+                    patient_bundles = [patient_data]
+                    logger.info("Selected random patient from archive using PatientGenerator")
+                elif patient_id:
+                    # Get specific patient by ID
+                    patient_data = generator.get_patient_by_id(patient_id)
+                    patient_bundles = [patient_data]
+                    logger.info(f"Selected specific patient {patient_id} from archive using PatientGenerator")
+                else:
+                    # Get all patients or limited slice
+                    if limit:
+                        patient_bundles = generator.get_patients(limit=limit)
+                        logger.info(f"Loaded {len(patient_bundles)} patients from archive (limited to {limit})")
+                    else:
+                        patient_bundles = list(generator)  # Convert iterator to list
+                        logger.info(f"Loaded all {len(patient_bundles)} patients from archive")
+                
+                processed_count = 0
+                for i, patient_data in enumerate(patient_bundles):
+                    logger.info(f"Processing patient bundle {i+1}/{len(patient_bundles)} from PatientGenerator")
+                    
+                    # Extract mCODE elements from patient data
+                    patient_mcode_elements = extract_patient_mcode_elements(patient_data)
+                    logger.info(f"Extracted {len(patient_mcode_elements)} mCODE elements from generator patient {i+1}: {list(patient_mcode_elements.keys())}")
+                    
+                    # Use all elements if no clinical trial filtering, otherwise filter
+                    if clinical_trial_mcode_elements:
+                        filtered_patient_mcode_elements = filter_patient_mcode_elements(patient_mcode_elements, clinical_trial_mcode_elements)
+                        logger.info(f"Filtered to {len(filtered_patient_mcode_elements)} elements based on clinical trial criteria")
+                    else:
+                        filtered_patient_mcode_elements = patient_mcode_elements
+                        logger.info("Using all extracted mCODE elements (no clinical trial filtering)")
+                    
+                    # Create filtered patient data structure
+                    filtered_patient_data = patient_data.copy()
+                    filtered_patient_data["filtered_mcode_elements"] = filtered_patient_mcode_elements
+                    filtered_patient_data["source_generator"] = {
+                        "archive": archive_identifier,
+                        "patient_id": patient_id or generator._extract_patient_id(patient_data),
+                        "selection_method": "random" if random_selection else "specific" if patient_id else "all/limited",
+                        "total_patients": len(generator),
+                        "random_seed": seed
+                    }
+                    
+                    # Generate output filename
+                    if random_selection:
+                        base_name = f"random_patient_from_{archive_identifier.replace('/', '_')}_filtered"
+                    elif patient_id:
+                        base_name = f"patient_{patient_id}_filtered"
+                    else:
+                        base_name = f"patient_from_{archive_identifier.replace('/', '_')}_{i+1}_filtered"
+                    
+                    output_file = args.output or f"{base_name}.json"
+                    logger.info(f"Writing filtered patient data to: {output_file}")
+                    with open(output_file, 'w') as f:
+                        json.dump(filtered_patient_data, f, indent=2)
+                    
+                    # Store to CORE Memory if requested
+                    if args.store_in-core_memory:
+                        logger.info(f"Storing filtered patient {i+1} from generator to CORE Memory")
+                        api_key = config.get_core_memory_api_key()
+                        store_filtered_patients_to_memory(filtered_patient_data, api_key)
+                    
+                    processed_count += 1
+                
+                logger.info(f"PatientGenerator processing completed: {processed_count} patients processed from {archive_identifier}")
+                
+            except Exception as e:
+                logger.error(f"Failed to process archive with PatientGenerator: {str(e)}")
+                if args.verbose:
+                    import traceback
+                    traceback.print_exc()
+                sys.exit(1)
         else:
-            # Single file mode
+            # Single file mode (unchanged)
             # Read patient data
             logger.info(f"Reading patient data from: {patient_file}")
             with open(patient_file, 'r') as f:

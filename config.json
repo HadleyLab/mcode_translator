@@ -2,22 +2,51 @@
   "version": "1.0.0",
   "cache": {
     "enabled": true,
-    "api_cache_directory": "cache/api",
+    "api_cache_directory": ".api_cache",
+    "llm_cache_directory": ".api_cache/llm",
+    "clinical_trials_cache_directory": ".api_cache/clinical_trials",
     "ttl_seconds": 0
   },
   "rate_limiting": {
-    "delay_seconds": 0.1
+    "delay_seconds": 1.0
   },
   "request": {
     "timeout_seconds": 30
   },
   "apis": {
     "clinical_trials": {
-      "base_url": "https://clinicaltrials.gov/api/v2"
+      "base_url": "https://clinicaltrials.gov/api/v2/studies"
     }
   },
   "validation": {
     "strict_mode": true,
     "require_api_keys": true
+  },
+  "synthetic_data": {
+    "base_directory": "data/synthetic_patients",
+    "archives": {
+      "mixed_cancer": {
+        "10_years": {
+          "url": "https://mitre.box.com/shared/static/7k7lk7wmza4m17916xnvc2uszidyv6vm.zip",
+          "description": "Mixed cancer types, 10 years of medical history"
+        },
+        "lifetime": {
+          "url": "https://mitre.box.com/shared/static/mn6kpk56zvvk2o0lvjv55n7rnyajbnm4.zip",
+          "description": "Mixed cancer types, lifetime/longitudinal records"
+        }
+      },
+      "breast_cancer": {
+        "10_years": {
+          "url": "https://mitre.box.com/shared/static/c6ca6y2jfumrhw4nu20kztktxdlhhzo8.zip",
+          "description": "Breast cancer patients, 10 years of medical history"
+        },
+        "lifetime": {
+          "url": "https://mitre.box.com/shared/static/59n7mcm8si0qk3p36ud0vmrcdv7pr0s7.zip",
+          "description": "Breast cancer patients, lifetime/longitudinal records"
+        }
+      }
+    },
+    "default_archive": "breast_cancer/10_years",
+    "auto_download": true
   }
 }

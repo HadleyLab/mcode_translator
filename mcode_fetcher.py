@@ -22,7 +22,7 @@ import os
 from typing import Dict, Any, List, Optional
 
 from src.pipeline.concurrent_fetcher import (
-    ConcurrentFetcher, 
+    ConcurrentFetcher,
     ProcessingConfig,
     concurrent_search_and_process,
     concurrent_process_trials
@@ -36,6 +36,7 @@ from src.pipeline.fetcher import (
 from src.utils.config import Config, ConfigurationError
 from src.utils.logging_config import get_logger, setup_logging
 from src.utils.core_memory_client import CoreMemoryClient, CoreMemoryError
+from src.utils.data_downloader import download_synthetic_patient_archives
 
 
 def store_in_core_memory(results: Dict[str, Any], api_key: str) -> None:
@@ -290,7 +291,7 @@ def store_in_core_memory(results: Dict[str, Any], api_key: str) -> None:
 def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser with shared argument patterns."""
     parser = argparse.ArgumentParser(
-        description="mCODE Fetcher - Clinical trial data fetcher with concurrent processing",
+        description="mCODE Fetcher - Clinical trial data fetcher with concurrent processing and synthetic patient support",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -308,6 +309,12 @@ Examples:
   mcode_fetcher.py --condition "breast cancer" --concurrent --process \\
     --workers 8 --model deepseek-coder --prompt direct_mcode_evidence_based_concise
   
+  # Download synthetic patient archives
+  mcode_fetcher.py --download-synthetic-patients --cancer-type breast_cancer --duration 10_years
+  
+  # Download all synthetic patient archives
+  mcode_fetcher.py --download-synthetic-patients
+  
   # Count total available studies
   mcode_fetcher.py --condition "cancer" --count-only
   
@@ -317,8 +324,31 @@ Examples:
         """
     )
     
-    # Input options (mutually exclusive)
-    input_group = parser.add_mutually_exclusive_group(required=True)
+    # Synthetic patient download options (mutually exclusive with trial fetching)
+    synth_group = parser.add_mutually_exclusive_group()
+    synth_group.add_argument(
+        "--download-synthetic-patients",
+        action="store_true",
+        help="Download synthetic patient archives from MITRE/Synthea mCODE test data"
+    )
+    synth_group.add_argument(
+        "--cancer-type",
+        choices=["mixed_cancer", "breast_cancer"],
+        help="Specific cancer type to download (mixed_cancer or breast_cancer)"
+    )
+    synth_group.add_argument(
+        "--duration",
+        choices=["10_years", "lifetime"],
+        help="Specific duration to download (10_years or lifetime)"
+    )
+    parser.add_argument(
+        "--force-download",
+        action="store_true",
+        help="Force re-download of synthetic patient archives even if they exist"
+    )
+    
+    # Input options (mutually exclusive, required if not downloading synthetic data)
+    input_group = parser.add_argument_group("Trial Search Options")
     input_group.add_argument(
         "--condition", "-c",
         help="Medical condition to search for (e.g., 'breast cancer')"
@@ -331,6 +361,9 @@ Examples:
         "--nct-ids",
         help="Comma-separated list of NCT IDs to process"
     )
+    
+    # Make trial input required only if not downloading synthetic data
+    parser.set_defaults(condition=None, nct_id=None, nct_ids=None)
     
     # Output options
     parser.add_argument(
@@ -741,6 +774,58 @@ async def main() -> None:
         config = Config()
         if args.config:
             logger.info(f"Custom config specified: {args.config}")
+        
+        # Handle synthetic patient downloads first (mutually exclusive with trial processing)
+        if args.download_synthetic_patients or args.cancer_type or args.duration:
+            logger.info("📥 Downloading synthetic patient archives")
+            
+            # Build config based on specific flags
+            archives_config = None
+            if args.cancer_type and args.duration:
+                # Specific archive
+                archives_config = {
+                    args.cancer_type: {args.duration: None}  # URL will be filled by default config
+                }
+            elif args.cancer_type:
+                # Specific cancer type, both durations
+                archives_config = {args.cancer_type: {}}
+            elif args.duration:
+                # Specific duration, both cancer types
+                archives_config = {
+                    "mixed_cancer": {args.duration: None},
+                    "breast_cancer": {args.duration: None}
+                }
+            # If no specifics, download all (default behavior)
+            
+            downloaded = download_synthetic_patient_archives(
+                base_dir="data/synthetic_patients",
+                archives_config=archives_config,
+                force_download=args.force_download
+            )
+            
+            logger.info(f"✅ Downloaded {len(downloaded)} synthetic patient archive(s)")
+            for name, path in downloaded.items():
+                logger.info(f"   - {name}: {path}")
+            
+            # Output summary
+            summary = {
+                "operation": "synthetic_patient_download",
+                "downloaded_archives": downloaded,
+                "total_archives": len(downloaded),
+                "base_directory": "data/synthetic_patients"
+            }
+            if args.output:
+                with open(args.output, 'w') as f:
+                    json.dump(summary, f, indent=2)
+                print(f"✅ Download summary exported to {args.output}")
+            else:
+                print(json.dumps(summary, indent=2))
+            
+            return
+        
+        # Validate that trial input is provided if not downloading synthetic data
+        if not (args.condition or args.nct_id or args.nct_ids):
+            parser.error("Must specify either trial search options (--condition, --nct-id, --nct-ids) or synthetic patient download options")
 
         # Handle count-only requests
         if args.count_only:
