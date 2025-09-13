@@ -506,6 +506,27 @@ class PromptLoader:
         """
         return self.prompts_config.copy()
 
+    def get_default_prompt(self, **format_kwargs) -> str:
+        """Get the default prompt (direct_mcode_evidence_based_concise)
+
+        Args:
+            **format_kwargs: Keyword arguments to format the prompt template
+
+        Returns:
+            The default prompt content, formatted if arguments provided
+        """
+        try:
+            return self.get_prompt("direct_mcode_evidence_based_concise", **format_kwargs)
+        except Exception as e:
+            logger.warning(f"Could not load default prompt 'direct_mcode_evidence_based_concise': {e}")
+            # Fallback to first available prompt if default fails
+            available_prompts = list(self.prompts_config.keys())
+            if available_prompts:
+                logger.info(f"Falling back to first available prompt: {available_prompts[0]}")
+                return self.get_prompt(available_prompts[0], **format_kwargs)
+            else:
+                raise ValueError("No prompts available in configuration")
+
 
 # Global instance for easy access
 prompt_loader = PromptLoader()
@@ -528,6 +549,11 @@ def load_prompt(prompt_key: str, **format_kwargs) -> str:
 def reload_prompts_config() -> None:
     """Reload the prompts configuration using the global loader"""
     prompt_loader.reload_config()
+
+
+def get_default_prompt(**format_kwargs) -> str:
+    """Get the default prompt using the global loader"""
+    return prompt_loader.get_default_prompt(**format_kwargs)
 
 
 # Example usage

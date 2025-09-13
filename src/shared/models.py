@@ -157,7 +157,7 @@ class PipelineResult(BaseModel):
 class WorkflowResult(BaseModel):
     """Standardized result from workflow operations."""
     success: bool = Field(..., description="Whether the workflow succeeded")
-    data: Dict[str, Any] = Field(default_factory=dict, description="Result data")
+    data: Union[Dict[str, Any], List[Any]] = Field(default_factory=dict, description="Result data (dict or list)")
     error_message: Optional[str] = Field(None, description="Error message if failed")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
     processing_timestamp: datetime = Field(default_factory=datetime.utcnow, description="When processing occurred")

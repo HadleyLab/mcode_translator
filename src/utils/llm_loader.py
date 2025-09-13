@@ -54,11 +54,11 @@ class LLMConfig:
     def from_dict(cls, data: Dict[str, Any]) -> "LLMConfig":
         """Create LLMConfig from dictionary"""
         return cls(
-            name=data.get("name", ""),
-            model_type=data.get("model_type", ""),
-            model_identifier=data.get("model_identifier", ""),
+            name=data.get("name", data.get("model_name", "")),
+            model_type=data.get("model_type", data.get("provider", "")),
+            model_identifier=data.get("model_identifier", data.get("model_name", "")),
             api_key_env_var=data.get("api_key_env_var", ""),
-            base_url=data.get("base_url", ""),
+            base_url=data.get("base_url", data.get("api_base", "")),
             default_parameters=data.get("default_parameters", {}),
             default=data.get("default", False),
         )
@@ -166,15 +166,23 @@ class LLMLoader:
 
         return self.llms_config.copy()
 
-    def get_default_llm(self) -> None:
-        """REMOVED: Default LLM fallbacks not allowed in strict implementation
+    def get_default_llm(self) -> LLMConfig:
+        """Get the default LLM configuration (deepseek-coder)
 
-        Raises:
-            ValueError: Always - no default LLM allowed in strict mode
+        Returns:
+            LLMConfig: Default LLM configuration for deepseek-coder
         """
-        raise ValueError(
-            "Default LLM fallbacks not allowed in strict implementation - LLM must be explicitly specified"
-        )
+        try:
+            return self.get_llm("deepseek-coder")
+        except Exception as e:
+            logger.warning(f"Could not load default LLM 'deepseek-coder': {e}")
+            # Fallback to first available LLM if deepseek-coder fails
+            available_llms = list(self.llms_config.keys())
+            if available_llms:
+                logger.info(f"Falling back to first available LLM: {available_llms[0]}")
+                return self.get_llm(available_llms[0])
+            else:
+                raise ValueError("No LLMs available in configuration")
 
 
 # Global instance for easy access
@@ -197,6 +205,11 @@ def load_llm(llm_key: str) -> LLMConfig:
 def reload_llms_config() -> None:
     """Reload the LLMs configuration using the global loader"""
     llm_loader.reload_config()
+
+
+def get_default_llm() -> LLMConfig:
+    """Get the default LLM configuration using the global loader"""
+    return llm_loader.get_default_llm()
 
 
 # Example usage

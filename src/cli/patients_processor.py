@@ -63,6 +63,9 @@ def main() -> None:
     # Setup logging
     McodeCLI.setup_logging(args)
 
+    # Create configuration
+    config = McodeCLI.create_config(args)
+
     # Validate input files
     patients_path = Path(args.patients)
     if not patients_path.exists():
