@@ -3,22 +3,9 @@ Base class for processing pipelines.
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
-
-@dataclass
-class PipelineResult:
-    """Comprehensive result from a processing pipeline"""
-
-    extracted_entities: List[Dict[str, Any]]
-    mcode_mappings: List[Dict[str, Any]]
-    source_references: List[Any]
-    validation_results: Dict[str, Any]
-    metadata: Dict[str, Any]
-    original_data: Dict[str, Any]
-    token_usage: Optional[Dict[str, int]] = None
-    error: Optional[str] = None
+from src.shared.models import ClinicalTrialData, PipelineResult
 
 
 class ProcessingPipeline(ABC):
@@ -39,3 +26,17 @@ class ProcessingPipeline(ABC):
             PipelineResult with extracted entities, mCODE mappings, and source tracking.
         """
         pass
+
+    def process_clinical_trial_validated(self, trial_data: ClinicalTrialData) -> PipelineResult:
+        """
+        Process validated clinical trial data through the pipeline.
+
+        Args:
+            trial_data: Validated ClinicalTrialData instance.
+
+        Returns:
+            PipelineResult with extracted entities, mCODE mappings, and source tracking.
+        """
+        # Convert to dict for backward compatibility
+        trial_dict = trial_data.dict()
+        return self.process_clinical_trial(trial_dict)

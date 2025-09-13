@@ -12,16 +12,10 @@ from typing import Any, Dict, Optional
 
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
+from src.shared.models import WorkflowResult
 
 
-@dataclass
-class WorkflowResult:
-    """Standardized result structure for all workflows."""
-
-    success: bool
-    data: Dict[str, Any]
-    error_message: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+# WorkflowResult is now imported from shared.models
 
 
 class WorkflowError(Exception):

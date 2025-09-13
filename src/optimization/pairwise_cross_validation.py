@@ -27,7 +27,7 @@ from src.pipeline.task_queue import (BenchmarkTask, PipelineTaskQueue,
 from src.shared.benchmark_result import BenchmarkResult
 from src.shared.types import TaskStatus
 from src.utils.logging_config import get_logger, setup_logging
-from src.utils.model_loader import ModelLoader
+from src.utils.llm_loader import LLMLoader
 from src.utils.prompt_loader import PromptLoader
 
 
@@ -73,7 +73,7 @@ class PairwiseCrossValidator:
 
         # Initialize loaders
         self.prompt_loader = PromptLoader()
-        self.model_loader = ModelLoader()
+        self.llm_loader = LLMLoader()
 
         # Results storage
         self.pairwise_results: List[PairwiseComparisonTask] = []
@@ -104,7 +104,7 @@ class PairwiseCrossValidator:
 
     def get_available_models(self) -> List[str]:
         """Get list of available model names."""
-        return list(self.model_loader.list_available_models().keys())
+        return list(self.llm_loader.list_available_llms().keys())
 
     def load_trials(self, trials_file: str) -> List[Dict[str, Any]]:
         """Load trial data from file."""

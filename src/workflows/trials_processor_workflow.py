@@ -13,6 +13,7 @@ from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.logging_config import get_logger
 
 from .base_workflow import ProcessorWorkflow, WorkflowResult
+from src.shared.models import enhance_trial_with_mcode_results
 
 
 class TrialsProcessorWorkflow(ProcessorWorkflow):
@@ -80,17 +81,8 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                     # Process with mCODE pipeline
                     result = self.pipeline.process_clinical_trial(trial)
 
-                    # Add mCODE results to trial
-                    enhanced_trial = trial.copy()
-                    enhanced_trial["McodeResults"] = {
-                        "extracted_entities": result.extracted_entities,
-                        "mcode_mappings": result.mcode_mappings,
-                        "source_references": result.source_references,
-                        "validation_results": result.validation_results,
-                        "metadata": result.metadata,
-                        "token_usage": result.token_usage,
-                        "error": result.error,
-                    }
+                    # Add mCODE results to trial using standardized utility
+                    enhanced_trial = enhance_trial_with_mcode_results(trial, result)
 
                     processed_trials.append(enhanced_trial)
                     successful_count += 1

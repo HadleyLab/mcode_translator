@@ -20,7 +20,16 @@ from typing import Any, Dict, List, Optional
 
 from .document_ingestor import DocumentIngestor, DocumentSection
 from .mcode_llm import McodeConfigurationError, McodeMapper, McodeMappingError
-from .pipeline_base import PipelineResult, ProcessingPipeline
+from .pipeline_base import ProcessingPipeline
+from src.shared.models import (
+    McodeElement,
+    PipelineResult,
+    ProcessingMetadata,
+    SourceReference,
+    TokenUsage,
+    ValidationResult,
+    clinical_trial_from_dict,
+)
 
 # Add parent directory to path for absolute imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -132,23 +141,60 @@ class McodePipeline(ProcessingPipeline, Loggable):
             if mapping_result is not None:
                 validation_results = mapping_result["validation_results"]
 
+            # Convert mappings to McodeElement instances
+            mcode_elements = []
+            for mapping in all_mappings:
+                try:
+                    mcode_elements.append(McodeElement(**mapping))
+                except Exception as e:
+                    self.logger.warning(f"Failed to convert mapping to McodeElement: {e}")
+                    # Keep original if conversion fails
+                    mcode_elements.append(mapping)
+
+            # Convert source references to SourceReference instances
+            source_refs = []
+            for ref in source_references:
+                try:
+                    source_refs.append(SourceReference(**ref))
+                except Exception as e:
+                    self.logger.warning(f"Failed to convert source reference: {e}")
+                    # Keep original if conversion fails
+                    source_refs.append(ref)
+
+            # Create validation result
+            try:
+                validation_result = ValidationResult(**validation_results)
+            except Exception as e:
+                self.logger.warning(f"Failed to convert validation results: {e}")
+                validation_result = ValidationResult(
+                    compliance_score=validation_results.get("compliance_score", 0.0)
+                )
+
+            # Create token usage
+            token_usage = None
+            if mapping_result is not None:
+                token_data = mapping_result["metadata"].get("token_usage", {})
+                try:
+                    token_usage = TokenUsage(**token_data)
+                except Exception as e:
+                    self.logger.warning(f"Failed to convert token usage: {e}")
+
+            # Create processing metadata
+            metadata = ProcessingMetadata(
+                engine_type="LLM",
+                entities_count=0,
+                mapped_count=len(all_mappings),
+                compliance_score=validation_result.compliance_score,
+                token_usage=token_usage,
+                aggregate_token_usage=global_token_tracker.get_total_usage().to_dict(),
+            )
+
             return PipelineResult(
-                extracted_entities=[],
-                mcode_mappings=all_mappings,
-                source_references=source_references,
-                validation_results=validation_results,
-                metadata={
-                    "engine_type": "LLM",
-                    "entities_count": 0,
-                    "mapped_count": len(all_mappings),
-                    "compliance_score": validation_results.get("compliance_score", 0.0),
-                    "token_usage": (
-                        mapping_result["metadata"].get("token_usage", {})
-                        if mapping_result is not None
-                        else {}
-                    ),
-                    "aggregate_token_usage": global_token_tracker.get_total_usage().to_dict(),
-                },
+                extracted_entities=[],  # No entities extracted in direct mapping
+                mcode_mappings=mcode_elements,
+                source_references=source_refs,
+                validation_results=validation_result,
+                metadata=metadata,
                 original_data=trial_data,
                 error=None,
             )

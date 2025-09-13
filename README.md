@@ -4,7 +4,13 @@ A high-performance clinical trial data processing pipeline that extracts and map
 
 ## 🏗️ Architecture Overview
 
-The mCODE Translator follows a clean separation of concerns with distinct workflow types:
+The mCODE Translator has been transformed with a **modern, type-safe architecture** featuring Pydantic data models and streamlined pipeline orchestration.
+
+### 🆕 **New: Pydantic Data Models**
+- **Runtime Validation**: Automatic validation of clinical trial data
+- **Type Safety**: Full type hints and compile-time checking
+- **Clear Interfaces**: Standardized data structures across the system
+- **Error Prevention**: Catches data issues early with descriptive errors
 
 ### 📊 Workflow Types
 
@@ -24,18 +30,65 @@ src/
 │   ├── patients_fetcher.py       # Fetch synthetic patients
 │   ├── patients_processor.py     # Process patients + mCODE → Core Memory
 │   └── trials_optimizer.py       # Test optimization combinations
+├── core/                         # 🆕 Core architecture components
+│   ├── dependency_container.py   # Dependency injection container
+│   └── data_flow_coordinator.py  # Complete data flow orchestration
 ├── workflows/                    # Business logic workflows
 │   ├── base_workflow.py          # Common workflow functionality
+│   ├── streamlined_workflow.py   # 🆕 Composition-based workflows
 │   ├── trials_fetcher_workflow.py    # TrialsFetcherWorkflow
 │   ├── trials_processor_workflow.py  # TrialsProcessorWorkflow
 │   ├── patients_fetcher_workflow.py  # PatientsFetcherWorkflow
 │   ├── patients_processor_workflow.py # PatientsProcessorWorkflow
 │   └── trials_optimizer_workflow.py  # TrialsOptimizerWorkflow
+├── pipeline/                     # Pipeline components
+│   ├── unified_pipeline.py       # 🆕 Unified pipeline interface
+│   ├── mcode_pipeline.py         # Updated with Pydantic models
+│   ├── pipeline_base.py          # Base pipeline classes
+│   └── concurrent_fetcher.py     # Concurrent processing
+├── shared/                       # Shared utilities
+│   ├── models.py                 # 🆕 Pydantic data models
+│   ├── cli_utils.py             # Common CLI patterns
+│   └── types.py                 # Type definitions
 ├── storage/                      # Data persistence
 │   └── mcode_memory_storage.py   # Unified Core Memory interface
-└── shared/                       # Shared utilities
-    ├── cli_utils.py             # Common CLI patterns
-    └── types.py                 # Type definitions
+└── utils/                        # Utility functions
+    ├── config.py                 # Configuration management
+    ├── logging_config.py         # Logging setup
+    └── model_loader.py           # Model configuration
+```
+
+### 🆕 **Pydantic Data Models**
+
+The system now uses **comprehensive Pydantic models** for type safety and validation:
+
+#### Core Models
+- **`ClinicalTrialData`**: Complete clinical trial structure with validation
+- **`McodeElement`**: Standardized mCODE mappings with confidence scores
+- **`PipelineResult`**: Type-safe pipeline results with comprehensive metadata
+- **`SourceReference`**: Provenance tracking for mappings
+- **`ValidationResult`**: Structured validation outcomes
+- **`TokenUsage`**: Automatic token usage calculation
+- **`WorkflowResult`**: Standardized workflow results
+
+#### Key Benefits
+- **Runtime Validation**: Automatic validation of clinical trial data
+- **Type Safety**: Full type hints and compile-time checking
+- **Error Prevention**: Catches data issues early with descriptive errors
+- **Clear Interfaces**: Standardized data structures across the system
+- **Backward Compatibility**: Utility functions for migration
+
+#### Example Usage
+```python
+from src.shared.models import ClinicalTrialData, PipelineResult
+
+# Automatic validation and type safety
+trial = ClinicalTrialData(**trial_data)
+result = PipelineResult(
+    mcode_mappings=mappings,
+    validation_results=validation,
+    metadata=metadata
+)
 ```
 
 ## 🚀 Quick Start
@@ -43,11 +96,47 @@ src/
 ### Prerequisites
 
 ```bash
-# Install dependencies
+# Install dependencies (now includes Pydantic)
 pip install -r requirements.txt
 
 # Set up environment variables
 export CORE_MEMORY_API_KEY="your_api_key_here"
+```
+
+### 🆕 **New: Streamlined Data Flow**
+
+The system now supports **complete end-to-end data processing** with the new streamlined architecture:
+
+```python
+from src.core.data_flow_coordinator import process_clinical_trials_flow
+
+# Complete pipeline: fetch → validate → process → store
+result = process_clinical_trials_flow(
+    trial_ids=["NCT123456", "NCT789012"],
+    config={
+        "validate_data": True,
+        "store_results": True,
+        "batch_size": 5
+    }
+)
+
+print(f"Success rate: {result.metadata['success_rate']:.1%}")
+```
+
+### 🆕 **New: Type-Safe Processing**
+
+All processing now uses **validated data models**:
+
+```python
+from src.workflows.streamlined_workflow import create_trial_processor
+
+# Type-safe processing with automatic validation
+processor = create_trial_processor()
+result = processor.process_single_trial(trial_data)
+
+# Access validated results
+for mapping in result.data.mcode_mappings:
+    print(f"Element: {mapping.element_type}, Confidence: {mapping.confidence_score}")
 ```
 
 ### Basic Usage
@@ -288,7 +377,25 @@ python -m pytest tests/
 
 # Run with coverage
 python -m pytest tests/ --cov=src --cov-report=html
+
+# Run new model tests
+python -m pytest tests/unit/test_models.py -v
 ```
+
+### 🆕 **New: Streamlined Processing Example**
+
+See the complete streamlined architecture in action:
+
+```bash
+# Run the comprehensive example
+python examples/streamlined_processing_example.py
+```
+
+This demonstrates:
+- Complete data flow: fetch → validate → process → store
+- Type-safe processing with Pydantic models
+- Dependency injection and component composition
+- Error handling and progress tracking
 
 ### Code Quality
 
@@ -315,6 +422,18 @@ mypy --strict src/
 
 ## 📊 Architecture Benefits
 
+### ✅ **Enhanced: Type Safety & Validation**
+- **Pydantic Models**: Runtime validation of all clinical trial data
+- **Compile-Time Checking**: Full type hints prevent errors early
+- **Clear Error Messages**: Descriptive validation failures
+- **Data Integrity**: Automatic validation prevents corrupted data
+
+### ✅ **Enhanced: Streamlined Architecture**
+- **Unified Pipeline**: Single interface orchestrating all components
+- **Dependency Injection**: Clean component composition
+- **Composition over Inheritance**: Flexible, testable workflows
+- **Complete Data Flow**: Fetch → Validate → Process → Store
+
 ### ✅ Clear Separation of Concerns
 - **Fetchers**: Data acquisition only
 - **Processors**: mCODE processing + storage
@@ -334,6 +453,7 @@ mypy --strict src/
 - Easy to add new workflow types
 - Pluggable storage backends
 - Modular CLI architecture
+- Type-safe component integration
 
 ## 🤝 Contributing
 

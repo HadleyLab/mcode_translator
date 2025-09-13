@@ -108,7 +108,7 @@ class LlmBase(Loggable, ABC):
             self.model_name = config.get_model_name()
 
         # Get the full model configuration to access model_identifier
-        self.model_config = config.get_model_config(self.model_name)
+        self.model_config = config.get_llm_config(self.model_name)
 
         # Set temperature - use provided or default from config
         if temperature is not None:

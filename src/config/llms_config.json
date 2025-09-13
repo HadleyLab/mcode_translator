@@ -5,11 +5,12 @@
       "deepseek-coder": {
         "provider": "deepseek",
         "model_name": "deepseek-coder",
-        "api_base": "https://api.deepseek.com",
-        "max_tokens": 4096,
-        "temperature": 0.1,
-        "timeout_seconds": 60,
-        "rate_limit_per_minute": 60
+        "api_key_env_var": "DEEPSEEK_API_KEY",
+        "base_url": "https://api.deepseek.com",
+        "default_parameters": {
+          "temperature": 0.1,
+          "max_tokens": 4096
+        }
       },
       "gpt-4": {
         "provider": "openai",
