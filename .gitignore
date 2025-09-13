@@ -147,3 +147,6 @@ auto_generated/
 data/fetcher_output/
 data/mcode_downloads/
 data/mcode_filtered/
+
+# ZIP files (large data archives)
+*.zip

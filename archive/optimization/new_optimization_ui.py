@@ -3,33 +3,29 @@ Modern Optimization UI for Prompt Optimization Framework
 Integrated with file-based prompt and model libraries
 """
 
+import logging
 import sys
 from pathlib import Path
-import logging
 
 # Add project root to path for proper imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-import json
 import asyncio
+import json
 import os
-from typing import Dict, List, Any, Optional
-import pandas as pd
-from nicegui import ui, app
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import pandas as pd
+from nicegui import app, ui
 
 # Setup logger
 logger = logging.getLogger(__name__)
 
 from src.optimization.prompt_optimization_framework import (
-    PromptOptimizationFramework,
-    PromptType,
-    APIConfig,
-    PromptVariant
-)
-
-from src.utils.prompt_loader import prompt_loader
+    APIConfig, PromptOptimizationFramework, PromptType, PromptVariant)
 from src.utils import model_loader
+from src.utils.prompt_loader import prompt_loader
 
 
 class ModernOptimizationUI:
@@ -986,8 +982,9 @@ class ModernOptimizationUI:
     def _create_pipeline_callback(self):
         """Create a pipeline callback function for benchmark execution"""
         def pipeline_callback(test_data, prompt_content, prompt_variant_id):
-            from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
-            
+            from src.pipeline.strict_dynamic_extraction_pipeline import \
+                StrictDynamicExtractionPipeline
+
             # Get the prompt variant to determine prompt type
             variant = self.framework.prompt_variants.get(prompt_variant_id)
             if not variant:

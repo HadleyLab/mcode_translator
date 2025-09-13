@@ -3,15 +3,18 @@
 Demo script to show the fetcher functionality with the new process-trial flag
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.pipeline.fetcher import get_full_study
-from src.pipeline.prompt_model_interface import set_extraction_prompt, set_mapping_prompt, set_model, create_configured_pipeline
+from src.pipeline.prompt_model_interface import (create_configured_pipeline,
+                                                 set_extraction_prompt,
+                                                 set_mapping_prompt, set_model)
+
 
 def demo_fetcher_functionality():
     """Demonstrate the fetcher functionality"""

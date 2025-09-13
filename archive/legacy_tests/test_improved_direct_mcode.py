@@ -3,11 +3,11 @@
 Test script to validate the improved direct mCODE prompt with breast cancer data.
 """
 
-import sys
 import json
 import logging
+import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 # Add project root to path
 project_root = Path(__file__).resolve().parent

@@ -1,6 +1,8 @@
 import re
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from src.utils.logging_config import Loggable
+
 
 class CriteriaParser(Loggable):
     """

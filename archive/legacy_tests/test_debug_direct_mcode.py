@@ -3,19 +3,19 @@
 Debug script to understand what's happening with the direct mCODE prompt.
 """
 
-import sys
 import json
 import logging
+import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 # Add project root to path
 project_root = Path(__file__).resolve().parent
 sys.path.insert(0, str(project_root))
 
+from src.pipeline.llm_base import LlmBase
 from src.pipeline.mcode_pipeline import McodePipeline
 from src.utils.logging_config import setup_logging
-from src.pipeline.llm_base import LlmBase
 
 # Setup logging
 setup_logging()

@@ -6,13 +6,14 @@ STRICT implementation that consolidates all runner scripts into a single CLI
 with comprehensive prompt library integration and strict validation.
 """
 
-import json
-import sys
 import asyncio
+import json
 import logging
-import click
+import sys
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
+
+import click
 import pandas as pd
 from dotenv import load_dotenv
 
@@ -23,14 +24,16 @@ sys.path.insert(0, str(Path(__file__).parent))
 load_dotenv()
 
 # Setup logging
-from src.utils.logging_config import setup_logging, get_logger
+from src.utils.logging_config import get_logger, setup_logging
+
 setup_logging(logging.INFO)
 logger = get_logger(__name__)
 
-# Import pipeline components
-from src.pipeline.strict_dynamic_extraction_pipeline import StrictDynamicExtractionPipeline
-from pipeline.nlp_extractor import NlpLlm
 from pipeline.mcode_llm import McodeMapper
+from pipeline.nlp_extractor import NlpLlm
+# Import pipeline components
+from src.pipeline.strict_dynamic_extraction_pipeline import \
+    StrictDynamicExtractionPipeline
 from src.utils.prompt_loader import PromptLoader, load_prompt
 
 
@@ -1100,9 +1103,8 @@ def benchmark(test_cases, gold_standard, prompt_config, api_configs, output, opt
     try:
         # Import optimization framework
         from src.optimization.prompt_optimization_framework import (
-            PromptOptimizationFramework, PromptVariant, APIConfig, PromptType
-        )
-        
+            APIConfig, PromptOptimizationFramework, PromptType, PromptVariant)
+
         # Load test cases
         test_cases_path = Path(test_cases)
         test_cases_data = StrictValidator.load_json_file(test_cases_path, "Test cases file")
@@ -1249,8 +1251,9 @@ def report(results_dir, output):
     
     try:
         from datetime import datetime
-        import pandas as pd
         from pathlib import Path
+
+        import pandas as pd
         
         results_dir = Path(results_dir)
         output_dir = Path(output) if output else Path("./optimization_reports")

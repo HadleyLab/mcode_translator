@@ -1,0 +1,50 @@
+{
+  "synthetic_data": {
+    "base_directory": "data/synthetic_patients",
+    "auto_download": true,
+    "verify_checksums": true,
+    "cleanup_after_extraction": true,
+    "archives": {
+      "mixed_cancer": {
+        "10_years": {
+          "url": "https://mitre.box.com/shared/static/7k7lk7wmza4m17916xnvc2uszidyv6vm.zip",
+          "description": "Mixed cancer types, 10 years of medical history",
+          "size_mb": 450,
+          "checksum": "7k7lk7wmza4m17916xnvc2uszidyv6vm"
+        },
+        "lifetime": {
+          "url": "https://mitre.box.com/shared/static/mn6kpk56zvvk2o0lvjv55n7rnyajbnm4.zip",
+          "description": "Mixed cancer types, lifetime/longitudinal records",
+          "size_mb": 850,
+          "checksum": "mn6kpk56zvvk2o0lvjv55n7rnyajbnm4"
+        }
+      },
+      "breast_cancer": {
+        "10_years": {
+          "url": "https://mitre.box.com/shared/static/c6ca6y2jfumrhw4nu20kztktxdlhhzo8.zip",
+          "description": "Breast cancer patients, 10 years of medical history",
+          "size_mb": 320,
+          "checksum": "c6ca6y2jfumrhw4nu20kztktxdlhhzo8"
+        },
+        "lifetime": {
+          "url": "https://mitre.box.com/shared/static/59n7mcm8si0qk3p36ud0vmrcdv7pr0s7.zip",
+          "description": "Breast cancer patients, lifetime/longitudinal records",
+          "size_mb": 620,
+          "checksum": "59n7mcm8si0qk3p36ud0vmrcdv7pr0s7"
+        }
+      }
+    },
+    "default_archive": "breast_cancer/10_years",
+    "patient_filters": {
+      "min_age": 18,
+      "max_age": 100,
+      "required_conditions": ["cancer"],
+      "exclude_conditions": []
+    },
+    "processing": {
+      "batch_size": 100,
+      "max_workers": 4,
+      "memory_limit_mb": 2048
+    }
+  }
+}

@@ -1,7 +1,9 @@
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
+
 from src.utils.logging_config import get_logger
+
 
 @dataclass
 class ProcessingResult:

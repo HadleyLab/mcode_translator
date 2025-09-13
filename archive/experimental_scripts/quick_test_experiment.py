@@ -16,9 +16,9 @@ This allows rapid validation of the experimental setup.
 """
 
 import asyncio
-import sys
-import os
 import json
+import os
+import sys
 import time
 from datetime import datetime
 from pathlib import Path

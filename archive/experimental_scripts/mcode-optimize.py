@@ -6,13 +6,14 @@ This CLI provides comprehensive optimization capabilities across all prompts and
 with the ability to set the best performing combinations as defaults in their respective libraries.
 """
 
-import json
-import sys
 import asyncio
+import json
 import logging
-import click
+import sys
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
+import click
 import pandas as pd
 from dotenv import load_dotenv
 
@@ -23,24 +24,20 @@ sys.path.insert(0, str(Path(__file__).parent))
 load_dotenv()
 
 # Setup logging
-from src.utils.logging_config import setup_logging, get_logger
+from src.utils.logging_config import get_logger, setup_logging
+
 setup_logging(logging.INFO)
 logger = get_logger(__name__)
 
-# Import pipeline components
-from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
-from pipeline.nlp_extractor import NlpLlm
 from pipeline.mcode_llm import McodeMapper
-from src.utils.prompt_loader import PromptLoader, load_prompt
-from src.utils import ModelLoader, load_model
-
+from pipeline.nlp_extractor import NlpLlm
 # Import optimization framework
 from src.optimization.prompt_optimization_framework import (
-    PromptOptimizationFramework, 
-    PromptType, 
-    APIConfig, 
-    PromptVariant
-)
+    APIConfig, PromptOptimizationFramework, PromptType, PromptVariant)
+# Import pipeline components
+from src.pipeline.nlp_mcode_pipeline import NlpMcodePipeline
+from src.utils import ModelLoader, load_model
+from src.utils.prompt_loader import PromptLoader, load_prompt
 
 
 class StrictValidator:

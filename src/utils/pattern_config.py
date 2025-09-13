@@ -1,48 +1,109 @@
 """Configuration of regex patterns for clinical text processing.
 
-Contains all regular expression patterns used for pattern matching,
-organized by category for better maintainability.
+Loads patterns from centralized modular configuration for better maintainability.
 """
 
 import re
+from typing import Any, Dict
 
-# Biomarker patterns
-BIOMARKER_PATTERNS = {
-    'ER': re.compile(r'ER\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%|\+|\-)', re.IGNORECASE),
-    'PR': re.compile(r'PR\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%|\+|\-)', re.IGNORECASE),
-    'HER2': re.compile(r'HER2\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\+?)', re.IGNORECASE),
-    'PD-L1': re.compile(r'PD-?L1\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%)', re.IGNORECASE),
-    'Ki-67': re.compile(r'Ki-?67\s*(?:status)?\s*[:=]?\s*(positive|negative|\d+\s*%)', re.IGNORECASE),
-    'MSI': re.compile(r'MSI\s*(?:status)?\s*[:=]?\s*(high|low|stable)', re.IGNORECASE),
-    'TMB': re.compile(r'TMB\s*(?:status)?\s*[:=]?\s*(high|low|\d+\s*mut/Mb)', re.IGNORECASE)
-}
+from .config import Config
 
-# Genomic variant patterns
-GENE_PATTERN = re.compile(
-    r'\b(BRCA[12]|TP53|PIK3CA|PTEN|AKT1|ERBB2|HER2|EGFR|ALK|ROS1|KRAS|NRAS|BRAF|MEK[12]?|NTRK[123])\b',
-    re.IGNORECASE
+
+class PatternManager:
+    """Manages regex patterns loaded from centralized configuration."""
+
+    def __init__(self):
+        self.config = Config()
+        self.patterns_config = self.config.get_patterns_config()
+        self._compiled_patterns = {}
+
+    def _compile_pattern(self, pattern_config: Dict[str, Any]) -> re.Pattern:
+        """Compile a regex pattern from configuration."""
+        pattern = pattern_config["pattern"]
+        flags = 0
+
+        if pattern_config.get("flags"):
+            flag_str = pattern_config["flags"]
+            if "IGNORECASE" in flag_str:
+                flags |= re.IGNORECASE
+            if "MULTILINE" in flag_str:
+                flags |= re.MULTILINE
+            if "DOTALL" in flag_str:
+                flags |= re.DOTALL
+
+        return re.compile(pattern, flags)
+
+    def get_biomarker_patterns(self) -> Dict[str, re.Pattern]:
+        """Get compiled biomarker regex patterns."""
+        if "biomarker" not in self._compiled_patterns:
+            patterns = {}
+            biomarker_config = self.patterns_config["patterns"]["biomarker_patterns"]
+            for name, config in biomarker_config.items():
+                patterns[name] = self._compile_pattern(config)
+            self._compiled_patterns["biomarker"] = patterns
+
+        return self._compiled_patterns["biomarker"]
+
+    def get_genomic_patterns(self) -> Dict[str, re.Pattern]:
+        """Get compiled genomic variant patterns."""
+        if "genomic" not in self._compiled_patterns:
+            patterns = {}
+            genomic_config = self.patterns_config["patterns"]["genomic_patterns"]
+            for name, config in genomic_config.items():
+                patterns[name] = self._compile_pattern(config)
+            self._compiled_patterns["genomic"] = patterns
+
+        return self._compiled_patterns["genomic"]
+
+    def get_condition_patterns(self) -> Dict[str, re.Pattern]:
+        """Get compiled condition patterns."""
+        if "condition" not in self._compiled_patterns:
+            patterns = {}
+            condition_config = self.patterns_config["patterns"]["condition_patterns"]
+            for name, config in condition_config.items():
+                patterns[name] = self._compile_pattern(config)
+            self._compiled_patterns["condition"] = patterns
+
+        return self._compiled_patterns["condition"]
+
+    def get_demographic_patterns(self) -> Dict[str, re.Pattern]:
+        """Get compiled demographic patterns."""
+        if "demographic" not in self._compiled_patterns:
+            patterns = {}
+            demographic_config = self.patterns_config["patterns"][
+                "demographic_patterns"
+            ]
+            for name, config in demographic_config.items():
+                patterns[name] = self._compile_pattern(config)
+            self._compiled_patterns["demographic"] = patterns
+
+        return self._compiled_patterns["demographic"]
+
+    def get_all_patterns(self) -> Dict[str, Dict[str, re.Pattern]]:
+        """Get all compiled patterns organized by category."""
+        return {
+            "biomarker": self.get_biomarker_patterns(),
+            "genomic": self.get_genomic_patterns(),
+            "condition": self.get_condition_patterns(),
+            "demographic": self.get_demographic_patterns(),
+        }
+
+
+# Global pattern manager instance
+pattern_manager = PatternManager()
+
+# Legacy compatibility - expose commonly used patterns
+BIOMARKER_PATTERNS = pattern_manager.get_biomarker_patterns()
+GENE_PATTERN = pattern_manager.get_genomic_patterns().get("gene_pattern")
+VARIANT_PATTERN = pattern_manager.get_genomic_patterns().get("variant_pattern")
+COMPLEX_VARIANT_PATTERN = pattern_manager.get_genomic_patterns().get(
+    "complex_variant_pattern"
 )
-
-VARIANT_PATTERN = re.compile(
-    r'\b([A-Z0-9]+)\s*(?:mutation|variant|alteration|amplification|fusion|rearrangement|deletion|insertion)\b',
-    re.IGNORECASE
+STAGE_PATTERN = pattern_manager.get_condition_patterns().get("stage_pattern")
+CANCER_TYPE_PATTERN = pattern_manager.get_condition_patterns().get(
+    "cancer_type_pattern"
 )
-
-COMPLEX_VARIANT_PATTERN = re.compile(
-    r'\b([A-Z0-9]+)\s*(?:p\.)?([A-Z][a-z]{2}[0-9]+(?:[A-Za-z]|\*)?)\b',
-    re.IGNORECASE
-)
-
-# Cancer condition patterns
-STAGE_PATTERN = re.compile(r'stage\s+(I{1,3}V?|IV)', re.IGNORECASE)
-CANCER_TYPE_PATTERN = re.compile(r'\b(breast|lung|colorectal)\s+cancer\b', re.IGNORECASE)
-
-# General condition patterns
-CONDITION_PATTERN = re.compile(r'\b(diabetes|hypertension|heart disease)\b', re.IGNORECASE)
-
-# Performance status patterns
-ECOG_PATTERN = re.compile(r'ECOG\s+status?\s*[:=]?\s*([0-4])', re.IGNORECASE)
-
-# Demographic patterns
-GENDER_PATTERN = re.compile(r'\b(male|female)\b', re.IGNORECASE)
-AGE_PATTERN = re.compile(r'age\s+([0-9]+)\s+to\s+([0-9]+)', re.IGNORECASE)
+CONDITION_PATTERN = pattern_manager.get_condition_patterns().get("condition_pattern")
+ECOG_PATTERN = pattern_manager.get_demographic_patterns().get("ecog_pattern")
+GENDER_PATTERN = pattern_manager.get_demographic_patterns().get("gender_pattern")
+AGE_PATTERN = pattern_manager.get_demographic_patterns().get("age_pattern")

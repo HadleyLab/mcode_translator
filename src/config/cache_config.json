@@ -1,0 +1,24 @@
+{
+  "cache": {
+    "enabled": true,
+    "api_cache_directory": ".api_cache",
+    "llm_cache_directory": ".api_cache/llm",
+    "clinical_trials_cache_directory": ".api_cache/clinical_trials",
+    "ttl_seconds": 0,
+    "max_cache_size_mb": 1000,
+    "compression_enabled": true,
+    "cleanup_interval_hours": 24
+  },
+  "rate_limiting": {
+    "delay_seconds": 1.0,
+    "max_requests_per_minute": 60,
+    "burst_limit": 10,
+    "backoff_multiplier": 2.0
+  },
+  "request": {
+    "timeout_seconds": 30,
+    "max_retries": 3,
+    "retry_delay_seconds": 1,
+    "connection_pool_size": 10
+  }
+}

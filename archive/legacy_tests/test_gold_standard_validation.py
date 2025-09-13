@@ -4,14 +4,14 @@ Test script for gold standard validation and benchmarking functionality.
 This script simulates pipeline execution and validates the metrics calculation.
 """
 
-import json
 import asyncio
+import json
+# Add src to path to import modules
+import sys
 import time
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
-# Add src to path to import modules
-import sys
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
 from src.optimization.pipeline_task_tracker import PipelineTask

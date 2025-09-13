@@ -1,0 +1,70 @@
+{
+  "prompts": {
+    "default": "direct_mcode_evidence_based_concise",
+    "available": {
+      "direct_mcode_evidence_based_concise": {
+        "name": "Direct mCODE Evidence-Based Concise",
+        "description": "Concise evidence-based mCODE mapping with direct extraction",
+        "file": "direct_mcode_evidence_based_concise.txt",
+        "category": "evidence_based",
+        "complexity": "medium",
+        "expected_quality": 0.85
+      },
+      "direct_mcode_evidence_based": {
+        "name": "Direct mCODE Evidence-Based",
+        "description": "Comprehensive evidence-based mCODE mapping",
+        "file": "direct_mcode_evidence_based.txt",
+        "category": "evidence_based",
+        "complexity": "high",
+        "expected_quality": 0.90
+      },
+      "direct_mcode_minimal": {
+        "name": "Direct mCODE Minimal",
+        "description": "Minimal mCODE mapping for quick processing",
+        "file": "direct_mcode_minimal.txt",
+        "category": "minimal",
+        "complexity": "low",
+        "expected_quality": 0.70
+      },
+      "direct_mcode_comprehensive": {
+        "name": "Direct mCODE Comprehensive",
+        "description": "Comprehensive mCODE mapping with detailed analysis",
+        "file": "direct_mcode_comprehensive.txt",
+        "category": "comprehensive",
+        "complexity": "high",
+        "expected_quality": 0.95
+      },
+      "direct_mcode_structured": {
+        "name": "Direct mCODE Structured",
+        "description": "Structured mCODE mapping with clear sections",
+        "file": "direct_mcode_structured.txt",
+        "category": "structured",
+        "complexity": "medium",
+        "expected_quality": 0.80
+      }
+    },
+    "categories": {
+      "evidence_based": {
+        "description": "Evidence-based prompts with clinical reasoning",
+        "use_case": "High-quality clinical trial processing"
+      },
+      "minimal": {
+        "description": "Minimal prompts for fast processing",
+        "use_case": "Quick analysis and prototyping"
+      },
+      "comprehensive": {
+        "description": "Comprehensive prompts with detailed analysis",
+        "use_case": "Research and detailed clinical analysis"
+      },
+      "structured": {
+        "description": "Structured prompts with clear output format",
+        "use_case": "Automated processing and integration"
+      }
+    },
+    "optimization": {
+      "test_prompts": ["direct_mcode_evidence_based_concise", "direct_mcode_minimal"],
+      "quality_metrics": ["completeness", "accuracy", "consistency"],
+      "performance_metrics": ["speed", "token_usage"]
+    }
+  }
+}

@@ -3,11 +3,11 @@
 Test script to verify that all fixed direct mCODE prompts work correctly.
 """
 
-import sys
 import json
 import logging
+import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 # Add project root to path
 project_root = Path(__file__).resolve().parent

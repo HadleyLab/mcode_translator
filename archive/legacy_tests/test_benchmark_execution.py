@@ -3,17 +3,19 @@
 Test script to verify benchmark task execution functionality.
 """
 
-import sys
 import json
 import logging
+import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 # Add project root to path
 project_root = Path(__file__).resolve().parent
 sys.path.insert(0, str(project_root))
 
-from src.pipeline.task_queue import PipelineTaskQueue, BenchmarkTask, TaskStatus, initialize_task_queue, shutdown_task_queue
+from src.pipeline.task_queue import (BenchmarkTask, PipelineTaskQueue,
+                                     TaskStatus, initialize_task_queue,
+                                     shutdown_task_queue)
 from src.utils.logging_config import setup_logging
 
 # Setup logging
@@ -21,6 +23,7 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 import pytest
+
 
 @pytest.mark.asyncio
 async def test_benchmark_execution():

@@ -3,47 +3,38 @@ Benchmark Task Tracker - Simplified visualization-only implementation.
 Uses centralized pipeline task queue for execution, focuses only on UI.
 """
 
-import sys
 import os
+import sys
+
 # Add the parent directory to the Python path to allow absolute imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 import asyncio
-import time
-import uuid
 import json
 import logging
+import time
+import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Any, Callable
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
-from nicegui import ui, run, background_tasks, app
-from src.pipeline.task_queue import PipelineTaskQueue, TaskStatus
 import pandas as pd
-
-# Import centralized pipeline components
-from src.pipeline import (
-    PipelineTaskQueue, BenchmarkTask, TaskStatus,
-    get_global_task_queue, initialize_task_queue, shutdown_task_queue
-)
-
-# Import cache management
-from src.utils.api_manager import APICache
+from nicegui import app, background_tasks, run, ui
 
 # Import existing components for data loading only
 from src.optimization.prompt_optimization_framework import (
-    PromptOptimizationFramework, PromptType,
-    APIConfig, PromptVariant
-)
-
+    APIConfig, PromptOptimizationFramework, PromptType, PromptVariant)
+# Import centralized pipeline components
+from src.pipeline import (BenchmarkTask, PipelineTaskQueue, TaskStatus,
+                          get_global_task_queue, initialize_task_queue,
+                          shutdown_task_queue)
+from src.pipeline.task_queue import PipelineTaskQueue, TaskStatus
 # Import utilities for data loading
-from src.utils import (
-    prompt_loader,
-    model_loader,
-    get_logger,
-    UnifiedAPIManager
-)
+from src.utils import (UnifiedAPIManager, get_logger, model_loader,
+                       prompt_loader)
+# Import cache management
+from src.utils.api_manager import APICache
 
 
 class BenchmarkTaskTrackerUI:

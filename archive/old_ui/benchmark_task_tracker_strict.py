@@ -5,25 +5,26 @@ NO MOCKS, NO FALLBACKS - Exception-based debugging for real-time fixes
 """
 
 import asyncio
-import uuid
 import json
-import sys
 import os
-from typing import Dict, List, Any, Optional
+import sys
+import traceback
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
-import traceback
+from typing import Any, Dict, List, Optional
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 import nicegui
-from nicegui import ui, background_tasks
+from nicegui import background_tasks, ui
 
+from src.optimization.prompt_optimization_framework import \
+    PromptOptimizationFramework
+from src.utils.model_loader import ModelConfig, model_loader
 # STRICT: Import real validation and execution modules 
 from src.utils.prompt_loader import prompt_loader
-from src.utils.model_loader import model_loader, ModelConfig
-from src.optimization.prompt_optimization_framework import PromptOptimizationFramework
 
 
 @dataclass

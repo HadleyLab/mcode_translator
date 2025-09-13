@@ -3,39 +3,30 @@ Strict implementation with no custom timers, scripts, or events
 Uses only @ui.refreshable for real-time data bindings and background_tasks for management
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 import asyncio
-import time
-import uuid
 import json
 import logging
-from datetime import datetime
-from enum import Enum
-from typing import Dict, List, Optional, Any, Callable
-from pathlib import Path
+import time
+import uuid
 from dataclasses import dataclass, field
-
-import asyncio
-import time
-import uuid
-import json
-import logging
-import openai
-import requests
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Any, Callable
 from pathlib import Path
-from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List, Optional
 
-from nicegui import ui, run, background_tasks
+import openai
+import requests
+from nicegui import background_tasks, run, ui
 
+from src.utils.model_loader import model_loader
 # Import prompt loader for pipeline-specific prompts - REQUIRED, no fallbacks
 from src.utils.prompt_loader import prompt_loader
-from src.utils.model_loader import model_loader
+
 
 # Simple enums and classes
 class TaskStatus(Enum):
@@ -755,7 +746,7 @@ Focus on clinical trial mCODE translation optimization for production use.
             # STRICT: Real LLM API call - no mocks allowed
             try:
                 from src.utils.llm_client import LLMClient
-                
+
                 # STRICT: Use actual model from config
                 if not analysis_model:
                     raise ValueError("STRICT: No analysis model available for LLM call")

@@ -5,20 +5,18 @@ Demonstrates how to use the new concurrent processing features
 """
 
 import asyncio
-import sys
 import os
+import sys
 import time
 
 # Add src directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from src.pipeline.concurrent_fetcher import (
-    concurrent_search_and_process,
-    concurrent_process_trials,
-    ConcurrentFetcher,
-    ProcessingConfig,
-    ConcurrentFetcherContext
-)
+from src.pipeline.concurrent_fetcher import (ConcurrentFetcher,
+                                             ConcurrentFetcherContext,
+                                             ProcessingConfig,
+                                             concurrent_process_trials,
+                                             concurrent_search_and_process)
 from src.utils import get_logger
 
 logger = get_logger(__name__)

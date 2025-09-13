@@ -2,16 +2,17 @@
 """
 Demo script to show LLM caching functionality
 """
-import sys
-import os
-import time
 import json
+import os
+import sys
+import time
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from pipeline.llm_base import LlmBase
 from utils.api_manager import UnifiedAPIManager
+
 
 def get_cache_stats():
     """Get cache statistics from the unified API manager"""

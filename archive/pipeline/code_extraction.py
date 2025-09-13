@@ -1,7 +1,9 @@
 import re
-from typing import List, Dict, Any, Optional, Tuple
 from functools import lru_cache
+from typing import Any, Dict, List, Optional, Tuple
+
 from src.utils.logging_config import Loggable
+
 
 class CodeExtractionModule(Loggable):
     """

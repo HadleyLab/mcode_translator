@@ -5,7 +5,9 @@ Run with: source activate mcode_translator && python test_prompt_validation.py
 """
 
 import json
+
 from src.utils.prompt_loader import PromptLoader
+
 
 def test_nlp_extraction_generic():
     """Test the NLP extraction generic prompt validation"""

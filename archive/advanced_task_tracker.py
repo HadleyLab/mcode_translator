@@ -12,10 +12,9 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 
-from nicegui import ui, run, background_tasks
+from nicegui import background_tasks, run, ui
+
 from src.shared.types import TaskStatus
-
-
 
 
 class TaskPriority(Enum):

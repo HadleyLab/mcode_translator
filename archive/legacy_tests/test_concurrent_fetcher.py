@@ -5,23 +5,21 @@ Tests both performance improvements and correctness of concurrent processing
 """
 
 import asyncio
-import time
-import sys
-import os
 import json
-from typing import List, Dict, Any
+import os
+import sys
+import time
+from typing import Any, Dict, List
 
 # Add src directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from src.pipeline.concurrent_fetcher import (
-    ConcurrentFetcher,
-    ProcessingConfig,
-    ConcurrentFetcherContext,
-    concurrent_search_and_process,
-    concurrent_process_trials
-)
-from src.pipeline.fetcher import search_trials, get_full_study
+from src.pipeline.concurrent_fetcher import (ConcurrentFetcher,
+                                             ConcurrentFetcherContext,
+                                             ProcessingConfig,
+                                             concurrent_process_trials,
+                                             concurrent_search_and_process)
+from src.pipeline.fetcher import get_full_study, search_trials
 from src.utils import get_logger
 
 logger = get_logger(__name__)

@@ -7,7 +7,9 @@ This script runs a quick test to show validation results without UI dependencies
 import asyncio
 import json
 from pathlib import Path
+
 from src.optimization.pipeline_task_tracker import PipelineTask, TaskStatus
+
 
 def calculate_validation_metrics(pipeline_mappings: list, gold_mappings: list) -> dict:
     """

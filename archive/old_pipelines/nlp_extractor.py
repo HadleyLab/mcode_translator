@@ -5,19 +5,15 @@ Uses shared LlmBase for LLM operations
 
 import json
 import re
-from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
-from .nlp_base import ProcessingResult, NlpBase
-from .llm_base import LlmBase, LlmExecutionError, LlmResponseError, LLMCallMetrics
-from src.utils import (
-    Loggable,
-    load_prompt,
-    Config,
-    global_token_tracker
-)
+from src.utils import Config, Loggable, global_token_tracker, load_prompt
 from src.utils.prompt_loader import PromptLoader
-from src.utils.prompt_loader import PromptLoader
+
+from .llm_base import (LlmBase, LLMCallMetrics, LlmExecutionError,
+                       LlmResponseError)
+from .nlp_base import NlpBase, ProcessingResult
 
 
 class NlpConfigurationError(Exception):

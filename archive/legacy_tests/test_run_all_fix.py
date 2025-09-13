@@ -5,15 +5,17 @@ This script tests that the _create_and_queue_task method works properly
 and that tasks are being added to the queue.
 """
 
-import sys
-import os
 import asyncio
+import os
+import sys
 from unittest.mock import Mock, patch
 
 # Add the parent directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from src.optimization.pipeline_task_tracker import PipelineTaskTrackerUI, TaskStatus
+from src.optimization.pipeline_task_tracker import (PipelineTaskTrackerUI,
+                                                    TaskStatus)
+
 
 def test_create_and_queue_task():
     """Test that _create_and_queue_task creates and queues tasks correctly"""

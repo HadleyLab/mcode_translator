@@ -1,396 +1,353 @@
-# mCODE Translator v2.0
+# mCODE Translator
 
-> **High-performance clinical trial data processing pipeline that extracts and maps eligibility criteria to standardized mCODE elements using evidence-based LLM processing.**
+A high-performance clinical trial data processing pipeline that extracts and maps eligibility criteria to standardized mCODE elements using evidence-based LLM processing.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+## 🏗️ Architecture Overview
+
+The mCODE Translator follows a clean separation of concerns with distinct workflow types:
+
+### 📊 Workflow Types
+
+| Type | Purpose | Core Memory Storage | Examples |
+|------|---------|-------------------|----------|
+| **Fetchers** | Get raw data from APIs/archives | ❌ No storage | `trials_fetcher`, `patients_fetcher` |
+| **Processors** | Apply mCODE processing & store summaries | ✅ Stores mCODE summaries | `trials_processor`, `patients_processor` |
+| **Optimizers** | Test parameter combinations | ❌ No storage | `trials_optimizer` |
+
+### 📁 Package Structure
+
+```
+src/
+├── cli/                          # CLI entry points
+│   ├── trials_fetcher.py         # Fetch raw trials JSON
+│   ├── trials_processor.py       # Process trials + mCODE → Core Memory
+│   ├── patients_fetcher.py       # Fetch synthetic patients
+│   ├── patients_processor.py     # Process patients + mCODE → Core Memory
+│   └── trials_optimizer.py       # Test optimization combinations
+├── workflows/                    # Business logic workflows
+│   ├── base_workflow.py          # Common workflow functionality
+│   ├── trials_fetcher_workflow.py    # TrialsFetcherWorkflow
+│   ├── trials_processor_workflow.py  # TrialsProcessorWorkflow
+│   ├── patients_fetcher_workflow.py  # PatientsFetcherWorkflow
+│   ├── patients_processor_workflow.py # PatientsProcessorWorkflow
+│   └── trials_optimizer_workflow.py  # TrialsOptimizerWorkflow
+├── storage/                      # Data persistence
+│   └── mcode_memory_storage.py   # Unified Core Memory interface
+└── shared/                       # Shared utilities
+    ├── cli_utils.py             # Common CLI patterns
+    └── types.py                 # Type definitions
+```
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
 ```bash
-# Clone and setup
-git clone https://github.com/HadleyLab/mcode_translator.git
-cd mcode_translator
+# Install dependencies
 pip install -r requirements.txt
 
-# Configure API keys
-cp .env.example .env
-# Edit .env with your OPENAI_API_KEY or DEEPSEEK_API_KEY
-
-# Process clinical trial data
-python mcode_translator.py data/selected_breast_cancer_trials.json -o results.json
+# Set up environment variables
+export CORE_MEMORY_API_KEY="your_api_key_here"
 ```
 
-## 💻 Usage
+### Basic Usage
 
-### mCODE Translator - Process Trial Data
+#### 1. Fetch Clinical Trials
+```bash
+# Fetch trials by condition (no core memory storage)
+python -m src.cli.trials_fetcher --condition "breast cancer" -o trials.json
+```
+
+#### 2. Process Trials with mCODE
+```bash
+# Process trials and store mCODE summaries in Core Memory
+python -m src.cli.trials_processor trials.json --store-in-core-memory
+```
+
+#### 3. Fetch Patient Data
+```bash
+# Fetch synthetic patients (no core memory storage)
+python -m src.cli.patients_fetcher --archive breast_cancer_10_years -o patients.json
+```
+
+#### 4. Process Patients with mCODE
+```bash
+# Process patients with trial filtering and store summaries
+python -m src.cli.patients_processor --patients patients.json --trials trials.json --store-in-core-memory
+```
+
+#### 5. Optimize mCODE Parameters
+```bash
+# Test different prompt×model combinations (no core memory storage)
+python -m src.cli.trials_optimizer --save-config optimal_config.json
+```
+
+## 📖 CLI Reference
+
+### Common Arguments
+
+All CLI commands support:
+- `-v, --verbose`: Enable debug logging
+- `--log-level`: Set logging level (DEBUG, INFO, WARNING, ERROR)
+- `--config`: Custom configuration file path
+
+### Core Memory Arguments
+
+Processor commands support:
+- `--store-in-core-memory`: Store results in CORE Memory
+- `--memory-source`: Source identifier for storage
+- `--dry-run`: Preview without storing
+
+### trials_fetcher
+
+Fetch raw clinical trial data from ClinicalTrials.gov.
 
 ```bash
-# Basic processing
-python mcode_translator.py --input-file data/selected_breast_cancer_trials.json -o results.json
+# Search by condition
+python -m src.cli.trials_fetcher --condition "breast cancer" -o trials.json
 
-# With specific model and prompt
-python mcode_translator.py --input-file data/selected_breast_cancer_trials.json -m deepseek-coder -p direct_mcode_evidence_based_concise -o results.json
+# Fetch specific trial
+python -m src.cli.trials_fetcher --nct-id NCT12345678 -o trial.json
 
-# Verbose processing with custom config
-python mcode_translator.py --input-file data/selected_breast_cancer_trials.json --verbose --config custom_config.json
-
-# Batch processing
-python mcode_translator.py --input-file trials_batch.json --batch -o batch_results.json
+# Fetch multiple trials
+python -m src.cli.trials_fetcher --nct-ids NCT001,NCT002,NCT003 -o trials.json
 ```
 
-### mCODE Fetcher - Search and Process Trials
+### trials_processor
+
+Process clinical trials with mCODE mapping and store summaries.
 
 ```bash
-# Search and fetch trials
-python mcode_fetcher.py --condition "breast cancer" --limit 10 -o results.json
+# Basic processing with storage
+python -m src.cli.trials_processor trials.json --store-in-core-memory
 
-# Search with concurrent mCODE processing
-python mcode_fetcher.py --condition "breast cancer" --concurrent --process \
-  --workers 8 -m deepseek-coder -p direct_mcode_evidence_based_concise -o results.json
+# Custom model and prompt
+python -m src.cli.trials_processor trials.json --model gpt-4 --prompt direct_mcode_evidence_based
 
-# Fetch specific trials with processing
-python mcode_fetcher.py --nct-ids "NCT00109785,NCT00616135" --process -m deepseek-coder -p direct_mcode_evidence_based_concise -o trials.json
-
-# Count available studies
-python mcode_fetcher.py --condition "cancer" --count-only
-
-# Store processed trials in CORE Memory with automatic duplicate detection
-python mcode_fetcher.py --condition "breast cancer" --process --store-in-core-memory -m deepseek-coder
-
-# Store a specific trial in CORE Memory
-python mcode_fetcher.py --nct-id NCT00616135 --process --store-in-core-memory -m deepseek-coder
+# Dry run to preview
+python -m src.cli.trials_processor trials.json --dry-run --verbose
 ```
 
-### mCODE Patients - Filter Patient Data
+### patients_fetcher
+
+Fetch synthetic patient data from archives.
 
 ```bash
-# Single file processing
-python mcode_patients.py --input-file data/fetcher_output/deepseek-coder.results.json \
-  --patient-file patient_data.json -o patient_filtered.json
+# List available archives
+python -m src.cli.patients_fetcher --list-archives
 
-# Batch processing with directory recursion
-python mcode_patients.py --input-file data/fetcher_output/deepseek-coder.results.json \
-  --input-dir data/mcode_downloads --output-dir data/mcode_filtered --workers 4
+# Fetch from specific archive
+python -m src.cli.patients_fetcher --archive breast_cancer_10_years -o patients.json
 
-# With CORE Memory storage
-python mcode_patients.py --input-file data/fetcher_output/deepseek-coder.results.json \
-  --patient-file patient_data.json --store-in-core-memory --verbose
+# Fetch specific patient
+python -m src.cli.patients_fetcher --archive breast_cancer_10_years --patient-id patient_123 -o patient.json
 ```
 
-### mCODE Optimize - Cross-Validation Testing
+### patients_processor
+
+Process patient data with mCODE mapping and store summaries.
 
 ```bash
-# Full optimization across all prompt×model combinations
-python mcode_optimize.py --trials-file data/selected_breast_cancer_trials.json --concurrent --detailed-report
+# Process with trial filtering
+python -m src.cli.patients_processor --patients patients.json --trials trials.json --store-in-core-memory
 
-# Quick optimization with limited combinations
-python mcode_optimize.py --trials-file data/selected_breast_cancer_trials.json --max-combinations 10 --concurrent
-
-# Test specific models and prompts
-python mcode_optimize.py --trials-file data/selected_breast_cancer_trials.json --models deepseek-coder,gpt-4o \
-  --prompts direct_mcode_evidence_based_concise,direct_mcode_simple \
-  --detailed-report
-
-# Set logging level (verbose)
-python mcode_optimize.py --trials-file data/selected_breast_cancer_trials.json --verbose
+# Process without filtering
+python -m src.cli.patients_processor --patients patients.json --store-in-core-memory
 ```
 
-### Python API
+### trials_optimizer
 
-```python
-from src.pipeline import McodePipeline
-
-# Initialize pipeline with evidence-based processing
-pipeline = McodePipeline(
-    prompt_name="direct_mcode_evidence_based_concise"
-)
-
-# Process trial data
-result = pipeline.process_clinical_trial(trial_data)
-print(f"Generated {len(result.mcode_mappings)} mCODE mappings")
-print(f"Quality Score: {result.validation_results['compliance_score']:.3f}")
-```
-
-## 🎯 Key Features
-
-- **99.1% Quality Score** - Evidence-based processing with strict textual fidelity
-- **Single-Step Pipeline** - Direct clinical text to mCODE mapping
-- **Conservative Mapping** - Quality over quantity approach
-- **Source Provenance** - Complete audit trail for all mappings
-- **Production Ready** - Clean architecture with comprehensive error handling
-
-## 📁 Project Structure
-
-```
-mcode_translator/
-├── mcode_fetcher.py                # Fetcher CLI - Search and fetch trials
-├── mcode_optimize.py               # Optimize CLI - Cross-Validation Testing
-├── mcode_patients.py               # Patients CLI - Filter patient mCODE data
-├── mcode_translator.py             # Main CLI - Process trial data with mCODE
-├── src/pipeline/                   # Core processing components
-│   ├── mcode_pipeline.py          # Main mCODE processing pipeline
-│   ├── llm_base.py            # LLM base
-│   ├── concurrent_fetcher.py      # Concurrent processing engine
-│   └── fetcher.py                 # Core trial fetching functions
-├── prompts/                        # Evidence-based prompt templates
-├── models/                         # LLM model configurations
-├── data/                           # Configuration and reference data
-└── tests/                          # Test suite
-```
-
-## 📈 Quality Metrics
-
-| Metric | Score | Improvement |
-|--------|-------|-------------|
-| Overall Quality | 98.9% | +8.5 points |
-| Source Text Fidelity | 99.2% | +8.5 points |
-| Average Confidence | 98.2% | +8.6 points |
-| Mapping Efficiency | 44.9% reduction in over-mapping | Quality over quantity |
-
-*Validated across 5 comprehensive breast cancer clinical trials*
-
-## 🔧 Configuration
-
-### Environment Variables (.env)
+Test different combinations to find optimal mCODE settings.
 
 ```bash
-# Required: Choose one LLM provider
-OPENAI_API_KEY=your_openai_api_key
-DEEPSEEK_API_KEY=your_deepseek_api_key
-# Optional: CORE Memory API key for storage
-COREAI_API_KEY=your_coreai_api_key
+# Basic optimization
+python -m src.cli.trials_optimizer
+
+# Test specific combinations
+python -m src.cli.trials_optimizer --prompts direct_mcode_evidence_based,evidence_based_minimal --models gpt-4,claude-3
+
+# Save optimal settings
+python -m src.cli.trials_optimizer --save-config optimal_config.json
+
+# List available options
+python -m src.cli.trials_optimizer --list-prompts
+python -m src.cli.trials_optimizer --list-models
 ```
 
-### Model Settings (models/models_config.json)
+## 🧠 Core Memory Integration
+
+The system uses **centralized configuration** for all Core Memory settings and stores **only processed mCODE summaries**, not raw data.
+
+### Configuration
+
+Core Memory settings are centralized in `src/config/core_memory_config.json`:
 
 ```json
 {
-  "models": {
-    "deepseek-coder": {
-      "provider": "deepseek",
-      "max_tokens": 8000,
-      "temperature": 0.1
+  "core_memory": {
+    "api_base_url": "https://core.heysol.ai/api/v1/mcp",
+    "source": "mcode_translator",
+    "timeout_seconds": 60,
+    "max_retries": 3,
+    "default_spaces": {
+      "clinical_trials": "Clinical Trials",
+      "patients": "Patients",
+      "research": "Research"
     }
+  },
+  "mcode_settings": {
+    "summary_format": "natural_language",
+    "include_codes": true,
+    "max_summary_length": 2000
   }
 }
 ```
 
-## 🧪 Testing
+### What Gets Stored
+
+**✅ Trials Processor** → Clinical trial mCODE mappings
+```
+"Clinical Trial NCT123456: 'Study Title' sponsored by Sponsor.
+mCODE Analysis:
+Cancer Characteristics:
+  - CancerCondition: Breast Cancer [SNOMED:254837009]
+  - TNMStage: T2N1M0 [SNOMED:258215001]
+Treatments:
+  - CancerTreatment: chemotherapy [SNOMED:367336001]
+mCODE Compliance Score: 0.950"
+```
+
+**✅ Patients Processor** → Patient mCODE profiles
+```
+"Patient Jane Doe (ID: patient_123), 45 years old, Female.
+mCODE Profile:
+Cancer Characteristics:
+  - CancerCondition: Breast Cancer [SNOMED:254837009]
+Biomarkers:
+  - ERReceptorStatus: Positive [SNOMED:108283007]
+Treatments:
+  - CancerTreatment: tamoxifen [SNOMED:386897000]"
+```
+
+### What Doesn't Get Stored
+
+**❌ Fetchers** → Only raw JSON data
+**❌ Optimizer** → Only configuration recommendations
+
+## 🔧 Configuration
+
+The system uses a **strict modular configuration system** with separate config files for each component:
+
+### 📁 Configuration Structure
+
+```
+src/config/
+├── cache_config.json          # Caching, rate limiting, requests
+├── apis_config.json           # API endpoints and settings
+├── core_memory_config.json    # Core Memory integration
+├── synthetic_data_config.json # Synthetic patient data settings
+├── validation_config.json     # Validation rules and settings
+├── logging_config.json        # Logging configuration
+├── patterns_config.json       # Regex patterns for text processing
+├── models_config.json         # LLM model configurations
+├── prompts_config.json        # Prompt template configurations
+└── README.md                  # Configuration documentation
+```
+
+### 🔧 Configuration Loading
+
+All configurations are loaded strictly - **missing files throw exceptions** with clear error messages:
+
+```python
+from src.utils.config import Config
+
+config = Config()  # Throws ConfigurationError if any config file is missing
+
+# Access modular configurations
+cache_settings = config.cache_config
+api_settings = config.apis_config
+core_memory_settings = config.core_memory_config
+models_settings = config.models_config
+prompts_settings = config.prompts_config
+```
+
+### 🚨 Strict Implementation
+
+- **No fallbacks** - Missing configuration files throw exceptions
+- **No defaults** - All settings must be explicitly configured
+- **Clear errors** - Missing assets provide helpful error messages
+- **Fail fast** - Configuration issues prevent application startup
+
+## 🔧 Development
+
+### Running Tests
 
 ```bash
+# Run all tests
 python -m pytest tests/
+
+# Run with coverage
+python -m pytest tests/ --cov=src --cov-report=html
 ```
+
+### Code Quality
+
+```bash
+# Format code
+black src/
+
+# Check formatting
+black --check src/
+
+# Lint code
+ruff check src/
+
+# Type checking
+mypy --strict src/
+```
+
+### Adding New Workflows
+
+1. Create workflow class in `src/workflows/`
+2. Create CLI entry point in `src/cli/`
+3. Add to shared CLI utilities if needed
+4. Update documentation
+
+## 📊 Architecture Benefits
+
+### ✅ Clear Separation of Concerns
+- **Fetchers**: Data acquisition only
+- **Processors**: mCODE processing + storage
+- **Optimizers**: Parameter optimization
+
+### ✅ Consistent Interfaces
+- Unified workflow base class
+- Standardized CLI argument patterns
+- Common error handling
+
+### ✅ Core Memory Efficiency
+- Only stores processed mCODE summaries
+- Natural language format with embedded codes
+- Optimized for later analysis and retrieval
+
+### ✅ Extensibility
+- Easy to add new workflow types
+- Pluggable storage backends
+- Modular CLI architecture
+
+## 🤝 Contributing
+
+1. Follow the established patterns
+2. Add tests for new functionality
+3. Update documentation
+4. Ensure code quality checks pass
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see LICENSE file for details.
 
----
+## 🔗 Related Documentation
 
-## ⚙️ End-to-End Pipeline Guide
-
-### Synthetic Patient Workflow
-
-1. **Download Synthetic Data**:
-```bash
-python mcode_fetcher.py --download-synthetic-patients --cancer-type breast_cancer
-```
-
-2. **Process Patients Against Trials**:
-```bash
-# Filter synthetic patients based on breast cancer trial criteria
-python mcode_patients.py --input-file breast_cancer_trials.json \
-  --archive-path "breast_cancer/10_years" --limit 50 \
-  --output-dir data/filtered_synthetic_patients --store-in-core-memory
-```
-
-3. **Validate Results**:
-```bash
-# Test the integration end-to-end
-pytest tests/unit/test_mcode_patients.py::test_synthetic_patient_filtering -v
-```
-
-This workflow enables matching synthetic patients to clinical trial eligibility criteria using mCODE mappings, supporting patient-trial matching research and validation.
-
-### Prerequisites
-
-1. **Python 3.8+**: Ensure you have Python 3.8 or a later version installed.
-2. **Dependencies**: Install the required dependencies using `pip install -r requirements.txt`.
-3. **API Keys**: Obtain API keys for your chosen LLM provider (e.g., OpenAI, DeepSeek) and set them as environment variables in a `.env` file.
-4. **Configuration**: Configure the pipeline settings in `config.json` and `models/models_config.json`, including API keys, model names, and other parameters.
-
-### Prerequisites
-
-1. **Python 3.8+**: Ensure you have Python 3.8 or a later version installed.
-2. **Dependencies**: Install the required dependencies using `pip install -r requirements.txt`.
-3. **API Keys**: Obtain API keys for your chosen LLM provider (e.g., OpenAI, DeepSeek) and set them as environment variables in a `.env` file.
-4. **Configuration**: Configure the pipeline settings in `config.json` and `models/models_config.json`, including API keys, model names, and other parameters.
-
-### Step-by-Step Instructions
-
-1. **Clone the Repository**:
-
-    ```bash
-    git clone https://github.com/HadleyLab/mcode_translator.git
-    cd mcode_translator
-    ```
-
-2. **Set Up Environment**:
-
-    ```bash
-    # Create conda environment
-    conda create -n mcode_translator python=3.11
-    conda activate mcode_translator
-    # Install dependencies
-    pip install -r requirements.txt
-    ```
-
-3. **Configure API Keys**:
-
-    - Copy the `.env.example` file to `.env` and edit it to include your API keys:
-
-        ```bash
-        cp .env.example .env
-        nano .env  # Or your favorite text editor
-        ```
-
-    - Ensure the `.env` file contains the necessary API keys for your chosen LLM provider:
-
-        ```
-        OPENAI_API_KEY=your_openai_api_key
-        # Or
-        DEEPSEEK_API_KEY=your_deepseek_api_key
-        # Optional: CORE Memory API key for storage
-        COREAI_API_KEY=your_coreai_api_key
-        ```
-
-4. **Fetch and Process Clinical Trials (mcode_fetcher.py)**:
-
-    - Search for clinical trials and process them with mCODE mapping, storing results in CORE Memory:
-
-        ```bash
-        python mcode_fetcher.py --condition "breast cancer" --limit 10 --process \
-          --store-in-core-memory -m deepseek-coder -p direct_mcode_evidence_based_concise -o fetcher_results.json
-        ```
-
-    - This command:
-      - Searches ClinicalTrials.gov for "breast cancer" trials (limit 10).
-      - Processes each trial with the mCODE pipeline using the specified model and prompt.
-      - Stores processed trials in CORE Memory for later use.
-      - Saves results to `fetcher_results.json`.
-
-5. **Process Patient Data Against Trials (mcode_patients.py)**:
-
-    - Filter patient mCODE data based on the clinical trial mappings stored in CORE Memory, and store filtered patient summaries in CORE Memory:
-
-        ```bash
-        python mcode_patients.py --input-file fetcher_results.json \
-          --input-dir data/mcode_downloads --output-dir data/mcode_filtered \
-          --store-in-core-memory --verbose
-        ```
-
-    - This command:
-      - Uses the trial data from `fetcher_results.json` (which contains mCODE elements from step 4).
-      - Recursively processes patient JSON files from `data/mcode_downloads`.
-      - Filters patient mCODE elements to match those in the clinical trials.
-      - Saves filtered patient data to `data/mcode_filtered/` (mirroring the input directory structure).
-      - Stores filtered patient summaries in CORE Memory.
-      - Verbose output shows extraction, filtering, and storage progress.
-
-6. **View and Analyze Results**:
-
-    - Examine the processed trial data in `fetcher_results.json`.
-    - Review filtered patient data in `data/mcode_filtered/`.
-    - Use the stored data in CORE Memory for querying or further analysis (via API or future tools).
-
-### Workflows
-
-1. **Basic mCODE Mapping**:
-
-    - Use the `mcode_translator.py` script to map clinical trial data to mCODE elements:
-
-        ```bash
-        python mcode_translator.py --input-file data/selected_breast_cancer_trials.json -m deepseek-coder -o results.json
-        ```
-
-2. **Fetching and Processing Trials**:
-
-    - Use the `mcode_fetcher.py` script to search for clinical trials and process them:
-
-        ```bash
-        python mcode_fetcher.py --condition "breast cancer" --limit 10 --process \
-          --store-in-core-memory -m deepseek-coder -o fetcher_results.json
-        ```
-
-3. **Filtering Patient Data**:
-
-    - Use the `mcode_patients.py` script to filter patient data based on trial mCODE elements:
-
-        ```bash
-        python mcode_patients.py --input-file fetcher_results.json \
-          --input-dir data/mcode_downloads --output-dir data/mcode_filtered \
-          --store-in-core-memory --verbose
-        ```
-
-4. **Optimization and Validation**:
-
-    - Use the `mcode_optimize.py` script to test and optimize prompt/model combinations:
-
-        ```bash
-        python mcode_optimize.py --trials-file data/selected_breast_cancer_trials.json \
-          --concurrent --detailed-report
-        ```
-
-### Error Handling
-
-1. **Missing API Keys**:
-
-    - If you encounter an error related to missing API keys, ensure you have set the `OPENAI_API_KEY` or `DEEPSEEK_API_KEY` environment variables in your `.env` file.
-
-2. **Configuration Errors**:
-
-    - If you encounter an error related to invalid configuration settings, check the `config.json` and `models/models_config.json` files for any inconsistencies or missing values.
-
-3. **Rate Limiting**:
-
-    - If you encounter rate limiting errors, adjust the `rate_limiting` settings in the `config.json` file.
-
-### Validation
-
-1. **Compliance Scores**:
-
-    - The pipeline generates compliance scores to indicate the quality and completeness of the mCODE mappings. A higher compliance score indicates better mapping quality.
-
-2. **Error Reporting**:
-
-    - The pipeline provides detailed error messages and warnings to help you identify and resolve any issues with the mCODE mappings.
-
-### CORE Memory Integration
-
-1. **Storing Data**:
-
-    - To store processed trials and patient data in CORE Memory, use the `--store-in-core-memory` flag with `mcode_fetcher.py` and `mcode_patients.py`.
-
-2. **Automatic Duplicate Detection**:
-
-    - The pipeline automatically detects and prevents duplicate entries in CORE Memory based on trial and patient identifiers.
-
-### Retrieving Data from CORE Memory
-
-1. **Using CORE Memory Data**:
-
-    - To retrieve data from CORE Memory, you can use the CORE Memory API or command-line tools (coming soon).
-
-    - Once you have retrieved the data, you can use it as input for the `mcode_translator.py` script. For example:
-
-        ```bash
-        # Assuming you have retrieved data from CORE Memory and saved it to core_memory_data.json
-        python mcode_translator.py --input-file core_memory_data.json -o results.json
-        ```
-
-    - The `mcode_translator.py` script will process the data from CORE Memory and generate mCODE mappings.
-
----
-
-**mCODE Translator v2.0** - Clinical trial data to standardized mCODE elements with 99.1% quality score.
+- [mCODE Specification](https://mcodeinitiative.org/)
+- [ClinicalTrials.gov API](https://clinicaltrials.gov/api/)
+- [Synthea Patient Generator](https://github.com/synthetichealth/synthea)
