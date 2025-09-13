@@ -190,6 +190,36 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## ⚙️ End-to-End Pipeline Guide
 
+### Synthetic Patient Workflow
+
+1. **Download Synthetic Data**:
+```bash
+python mcode_fetcher.py --download-synthetic-patients --cancer-type breast_cancer
+```
+
+2. **Process Patients Against Trials**:
+```bash
+# Filter synthetic patients based on breast cancer trial criteria
+python mcode_patients.py --input-file breast_cancer_trials.json \
+  --archive-path "breast_cancer/10_years" --limit 50 \
+  --output-dir data/filtered_synthetic_patients --store-in-core-memory
+```
+
+3. **Validate Results**:
+```bash
+# Test the integration end-to-end
+pytest tests/unit/test_mcode_patients.py::test_synthetic_patient_filtering -v
+```
+
+This workflow enables matching synthetic patients to clinical trial eligibility criteria using mCODE mappings, supporting patient-trial matching research and validation.
+
+### Prerequisites
+
+1. **Python 3.8+**: Ensure you have Python 3.8 or a later version installed.
+2. **Dependencies**: Install the required dependencies using `pip install -r requirements.txt`.
+3. **API Keys**: Obtain API keys for your chosen LLM provider (e.g., OpenAI, DeepSeek) and set them as environment variables in a `.env` file.
+4. **Configuration**: Configure the pipeline settings in `config.json` and `models/models_config.json`, including API keys, model names, and other parameters.
+
 ### Prerequisites
 
 1. **Python 3.8+**: Ensure you have Python 3.8 or a later version installed.
