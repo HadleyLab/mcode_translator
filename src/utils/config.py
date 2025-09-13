@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-# Import model loader for file-based model library
-from .model_loader import ModelConfig, model_loader
+# Import LLM loader for file-based LLM library
+from .llm_loader import LLMConfig, llm_loader
 
 
 class ConfigurationError(Exception):
@@ -83,7 +83,7 @@ class Config:
                 "Model name is required - no fallback to default model allowed in strict mode"
             )
 
-        model_config = self.get_model_config(model_name)
+        model_config = self.get_llm_config(model_name)
         api_key_env_var = model_config.api_key_env_var
 
         if not api_key_env_var:
@@ -118,7 +118,7 @@ class Config:
                 "Model name is required - no fallback to default model allowed in strict mode"
             )
 
-        model_config = self.get_model_config(model_name)
+        model_config = self.get_llm_config(model_name)
         base_url = model_config.base_url
 
         if not base_url or not isinstance(base_url, str):
@@ -146,7 +146,7 @@ class Config:
                 "Model name is required - no fallback to default model allowed in strict mode"
             )
 
-        model_config = self.get_model_config(model_name)
+        model_config = self.get_llm_config(model_name)
         validated_model_name = model_config.name
 
         if not validated_model_name or not isinstance(validated_model_name, str):
@@ -174,7 +174,7 @@ class Config:
                 "Model name is required - no fallback to default model allowed in strict mode"
             )
 
-        model_config = self.get_model_config(model_name)
+        model_config = self.get_llm_config(model_name)
         temperature = model_config.default_parameters.get("temperature")
 
         if temperature is None or not isinstance(temperature, (int, float)):
@@ -202,7 +202,7 @@ class Config:
                 "Model name is required - no fallback to default model allowed in strict mode"
             )
 
-        model_config = self.get_model_config(model_name)
+        model_config = self.get_llm_config(model_name)
         max_tokens = model_config.default_parameters.get("max_tokens")
 
         if max_tokens is None or not isinstance(max_tokens, int) or max_tokens <= 0:
@@ -220,28 +220,28 @@ class Config:
         """Check if API keys are required"""
         return self.validation_config["validation"]["require_api_keys"]
 
-    def get_model_config(self, model_key: str) -> ModelConfig:
+    def get_llm_config(self, llm_key: str) -> LLMConfig:
         """
-        Get model configuration from the file-based model library
+        Get LLM configuration from the file-based LLM library
 
         Args:
-            model_key: REQUIRED key identifying the model in the model library
+            llm_key: REQUIRED key identifying the LLM in the library
 
         Returns:
-            ModelConfig object with the model configuration
+            LLMConfig object with the LLM configuration
 
         Raises:
-            ConfigurationError: If model configuration is missing or invalid
+            ConfigurationError: If LLM configuration is missing or invalid
         """
-        if not model_key:
+        if not llm_key:
             raise ConfigurationError(
-                "Model key is required - no fallback to default model allowed in strict mode"
+                "LLM key is required - no fallback to default LLM allowed in strict mode"
             )
 
-        # STRICT: Load model configuration from file-based model library - throw exception if not found
-        return model_loader.get_model(model_key)
+        # STRICT: Load LLM configuration from file-based LLM library - throw exception if not found
+        return llm_loader.get_llm(llm_key)
 
-    def get_all_model_configs(self) -> Dict[str, ModelConfig]:
+    def get_all_llm_configs(self) -> Dict[str, LLMConfig]:
         """
         Get all model configurations from the file-based model library
 
@@ -251,13 +251,13 @@ class Config:
         Raises:
             ConfigurationError: If model configurations cannot be loaded
         """
-        # STRICT: Load all model configurations - throw exception if any fail
-        return model_loader.get_all_models()
+        # STRICT: Load all LLM configurations - throw exception if any fail
+        return llm_loader.get_all_llms()
 
-    def reload_model_configs(self) -> None:
-        """Reload model configurations from the file-based model library"""
-        # STRICT: Reload model configurations - throw exception if reload fails
-        model_loader.reload_config()
+    def reload_llm_configs(self) -> None:
+        """Reload LLM configurations from the file-based LLM library"""
+        # STRICT: Reload LLM configurations - throw exception if reload fails
+        llm_loader.reload_config()
 
     def get_core_memory_api_key(self) -> str:
         """
@@ -443,7 +443,7 @@ class Config:
 
     def _load_models_config(self) -> Dict[str, Any]:
         """Load models configuration from modular config file"""
-        return self._load_modular_config("models_config.json")
+        return self._load_modular_config("llms_config.json")
 
     def _load_prompts_config(self) -> Dict[str, Any]:
         """Load prompts configuration from modular config file"""

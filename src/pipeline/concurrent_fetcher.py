@@ -26,6 +26,7 @@ from src.pipeline.task_queue import (BenchmarkTask, PipelineTaskQueue,
                                      initialize_task_queue,
                                      shutdown_task_queue)
 from src.shared.types import TaskStatus
+from src.shared.models import enhance_trial_with_mcode_results
 from src.utils import Config, get_logger
 
 # Get logger instance
@@ -274,18 +275,12 @@ class ConcurrentFetcher:
                 trial_data = task_result["trial_data"]
 
                 if task.status == TaskStatus.SUCCESS:
-                    # Add mCODE results to trial data
-                    enhanced_trial = trial_data.copy()
+                    # Add mCODE results to trial data using standardized utility
                     if task.result:
-                        enhanced_trial["McodeResults"] = {
-                            "extracted_entities": task.result.extracted_entities,
-                            "mcode_mappings": task.result.mcode_mappings,
-                            "source_references": task.result.source_references,
-                            "validation": task.result.validation_results,
-                            "metadata": task.result.metadata,
-                            "error": task.result.error,
-                        }
-                    successful_results.append(enhanced_trial)
+                        enhanced_trial = enhance_trial_with_mcode_results(trial_data, task.result)
+                        successful_results.append(enhanced_trial)
+                    else:
+                        successful_results.append(trial_data)
                     logger.info(f"✅ Successfully processed {nct_id}")
                 else:
                     failed_results.append(

@@ -16,8 +16,8 @@ Key Modules:
   configuration values.
 - **logging_config**: Standardized logging setup with colored output and
   consistent formatting for clear and readable logs.
-- **model_loader**: File-based system for managing LLM model configurations,
-  eliminating hardcoded model settings.
+- **llm_loader**: File-based system for managing LLM configurations,
+  eliminating hardcoded LLM settings.
 - **prompt_loader**: File-based prompt library that centralizes all LLM prompts,
   improving maintainability and consistency.
 - **token_tracker**: Thread-safe singleton for tracking and aggregating token
@@ -39,8 +39,8 @@ from .feature_utils import (standardize_biomarkers, standardize_features,
                             standardize_variants)
 from .logging_config import Loggable, get_logger, setup_logging
 from .metrics import MatchingMetrics
-from .model_loader import (ModelConfig, ModelLoader, load_model, model_loader,
-                           reload_models_config)
+from .llm_loader import (LLMConfig, LLMLoader, load_llm, llm_loader,
+                         reload_llms_config)
 from .pattern_config import (AGE_PATTERN, BIOMARKER_PATTERNS,
                              CANCER_TYPE_PATTERN, COMPLEX_VARIANT_PATTERN,
                              CONDITION_PATTERN, ECOG_PATTERN, GENDER_PATTERN,
@@ -60,12 +60,12 @@ __all__ = [
     "get_logger",
     "setup_logging",
     "Loggable",
-    # Model Loader
-    "ModelLoader",
-    "model_loader",
-    "ModelConfig",
-    "load_model",
-    "reload_models_config",
+    # LLM Loader
+    "LLMLoader",
+    "llm_loader",
+    "LLMConfig",
+    "load_llm",
+    "reload_llms_config",
     # Prompt Loader
     "PromptLoader",
     "prompt_loader",
