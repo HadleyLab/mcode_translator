@@ -236,8 +236,30 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             "trial_hash": hash(str(processed_trial)) % 1000000
         }
 
-        self.workflow_cache.set_by_key(processed_trial, cache_key_data)
+        # Convert McodeElement objects to dicts for JSON serialization
+        serializable_trial = self._make_trial_serializable(processed_trial)
+        self.workflow_cache.set_by_key(serializable_trial, cache_key_data)
         self.logger.debug(f"Cached processed trial {trial_id}")
+
+    def _make_trial_serializable(self, trial: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert McodeElement objects to dictionaries for JSON serialization."""
+        import copy
+        serializable_trial = copy.deepcopy(trial)
+
+        # Convert McodeResults if present
+        if "McodeResults" in serializable_trial:
+            mcode_results = serializable_trial["McodeResults"]
+            if "mcode_mappings" in mcode_results:
+                # Convert McodeElement objects to dicts
+                mappings = []
+                for mapping in mcode_results["mcode_mappings"]:
+                    if hasattr(mapping, 'model_dump'):  # Pydantic model
+                        mappings.append(mapping.model_dump())
+                    else:  # Already a dict
+                        mappings.append(mapping)
+                mcode_results["mcode_mappings"] = mappings
+
+        return serializable_trial
 
     def _extract_trial_mcode_elements_cached(self, trial: Dict[str, Any]) -> Dict[str, Any]:
         """Extract trial mCODE elements with caching."""
@@ -304,42 +326,60 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         mcode_elements = {}
 
         try:
+            # Ensure trial is a dict
+            if not isinstance(trial, dict):
+                self.logger.error(f"Trial data is not a dict: {type(trial)}")
+                return mcode_elements
+
             protocol_section = trial.get("protocolSection", {})
+            if not isinstance(protocol_section, dict):
+                self.logger.error(f"Protocol section is not a dict: {type(protocol_section)}")
+                return mcode_elements
+
             self.logger.debug(f"Processing protocol section with keys: {list(protocol_section.keys())}")
 
             # Extract trial identification and basic info
             identification = protocol_section.get("identificationModule", {})
-            mcode_elements.update(self._extract_trial_identification(identification))
+            if isinstance(identification, dict):
+                mcode_elements.update(self._extract_trial_identification(identification))
 
             # Extract eligibility criteria in mCODE space
             eligibility = protocol_section.get("eligibilityModule", {})
-            mcode_elements.update(self._extract_trial_eligibility_mcode(eligibility))
+            if isinstance(eligibility, dict):
+                mcode_elements.update(self._extract_trial_eligibility_mcode(eligibility))
 
             # Extract conditions as mCODE CancerCondition
             conditions = protocol_section.get("conditionsModule", {})
-            mcode_elements.update(self._extract_trial_conditions_mcode(conditions))
+            if isinstance(conditions, dict):
+                mcode_elements.update(self._extract_trial_conditions_mcode(conditions))
 
             # Extract interventions as mCODE CancerRelatedMedicationStatement
             interventions = protocol_section.get("armsInterventionsModule", {})
-            mcode_elements.update(self._extract_trial_interventions_mcode(interventions))
+            if isinstance(interventions, dict):
+                mcode_elements.update(self._extract_trial_interventions_mcode(interventions))
 
             # Extract design and outcomes information
             design = protocol_section.get("designModule", {})
-            mcode_elements.update(self._extract_trial_design_mcode(design))
+            if isinstance(design, dict):
+                mcode_elements.update(self._extract_trial_design_mcode(design))
 
             # Extract temporal information
             status = protocol_section.get("statusModule", {})
-            mcode_elements.update(self._extract_trial_temporal_mcode(status))
+            if isinstance(status, dict):
+                mcode_elements.update(self._extract_trial_temporal_mcode(status))
 
             # Extract sponsor and organization information
             sponsor = protocol_section.get("sponsorCollaboratorsModule", {})
-            sponsor_elements = self._extract_trial_sponsor_mcode(sponsor)
-            mcode_elements.update(sponsor_elements)
-            self.logger.debug(f"Extracted sponsor elements: {list(sponsor_elements.keys())}")
+            if isinstance(sponsor, dict):
+                sponsor_elements = self._extract_trial_sponsor_mcode(sponsor)
+                mcode_elements.update(sponsor_elements)
+                self.logger.debug(f"Extracted sponsor elements: {list(sponsor_elements.keys())}")
 
         except Exception as e:
             self.logger.error(f"Error extracting comprehensive trial mCODE elements: {e}")
-            self.logger.debug(f"Trial data: {trial}")
+            self.logger.debug(f"Trial data type: {type(trial)}")
+            if isinstance(trial, dict):
+                self.logger.debug(f"Trial keys: {list(trial.keys())}")
 
         self.logger.debug(f"Final mCODE elements extracted: {len(mcode_elements)} total elements")
         return mcode_elements
@@ -588,39 +628,61 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         metadata = {}
 
         try:
+            # Ensure trial is a dict
+            if not isinstance(trial, dict):
+                self.logger.error(f"Trial data is not a dict in metadata extraction: {type(trial)}")
+                return metadata
+
             protocol_section = trial.get("protocolSection", {})
+            if not isinstance(protocol_section, dict):
+                self.logger.error(f"Protocol section is not a dict in metadata extraction: {type(protocol_section)}")
+                return metadata
 
             # Basic trial info
             identification = protocol_section.get("identificationModule", {})
-            metadata["nct_id"] = identification.get("nctId")
-            metadata["brief_title"] = identification.get("briefTitle")
-            metadata["official_title"] = identification.get("officialTitle")
+            if isinstance(identification, dict):
+                metadata["nct_id"] = identification.get("nctId")
+                metadata["brief_title"] = identification.get("briefTitle")
+                metadata["official_title"] = identification.get("officialTitle")
 
             # Status and dates
             status = protocol_section.get("statusModule", {})
-            metadata["overall_status"] = status.get("overallStatus")
-            metadata["start_date"] = status.get("startDateStruct", {}).get("date")
-            metadata["completion_date"] = status.get("completionDateStruct", {}).get("date")
+            if isinstance(status, dict):
+                metadata["overall_status"] = status.get("overallStatus")
+                start_struct = status.get("startDateStruct", {})
+                if isinstance(start_struct, dict):
+                    metadata["start_date"] = start_struct.get("date")
+                completion_struct = status.get("completionDateStruct", {})
+                if isinstance(completion_struct, dict):
+                    metadata["completion_date"] = completion_struct.get("date")
 
             # Design information
             design = protocol_section.get("designModule", {})
-            metadata["study_type"] = design.get("studyType")
-            metadata["phase"] = design.get("phases", [])
-            metadata["primary_purpose"] = design.get("primaryPurpose")
+            if isinstance(design, dict):
+                metadata["study_type"] = design.get("studyType")
+                metadata["phase"] = design.get("phases", [])
+                metadata["primary_purpose"] = design.get("primaryPurpose")
 
             # Eligibility
             eligibility = protocol_section.get("eligibilityModule", {})
-            metadata["minimum_age"] = eligibility.get("minimumAge")
-            metadata["maximum_age"] = eligibility.get("maximumAge")
-            metadata["sex"] = eligibility.get("sex")
-            metadata["healthy_volunteers"] = eligibility.get("healthyVolunteers")
+            if isinstance(eligibility, dict):
+                metadata["minimum_age"] = eligibility.get("minimumAge")
+                metadata["maximum_age"] = eligibility.get("maximumAge")
+                metadata["sex"] = eligibility.get("sex")
+                metadata["healthy_volunteers"] = eligibility.get("healthyVolunteers")
 
             # Conditions and interventions
-            conditions = protocol_section.get("conditionsModule", {}).get("conditions", [])
-            metadata["conditions"] = [c.get("name") for c in conditions]
+            conditions_module = protocol_section.get("conditionsModule", {})
+            if isinstance(conditions_module, dict):
+                conditions = conditions_module.get("conditions", [])
+                if isinstance(conditions, list):
+                    metadata["conditions"] = [c.get("name") for c in conditions if isinstance(c, dict)]
 
-            interventions = protocol_section.get("armsInterventionsModule", {}).get("interventions", [])
-            metadata["interventions"] = [i.get("name") for i in interventions]
+            interventions_module = protocol_section.get("armsInterventionsModule", {})
+            if isinstance(interventions_module, dict):
+                interventions = interventions_module.get("interventions", [])
+                if isinstance(interventions, list):
+                    metadata["interventions"] = [i.get("name") for i in interventions if isinstance(i, dict)]
 
         except Exception as e:
             self.logger.error(f"Error extracting trial metadata: {e}")
@@ -710,8 +772,8 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
             # Outcomes and timeline
             primary_outcomes = outcomes.get("primaryOutcomes", [])
+            primary_measures = []
             if primary_outcomes:
-                primary_measures = []
                 for outcome in primary_outcomes:
                     measure = outcome.get("measure", "Unknown")
                     primary_measures.append(measure)
@@ -719,7 +781,7 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             start_date = status.get("startDateStruct", {}).get("date")
             completion_date = status.get("completionDateStruct", {}).get("date")
 
-            clinical_note.append(f"Trial has primary outcomes of {' and '.join(primary_measures)} (mCODE: TrialPrimaryOutcomes) assessed over 6 months. Trial started on {start_date} (mCODE: TrialStartDate) and completed on {completion_date} (mCODE: TrialCompletionDate).")
+            clinical_note.append(f"Trial has primary outcomes of {' and '.join(primary_measures) if primary_measures else 'Not specified'} (mCODE: TrialPrimaryOutcomes) assessed over 6 months. Trial started on {start_date} (mCODE: TrialStartDate) and completed on {completion_date} (mCODE: TrialCompletionDate).")
 
             # Return as one continuous paragraph
             summary = " ".join(clinical_note)
