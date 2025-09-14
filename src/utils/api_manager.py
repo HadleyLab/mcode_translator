@@ -104,9 +104,9 @@ class APICache:
             with open(cache_path, "r") as f:
                 cached_data = json.load(f)
 
-            # Check if cache has expired (never expire by default)
+            # Check if cache has expired (ttl=0 means never expire)
             ttl = cached_data.get("ttl", None)
-            if ttl is not None and time.time() - cached_data.get("timestamp", 0) > ttl:
+            if ttl is not None and ttl > 0 and time.time() - cached_data.get("timestamp", 0) > ttl:
                 os.remove(cache_path)
                 return None
 

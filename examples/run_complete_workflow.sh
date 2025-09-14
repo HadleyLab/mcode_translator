@@ -12,6 +12,19 @@
 
 set -e  # Exit on any error
 
+# Initialize conda for bash
+__conda_setup="$('conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "$(conda info --base)/etc/profile.d/conda.sh" ]; then
+        . "$(conda info --base)/etc/profile.d/conda.sh"
+    else
+        export PATH="$(conda info --base)/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -82,9 +95,9 @@ run_cli() {
     local cmd_args=("$@")
 
     log "$description"
-    echo "Command: python -m ${cmd_args[*]}"
+    echo "Command: conda activate mcode_translator && python -m ${cmd_args[*]}"
 
-    if python -m "${cmd_args[@]}"; then
+    if conda activate mcode_translator && python -m "${cmd_args[@]}"; then
         success "$description completed"
     else
         error "$description failed"
@@ -167,8 +180,8 @@ main() {
     ls -la "$WORKFLOW_DIR/"
     echo
     echo "📊 Summary:"
-    echo "• Trials fetched: $(jq '.studies | length' "$WORKFLOW_DIR/trials.json" 2>/dev/null || echo 'N/A')"
-    echo "• Patients fetched: $(jq '.entry | length' "$WORKFLOW_DIR/patients.json" 2>/dev/null || echo 'N/A')"
+    echo "• Trials fetched: $(jq 'length' "$WORKFLOW_DIR/trials.json" 2>/dev/null || echo 'N/A')"
+    echo "• Patients fetched: $(jq 'length' "$WORKFLOW_DIR/patients.json" 2>/dev/null || echo 'N/A')"
     echo "• Optimization config saved: optimized_config.json"
     echo
     echo "💡 Next steps:"
