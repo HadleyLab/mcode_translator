@@ -147,6 +147,7 @@ auto_generated/
 data/fetcher_output/
 data/mcode_downloads/
 data/mcode_filtered/
+examples/data/workflow_*/
 
 # ZIP files (large data archives)
 *.zip
