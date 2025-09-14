@@ -63,6 +63,9 @@ Examples:
     # Output arguments
     McodeCLI.add_fetcher_args(parser)
 
+    # Processing arguments (for concurrency)
+    McodeCLI.add_processor_args(parser)
+
     return parser
 
 
@@ -95,11 +98,55 @@ def main() -> None:
     if args.output:
         workflow_kwargs["output_path"] = args.output
 
-    # Initialize and execute workflow
+    # Handle concurrent execution
     try:
-        workflow = TrialsFetcherWorkflow(config)
-        result = workflow.execute(**workflow_kwargs)
+        if args.workers > 0:
+            # Use concurrent fetching
+            import asyncio
+            from src.pipeline.concurrent_fetcher import concurrent_search_and_process
 
+            async def run_concurrent():
+                if args.condition:
+                    return await concurrent_search_and_process(
+                        condition=args.condition,
+                        limit=args.limit,
+                        max_workers=args.workers,
+                        export_path=args.output if args.output else None,
+                        progress_updates=args.verbose
+                    )
+                elif args.nct_ids:
+                    return await concurrent_search_and_process(
+                        nct_ids=[nct.strip() for nct in args.nct_ids.split(",")],
+                        max_workers=args.workers,
+                        export_path=args.output if args.output else None,
+                        progress_updates=args.verbose
+                    )
+                else:
+                    raise ValueError("Concurrent fetching requires --condition or --nct-ids")
+
+            result_data = asyncio.run(run_concurrent())
+
+            # Convert concurrent result to workflow result format
+            class MockResult:
+                def __init__(self, concurrent_result):
+                    self.success = concurrent_result.successful_trials > 0
+                    self.error_message = ""
+                    self.metadata = {
+                        "total_fetched": concurrent_result.total_trials,
+                        "fetch_type": "concurrent",
+                        "successful": concurrent_result.successful_trials,
+                        "failed": concurrent_result.failed_trials,
+                        "duration_seconds": concurrent_result.duration_seconds
+                    }
+
+            result = MockResult(result_data)
+
+        else:
+            # Use sequential workflow
+            workflow = TrialsFetcherWorkflow(config)
+            result = workflow.execute(**workflow_kwargs)
+
+        # Print results (common for both concurrent and sequential)
         if result.success:
             print("✅ Trials fetch completed successfully!")
 
@@ -116,6 +163,15 @@ def main() -> None:
                 fetch_type = metadata.get("fetch_type")
                 if fetch_type:
                     print(f"🔍 Fetch type: {fetch_type}")
+
+                # Print concurrency info if applicable
+                if args.workers > 0:
+                    successful = metadata.get("successful", 0)
+                    failed = metadata.get("failed", 0)
+                    duration = metadata.get("duration_seconds", 0)
+                    print(f"⚡ Concurrent processing: {args.workers} workers")
+                    print(f"✅ Successful: {successful}, ❌ Failed: {failed}")
+                    print(f"⏱️  Duration: {duration:.2f}s")
 
         else:
             print(f"❌ Trials fetch failed: {result.error_message}")

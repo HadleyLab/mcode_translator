@@ -90,6 +90,13 @@ class McodeCLI:
             help="Batch size for processing (default: 10)",
         )
 
+        parser.add_argument(
+            "--workers",
+            type=int,
+            default=0,
+            help="Number of concurrent workers (0 = sequential, >0 = concurrent)",
+        )
+
     @staticmethod
     def add_optimizer_args(parser: argparse.ArgumentParser) -> None:
         """Add arguments specific to optimization workflows."""
