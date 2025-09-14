@@ -170,6 +170,10 @@ main() {
         --save-config "$WORKFLOW_DIR/optimized_config.json" \
         --verbose
 
+    # Calculate summary counts using Python
+    trials_count=$(python -c "import json; print(len(json.load(open('$WORKFLOW_DIR/trials.json'))))" 2>/dev/null || echo 'N/A')
+    patients_count=$(python -c "import json; print(len(json.load(open('$WORKFLOW_DIR/patients.json'))))" 2>/dev/null || echo 'N/A')
+
     # Summary
     echo
     echo "🎉 WORKFLOW COMPLETED SUCCESSFULLY!"
@@ -180,8 +184,8 @@ main() {
     ls -la "$WORKFLOW_DIR/"
     echo
     echo "📊 Summary:"
-    echo "• Trials fetched: $(jq 'length' "$WORKFLOW_DIR/trials.json" 2>/dev/null || echo 'N/A')"
-    echo "• Patients fetched: $(jq 'length' "$WORKFLOW_DIR/patients.json" 2>/dev/null || echo 'N/A')"
+    echo "• Trials fetched: $trials_count"
+    echo "• Patients fetched: $patients_count"
     echo "• Optimization config saved: optimized_config.json"
     echo
     echo "💡 Next steps:"
