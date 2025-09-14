@@ -14,6 +14,7 @@ from pathlib import Path
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
+from src.utils.logging_config import get_logger
 from src.workflows.trials_processor_workflow import TrialsProcessorWorkflow
 
 
@@ -61,11 +62,12 @@ def main() -> None:
 
     # Setup logging
     McodeCLI.setup_logging(args)
+    logger = get_logger(__name__)
 
     # Validate input file
     input_path = Path(args.input_file)
     if not input_path.exists():
-        print(f"❌ Input file not found: {input_path}")
+        logger.error(f"Input file not found: {input_path}")
         sys.exit(1)
 
     # Create configuration
@@ -77,7 +79,7 @@ def main() -> None:
             input_data = f.read().strip()
 
         if not input_data:
-            print(f"❌ Input file is empty: {input_path}")
+            logger.error(f"Input file is empty: {input_path}")
             sys.exit(1)
 
         # Parse JSON
@@ -86,10 +88,10 @@ def main() -> None:
         trial_data = json.loads(input_data)
 
     except json.JSONDecodeError as e:
-        print(f"❌ Invalid JSON in input file: {e}")
+        logger.error(f"Invalid JSON in input file: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ Failed to read input file: {e}")
+        logger.error(f"Failed to read input file: {e}")
         sys.exit(1)
 
     # Prepare workflow parameters
@@ -103,27 +105,27 @@ def main() -> None:
     if isinstance(trial_data, list):
         # Multiple trials
         workflow_kwargs["trials_data"] = trial_data
-        print(f"🔬 Processing {len(trial_data)} trials...")
+        logger.info(f"🔬 Processing {len(trial_data)} trials...")
     elif isinstance(trial_data, dict):
         # Single trial or batch format
         if "studies" in trial_data:
             # ClinicalTrials.gov API format
             workflow_kwargs["trials_data"] = trial_data["studies"]
-            print(
+            logger.info(
                 f"🔬 Processing {len(trial_data['studies'])} trials from API format..."
             )
         elif "successful_trials" in trial_data:
             # Batch processing format
             workflow_kwargs["trials_data"] = trial_data["successful_trials"]
-            print(
+            logger.info(
                 f"🔬 Processing {len(trial_data['successful_trials'])} trials from batch format..."
             )
         else:
             # Single trial
             workflow_kwargs["trials_data"] = [trial_data]
-            print("🔬 Processing single trial...")
+            logger.info("🔬 Processing single trial...")
     else:
-        print("❌ Invalid input format. Expected JSON array or object.")
+        logger.error("Invalid input format. Expected JSON array or object.")
         sys.exit(1)
 
     # Initialize core memory storage if needed
@@ -132,21 +134,24 @@ def main() -> None:
         try:
             # Use centralized configuration
             memory_storage = McodeMemoryStorage(source=args.memory_source)
-            print(f"🧠 Initialized CORE Memory storage (source: {args.memory_source})")
+            logger.info(f"🧠 Initialized CORE Memory storage (source: {args.memory_source})")
         except Exception as e:
-            print(f"❌ Failed to initialize CORE Memory: {e}")
-            print(
-                "💡 Check your COREAI_API_KEY environment variable and core_memory_config.json"
+            logger.error(f"Failed to initialize CORE Memory: {e}")
+            logger.info(
+                "Check your COREAI_API_KEY environment variable and core_memory_config.json"
             )
             sys.exit(1)
 
     # Initialize and execute workflow
     try:
+        logger.info("Initializing trials processor workflow...")
         workflow = TrialsProcessorWorkflow(config, memory_storage)
+        logger.info("Executing trials processor workflow...")
         result = workflow.execute(**workflow_kwargs)
+        logger.info("Trials processor workflow execution completed")
 
         if result.success:
-            print("✅ Trials processing completed successfully!")
+            logger.info("✅ Trials processing completed successfully!")
 
             # Print summary
             metadata = result.metadata
@@ -156,35 +161,35 @@ def main() -> None:
                 failed = metadata.get("failed", 0)
                 success_rate = metadata.get("success_rate", 0)
 
-                print(f"📊 Total trials: {total_trials}")
-                print(f"✅ Successful: {successful}")
-                print(f"❌ Failed: {failed}")
-                print(f"📈 Success rate: {success_rate:.1f}%")
+                logger.info(f"📊 Total trials: {total_trials}")
+                logger.info(f"✅ Successful: {successful}")
+                logger.info(f"❌ Failed: {failed}")
+                logger.info(f"📈 Success rate: {success_rate:.1f}%")
 
                 if args.store_in_core_memory:
                     stored = metadata.get("stored_in_memory", False)
                     if stored:
-                        print("🧠 mCODE summaries stored in CORE Memory")
+                        logger.info("🧠 mCODE summaries stored in CORE Memory")
                     else:
-                        print("💾 mCODE summaries NOT stored (dry run or error)")
+                        logger.info("💾 mCODE summaries NOT stored (dry run or error)")
 
                 # Print model/prompt info
                 model_used = metadata.get("model_used")
                 prompt_used = metadata.get("prompt_used")
                 if model_used:
-                    print(f"🤖 Model: {model_used}")
+                    logger.info(f"🤖 Model: {model_used}")
                 if prompt_used:
-                    print(f"📝 Prompt: {prompt_used}")
+                    logger.info(f"📝 Prompt: {prompt_used}")
 
         else:
-            print(f"❌ Trials processing failed: {result.error_message}")
+            logger.error(f"Trials processing failed: {result.error_message}")
             sys.exit(1)
 
     except KeyboardInterrupt:
-        print("\n⏹️  Operation cancelled by user")
+        logger.info("Operation cancelled by user")
         sys.exit(130)
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        logger.error(f"Unexpected error: {e}")
         if args.verbose:
             import traceback
 

@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from src.pipeline import McodePipeline
 from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.utils.api_manager import APIManager
 from src.utils.logging_config import get_logger
 
 from .base_workflow import ProcessorWorkflow, WorkflowResult
@@ -33,6 +34,12 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         """
         super().__init__(config, memory_storage)
         self.pipeline = None
+
+        # Initialize caching for workflow-level results
+        api_manager = APIManager()
+        self.workflow_cache = api_manager.get_cache("trials_processor")
+        self.mcode_cache = api_manager.get_cache("mcode_extraction")
+        self.summary_cache = api_manager.get_cache("trial_summaries")
 
     def execute(self, **kwargs) -> WorkflowResult:
         """
@@ -95,8 +102,17 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                     # Debug: Check trial data integrity before processing
                     protocol_section = trial.get("protocolSection", {})
                     identification = protocol_section.get("identificationModule", {})
-                    self.logger.debug(f"Trial {i+1} NCT ID: {identification.get('nctId', 'Unknown')}")
+                    trial_id = identification.get('nctId', 'Unknown')
+                    self.logger.debug(f"Trial {i+1} NCT ID: {trial_id}")
                     self.logger.debug(f"Trial {i+1} brief title: {identification.get('briefTitle', 'Unknown')}")
+
+                    # Check for cached processed trial result
+                    cached_result = self._get_cached_trial_result(trial, model, prompt)
+                    if cached_result is not None:
+                        self.logger.info(f"✅ Cache HIT for trial {trial_id} - using cached result")
+                        processed_trials.append(cached_result)
+                        successful_count += 1
+                        continue
 
                     # Process with mCODE pipeline
                     self.logger.debug(f"Starting mCODE pipeline processing for trial {i+1}")
@@ -106,17 +122,20 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                     # Add mCODE results to trial using standardized utility
                     enhanced_trial = enhance_trial_with_mcode_results(trial, result)
 
+                    # Cache the processed trial result
+                    self._cache_trial_result(enhanced_trial, model, prompt)
+
                     processed_trials.append(enhanced_trial)
                     successful_count += 1
 
-                    # Extract comprehensive mCODE elements from trial data
+                    # Extract comprehensive mCODE elements from trial data (with caching)
                     self.logger.debug(f"Extracting comprehensive mCODE elements for trial {i+1}")
-                    comprehensive_mcode = self._extract_trial_mcode_elements(trial)
+                    comprehensive_mcode = self._extract_trial_mcode_elements_cached(trial)
                     self.logger.debug(f"Extracted {len(comprehensive_mcode)} mCODE elements: {list(comprehensive_mcode.keys())}")
 
-                    # Create natural language summary for CORE knowledge graph
+                    # Create natural language summary for CORE knowledge graph (with caching)
                     self.logger.debug(f"Generating natural language summary for trial {trial_id}")
-                    natural_language_summary = self._generate_trial_natural_language_summary(
+                    natural_language_summary = self._generate_trial_natural_language_summary_cached(
                         trial_id, comprehensive_mcode, trial
                     )
                     self.logger.info(f"Generated comprehensive trial summary for {trial_id}: {natural_language_summary[:100]}...")
@@ -188,6 +207,85 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
         except Exception as e:
             return self._handle_error(e, "trials processing")
+
+    def _get_cached_trial_result(self, trial: Dict[str, Any], model: str, prompt: str) -> Optional[Dict[str, Any]]:
+        """Get cached processed trial result if available."""
+        trial_id = self._extract_trial_id(trial)
+        cache_key_data = {
+            "function": "processed_trial",
+            "trial_id": trial_id,
+            "model": model,
+            "prompt": prompt,
+            "trial_hash": hash(str(trial)) % 1000000  # Include trial content hash for cache invalidation
+        }
+
+        cached_result = self.workflow_cache.get_by_key(cache_key_data)
+        if cached_result is not None:
+            self.logger.debug(f"Cache HIT for processed trial {trial_id}")
+            return cached_result
+        return None
+
+    def _cache_trial_result(self, processed_trial: Dict[str, Any], model: str, prompt: str) -> None:
+        """Cache processed trial result."""
+        trial_id = self._extract_trial_id(processed_trial)
+        cache_key_data = {
+            "function": "processed_trial",
+            "trial_id": trial_id,
+            "model": model,
+            "prompt": prompt,
+            "trial_hash": hash(str(processed_trial)) % 1000000
+        }
+
+        self.workflow_cache.set_by_key(processed_trial, cache_key_data)
+        self.logger.debug(f"Cached processed trial {trial_id}")
+
+    def _extract_trial_mcode_elements_cached(self, trial: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract trial mCODE elements with caching."""
+        trial_id = self._extract_trial_id(trial)
+        cache_key_data = {
+            "function": "mcode_extraction",
+            "trial_id": trial_id,
+            "trial_hash": hash(str(trial)) % 1000000
+        }
+
+        cached_result = self.mcode_cache.get_by_key(cache_key_data)
+        if cached_result is not None:
+            self.logger.debug(f"Cache HIT for mCODE extraction {trial_id}")
+            return cached_result
+
+        # Extract mCODE elements
+        mcode_elements = self._extract_trial_mcode_elements(trial)
+
+        # Cache the result
+        self.mcode_cache.set_by_key(mcode_elements, cache_key_data)
+        self.logger.debug(f"Cached mCODE extraction for {trial_id}")
+
+        return mcode_elements
+
+    def _generate_trial_natural_language_summary_cached(
+        self, trial_id: str, mcode_elements: Dict[str, Any], trial_data: Dict[str, Any]
+    ) -> str:
+        """Generate natural language summary with caching."""
+        cache_key_data = {
+            "function": "natural_language_summary",
+            "trial_id": trial_id,
+            "mcode_hash": hash(str(mcode_elements)) % 1000000,
+            "trial_hash": hash(str(trial_data)) % 1000000
+        }
+
+        cached_result = self.summary_cache.get_by_key(cache_key_data)
+        if cached_result is not None:
+            self.logger.debug(f"Cache HIT for natural language summary {trial_id}")
+            return cached_result
+
+        # Generate summary
+        summary = self._generate_trial_natural_language_summary(trial_id, mcode_elements, trial_data)
+
+        # Cache the result
+        self.summary_cache.set_by_key(summary, cache_key_data)
+        self.logger.debug(f"Cached natural language summary for {trial_id}")
+
+        return summary
 
     def _extract_trial_id(self, trial: Dict[str, Any]) -> str:
         """Extract trial ID from trial data."""
@@ -763,6 +861,21 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             self.logger.error(f"Error validating trial data: {e}")
             return False
 
+    def clear_workflow_caches(self) -> None:
+        """Clear all workflow-related caches."""
+        self.workflow_cache.clear_cache()
+        self.mcode_cache.clear_cache()
+        self.summary_cache.clear_cache()
+        self.logger.info("Cleared all workflow caches")
+
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """Get statistics for all workflow caches."""
+        return {
+            "workflow_cache": self.workflow_cache.get_stats(),
+            "mcode_cache": self.mcode_cache.get_stats(),
+            "summary_cache": self.summary_cache.get_stats(),
+        }
+
     def get_processing_stats(self) -> Dict[str, Any]:
         """
         Get statistics about processing capabilities.
@@ -782,4 +895,5 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             ),
             "prompt_template": getattr(self.pipeline, "prompt_name", "unknown"),
             "memory_storage_available": self.memory_storage is not None,
+            "cache_stats": self.get_cache_stats(),
         }
