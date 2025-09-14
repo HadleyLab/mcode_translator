@@ -99,6 +99,7 @@ def main() -> None:
         "model": args.model,
         "prompt": args.prompt,
         "store_in_memory": args.store_in_core_memory and not args.dry_run,
+        "workers": args.workers,
     }
 
     # Handle different input formats
