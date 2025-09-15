@@ -1,0 +1,65 @@
+{
+  "summary": {
+    "total_trials": 2,
+    "successful_trials": 2,
+    "failed_trials": 0,
+    "success_rate": 100.0,
+    "duration_seconds": 0.0008261203765869141,
+    "processing_rate": 2420.9546897546898
+  },
+  "task_statistics": {},
+  "successful_trials": [
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT03301350",
+          "briefTitle": "Neoadjuvant Carbo/Paclitaxel Followed by Doxorubicin/Cyclophosphamide in Breast Cancer"
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": {
+            "date": "2017-11-07"
+          },
+          "completionDateStruct": {
+            "date": "2022-02-07"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "This is a phase II single-arm, open-label, prospective study to evaluate the efficacy of the low dose weekly Carboplatin/Paclitaxel followed by dose-dense Doxorubicin/Cyclophosphamide in subjects with triple-negative breast cancer in neoadjuvant settings."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Breast Cancer",
+            "Triple Negative Breast Cancer"
+          ]
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT01367418",
+          "briefTitle": "Effects of Anesthetic Technique on Immune and Inflammatory Systems Following Radical Prostatectomy"
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": {
+            "date": "2010-09"
+          },
+          "completionDateStruct": {
+            "date": "2012-03"
+          }
+        },
+        "descriptionModule": {
+          "briefSummary": "Several recently published retrospective studies show that regional anaesthesia (RA) can reduce cancer-related mortality following surgical treatment of colorectal, breast and prostate cancers and malignant melanoma. If these results are true, then the choice of perioperative pain management is as beneficial, or even better, than the current oncological therapies. This theory needs to be investigated in a prospective, randomized and controlled trail. We shall perform a prospective, randomized study comparing the effects of Thoracic epidural analgesia (TEA) or patient controlled analgesia (PCA) on postoperative immunological and inflammatory markers in order to understand whether the protective effects, if any, of regional analgesia are due to changes in these markers or whether the underlying mechanisms is not mediated via this stress signalling pathway."
+        },
+        "conditionsModule": {
+          "conditions": [
+            "Prostate Cancer"
+          ]
+        }
+      }
+    }
+  ],
+  "failed_trials": []
+}

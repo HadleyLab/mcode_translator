@@ -41,6 +41,7 @@ Examples:
     # Add shared arguments
     McodeCLI.add_core_args(parser)
     McodeCLI.add_memory_args(parser)
+    McodeCLI.add_processor_args(parser)
 
     # Input arguments
     parser.add_argument(

@@ -1,0 +1,67 @@
+[
+  {
+    "protocolSection": {
+      "identificationModule": {
+        "nctId": "NCT04377620",
+        "briefTitle": "Assessment of Efficacy and Safety of Ruxolitinib in Participants With COVID-19-Associated ARDS Who Require Mechanical Ventilation",
+        "officialTitle": "A Phase 3 Randomized, Double-Blind, Placebo-Controlled Study to Assess the Efficacy and Safety of Ruxolitinib in Patients With COVID-19-Associated Acute Respiratory Distress Syndrome (ARDS) Who Are Receiving Mechanical Ventilation (RUXCOVID-DEVENT)"
+      },
+      "statusModule": {
+        "overallStatus": "TERMINATED",
+        "startDateStruct": {
+          "date": "2020-04-29"
+        },
+        "completionDateStruct": {
+          "date": "2020-05-29"
+        }
+      },
+      "designModule": {
+        "studyType": "INTERVENTIONAL",
+        "phases": [
+          "PHASE3"
+        ],
+        "primaryPurpose": "TREATMENT",
+        "enrollmentInfo": {
+          "count": 400
+        }
+      },
+      "eligibilityModule": {
+        "sex": "ALL",
+        "minimumAge": "12 Years",
+        "healthyVolunteers": false
+      },
+      "conditionsModule": {
+        "conditions": [
+          {
+            "name": "COVID-19",
+            "code": "840539006"
+          },
+          {
+            "name": "Acute Respiratory Distress Syndrome",
+            "code": "67782005"
+          }
+        ]
+      },
+      "armsInterventionsModule": {
+        "interventions": [
+          {
+            "name": "Ruxolitinib",
+            "type": "DRUG",
+            "description": "Oral ruxolitinib tablets"
+          },
+          {
+            "name": "Placebo",
+            "type": "DRUG",
+            "description": "Matching placebo tablets"
+          }
+        ]
+      },
+      "sponsorCollaboratorsModule": {
+        "leadSponsor": {
+          "name": "Novartis Pharmaceuticals",
+          "class": "INDUSTRY"
+        }
+      }
+    }
+  }
+]

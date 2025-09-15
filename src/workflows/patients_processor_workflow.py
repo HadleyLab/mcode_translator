@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.logging_config import get_logger
+from src.services.summarizer import McodeSummarizer
 
 from .base_workflow import ProcessorWorkflow, WorkflowResult
 
@@ -30,6 +31,7 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
             memory_storage: Optional core memory storage interface
         """
         super().__init__(config, memory_storage)
+        self.summarizer = McodeSummarizer()
 
     def execute(self, **kwargs) -> WorkflowResult:
         """
@@ -145,8 +147,8 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                             demographics["gender"] = "Unknown"
 
                         # Generate natural language summary for CORE knowledge graph
-                        natural_language_summary = self._generate_natural_language_summary(
-                            patient_id, filtered_mcode, demographics
+                        natural_language_summary = self.summarizer.create_patient_summary(
+                            patient
                         )
 
                         mcode_data = {

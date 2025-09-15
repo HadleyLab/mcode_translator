@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional
 from src.utils.config import Config
 from src.utils.core_memory_client import CoreMemoryClient, CoreMemoryError
 from src.utils.logging_config import get_logger
+from src.services.summarizer import McodeSummarizer
 
 
 class McodeMemoryStorage:
@@ -31,6 +32,7 @@ class McodeMemoryStorage:
         """
         self.logger = get_logger(__name__)
         self.config = Config()
+        self.summarizer = McodeSummarizer()
 
         # Use provided values or get from centralized config
         self.api_key = api_key or self.config.get_core_memory_api_key()
@@ -60,7 +62,7 @@ class McodeMemoryStorage:
             bool: True if stored successfully
         """
         try:
-            summary = self._create_trial_summary(trial_id, mcode_data)
+            summary = self.summarizer.create_trial_summary(mcode_data)
             self.client.ingest(summary)
             self.logger.info(f"✅ Stored trial {trial_id} mCODE summary in CORE Memory")
             return True
@@ -85,7 +87,7 @@ class McodeMemoryStorage:
             bool: True if stored successfully
         """
         try:
-            summary = self._create_patient_summary(patient_id, mcode_data)
+            summary = self.summarizer.create_patient_summary(mcode_data)
             self.client.ingest(summary)
             self.logger.info(
                 f"✅ Stored patient {patient_id} mCODE summary in CORE Memory"
@@ -97,194 +99,6 @@ class McodeMemoryStorage:
         except Exception as e:
             self.logger.error(f"❌ Unexpected error storing patient {patient_id}: {e}")
             return False
-
-    def _create_trial_summary(self, trial_id: str, mcode_data: Dict[str, Any]) -> str:
-        """
-        Create a natural language summary of trial mCODE data.
-
-        Preserves mCODE structure and codes for later analysis.
-
-        Args:
-            trial_id: Clinical trial identifier
-            mcode_data: Processed mCODE mappings and metadata
-
-        Returns:
-            str: Natural language summary with embedded mCODE codes
-        """
-        mappings = mcode_data.get("mcode_mappings", [])
-        metadata = mcode_data.get("metadata", {})
-
-        # Extract key trial information
-        brief_title = metadata.get("brief_title", "Unknown Trial")
-        sponsor = metadata.get("sponsor", "Unknown Sponsor")
-
-        summary_parts = [
-            f"Clinical Trial {trial_id}: '{brief_title}' sponsored by {sponsor}."
-        ]
-
-        # Add mCODE mappings as structured natural language
-        if mappings:
-            summary_parts.append("mCODE Analysis:")
-
-            # Group mappings by category for better readability
-            categories = self._categorize_mappings(mappings)
-
-            for category, category_mappings in categories.items():
-                if category_mappings:
-                    summary_parts.append(f"{category}:")
-                    for mapping in category_mappings:
-                        element = mapping.get("mcode_element", "")
-                        value = mapping.get("value", "")
-                        code_info = self._extract_code_info(mapping)
-
-                        if value and value != "N/A":
-                            summary_parts.append(f"  - {element}: {value} {code_info}")
-
-        return " ".join(summary_parts)
-
-    def _create_patient_summary(
-        self, patient_id: str, mcode_data: Dict[str, Any]
-    ) -> str:
-        """
-        Create a natural language summary of patient mCODE data.
-
-        Preserves mCODE structure and codes for later analysis.
-
-        Args:
-            patient_id: Patient identifier
-            mcode_data: Processed mCODE mappings and metadata
-
-        Returns:
-            str: Natural language summary with embedded mCODE codes
-        """
-        demographics = mcode_data.get("demographics", {})
-        mappings = mcode_data.get("mcode_mappings", [])
-
-        # Basic patient information - avoid duplication
-        name = demographics.get("name", patient_id)
-        age = demographics.get("age", "Unknown")
-        gender = demographics.get("gender", "Unknown")
-
-        # Extract gender from mCODE mappings if not in demographics
-        if gender == "Unknown":
-            for mapping in mappings:
-                if mapping.get("mcode_element") == "PatientSex":
-                    gender = mapping.get("value", "Unknown")
-                    break
-
-        summary_parts = [
-            f"Patient {name} (ID: {patient_id}), {age} years old, {gender}."
-        ]
-
-        # Add mCODE mappings
-        if mappings:
-            summary_parts.append("mCODE Profile:")
-
-            categories = self._categorize_mappings(mappings)
-
-            for category, category_mappings in categories.items():
-                if category_mappings:
-                    summary_parts.append(f"{category}:")
-                    for mapping in category_mappings:
-                        element = mapping.get("mcode_element", "")
-                        value = mapping.get("value", "")
-                        code_info = self._extract_code_info(mapping)
-
-                        if value and value != "N/A":
-                            summary_parts.append(f"  - {element}: {value} {code_info}")
-
-            # Add demographics from mappings if not already included
-            demo_mappings = [m for m in mappings if m.get("mcode_element") in ["PatientSex", "Race", "Ethnicity"]]
-            if demo_mappings:
-                summary_parts.append("Demographics:")
-                for mapping in demo_mappings:
-                    element = mapping.get("mcode_element", "")
-                    value = mapping.get("value", "")
-                    code_info = self._extract_code_info(mapping)
-                    if value and value != "N/A":
-                        summary_parts.append(f"  - {element}: {value} {code_info}")
-
-        return " ".join(summary_parts)
-
-    def _categorize_mappings(
-        self, mappings: List[Dict[str, Any]]
-    ) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        Categorize mCODE mappings for better summary organization.
-
-        Args:
-            mappings: List of mCODE mappings
-
-        Returns:
-            Dict grouped by category
-        """
-        categories = {
-            "Cancer Characteristics": [],
-            "Biomarkers": [],
-            "Treatments": [],
-            "Demographics": [],
-            "Other": [],
-        }
-
-        for mapping in mappings:
-            element = mapping.get("mcode_element", "")
-
-            if element in [
-                "CancerCondition",
-                "TNMStage",
-                "HistologyMorphologyBehavior",
-            ]:
-                categories["Cancer Characteristics"].append(mapping)
-            elif element in [
-                "ERReceptorStatus",
-                "HER2ReceptorStatus",
-                "TumorMarkerTest",
-            ]:
-                categories["Biomarkers"].append(mapping)
-            elif element in ["CancerTreatment", "CancerRelatedMedication"]:
-                categories["Treatments"].append(mapping)
-            elif element in ["PatientSex", "PatientAge", "Race", "Ethnicity"]:
-                categories["Demographics"].append(mapping)
-            else:
-                categories["Other"].append(mapping)
-
-        return categories
-
-    def _extract_code_info(self, mapping: Dict[str, Any]) -> str:
-        """
-        Extract code information from mCODE mapping for inclusion in summary.
-
-        Args:
-            mapping: Individual mCODE mapping
-
-        Returns:
-            str: Formatted code information
-        """
-        # Look for code information in the mapping
-        # This preserves the structured codes for later analysis
-        code_parts = []
-
-        # Check for system and code
-        system = mapping.get("system")
-        code = mapping.get("code")
-
-        if system and code:
-            # Format as [SYSTEM:CODE]
-            if "snomed" in system.lower():
-                code_parts.append(f"[SNOMED:{code}]")
-            elif "loinc" in system.lower():
-                code_parts.append(f"[LOINC:{code}]")
-            elif "icd" in system.lower():
-                code_parts.append(f"[ICD:{code}]")
-            else:
-                code_parts.append(f"[{system}:{code}]")
-
-        # Add interpretation if available
-        interpretation = mapping.get("interpretation")
-        if interpretation and interpretation != mapping.get("value"):
-            code_parts.append(f"({interpretation})")
-
-        return " ".join(code_parts) if code_parts else ""
 
     def search_similar_trials(self, query: str, limit: int = 10) -> Dict[str, Any]:
         """
