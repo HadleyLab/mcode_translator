@@ -12,7 +12,7 @@ from src.pipeline import McodePipeline
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.api_manager import APIManager
 from src.utils.logging_config import get_logger
-from generate_trial_summary import generate_trial_summary
+from src.services.summarizer import McodeSummarizer
 
 from .base_workflow import ProcessorWorkflow, WorkflowResult
 from src.shared.models import enhance_trial_with_mcode_results
@@ -767,10 +767,11 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
     def _generate_trial_natural_language_summary(
         self, trial_id: str, mcode_elements: Dict[str, Any], trial_data: Dict[str, Any]
     ) -> str:
-        """Generate comprehensive natural language summary for clinical trial using the dedicated summary generator."""
+        """Generate comprehensive natural language summary for clinical trial using McodeSummarizer."""
         try:
-            # Use the dedicated trial summary generator
-            summary = generate_trial_summary(trial_data)
+            # Use the McodeSummarizer service
+            summarizer = McodeSummarizer(include_dates=True)
+            summary = summarizer.create_trial_summary(trial_data)
             self.logger.info(f"Generated comprehensive trial summary for {trial_id}: {summary[:200]}...")
             self.logger.debug(f"Full trial summary length: {len(summary)} characters")
             return summary

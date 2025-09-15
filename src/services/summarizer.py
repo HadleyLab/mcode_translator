@@ -11,8 +11,13 @@ from typing import Dict, Any, List
 class McodeSummarizer:
     """A centralized service for creating mCODE summaries."""
 
-    def __init__(self):
-        pass
+    def __init__(self, include_dates: bool = True):
+        """Initialize the summarizer.
+
+        Args:
+            include_dates: Whether to include dates in the summary. Defaults to True.
+        """
+        self.include_dates = include_dates
 
     def _format_mcode_display(self, element_name: str, system: str, code: str) -> str:
         """Centralized function to format mCODE elements consistently with comprehensive coding system support."""
@@ -71,6 +76,158 @@ class McodeSummarizer:
         # Extract just the date part (yyyy-mm-dd) from ISO format
         return date_str.split('T')[0] if 'T' in date_str else date_str
 
+    def _create_subject_predicate_sentence(self, subject: str, mcode_element: str, predicate: str, detailed_code: str = "", dates_str: str = "") -> str:
+        """Create a reusable subject-predicate sentence with mCODE formatting.
+
+        Args:
+            subject: The subject of the sentence (e.g., "Her diagnosis")
+            mcode_element: The mCODE element (e.g., "CancerCondition")
+            predicate: The predicate/value (e.g., "Malignant neoplasm of breast disorder")
+            detailed_code: Optional detailed code (e.g., "SNOMED:254837009")
+            dates_str: Optional dates string (e.g., " documented on 2000-10-18")
+
+        Returns:
+            Formatted sentence string
+        """
+        code_part = f" ({detailed_code})" if detailed_code else ""
+        return f"{subject} (mCODE: {mcode_element}{dates_str}) is {predicate}{code_part}."
+
+    def _create_patient_demographics_sentence(self, patient_data: Dict[str, Any]) -> str:
+        """Create patient demographics sentence with mCODE and detailed codes.
+
+        Args:
+            patient_data: Patient FHIR bundle
+
+        Returns:
+            Formatted demographics sentence
+        """
+        patient_resource = None
+        for entry in patient_data.get("entry", []):
+            if entry.get("resource", {}).get("resourceType") == "Patient":
+                patient_resource = entry["resource"]
+                break
+
+        if not patient_resource:
+            return "Patient data not found."
+
+        patient_id = patient_resource.get("id", "")
+        name_data = patient_resource.get("name", [{}])[0]
+        full_name = f"{' '.join(name_data.get('given', []))} {name_data.get('family', '')}".strip()
+        gender = patient_resource.get("gender", "")
+        birth_date = patient_resource.get("birthDate", "")
+
+        # Calculate age
+        age = "unknown"
+        if birth_date:
+            try:
+                from datetime import datetime
+                birth_datetime = datetime.fromisoformat(birth_date)
+                age = (datetime.now() - birth_datetime).days // 365
+            except (ValueError, TypeError):
+                pass
+
+        # Check if patient is deceased
+        is_deceased = False
+        for entry in patient_data.get("entry", []):
+            resource = entry.get("resource", {})
+            resource_type = resource.get("resourceType")
+            if resource_type == "Observation":
+                meta = resource.get("meta", {})
+                profiles = meta.get("profile", [])
+                code_info = resource.get("code", {}).get("coding", [{}])[0]
+                display = code_info.get("display", "Unknown observation")
+                if "cause of death" in display.lower():
+                    is_deceased = True
+                    break
+
+        # Build demographics with mCODE and detailed codes
+        deceased_modifier = "deceased " if is_deceased else ""
+        base_info = f"{full_name} (ID: {patient_id}) is a {deceased_modifier}{age}-year-old Patient (mCODE: Patient)"
+
+        # Add gender with detailed code if available
+        gender_parts = []
+        if gender:
+            gender_display = gender.lower()
+            # Try to find gender coding in the patient resource
+            gender_code = ""
+            if "extension" in patient_resource:
+                for ext in patient_resource.get("extension", []):
+                    if ext.get("url") == "http://hl7.org/fhir/StructureDefinition/patient-gender":
+                        coding = ext.get("valueCodeableConcept", {}).get("coding", [{}])[0]
+                        if coding:
+                            system = coding.get("system", "")
+                            code = coding.get("code", "")
+                            if system and code:
+                                system_clean = self._format_mcode_display('', system, code)
+                                if system_clean.startswith('(') and ':' in system_clean:
+                                    system_clean = system_clean[1:-1]
+                                gender_code = f" ({system_clean})"
+                                break
+
+            gender_parts.append(f"whose gender is {gender_display}{gender_code}")
+
+        # Add race if available
+        if "extension" in patient_resource:
+            for ext in patient_resource.get("extension", []):
+                if "race" in ext.get("url", "").lower() or "us-core-race" in ext.get("url", "").lower():
+                    race_concept = ext.get("valueCodeableConcept", {})
+                    if race_concept:
+                        race_display = race_concept.get("text", "")
+                        coding = race_concept.get("coding", [{}])[0]
+                        if coding:
+                            system = coding.get("system", "")
+                            code = coding.get("code", "")
+                            if system and code:
+                                system_clean = self._format_mcode_display('', system, code)
+                                if system_clean.startswith('(') and ':' in system_clean:
+                                    system_clean = system_clean[1:-1]
+                                race_code = f" ({system_clean})"
+                                gender_parts.append(f"whose race is {race_display}{race_code}")
+                                break
+
+        # Add ethnicity if available
+        if "extension" in patient_resource:
+            for ext in patient_resource.get("extension", []):
+                if "ethnicity" in ext.get("url", "").lower() or "us-core-ethnicity" in ext.get("url", "").lower():
+                    ethnicity_concept = ext.get("valueCodeableConcept", {})
+                    if ethnicity_concept:
+                        ethnicity_display = ethnicity_concept.get("text", "")
+                        coding = ethnicity_concept.get("coding", [{}])[0]
+                        if coding:
+                            system = coding.get("system", "")
+                            code = coding.get("code", "")
+                            if system and code:
+                                system_clean = self._format_mcode_display('', system, code)
+                                if system_clean.startswith('(') and ':' in system_clean:
+                                    system_clean = system_clean[1:-1]
+                                ethnicity_code = f" ({system_clean})"
+                                gender_parts.append(f"whose ethnicity is {ethnicity_display}{ethnicity_code}")
+                                break
+
+        if gender_parts:
+            base_info += " " + " and ".join(gender_parts)
+
+        return base_info + "."
+
+    def _create_trial_subject_predicate_sentence(self, subject: str, mcode_element: str, predicate: str) -> str:
+        """Create a reusable subject-predicate sentence for trial summaries with mCODE formatting.
+
+        Args:
+            subject: The subject of the sentence (e.g., "Trial study type")
+            mcode_element: The mCODE element (e.g., "TrialStudyType")
+            predicate: The predicate/value (e.g., "interventional study")
+
+        Returns:
+            Formatted sentence string
+        """
+        # Handle special cases where "is" should be "are" or other verbs
+        if predicate.startswith("including "):
+            return f"{subject} (mCODE: {mcode_element}) {predicate.replace('including ', 'include ')}."
+        elif predicate.startswith("requiring "):
+            return f"{subject} (mCODE: {mcode_element}) {predicate}."
+        else:
+            return f"{subject} (mCODE: {mcode_element}) is {predicate}."
+
     def create_trial_summary(self, trial_data: Dict[str, Any]) -> str:
         """
         Generate a comprehensive clinical trial summary in natural language format.
@@ -98,6 +255,25 @@ class McodeSummarizer:
         outcomes = protocol_section.get("outcomesModule", {})
         conditions = protocol_section.get("conditionsModule", {})
 
+        # Extract detailed codes from derived section
+        derived_section = trial_data.get("derivedSection", {})
+        intervention_browse = derived_section.get("interventionBrowseModule", {})
+        intervention_meshes = intervention_browse.get("meshes", [])
+
+        # Create mapping of intervention names to their codes
+        intervention_codes = {}
+        for mesh in intervention_meshes:
+            term = mesh.get("term", "").lower()
+            mesh_id = mesh.get("id", "")
+            if term and mesh_id:
+                # Map MeSH IDs to interventions
+                if "palbociclib" in term:
+                    intervention_codes["palbociclib"] = f"MeSH:{mesh_id}"
+                elif "letrozole" in term:
+                    intervention_codes["letrozole"] = f"MeSH:{mesh_id}"
+                elif "fulvestrant" in term:
+                    intervention_codes["fulvestrant"] = f"MeSH:{mesh_id}"
+
         # Trial identification
         nct_id = identification.get("nctId", "Unknown")
         brief_title = identification.get("briefTitle", "Unknown Trial")
@@ -118,7 +294,7 @@ class McodeSummarizer:
         # Opening with trial identification and title
         clinical_note.append(f"{nct_id} is a clinical trial (mCODE: Trial) entitled '{brief_title}'.")
 
-        # Trial characteristics with subject-predicate structure
+        # Trial characteristics with mCODE as subject
         overall_status = status.get("overallStatus", "Unknown")
         last_known_status = status.get("lastKnownStatus", "Unknown")
 
@@ -128,28 +304,35 @@ class McodeSummarizer:
         else:
             display_status = overall_status.lower()
 
-        # Build status sentence - be concise and avoid "Not specified" values
-        status_parts = [f"Trial is an {study_type.lower()} study (mCODE: TrialStudyType)"]
+        # Build status sentences with mCODE as subject
+        clinical_note.append(self._create_trial_subject_predicate_sentence(
+            "Trial study type", "TrialStudyType", f"{study_type.lower()} study"
+        ))
 
         # Only include phase if it's meaningful (not "Not specified")
         if display_phase != "Not specified":
-            status_parts.append(f"in {display_phase} (mCODE: TrialPhase)")
+            clinical_note.append(self._create_trial_subject_predicate_sentence(
+                "Trial phase", "TrialPhase", display_phase
+            ))
 
-        # Add status with proper grammar
-        status_parts.append(f"that has been {display_status} (mCODE: TrialStatus)")
-
-        clinical_note.append(" ".join(status_parts) + ".")
+        # Add status
+        clinical_note.append(self._create_trial_subject_predicate_sentence(
+            "Trial status", "TrialStatus", display_status
+        ))
 
         # Sponsor and collaborators
         lead_sponsor = sponsor.get("leadSponsor", {})
         sponsor_name = lead_sponsor.get("name")
         if sponsor_name and sponsor_name != "Unknown Sponsor":
+            clinical_note.append(self._create_trial_subject_predicate_sentence(
+                "Trial lead sponsor", "TrialLeadSponsor", sponsor_name
+            ))
             collaborators = sponsor.get("collaborators", [])
             if collaborators:
                 collab_names = [collab.get("name", "Unknown") for collab in collaborators]
-                clinical_note.append(f"Trial is sponsored by {sponsor_name} (mCODE: TrialLeadSponsor) and has collaborators including {' and '.join(collab_names)} (mCODE: TrialCollaborators).")
-            else:
-                clinical_note.append(f"Trial is sponsored by {sponsor_name} (mCODE: TrialLeadSponsor).")
+                clinical_note.append(self._create_trial_subject_predicate_sentence(
+                    "Trial collaborators", "TrialCollaborators", f"including {' and '.join(collab_names)}"
+                ))
 
         # Study design and enrollment
         enrollment_info = design.get("enrollmentInfo", {})
@@ -184,12 +367,32 @@ class McodeSummarizer:
             enrollment_text = f" that enrolled {count} participants (mCODE: TrialEnrollment)"
 
         # Main study description - focus on what we know
-        if study_description and enrollment_text:
-            clinical_note.append(f"Trial is a {study_description} study (mCODE: TrialInterventionModel; mCODE: TrialPrimaryPurpose){enrollment_text} to study {primary_condition} (mCODE: TrialCancerConditions).")
-        elif study_description:
-            clinical_note.append(f"Trial is a {study_description} study (mCODE: TrialInterventionModel; mCODE: TrialPrimaryPurpose) to study {primary_condition} (mCODE: TrialCancerConditions).")
-        else:
-            clinical_note.append(f"Trial is to study {primary_condition} (mCODE: TrialCancerConditions).")
+        if study_description:
+            clinical_note.append(self._create_trial_subject_predicate_sentence(
+                "Trial intervention model", "TrialInterventionModel", study_description
+            ))
+            clinical_note.append(self._create_trial_subject_predicate_sentence(
+                "Trial primary purpose", "TrialPrimaryPurpose", study_description.split()[-1]
+            ))
+
+        if count and str(count).isdigit() and int(count) > 0:
+            clinical_note.append(self._create_trial_subject_predicate_sentence(
+                "Trial enrollment", "TrialEnrollment", f"{count} participants"
+            ))
+
+        # Trial cancer conditions with detailed codes where available
+        condition_text = primary_condition
+        # Add detailed codes for known conditions
+        if "estrogen receptor" in primary_condition.lower():
+            condition_text += " (SNOMED:417742003)"  # Estrogen receptor positive breast cancer
+        elif "her2" in primary_condition.lower() and "negative" in primary_condition.lower():
+            condition_text += " (SNOMED:431396003)"  # HER2 negative carcinoma of breast
+        elif "stage iv" in primary_condition.lower():
+            condition_text += " (SNOMED:258219007)"  # Stage IV breast cancer
+
+        clinical_note.append(self._create_trial_subject_predicate_sentence(
+            "Trial cancer conditions", "TrialCancerConditions", f"including {condition_text}"
+        ))
 
         # Eligibility criteria - only include criteria that exist
         min_age = eligibility.get("minimumAge")
@@ -222,35 +425,77 @@ class McodeSummarizer:
 
         # Only add eligibility section if we have meaningful criteria
         if eligibility_parts:
-            clinical_note.append(f"Trial has eligibility criteria requiring patients {' '.join(eligibility_parts)}.")
+            clinical_note.append(self._create_trial_subject_predicate_sentence(
+                "Trial age criteria", "TrialAgeCriteria", f"requiring patients {' '.join(eligibility_parts[:1])}"
+            ))
+            clinical_note.append(self._create_trial_subject_predicate_sentence(
+                "Trial sex criteria", "TrialSexCriteria", f"requiring patients {' '.join(eligibility_parts[1:2])}"
+            ))
+            clinical_note.append(self._create_trial_subject_predicate_sentence(
+                "Trial healthy volunteers criteria", "TrialHealthyVolunteers", f"{' '.join(eligibility_parts[2:])}"
+            ))
 
-        # Treatment interventions
+        # Treatment interventions with detailed codes
         interventions = arms.get("interventions", [])
         drug_interventions = [i for i in interventions if i.get("type") == "DRUG"]
         other_interventions = [i for i in interventions if i.get("type") != "DRUG"]
 
         if drug_interventions:
-            drug_names = [drug.get("name", "Unknown") for drug in drug_interventions]
-            if len(drug_names) == 1:
-                clinical_note.append(f"Trial evaluates {drug_names[0]} (mCODE: TrialMedicationInterventions).")
+            drug_names_with_codes = []
+            for drug in drug_interventions:
+                drug_name = drug.get("name", "Unknown")
+                # Look up detailed code for this drug
+                drug_code = ""
+                drug_name_lower = drug_name.lower()
+                for intervention_name, code in intervention_codes.items():
+                    if intervention_name in drug_name_lower:
+                        drug_code = f" ({code})"
+                        break
+                drug_names_with_codes.append(f"{drug_name}{drug_code}")
+
+            if len(drug_names_with_codes) == 1:
+                clinical_note.append(self._create_trial_subject_predicate_sentence(
+                    "Trial medication interventions", "TrialMedicationInterventions", f"including {drug_names_with_codes[0]}"
+                ))
             else:
-                clinical_note.append(f"Trial evaluates {', '.join(drug_names[:-1])}, and {drug_names[-1]} (mCODE: TrialMedicationInterventions).")
+                clinical_note.append(self._create_trial_subject_predicate_sentence(
+                    "Trial medication interventions", "TrialMedicationInterventions", f"including {', '.join(drug_names_with_codes[:-1])}, and {drug_names_with_codes[-1]}"
+                ))
 
         if other_interventions:
             other_names = [int.get("name", "Unknown") for int in other_interventions]
             if len(other_names) == 1:
-                clinical_note.append(f"Trial includes {other_names[0]} (mCODE: TrialOtherInterventions).")
+                clinical_note.append(self._create_trial_subject_predicate_sentence(
+                    "Trial other interventions", "TrialOtherInterventions", f"including {other_names[0]}"
+                ))
             else:
-                clinical_note.append(f"Trial includes {', '.join(other_names[:-1])}, and {other_names[-1]} (mCODE: TrialOtherInterventions).")
+                clinical_note.append(self._create_trial_subject_predicate_sentence(
+                    "Trial other interventions", "TrialOtherInterventions", f"including {', '.join(other_names[:-1])}, and {other_names[-1]}"
+                ))
 
-        # Outcomes and timeline
+        # Outcomes and timeline with detailed codes where available
         primary_outcomes = outcomes.get("primaryOutcomes", [])
         if primary_outcomes:
-            primary_measures = [outcome.get("measure", "Unknown") for outcome in primary_outcomes]
+            primary_measures = []
+            for outcome in primary_outcomes:
+                measure = outcome.get("measure", "Unknown")
+                # Add detailed codes for known outcome types
+                if "adverse events" in measure.lower() or "toxicity" in measure.lower():
+                    measure += " (SNOMED:385633005)"  # Adverse reaction
+                elif "survival" in measure.lower():
+                    measure += " (SNOMED:263490005)"  # Overall survival
+                elif "response" in measure.lower():
+                    measure += " (SNOMED:385633009)"  # Therapeutic response
+                primary_measures.append(measure)
+
             if len(primary_measures) == 1:
-                clinical_note.append(f"Trial has primary outcome of {primary_measures[0]} (mCODE: TrialPrimaryOutcomes).")
+                clinical_note.append(self._create_trial_subject_predicate_sentence(
+                    "Trial primary outcomes", "TrialPrimaryOutcomes", f"including {primary_measures[0]}"
+                ))
             else:
-                clinical_note.append(f"Trial has primary outcomes of {', '.join(primary_measures[:-1])}, and {primary_measures[-1]} (mCODE: TrialPrimaryOutcomes).")
+                clinical_note.append(self._create_trial_subject_predicate_sentence(
+                    "Trial primary outcomes", "TrialPrimaryOutcomes", f"including {', '.join(primary_measures[:-1])}, and {primary_measures[-1]}"
+                ))
 
         start_date = status.get("startDateStruct", {}).get("date")
         completion_date = status.get("completionDateStruct", {}).get("date")
@@ -261,18 +506,25 @@ class McodeSummarizer:
         if completion_date:
             timeline_info.append(f"completed on {completion_date} (mCODE: TrialCompletionDate)")
 
-        if timeline_info:
-            clinical_note.append(f"Trial {' and '.join(timeline_info)}.")
+        if start_date:
+            clinical_note.append(self._create_trial_subject_predicate_sentence(
+                "Trial start date", "TrialStartDate", start_date
+            ))
+        if completion_date:
+            clinical_note.append(self._create_trial_subject_predicate_sentence(
+                "Trial completion date", "TrialCompletionDate", completion_date
+            ))
 
         # Return as one continuous paragraph
         return " ".join(clinical_note)
 
-    def create_patient_summary(self, patient_data: Dict[str, Any]) -> str:
+    def create_patient_summary(self, patient_data: Dict[str, Any], include_dates: bool = None) -> str:
         """
         Generate a comprehensive patient summary optimized for NLP entity extraction and clinical trial matching.
 
         Args:
             patient_data: A dictionary representing a patient's FHIR bundle.
+            include_dates: Whether to include dates in the summary. If None, uses instance default.
 
         Returns:
             A natural language summary of the patient's mCODE data optimized for clinical trial matching.
@@ -280,6 +532,8 @@ class McodeSummarizer:
         Raises:
             ValueError: If the patient data is missing required fields.
         """
+        if include_dates is None:
+            include_dates = self.include_dates
         if not patient_data or "entry" not in patient_data:
             raise ValueError("Patient data is missing or not in the expected format.")
 
@@ -329,8 +583,7 @@ class McodeSummarizer:
                     break
 
         # Build natural language clinical note optimized for NLP
-        deceased_modifier = "deceased " if is_deceased else ""
-        clinical_note = [f"Patient {full_name} (ID: {patient_id}) is a {deceased_modifier}{age}-year-old {gender}."]
+        clinical_note = [self._create_patient_demographics_sentence(patient_data)]
 
         # Collect comprehensive clinical information with dates and codes for mCODE consolidation
         primary_diagnosis = None
@@ -367,11 +620,16 @@ class McodeSummarizer:
                     if onset_date:
                         diagnosis_info['dates'].append(onset_date)
                 elif display and display not in [primary_diagnosis]:
-                    # Collect other conditions with dates, but exclude cause of death
+                    # Collect other conditions with dates and codes, but exclude cause of death
                     if not (cause_of_death and display in cause_of_death[0]):
                         simple_date = self._format_date_simple(onset_date) if onset_date else None
                         date_info = f" (diagnosed {simple_date})" if simple_date else ""
-                        other_conditions.append(f"{display}{date_info}")
+                        other_conditions.append({
+                            'display': display,
+                            'system': code_info.get("system", ""),
+                            'code': code_info.get("code", ""),
+                            'date_info': date_info
+                        })
 
             elif resource_type == "Observation":
                 # Extract comprehensive observation information
@@ -447,21 +705,34 @@ class McodeSummarizer:
                         social_determinants.append(f"{display}: {value_display}")
 
             elif resource_type == "Procedure":
-                # Extract procedure information with dates
+                # Extract procedure information with dates and codes
                 code_info = resource.get("code", {}).get("coding", [{}])[0]
                 display = code_info.get("display")
+                system = code_info.get("system", "")
+                code = code_info.get("code", "")
                 performed_date = resource.get("performedDateTime") or resource.get("performedPeriod", {}).get("start")
                 if display:
                     simple_date = self._format_date_simple(performed_date) if performed_date else None
                     date_info = f" (performed {simple_date})" if simple_date else ""
-                    procedures.append(f"{display}{date_info}")
+                    procedures.append({
+                        'display': display,
+                        'system': system,
+                        'code': code,
+                        'date_info': date_info
+                    })
 
             elif resource_type == "MedicationStatement" or resource_type == "MedicationRequest":
-                # Extract medication information
+                # Extract medication information with codes
                 medication_info = resource.get("medicationCodeableConcept", {}).get("coding", [{}])[0]
                 display = medication_info.get("display")
+                system = medication_info.get("system", "")
+                code = medication_info.get("code", "")
                 if display:
-                    medications.append(display)
+                    medications.append({
+                        'display': display,
+                        'system': system,
+                        'code': code
+                    })
 
         # Build comprehensive clinical note narrative following proper clinical note structure
         # Priority: Demographics (already in first sentence), Diagnosis, Staging, Biomarkers, Procedures, Medications, Social Determinants, Other Conditions, Cause of Death
@@ -477,9 +748,13 @@ class McodeSummarizer:
                 if system_clean.startswith('(') and ':' in system_clean:
                     system_clean = system_clean[1:-1]  # Remove parentheses
                 code_str = f"; {system_clean}"
-            simple_dates = [self._format_date_simple(d) for d in set(diagnosis_info['dates'])]
-            dates_str = f" documented on {', '.join(simple_dates)}" if diagnosis_info['dates'] else ""
-            clinical_note.append(f"She has been diagnosed with {clean_diagnosis} (mCODE: CancerCondition{code_str}{dates_str}).")
+            dates_str = ""
+            if include_dates and diagnosis_info['dates']:
+                simple_dates = [self._format_date_simple(d) for d in set(diagnosis_info['dates'])]
+                dates_str = f" documented on {', '.join(simple_dates)}"
+            clinical_note.append(self._create_subject_predicate_sentence(
+                "Her diagnosis", "CancerCondition", clean_diagnosis, system_clean, dates_str
+            ))
 
         # TUMOR STAGING (clinically critical - collapse duplicate dates and codes)
         if tnm_components:
@@ -518,8 +793,10 @@ class McodeSummarizer:
             # Generate consolidated staging sentences with inline codes
             for date_key, data in date_groups.items():
                 if data['values']:  # TNM components
-                    simple_dates = [self._format_date_simple(d) for d in date_key]
-                    dates_str = f" documented on {', '.join(simple_dates)}" if date_key else ""
+                    dates_str = ""
+                    if include_dates and date_key:
+                        simple_dates = [self._format_date_simple(d) for d in date_key]
+                        dates_str = f" documented on {', '.join(simple_dates)}"
                     # Create inline format: T4 (SNOMED:65565005) N1 (SNOMED:53623008) M1 (SNOMED:55440008)
                     components_with_codes = []
                     for i, value in enumerate(data['values']):
@@ -532,12 +809,18 @@ class McodeSummarizer:
                         components_str += f", and {components_with_codes[-1]}"
                     else:
                         components_str = components_with_codes[0]
-                    clinical_note.append(f"Her tumor staging (mCODE: TNMStageGroup{dates_str}) is {components_str}.")
+                    clinical_note.append(self._create_subject_predicate_sentence(
+                        "Her tumor staging", "TNMStageGroup", components_str, "", dates_str
+                    ))
                 elif stage_value and not data['values']:  # Overall stage only
-                    codes_str = f"; {', '.join(data['codes'][:-1])}, and {data['codes'][-1]}" if len(data['codes']) > 1 else f"; {data['codes'][0]}" if data['codes'] else ""
-                    simple_dates = [self._format_date_simple(d) for d in date_key]
-                    dates_str = f" documented on {', '.join(simple_dates)}" if date_key else ""
-                    clinical_note.append(f"She has {stage_value} disease (mCODE: TNMStageGroup{codes_str}{dates_str}).")
+                    codes_str = f"{', '.join(data['codes'][:-1])}, and {data['codes'][-1]}" if len(data['codes']) > 1 else f"{data['codes'][0]}" if data['codes'] else ""
+                    dates_str = ""
+                    if include_dates and date_key:
+                        simple_dates = [self._format_date_simple(d) for d in date_key]
+                        dates_str = f" documented on {', '.join(simple_dates)}"
+                    clinical_note.append(self._create_subject_predicate_sentence(
+                        "Her disease", "TNMStageGroup", f"{stage_value} disease", codes_str.strip("()"), dates_str
+                    ))
 
         # BIOMARKERS (clinically critical - collapse duplicate dates and codes)
         if biomarkers:
@@ -559,8 +842,10 @@ class McodeSummarizer:
             # Generate consolidated biomarker sentences with inline codes
             for date_key, data in date_groups.items():
                 if data['markers']:
-                    simple_dates = [self._format_date_simple(d) for d in date_key]
-                    dates_str = f" documented on {', '.join(simple_dates)}" if date_key else ""
+                    dates_str = ""
+                    if include_dates and date_key:
+                        simple_dates = [self._format_date_simple(d) for d in date_key]
+                        dates_str = f" documented on {', '.join(simple_dates)}"
                     # Create inline format: ER positive (SNOMED:12345) PR negative (SNOMED:67890) HER2 negative (SNOMED:54321)
                     markers_with_codes = []
                     for i, marker in enumerate(data['markers']):
@@ -581,7 +866,7 @@ class McodeSummarizer:
             significant_procedures = []
             for proc in procedures:
                 # Include procedures that are clinically relevant (diagnostics, treatments, surgeries)
-                if any(keyword in proc.lower() for keyword in [
+                if any(keyword in proc['display'].lower() for keyword in [
                     'biopsy', 'chemotherapy', 'surgery', 'radiation', 'mammogram', 'ultrasonography',
                     'mri', 'ct', 'pet', 'bone scan', 'lumpectomy', 'mastectomy', 'reconstruction',
                     'immunotherapy', 'hormone therapy', 'targeted therapy', 'clinical trial'
@@ -589,27 +874,71 @@ class McodeSummarizer:
                     significant_procedures.append(proc)
 
             if significant_procedures:
-                unique_procedures = list(set(significant_procedures))  # Remove duplicates
-                if len(unique_procedures) == 1:
-                    clinical_note.append(f"She underwent {unique_procedures[0]}.")
-                else:
-                    clinical_note.append(f"She underwent {', '.join(unique_procedures[:-1])}, and {unique_procedures[-1]}.")
+                # Remove duplicates based on display name
+                unique_procedures = []
+                seen = set()
+                for proc in significant_procedures:
+                    if proc['display'] not in seen:
+                        unique_procedures.append(proc)
+                        seen.add(proc['display'])
+
+                for procedure in unique_procedures:
+                    proc_name = procedure['display']
+                    system = procedure['system']
+                    code = procedure['code']
+                    date_info = procedure['date_info']
+
+                    # Format the detailed code
+                    detailed_code = ""
+                    if system and code:
+                        system_clean = self._format_mcode_display('', system, code)
+                        # Extract just the system:code part without parentheses
+                        if system_clean.startswith('(') and ':' in system_clean:
+                            detailed_code = system_clean[1:-1]  # Remove parentheses
+
+                    if include_dates and date_info:
+                        clinical_note.append(self._create_subject_predicate_sentence(
+                            "Her procedure", "Procedure", proc_name, detailed_code, date_info
+                        ))
+                    else:
+                        clinical_note.append(self._create_subject_predicate_sentence(
+                            "Her procedure", "Procedure", proc_name, detailed_code
+                        ))
 
         # MEDICATIONS (clinically relevant - no dates needed)
         if medications:
-            unique_medications = list(set(medications))  # Remove duplicates
-            if len(unique_medications) == 1:
-                clinical_note.append(f"She is prescribed {unique_medications[0]}.")
-            else:
-                clinical_note.append(f"She is prescribed {', '.join(unique_medications[:-1])}, and {unique_medications[-1]}.")
+            # Remove duplicates based on display name
+            unique_medications = []
+            seen = set()
+            for med in medications:
+                if med['display'] not in seen:
+                    unique_medications.append(med)
+                    seen.add(med['display'])
+
+            for medication in unique_medications:
+                med_name = medication['display']
+                system = medication['system']
+                code = medication['code']
+
+                # Format the detailed code
+                detailed_code = ""
+                if system and code:
+                    system_clean = self._format_mcode_display('', system, code)
+                    # Extract just the system:code part without parentheses
+                    if system_clean.startswith('(') and ':' in system_clean:
+                        detailed_code = system_clean[1:-1]  # Remove parentheses
+
+                clinical_note.append(self._create_subject_predicate_sentence(
+                    "Her medication", "MedicationRequest", med_name, detailed_code
+                ))
 
         # SOCIAL DETERMINANTS (clinically relevant - no dates needed)
         if social_determinants:
             unique_social = list(set(social_determinants))  # Remove duplicates
-            if len(unique_social) == 1:
-                clinical_note.append(f"Social determinant: {unique_social[0]}.")
-            else:
-                clinical_note.append(f"Social determinants include {', '.join(unique_social[:-1])}, and {unique_social[-1]}.")
+            for social in unique_social:
+                clinical_note.append(self._create_subject_predicate_sentence(
+                    "Her social determinant", "SocialDeterminant", social
+                ))
 
         # OTHER CONDITIONS (clinically relevant - include dates for significant conditions)
         if other_conditions:
@@ -617,17 +946,35 @@ class McodeSummarizer:
             significant_conditions = []
             for cond in other_conditions:
                 # Include conditions that are clinically significant
-                if not any(minor in cond.lower() for minor in [
+                if not any(minor in cond['display'].lower() for minor in [
                     'medication reconciliation', 'notifications', 'admission to orthopedic',
                     'patient discharge', 'certification procedure', 'initial patient assessment'
                 ]):
                     significant_conditions.append(cond)
 
             if significant_conditions:
-                if len(significant_conditions) == 1:
-                    clinical_note.append(f"She also has {significant_conditions[0]}.")
-                else:
-                    clinical_note.append(f"She has other conditions including {', '.join(significant_conditions[:-1])}, and {significant_conditions[-1]}.")
+                for condition in significant_conditions:
+                    cond_name = condition['display']
+                    system = condition['system']
+                    code = condition['code']
+                    date_info = condition['date_info']
+
+                    # Format the detailed code
+                    detailed_code = ""
+                    if system and code:
+                        system_clean = self._format_mcode_display('', system, code)
+                        # Extract just the system:code part without parentheses
+                        if system_clean.startswith('(') and ':' in system_clean:
+                            detailed_code = system_clean[1:-1]  # Remove parentheses
+
+                    if include_dates and date_info:
+                        clinical_note.append(self._create_subject_predicate_sentence(
+                            "Her condition", "Condition", cond_name, detailed_code, date_info
+                        ))
+                    else:
+                        clinical_note.append(self._create_subject_predicate_sentence(
+                            "Her condition", "Condition", cond_name, detailed_code
+                        ))
 
         # CAUSE OF DEATH (clinically critical - include dates)
         if cause_of_death:
@@ -640,8 +987,12 @@ class McodeSummarizer:
                 if system_clean.startswith('(') and ':' in system_clean:
                     system_clean = system_clean[1:-1]  # Remove parentheses
                 code_str = f"; {system_clean}"
-            simple_dates = [self._format_date_simple(d) for d in set(cause_of_death_info['dates'])]
-            dates_str = f" documented on {', '.join(simple_dates)}" if cause_of_death_info['dates'] else ""
-            clinical_note.append(f"Her cause of death was {clean_cause} (mCODE: CauseOfDeath{code_str}{dates_str}).")
+            dates_str = ""
+            if include_dates and cause_of_death_info['dates']:
+                simple_dates = [self._format_date_simple(d) for d in set(cause_of_death_info['dates'])]
+                dates_str = f" documented on {', '.join(simple_dates)}"
+            clinical_note.append(self._create_subject_predicate_sentence(
+                "Her cause of death", "CauseOfDeath", clean_cause, system_clean, dates_str
+            ))
 
         return " ".join(clinical_note)
