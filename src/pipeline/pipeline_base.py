@@ -27,7 +27,9 @@ class ProcessingPipeline(ABC):
         """
         pass
 
-    def process_clinical_trial_validated(self, trial_data: ClinicalTrialData) -> PipelineResult:
+    def process_clinical_trial_validated(
+        self, trial_data: ClinicalTrialData
+    ) -> PipelineResult:
         """
         Process validated clinical trial data through the pipeline.
 

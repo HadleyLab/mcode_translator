@@ -20,13 +20,15 @@ def standardize_features(features: List[Dict[str, Any]]) -> List[Dict[str, Any]]
     """
     standardized = []
     for feature in features:
-        standardized.append({
-            "type": feature.get("type", "unknown"),
-            "value": feature.get("value", ""),
-            "confidence": feature.get("confidence", 0.0),
-            "source": feature.get("source", "nlp"),
-            "normalized": feature.get("normalized", feature.get("value", ""))
-        })
+        standardized.append(
+            {
+                "type": feature.get("type", "unknown"),
+                "value": feature.get("value", ""),
+                "confidence": feature.get("confidence", 0.0),
+                "source": feature.get("source", "nlp"),
+                "normalized": feature.get("normalized", feature.get("value", "")),
+            }
+        )
     return standardized
 
 
@@ -42,14 +44,16 @@ def standardize_biomarkers(biomarkers: List[Dict[str, Any]]) -> List[Dict[str, A
     """
     standardized = []
     for biomarker in biomarkers:
-        standardized.append({
-            "name": biomarker.get("name", ""),
-            "value": biomarker.get("value", ""),
-            "type": biomarker.get("type", "biomarker"),
-            "status": biomarker.get("status", "unknown"),
-            "confidence": biomarker.get("confidence", 0.0),
-            "source": biomarker.get("source", "nlp")
-        })
+        standardized.append(
+            {
+                "name": biomarker.get("name", ""),
+                "value": biomarker.get("value", ""),
+                "type": biomarker.get("type", "biomarker"),
+                "status": biomarker.get("status", "unknown"),
+                "confidence": biomarker.get("confidence", 0.0),
+                "source": biomarker.get("source", "nlp"),
+            }
+        )
     return standardized
 
 
@@ -65,12 +69,14 @@ def standardize_variants(variants: List[Dict[str, Any]]) -> List[Dict[str, Any]]
     """
     standardized = []
     for variant in variants:
-        standardized.append({
-            "gene": variant.get("gene", ""),
-            "mutation": variant.get("mutation", ""),
-            "type": variant.get("type", "variant"),
-            "classification": variant.get("classification", "unknown"),
-            "confidence": variant.get("confidence", 0.0),
-            "source": variant.get("source", "nlp")
-        })
+        standardized.append(
+            {
+                "gene": variant.get("gene", ""),
+                "mutation": variant.get("mutation", ""),
+                "type": variant.get("type", "variant"),
+                "classification": variant.get("classification", "unknown"),
+                "confidence": variant.get("confidence", 0.0),
+                "source": variant.get("source", "nlp"),
+            }
+        )
     return standardized

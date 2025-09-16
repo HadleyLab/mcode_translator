@@ -73,7 +73,7 @@ class McodeCLI:
             "-m",
             "--model",
             default="deepseek-coder",
-            help="LLM model to use for processing (default: deepseek-coder)"
+            help="LLM model to use for processing (default: deepseek-coder)",
         )
 
         parser.add_argument(

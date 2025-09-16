@@ -31,7 +31,7 @@ def main():
 
     print(f"📄 Loading trial data from: {trial_file}")
 
-    with open(trial_file, 'r') as f:
+    with open(trial_file, "r") as f:
         trial_data = json.load(f)[0]  # Get first trial
 
     print("✅ Trial data loaded successfully")
@@ -58,7 +58,7 @@ def main():
         ("SNOMED", "SNOMED:"),
         ("MeSH", "MeSH:"),
         ("ClinicalTrials.gov", "ClinicalTrials.gov"),
-        ("mCODE", "(mCODE:")
+        ("mCODE", "(mCODE:"),
     ]
 
     for name, pattern in code_patterns:

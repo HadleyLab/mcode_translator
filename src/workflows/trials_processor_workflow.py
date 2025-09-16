@@ -9,13 +9,13 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from src.pipeline import McodePipeline
+from src.services.summarizer import McodeSummarizer
+from src.shared.models import enhance_trial_with_mcode_results
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.api_manager import APIManager
 from src.utils.logging_config import get_logger
-from src.services.summarizer import McodeSummarizer
 
 from .base_workflow import ProcessorWorkflow, WorkflowResult
-from src.shared.models import enhance_trial_with_mcode_results
 
 
 class TrialsProcessorWorkflow(ProcessorWorkflow):
@@ -65,7 +65,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             store_in_memory = kwargs.get("store_in_memory", True)
             workers = kwargs.get("workers", 0)
 
-            self.logger.info(f"Extracted parameters: trials_data={len(trials_data) if trials_data else 0}, model={model}, prompt={prompt}, store_in_memory={store_in_memory}")
+            self.logger.info(
+                f"Extracted parameters: trials_data={len(trials_data) if trials_data else 0}, model={model}, prompt={prompt}, store_in_memory={store_in_memory}"
+            )
 
             if not trials_data:
                 self.logger.warning("No trial data provided for processing")
@@ -77,7 +79,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             # Initialize pipeline if needed
             self.logger.info("Initializing McodePipeline...")
             if not self.pipeline:
-                self.logger.info(f"Creating McodePipeline with prompt_name={prompt}, model_name={model}")
+                self.logger.info(
+                    f"Creating McodePipeline with prompt_name={prompt}, model_name={model}"
+                )
                 try:
                     self.pipeline = McodePipeline(prompt_name=prompt, model_name=model)
                     self.logger.info("McodePipeline initialized successfully")
@@ -98,14 +102,18 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
             if workers > 0:
                 # Use concurrent processing
-                self.logger.info(f"⚡ Using concurrent processing with {workers} workers")
+                self.logger.info(
+                    f"⚡ Using concurrent processing with {workers} workers"
+                )
                 import asyncio
                 import concurrent.futures
                 from functools import partial
 
                 async def process_concurrent():
                     # Create a thread pool for CPU-bound LLM processing
-                    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+                    with concurrent.futures.ThreadPoolExecutor(
+                        max_workers=workers
+                    ) as executor:
                         loop = asyncio.get_event_loop()
 
                         # Create tasks for concurrent processing
@@ -113,7 +121,14 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                         for i, trial in enumerate(trials_data):
                             task = loop.run_in_executor(
                                 executor,
-                                partial(self._process_single_trial_sync, trial, model, prompt, store_in_memory, i + 1)
+                                partial(
+                                    self._process_single_trial_sync,
+                                    trial,
+                                    model,
+                                    prompt,
+                                    store_in_memory,
+                                    i + 1,
+                                ),
                             )
                             tasks.append(task)
 
@@ -127,7 +142,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
                         for result in results:
                             if isinstance(result, Exception):
-                                self.logger.error(f"Task failed with exception: {result}")
+                                self.logger.error(
+                                    f"Task failed with exception: {result}"
+                                )
                                 failed_count += 1
                                 # Add error trial
                                 error_trial = {"McodeProcessingError": str(result)}
@@ -142,7 +159,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
                         return processed_trials, successful_count, failed_count
 
-                processed_trials, successful_count, failed_count = asyncio.run(process_concurrent())
+                processed_trials, successful_count, failed_count = asyncio.run(
+                    process_concurrent()
+                )
 
             else:
                 # Use sequential processing
@@ -153,20 +172,32 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
                 for i, trial in enumerate(trials_data):
                     try:
-                        self.logger.info(f"🔬 Processing trial {i+1}/{len(trials_data)}")
-                        self.logger.debug(f"Trial type: {type(trial)}, keys: {trial.keys() if isinstance(trial, dict) else 'Not a dict'}")
+                        self.logger.info(
+                            f"🔬 Processing trial {i+1}/{len(trials_data)}"
+                        )
+                        self.logger.debug(
+                            f"Trial type: {type(trial)}, keys: {trial.keys() if isinstance(trial, dict) else 'Not a dict'}"
+                        )
 
                         # Debug: Check trial data integrity before processing
                         protocol_section = trial.get("protocolSection", {})
-                        identification = protocol_section.get("identificationModule", {})
-                        trial_id = identification.get('nctId', 'Unknown')
+                        identification = protocol_section.get(
+                            "identificationModule", {}
+                        )
+                        trial_id = identification.get("nctId", "Unknown")
                         self.logger.debug(f"Trial {i+1} NCT ID: {trial_id}")
-                        self.logger.debug(f"Trial {i+1} brief title: {identification.get('briefTitle', 'Unknown')}")
+                        self.logger.debug(
+                            f"Trial {i+1} brief title: {identification.get('briefTitle', 'Unknown')}"
+                        )
 
                         # Check for cached processed trial result
-                        cached_result = self._get_cached_trial_result(trial, model, prompt)
+                        cached_result = self._get_cached_trial_result(
+                            trial, model, prompt
+                        )
                         if cached_result is not None:
-                            self.logger.info(f"✅ Cache HIT for trial {trial_id} - using cached result")
+                            self.logger.info(
+                                f"✅ Cache HIT for trial {trial_id} - using cached result"
+                            )
                             processed_trials.append(cached_result)
                             successful_count += 1
                             continue
@@ -175,15 +206,21 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                         enhanced_trial = None
                         mcode_success = False
                         try:
-                            self.logger.debug(f"Starting mCODE pipeline processing for trial {i+1}")
+                            self.logger.debug(
+                                f"Starting mCODE pipeline processing for trial {i+1}"
+                            )
                             result = self.pipeline.process_clinical_trial(trial)
                             self.logger.debug(f"mCODE pipeline result: {result}")
 
                             # Add mCODE results to trial using standardized utility
-                            enhanced_trial = enhance_trial_with_mcode_results(trial, result)
+                            enhanced_trial = enhance_trial_with_mcode_results(
+                                trial, result
+                            )
                             mcode_success = True
                         except Exception as mcode_error:
-                            self.logger.warning(f"mCODE pipeline failed for trial {trial_id}: {mcode_error}")
+                            self.logger.warning(
+                                f"mCODE pipeline failed for trial {trial_id}: {mcode_error}"
+                            )
                             # Create basic enhanced trial without mCODE results
                             enhanced_trial = trial.copy()
                             enhanced_trial["McodeProcessingError"] = str(mcode_error)
@@ -192,23 +229,37 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                         self._cache_trial_result(enhanced_trial, model, prompt)
 
                         # Always generate natural language summary, regardless of mCODE success
-                        self.logger.debug(f"Generating natural language summary for trial {trial_id}")
+                        self.logger.debug(
+                            f"Generating natural language summary for trial {trial_id}"
+                        )
                         try:
                             # Extract comprehensive mCODE elements from trial data (with caching)
-                            comprehensive_mcode = self._extract_trial_mcode_elements_cached(trial)
-                            self.logger.debug(f"Extracted {len(comprehensive_mcode)} mCODE elements: {list(comprehensive_mcode.keys())}")
+                            comprehensive_mcode = (
+                                self._extract_trial_mcode_elements_cached(trial)
+                            )
+                            self.logger.debug(
+                                f"Extracted {len(comprehensive_mcode)} mCODE elements: {list(comprehensive_mcode.keys())}"
+                            )
 
                             # Create natural language summary for CORE knowledge graph (with caching)
-                            natural_language_summary = self._generate_trial_natural_language_summary_cached(
-                                trial_id, comprehensive_mcode, trial
+                            natural_language_summary = (
+                                self._generate_trial_natural_language_summary_cached(
+                                    trial_id, comprehensive_mcode, trial
+                                )
                             )
-                            self.logger.info(f"Generated comprehensive trial summary for {trial_id}: {natural_language_summary[:100]}...")
+                            self.logger.info(
+                                f"Generated comprehensive trial summary for {trial_id}: {natural_language_summary[:100]}..."
+                            )
 
                             # Add natural language summary to the enhanced trial data
                             if "McodeResults" not in enhanced_trial:
                                 enhanced_trial["McodeResults"] = {}
-                            enhanced_trial["McodeResults"]["natural_language_summary"] = natural_language_summary
-                            self.logger.debug(f"Added natural language summary to enhanced_trial McodeResults: {len(natural_language_summary)} chars")
+                            enhanced_trial["McodeResults"][
+                                "natural_language_summary"
+                            ] = natural_language_summary
+                            self.logger.debug(
+                                f"Added natural language summary to enhanced_trial McodeResults: {len(natural_language_summary)} chars"
+                            )
 
                             # Store to core memory if requested
                             if store_in_memory and self.memory_storage:
@@ -219,8 +270,13 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                                     ),
                                     "natural_language_summary": natural_language_summary,
                                     "comprehensive_mcode_elements": comprehensive_mcode,
-                                    "trial_metadata": self._extract_trial_metadata(trial),
-                                    "pipeline_results": enhanced_trial.get("McodeResults", {}),
+                                    "trial_metadata": self._extract_trial_metadata(
+                                        trial
+                                    ),
+                                    "pipeline_results": enhanced_trial.get(
+                                        "McodeResults", {}
+                                    ),
+                                    "original_trial_data": trial,  # Include original trial data for summarizer
                                 }
 
                                 success = self.memory_storage.store_trial_mcode_summary(
@@ -235,7 +291,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                                         f"❌ Failed to store trial {trial_id} mCODE summary"
                                     )
                         except Exception as summary_error:
-                            self.logger.error(f"Failed to generate summary for trial {trial_id}: {summary_error}")
+                            self.logger.error(
+                                f"Failed to generate summary for trial {trial_id}: {summary_error}"
+                            )
 
                         processed_trials.append(enhanced_trial)
                         if mcode_success:
@@ -283,7 +341,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         except Exception as e:
             return self._handle_error(e, "trials processing")
 
-    def _get_cached_trial_result(self, trial: Dict[str, Any], model: str, prompt: str) -> Optional[Dict[str, Any]]:
+    def _get_cached_trial_result(
+        self, trial: Dict[str, Any], model: str, prompt: str
+    ) -> Optional[Dict[str, Any]]:
         """Get cached processed trial result if available."""
         trial_id = self._extract_trial_id(trial)
         cache_key_data = {
@@ -291,7 +351,8 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             "trial_id": trial_id,
             "model": model,
             "prompt": prompt,
-            "trial_hash": hash(str(trial)) % 1000000  # Include trial content hash for cache invalidation
+            "trial_hash": hash(str(trial))
+            % 1000000,  # Include trial content hash for cache invalidation
         }
 
         cached_result = self.workflow_cache.get_by_key(cache_key_data)
@@ -300,7 +361,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             return cached_result
         return None
 
-    def _cache_trial_result(self, processed_trial: Dict[str, Any], model: str, prompt: str) -> None:
+    def _cache_trial_result(
+        self, processed_trial: Dict[str, Any], model: str, prompt: str
+    ) -> None:
         """Cache processed trial result."""
         trial_id = self._extract_trial_id(processed_trial)
         cache_key_data = {
@@ -308,7 +371,7 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             "trial_id": trial_id,
             "model": model,
             "prompt": prompt,
-            "trial_hash": hash(str(processed_trial)) % 1000000
+            "trial_hash": hash(str(processed_trial)) % 1000000,
         }
 
         # Convert McodeElement objects to dicts for JSON serialization
@@ -319,6 +382,7 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
     def _make_trial_serializable(self, trial: Dict[str, Any]) -> Dict[str, Any]:
         """Convert McodeElement objects to dictionaries for JSON serialization."""
         import copy
+
         serializable_trial = copy.deepcopy(trial)
 
         # Convert McodeResults if present
@@ -328,7 +392,7 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                 # Convert McodeElement objects to dicts
                 mappings = []
                 for mapping in mcode_results["mcode_mappings"]:
-                    if hasattr(mapping, 'model_dump'):  # Pydantic model
+                    if hasattr(mapping, "model_dump"):  # Pydantic model
                         mappings.append(mapping.model_dump())
                     else:  # Already a dict
                         mappings.append(mapping)
@@ -336,13 +400,15 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
         return serializable_trial
 
-    def _extract_trial_mcode_elements_cached(self, trial: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_trial_mcode_elements_cached(
+        self, trial: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Extract trial mCODE elements with caching."""
         trial_id = self._extract_trial_id(trial)
         cache_key_data = {
             "function": "mcode_extraction",
             "trial_id": trial_id,
-            "trial_hash": hash(str(trial)) % 1000000
+            "trial_hash": hash(str(trial)) % 1000000,
         }
 
         cached_result = self.mcode_cache.get_by_key(cache_key_data)
@@ -367,7 +433,7 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             "function": "natural_language_summary",
             "trial_id": trial_id,
             "mcode_hash": hash(str(mcode_elements)) % 1000000,
-            "trial_hash": hash(str(trial_data)) % 1000000
+            "trial_hash": hash(str(trial_data)) % 1000000,
         }
 
         cached_result = self.summary_cache.get_by_key(cache_key_data)
@@ -376,7 +442,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             return cached_result
 
         # Generate summary
-        summary = self._generate_trial_natural_language_summary(trial_id, mcode_elements, trial_data)
+        summary = self._generate_trial_natural_language_summary(
+            trial_id, mcode_elements, trial_data
+        )
 
         # Cache the result
         self.summary_cache.set_by_key(summary, cache_key_data)
@@ -403,25 +471,35 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         try:
             # Ensure trial is a dict
             if not isinstance(trial, dict):
-                self.logger.error(f"Trial data is not a dict: {type(trial)}")
+                self.logger.error(
+                    f"Trial data is not a dict: {type(trial)}, value: {trial}"
+                )
                 return mcode_elements
 
             protocol_section = trial.get("protocolSection", {})
             if not isinstance(protocol_section, dict):
-                self.logger.error(f"Protocol section is not a dict: {type(protocol_section)}")
+                self.logger.error(
+                    f"Protocol section is not a dict: {type(protocol_section)}, value: {protocol_section}"
+                )
                 return mcode_elements
 
-            self.logger.debug(f"Processing protocol section with keys: {list(protocol_section.keys())}")
+            self.logger.debug(
+                f"Processing protocol section with keys: {list(protocol_section.keys())}"
+            )
 
             # Extract trial identification and basic info
             identification = protocol_section.get("identificationModule", {})
             if isinstance(identification, dict):
-                mcode_elements.update(self._extract_trial_identification(identification))
+                mcode_elements.update(
+                    self._extract_trial_identification(identification)
+                )
 
             # Extract eligibility criteria in mCODE space
             eligibility = protocol_section.get("eligibilityModule", {})
             if isinstance(eligibility, dict):
-                mcode_elements.update(self._extract_trial_eligibility_mcode(eligibility))
+                mcode_elements.update(
+                    self._extract_trial_eligibility_mcode(eligibility)
+                )
 
             # Extract conditions as mCODE CancerCondition
             conditions = protocol_section.get("conditionsModule", {})
@@ -431,7 +509,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             # Extract interventions as mCODE CancerRelatedMedicationStatement
             interventions = protocol_section.get("armsInterventionsModule", {})
             if isinstance(interventions, dict):
-                mcode_elements.update(self._extract_trial_interventions_mcode(interventions))
+                mcode_elements.update(
+                    self._extract_trial_interventions_mcode(interventions)
+                )
 
             # Extract design and outcomes information
             design = protocol_section.get("designModule", {})
@@ -448,18 +528,26 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             if isinstance(sponsor, dict):
                 sponsor_elements = self._extract_trial_sponsor_mcode(sponsor)
                 mcode_elements.update(sponsor_elements)
-                self.logger.debug(f"Extracted sponsor elements: {list(sponsor_elements.keys())}")
+                self.logger.debug(
+                    f"Extracted sponsor elements: {list(sponsor_elements.keys())}"
+                )
 
         except Exception as e:
-            self.logger.error(f"Error extracting comprehensive trial mCODE elements: {e}")
+            self.logger.error(
+                f"Error extracting comprehensive trial mCODE elements: {e}"
+            )
             self.logger.debug(f"Trial data type: {type(trial)}")
             if isinstance(trial, dict):
                 self.logger.debug(f"Trial keys: {list(trial.keys())}")
 
-        self.logger.debug(f"Final mCODE elements extracted: {len(mcode_elements)} total elements")
+        self.logger.debug(
+            f"Final mCODE elements extracted: {len(mcode_elements)} total elements"
+        )
         return mcode_elements
 
-    def _extract_trial_identification(self, identification: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_trial_identification(
+        self, identification: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Extract trial identification information."""
         elements = {}
 
@@ -485,7 +573,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
         return elements
 
-    def _extract_trial_eligibility_mcode(self, eligibility: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_trial_eligibility_mcode(
+        self, eligibility: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Extract eligibility criteria in mCODE space for patient matching."""
         elements = {}
 
@@ -513,7 +603,11 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         if healthy_volunteers is not None:
             elements["TrialHealthyVolunteers"] = {
                 "allowed": healthy_volunteers,
-                "display": "Accepts healthy volunteers" if healthy_volunteers else "Does not accept healthy volunteers",
+                "display": (
+                    "Accepts healthy volunteers"
+                    if healthy_volunteers
+                    else "Does not accept healthy volunteers"
+                ),
             }
 
         # Eligibility criteria text for detailed matching
@@ -526,7 +620,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
         return elements
 
-    def _extract_trial_conditions_mcode(self, conditions: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_trial_conditions_mcode(
+        self, conditions: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Extract trial conditions as mCODE CancerCondition for matching."""
         elements = {}
 
@@ -539,22 +635,40 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                 condition_name = condition.get("name", "").lower()
 
                 # Check if it's a cancer condition
-                if any(cancer_term in condition_name for cancer_term in [
-                    "cancer", "carcinoma", "neoplasm", "tumor", "malignant", "leukemia",
-                    "lymphoma", "sarcoma", "glioma", "melanoma", "breast cancer"
-                ]):
-                    cancer_conditions.append({
-                        "system": "http://snomed.info/sct",
-                        "code": condition.get("code", "Unknown"),
-                        "display": condition.get("name", "Unknown cancer condition"),
-                        "interpretation": "Confirmed",
-                    })
+                if any(
+                    cancer_term in condition_name
+                    for cancer_term in [
+                        "cancer",
+                        "carcinoma",
+                        "neoplasm",
+                        "tumor",
+                        "malignant",
+                        "leukemia",
+                        "lymphoma",
+                        "sarcoma",
+                        "glioma",
+                        "melanoma",
+                        "breast cancer",
+                    ]
+                ):
+                    cancer_conditions.append(
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": condition.get("code", "Unknown"),
+                            "display": condition.get(
+                                "name", "Unknown cancer condition"
+                            ),
+                            "interpretation": "Confirmed",
+                        }
+                    )
                 else:
-                    comorbid_conditions.append({
-                        "system": "http://snomed.info/sct",
-                        "code": condition.get("code", "Unknown"),
-                        "display": condition.get("name", "Unknown condition"),
-                    })
+                    comorbid_conditions.append(
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": condition.get("code", "Unknown"),
+                            "display": condition.get("name", "Unknown condition"),
+                        }
+                    )
 
             if cancer_conditions:
                 elements["TrialCancerConditions"] = cancer_conditions
@@ -563,7 +677,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
         return elements
 
-    def _extract_trial_interventions_mcode(self, interventions: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_trial_interventions_mcode(
+        self, interventions: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Extract trial interventions as mCODE CancerRelatedMedicationStatement."""
         elements = {}
 
@@ -578,19 +694,23 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                 description = intervention.get("description", "")
 
                 if intervention_type in ["drug", "biological", "device"]:
-                    medication_interventions.append({
-                        "system": "http://snomed.info/sct",
-                        "code": "Unknown",  # Would need RxNorm mapping
-                        "display": intervention_name,
-                        "description": description,
-                        "interventionType": intervention_type,
-                    })
+                    medication_interventions.append(
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": "Unknown",  # Would need RxNorm mapping
+                            "display": intervention_name,
+                            "description": description,
+                            "interventionType": intervention_type,
+                        }
+                    )
                 else:
-                    other_interventions.append({
-                        "display": intervention_name,
-                        "description": description,
-                        "interventionType": intervention_type,
-                    })
+                    other_interventions.append(
+                        {
+                            "display": intervention_name,
+                            "description": description,
+                            "interventionType": intervention_type,
+                        }
+                    )
 
             if medication_interventions:
                 elements["TrialMedicationInterventions"] = medication_interventions
@@ -666,7 +786,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             }
 
         # Primary completion date
-        primary_completion_date = status.get("primaryCompletionDateStruct", {}).get("date")
+        primary_completion_date = status.get("primaryCompletionDateStruct", {}).get(
+            "date"
+        )
         if primary_completion_date:
             elements["TrialPrimaryCompletionDate"] = {
                 "date": primary_completion_date,
@@ -705,12 +827,16 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         try:
             # Ensure trial is a dict
             if not isinstance(trial, dict):
-                self.logger.error(f"Trial data is not a dict in metadata extraction: {type(trial)}")
+                self.logger.error(
+                    f"Trial data is not a dict in metadata extraction: {type(trial)}"
+                )
                 return metadata
 
             protocol_section = trial.get("protocolSection", {})
             if not isinstance(protocol_section, dict):
-                self.logger.error(f"Protocol section is not a dict in metadata extraction: {type(protocol_section)}")
+                self.logger.error(
+                    f"Protocol section is not a dict in metadata extraction: {type(protocol_section)}"
+                )
                 return metadata
 
             # Basic trial info
@@ -751,13 +877,17 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             if isinstance(conditions_module, dict):
                 conditions = conditions_module.get("conditions", [])
                 if isinstance(conditions, list):
-                    metadata["conditions"] = [c.get("name") for c in conditions if isinstance(c, dict)]
+                    metadata["conditions"] = [
+                        c.get("name") for c in conditions if isinstance(c, dict)
+                    ]
 
             interventions_module = protocol_section.get("armsInterventionsModule", {})
             if isinstance(interventions_module, dict):
                 interventions = interventions_module.get("interventions", [])
                 if isinstance(interventions, list):
-                    metadata["interventions"] = [i.get("name") for i in interventions if isinstance(i, dict)]
+                    metadata["interventions"] = [
+                        i.get("name") for i in interventions if isinstance(i, dict)
+                    ]
 
         except Exception as e:
             self.logger.error(f"Error extracting trial metadata: {e}")
@@ -772,7 +902,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             # Use the McodeSummarizer service
             summarizer = McodeSummarizer(include_dates=True)
             summary = summarizer.create_trial_summary(trial_data)
-            self.logger.info(f"Generated comprehensive trial summary for {trial_id}: {summary[:200]}...")
+            self.logger.info(
+                f"Generated comprehensive trial summary for {trial_id}: {summary[:200]}..."
+            )
             self.logger.debug(f"Full trial summary length: {len(summary)} characters")
             return summary
 
@@ -781,13 +913,17 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             self.logger.debug(f"Trial data for error: {trial_data}")
             return f"Clinical Trial {trial_id}: Error generating comprehensive summary - {str(e)}"
 
-    def _convert_trial_mcode_to_mappings_format(self, mcode_elements: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _convert_trial_mcode_to_mappings_format(
+        self, mcode_elements: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Convert trial mCODE elements to standardized mappings format for storage."""
         mappings = []
 
         try:
             for element_name, element_data in mcode_elements.items():
-                self.logger.debug(f"Converting trial element {element_name}: type={type(element_data)}, value={element_data}")
+                self.logger.debug(
+                    f"Converting trial element {element_name}: type={type(element_data)}, value={element_data}"
+                )
 
                 if isinstance(element_data, list):
                     # Handle multiple values (e.g., multiple conditions, interventions)
@@ -829,13 +965,17 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                         }
                     mappings.append(mapping)
         except Exception as e:
-            self.logger.error(f"Error converting trial mCODE elements to mappings format: {e}")
+            self.logger.error(
+                f"Error converting trial mCODE elements to mappings format: {e}"
+            )
             self.logger.debug(f"mcode_elements: {mcode_elements}")
             raise
 
         return mappings
 
-    def _format_trial_mcode_element(self, element_name: str, system: str, code: str) -> str:
+    def _format_trial_mcode_element(
+        self, element_name: str, system: str, code: str
+    ) -> str:
         """Centralized function to format trial mCODE elements consistently."""
         # Clean up system URLs to standard names
         if "snomed" in system.lower():
@@ -856,7 +996,14 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
 
         return f"(mCODE: {element_name}; {clean_system}:{code})"
 
-    def _process_single_trial_sync(self, trial: Dict[str, Any], model: str, prompt: str, store_in_memory: bool, index: int) -> tuple:
+    def _process_single_trial_sync(
+        self,
+        trial: Dict[str, Any],
+        model: str,
+        prompt: str,
+        store_in_memory: bool,
+        index: int,
+    ) -> tuple:
         """
         Process a single trial synchronously for concurrent processing.
 
@@ -876,7 +1023,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             # Check for cached processed trial result
             cached_result = self._get_cached_trial_result(trial, model, prompt)
             if cached_result is not None:
-                self.logger.info(f"✅ Cache HIT for trial {self._extract_trial_id(trial)}")
+                self.logger.info(
+                    f"✅ Cache HIT for trial {self._extract_trial_id(trial)}"
+                )
                 return cached_result, True
 
             # Try to process with mCODE pipeline
@@ -888,7 +1037,9 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                 enhanced_trial = enhance_trial_with_mcode_results(trial, result)
                 mcode_success = True
             except Exception as mcode_error:
-                self.logger.warning(f"mCODE pipeline failed for trial {self._extract_trial_id(trial)}: {mcode_error}")
+                self.logger.warning(
+                    f"mCODE pipeline failed for trial {self._extract_trial_id(trial)}: {mcode_error}"
+                )
                 # Create basic enhanced trial without mCODE results
                 enhanced_trial = trial.copy()
                 enhanced_trial["McodeProcessingError"] = str(mcode_error)
@@ -903,16 +1054,24 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                 comprehensive_mcode = self._extract_trial_mcode_elements_cached(trial)
 
                 # Create natural language summary for CORE knowledge graph (with caching)
-                natural_language_summary = self._generate_trial_natural_language_summary_cached(
-                    trial_id, comprehensive_mcode, trial
+                natural_language_summary = (
+                    self._generate_trial_natural_language_summary_cached(
+                        trial_id, comprehensive_mcode, trial
+                    )
                 )
-                self.logger.info(f"Generated comprehensive trial summary for {trial_id}: {natural_language_summary[:100]}...")
+                self.logger.info(
+                    f"Generated comprehensive trial summary for {trial_id}: {natural_language_summary[:100]}..."
+                )
 
                 # Add natural language summary to the enhanced trial data
                 if "McodeResults" not in enhanced_trial:
                     enhanced_trial["McodeResults"] = {}
-                enhanced_trial["McodeResults"]["natural_language_summary"] = natural_language_summary
-                self.logger.debug(f"Added natural language summary to enhanced_trial McodeResults: {len(natural_language_summary)} chars")
+                enhanced_trial["McodeResults"][
+                    "natural_language_summary"
+                ] = natural_language_summary
+                self.logger.debug(
+                    f"Added natural language summary to enhanced_trial McodeResults: {len(natural_language_summary)} chars"
+                )
 
                 # Store to core memory if requested
                 if store_in_memory and self.memory_storage:
@@ -932,9 +1091,13 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                     if success:
                         self.logger.info(f"✅ Stored trial {trial_id} mCODE summary")
                     else:
-                        self.logger.warning(f"❌ Failed to store trial {trial_id} mCODE summary")
+                        self.logger.warning(
+                            f"❌ Failed to store trial {trial_id} mCODE summary"
+                        )
             except Exception as summary_error:
-                self.logger.error(f"Failed to generate summary for trial {trial_id}: {summary_error}")
+                self.logger.error(
+                    f"Failed to generate summary for trial {trial_id}: {summary_error}"
+                )
 
             return enhanced_trial, mcode_success
 

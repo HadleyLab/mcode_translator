@@ -2,13 +2,13 @@
 Unit tests for streamlined workflow architecture.
 """
 
+from unittest.mock import MagicMock, Mock
+
 import pytest
-from unittest.mock import Mock, MagicMock
-from src.workflows.streamlined_workflow import (
-    StreamlinedTrialProcessor,
-    StreamlinedWorkflowCoordinator,
-)
+
 from src.shared.models import WorkflowResult
+from src.workflows.streamlined_workflow import (StreamlinedTrialProcessor,
+                                                StreamlinedWorkflowCoordinator)
 
 
 class TestStreamlinedTrialProcessor:
@@ -27,10 +27,10 @@ class TestStreamlinedTrialProcessor:
         processor = StreamlinedTrialProcessor()
 
         # Verify that a pipeline was created
-        assert hasattr(processor, 'pipeline')
+        assert hasattr(processor, "pipeline")
         assert processor.pipeline is not None
-        assert hasattr(processor.pipeline, 'process_trials_batch')
-        assert hasattr(processor.pipeline, 'validator')
+        assert hasattr(processor.pipeline, "process_trials_batch")
+        assert hasattr(processor.pipeline, "validator")
         assert processor.pipeline.storage is not None
 
     def test_process_single_trial_success(self):
@@ -47,9 +47,7 @@ class TestStreamlinedTrialProcessor:
         assert result.success is True
         assert result.data == {"test": "data"}
         mock_pipeline.process_trial.assert_called_once_with(
-            trial_data=trial_data,
-            validate=True,
-            store_results=True
+            trial_data=trial_data, validate=True, store_results=True
         )
 
     def test_process_single_trial_failure(self):
@@ -72,14 +70,14 @@ class TestStreamlinedTrialProcessor:
         mock_result = WorkflowResult(
             success=True,
             data={"results": ["result1", "result2"]},
-            metadata={"successful": 2, "total_trials": 2}
+            metadata={"successful": 2, "total_trials": 2},
         )
         mock_pipeline.process_trials_batch.return_value = mock_result
 
         processor = StreamlinedTrialProcessor(pipeline=mock_pipeline)
         trials_data = [
             {"protocolSection": {"identificationModule": {"nctId": "NCT123"}}},
-            {"protocolSection": {"identificationModule": {"nctId": "NCT456"}}}
+            {"protocolSection": {"identificationModule": {"nctId": "NCT456"}}},
         ]
 
         result = processor.process_multiple_trials(trials_data)
@@ -87,9 +85,7 @@ class TestStreamlinedTrialProcessor:
         assert result.success is True
         assert len(result.data["results"]) == 2
         mock_pipeline.process_trials_batch.assert_called_once_with(
-            trials_data=trials_data,
-            validate=True,
-            store_results=True
+            trials_data=trials_data, validate=True, store_results=True
         )
 
     def test_get_processing_stats(self):
@@ -97,7 +93,9 @@ class TestStreamlinedTrialProcessor:
         mock_pipeline = Mock()
         mock_pipeline.storage = Mock()
 
-        processor = StreamlinedTrialProcessor(pipeline=mock_pipeline, config={"test": "config"})
+        processor = StreamlinedTrialProcessor(
+            pipeline=mock_pipeline, config={"test": "config"}
+        )
 
         stats = processor.get_processing_stats()
 
@@ -115,6 +113,7 @@ class TestStreamlinedWorkflowCoordinator:
         """Test coordinator initialization."""
         # Mock the dependency container to avoid model loading issues
         import src.core.dependency_container as dc_module
+
         original_create_trial_pipeline = dc_module.create_trial_pipeline
 
         mock_pipeline = Mock()
@@ -124,7 +123,7 @@ class TestStreamlinedWorkflowCoordinator:
             config = {"trial_processor": {"include_storage": False}}
             coordinator = StreamlinedWorkflowCoordinator(config=config)
 
-            assert hasattr(coordinator, 'trial_processor')
+            assert hasattr(coordinator, "trial_processor")
             assert coordinator.config == config
         finally:
             # Restore original function
@@ -134,13 +133,14 @@ class TestStreamlinedWorkflowCoordinator:
         """Test successful workflow execution."""
         # Mock the dependency container to avoid model loading issues
         import src.core.dependency_container as dc_module
+
         original_create_trial_pipeline = dc_module.create_trial_pipeline
 
         mock_pipeline = Mock()
         mock_result = WorkflowResult(
             success=True,
             data={"trials": ["trial1", "trial2"]},
-            metadata={"successful": 2, "total_trials": 2, "success_rate": 1.0}
+            metadata={"successful": 2, "total_trials": 2, "success_rate": 1.0},
         )
         mock_pipeline.process_trials_batch.return_value = mock_result
         dc_module.create_trial_pipeline = Mock(return_value=mock_pipeline)
@@ -154,7 +154,7 @@ class TestStreamlinedWorkflowCoordinator:
 
             trials_data = [
                 {"protocolSection": {"identificationModule": {"nctId": "NCT123"}}},
-                {"protocolSection": {"identificationModule": {"nctId": "NCT456"}}}
+                {"protocolSection": {"identificationModule": {"nctId": "NCT456"}}},
             ]
 
             result = coordinator.process_clinical_trials_workflow(trials_data)
@@ -170,6 +170,7 @@ class TestStreamlinedWorkflowCoordinator:
         """Test failed workflow execution."""
         # Mock the dependency container to avoid model loading issues
         import src.core.dependency_container as dc_module
+
         original_create_trial_pipeline = dc_module.create_trial_pipeline
 
         mock_pipeline = Mock()
@@ -197,6 +198,7 @@ class TestStreamlinedWorkflowCoordinator:
         """Test getting workflow statistics."""
         # Mock the dependency container to avoid model loading issues
         import src.core.dependency_container as dc_module
+
         original_create_trial_pipeline = dc_module.create_trial_pipeline
 
         mock_pipeline = Mock()

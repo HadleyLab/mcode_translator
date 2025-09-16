@@ -201,7 +201,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             validation_bonus = 0
             if hasattr(result, "validation_results") and result.validation_results:
                 # validation_results is a ValidationResult object, not a dict
-                compliance = getattr(result.validation_results, 'compliance_score', 0)
+                compliance = getattr(result.validation_results, "compliance_score", 0)
                 validation_bonus = compliance * 0.2
 
             # Bonus for source references

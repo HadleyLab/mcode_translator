@@ -25,8 +25,8 @@ from src.pipeline.task_queue import (BenchmarkTask, PipelineTaskQueue,
                                      get_global_task_queue,
                                      initialize_task_queue,
                                      shutdown_task_queue)
-from src.shared.types import TaskStatus
 from src.shared.models import enhance_trial_with_mcode_results
+from src.shared.types import TaskStatus
 from src.utils import Config, get_logger
 
 # Get logger instance
@@ -277,7 +277,9 @@ class ConcurrentFetcher:
                 if task.status == TaskStatus.SUCCESS:
                     # Add mCODE results to trial data using standardized utility
                     if task.result:
-                        enhanced_trial = enhance_trial_with_mcode_results(trial_data, task.result)
+                        enhanced_trial = enhance_trial_with_mcode_results(
+                            trial_data, task.result
+                        )
                         successful_results.append(enhanced_trial)
                     else:
                         successful_results.append(trial_data)

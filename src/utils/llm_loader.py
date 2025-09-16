@@ -70,7 +70,9 @@ class LLMLoader:
     def __init__(self, llms_config_path: str = None):
         if llms_config_path is None:
             # Use the correct path relative to this file
-            llms_config_path = Path(__file__).parent.parent / "config" / "llms_config.json"
+            llms_config_path = (
+                Path(__file__).parent.parent / "config" / "llms_config.json"
+            )
         self.llms_config_path = Path(llms_config_path)
         self.llms_config = self._load_llms_config()
 

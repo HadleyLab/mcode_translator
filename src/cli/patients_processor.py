@@ -72,7 +72,7 @@ Output Formats:
 
     parser.add_argument(
         "--output",
-        help="Path to save processed mCODE data (JSON array or NDJSON format). Use .ndjson extension for newline-delimited format"
+        help="Path to save processed mCODE data (JSON array or NDJSON format). Use .ndjson extension for newline-delimited format",
     )
 
     return parser
@@ -216,52 +216,80 @@ def main() -> None:
             if args.output and result.data:
                 try:
                     import json
+
                     # Extract only mCODE elements for cleaner JSON structure
                     mcode_only_data = []
                     for patient_bundle in result.data:
-                        if isinstance(patient_bundle, dict) and 'entry' in patient_bundle:
+                        if (
+                            isinstance(patient_bundle, dict)
+                            and "entry" in patient_bundle
+                        ):
                             # Process each entry in the FHIR bundle
                             mcode_entries = []
-                            for entry in patient_bundle['entry']:
-                                if (isinstance(entry, dict) and 'resource' in entry and
-                                    isinstance(entry['resource'], dict)):
-                                    resource = entry['resource']
-                                    resource_type = resource.get('resourceType')
+                            for entry in patient_bundle["entry"]:
+                                if (
+                                    isinstance(entry, dict)
+                                    and "resource" in entry
+                                    and isinstance(entry["resource"], dict)
+                                ):
+                                    resource = entry["resource"]
+                                    resource_type = resource.get("resourceType")
 
                                     # Extract mCODE-relevant information
-                                    if resource_type == 'Patient':
-                                        patient_id = resource.get('id')
-                                        name = resource.get('name', [{}])[0] if resource.get('name') else {}
-                                        mcode_entries.append({
-                                            'resource_type': 'Patient',
-                                            'id': patient_id,
-                                            'name': name
-                                        })
-                                    elif resource_type in ['Condition', 'Observation', 'MedicationStatement', 'Procedure']:
+                                    if resource_type == "Patient":
+                                        patient_id = resource.get("id")
+                                        name = (
+                                            resource.get("name", [{}])[0]
+                                            if resource.get("name")
+                                            else {}
+                                        )
+                                        mcode_entries.append(
+                                            {
+                                                "resource_type": "Patient",
+                                                "id": patient_id,
+                                                "name": name,
+                                            }
+                                        )
+                                    elif resource_type in [
+                                        "Condition",
+                                        "Observation",
+                                        "MedicationStatement",
+                                        "Procedure",
+                                    ]:
                                         # These contain clinical data that would be mCODE-mapped
-                                        mcode_entries.append({
-                                            'resource_type': resource_type,
-                                            'id': resource.get('id'),
-                                            'clinical_data': resource
-                                        })
+                                        mcode_entries.append(
+                                            {
+                                                "resource_type": resource_type,
+                                                "id": resource.get("id"),
+                                                "clinical_data": resource,
+                                            }
+                                        )
 
                             if mcode_entries:
-                                mcode_only_data.append({
-                                    'patient_bundle': mcode_entries
-                                })
+                                mcode_only_data.append(
+                                    {"patient_bundle": mcode_entries}
+                                )
 
                     # Save as NDJSON (Newline Delimited JSON) format
-                    with open(args.output, 'w', encoding='utf-8') as f:
+                    with open(args.output, "w", encoding="utf-8") as f:
                         for item in mcode_only_data:
                             json.dump(item, f, ensure_ascii=False, default=str)
-                            f.write('\n')
-                    print(f"💾 mCODE-only patient data saved as NDJSON to: {args.output}")
+                            f.write("\n")
+                    print(
+                        f"💾 mCODE-only patient data saved as NDJSON to: {args.output}"
+                    )
                 except Exception as e:
                     print(f"❌ Failed to save processed data: {e}")
                     # Fallback to original method
                     try:
-                        with open(args.output, 'w', encoding='utf-8') as f:
-                            json.dump(result.data, f, indent=2, ensure_ascii=False, default=str)
+                        with open(args.output, "w", encoding="utf-8") as f:
+                            json.dump(
+                                result.data,
+                                f,
+                                indent=2,
+                                ensure_ascii=False,
+                                default=str,
+                            )
                         print(f"💾 Full patient data saved to: {args.output}")
                     except Exception as e2:
                         print(f"❌ Failed alternative serialization: {e2}")

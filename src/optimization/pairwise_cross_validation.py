@@ -26,8 +26,8 @@ from src.pipeline.task_queue import (BenchmarkTask, PipelineTaskQueue,
                                      shutdown_task_queue)
 from src.shared.benchmark_result import BenchmarkResult
 from src.shared.types import TaskStatus
-from src.utils.logging_config import get_logger, setup_logging
 from src.utils.llm_loader import LLMLoader
+from src.utils.logging_config import get_logger, setup_logging
 from src.utils.prompt_loader import PromptLoader
 
 

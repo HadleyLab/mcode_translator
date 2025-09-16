@@ -8,15 +8,10 @@ implementing dependency injection and clear separation of concerns.
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Protocol
 
-from src.shared.models import (
-    ClinicalTrialData,
-    PatientData,
-    PipelineResult,
-    WorkflowResult,
-    clinical_trial_from_dict,
-    validate_clinical_trial_data,
-    validate_patient_data,
-)
+from src.shared.models import (ClinicalTrialData, PatientData, PipelineResult,
+                               WorkflowResult, clinical_trial_from_dict,
+                               validate_clinical_trial_data,
+                               validate_patient_data)
 
 
 class DataValidator(Protocol):
@@ -86,7 +81,7 @@ class UnifiedPipeline(PipelineComponent):
         validator: DataValidator,
         processor: DataProcessor,
         storage: Optional[DataStorage] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize unified pipeline with injected dependencies.
@@ -97,14 +92,16 @@ class UnifiedPipeline(PipelineComponent):
             storage: Optional component for data storage
             **kwargs: Additional dependencies
         """
-        super().__init__(validator=validator, processor=processor, storage=storage, **kwargs)
+        super().__init__(
+            validator=validator, processor=processor, storage=storage, **kwargs
+        )
 
     def process_trial(
         self,
         trial_data: Dict[str, Any],
         validate: bool = True,
         store_results: bool = True,
-        **processing_kwargs
+        **processing_kwargs,
     ) -> WorkflowResult:
         """
         Process a clinical trial through the complete pipeline.
@@ -126,7 +123,7 @@ class UnifiedPipeline(PipelineComponent):
                     return WorkflowResult(
                         success=False,
                         error_message=f"Validation failed: {error_msg}",
-                        data=trial_data
+                        data=trial_data,
                     )
 
             # Phase 2: Processing
@@ -139,7 +136,7 @@ class UnifiedPipeline(PipelineComponent):
                 storage_data = {
                     "trial_data": trial_data,
                     "pipeline_result": pipeline_result.model_dump(),
-                    "processing_timestamp": pipeline_result.metadata.processing_timestamp
+                    "processing_timestamp": pipeline_result.metadata.processing_timestamp,
                 }
 
                 storage_success = self.storage.store(trial_id, storage_data)
@@ -149,22 +146,21 @@ class UnifiedPipeline(PipelineComponent):
 
             return WorkflowResult(
                 success=True,
-                data={
-                    "trial_data": trial_data,
-                    "pipeline_result": pipeline_result
-                },
+                data={"trial_data": trial_data, "pipeline_result": pipeline_result},
                 metadata={
                     "validation_performed": validate,
                     "storage_attempted": store_results,
-                    "processing_time": getattr(pipeline_result.metadata, 'processing_time_seconds', None)
-                }
+                    "processing_time": getattr(
+                        pipeline_result.metadata, "processing_time_seconds", None
+                    ),
+                },
             )
 
         except Exception as e:
             return WorkflowResult(
                 success=False,
                 error_message=f"Pipeline processing failed: {str(e)}",
-                data=trial_data
+                data=trial_data,
             )
 
     def process_trials_batch(
@@ -172,7 +168,7 @@ class UnifiedPipeline(PipelineComponent):
         trials_data: List[Dict[str, Any]],
         validate: bool = True,
         store_results: bool = True,
-        **processing_kwargs
+        **processing_kwargs,
     ) -> WorkflowResult:
         """
         Process multiple clinical trials in batch.
@@ -195,7 +191,7 @@ class UnifiedPipeline(PipelineComponent):
                 trial_data,
                 validate=validate,
                 store_results=store_results,
-                **processing_kwargs
+                **processing_kwargs,
             )
             results.append(result)
 
@@ -211,8 +207,10 @@ class UnifiedPipeline(PipelineComponent):
                 "total_trials": len(trials_data),
                 "successful": successful_count,
                 "failed": failed_count,
-                "success_rate": successful_count / len(trials_data) if trials_data else 0
-            }
+                "success_rate": (
+                    successful_count / len(trials_data) if trials_data else 0
+                ),
+            },
         )
 
     def _extract_trial_id(self, trial_data: Dict[str, Any]) -> str:
@@ -228,8 +226,7 @@ class PipelineFactory:
 
     @staticmethod
     def create_clinical_trial_pipeline(
-        processor: DataProcessor,
-        storage: Optional[DataStorage] = None
+        processor: DataProcessor, storage: Optional[DataStorage] = None
     ) -> UnifiedPipeline:
         """
         Create a clinical trial processing pipeline.
@@ -243,15 +240,12 @@ class PipelineFactory:
         """
         validator = ClinicalTrialValidator()
         return UnifiedPipeline(
-            validator=validator,
-            processor=processor,
-            storage=storage
+            validator=validator, processor=processor, storage=storage
         )
 
     @staticmethod
     def create_patient_data_pipeline(
-        processor: DataProcessor,
-        storage: Optional[DataStorage] = None
+        processor: DataProcessor, storage: Optional[DataStorage] = None
     ) -> UnifiedPipeline:
         """
         Create a patient data processing pipeline.
@@ -265,24 +259,20 @@ class PipelineFactory:
         """
         validator = PatientDataValidator()
         return UnifiedPipeline(
-            validator=validator,
-            processor=processor,
-            storage=storage
+            validator=validator, processor=processor, storage=storage
         )
 
 
 # Convenience functions for easy pipeline creation
 def create_clinical_trial_pipeline(
-    processor: DataProcessor,
-    storage: Optional[DataStorage] = None
+    processor: DataProcessor, storage: Optional[DataStorage] = None
 ) -> UnifiedPipeline:
     """Create a clinical trial processing pipeline."""
     return PipelineFactory.create_clinical_trial_pipeline(processor, storage)
 
 
 def create_patient_data_pipeline(
-    processor: DataProcessor,
-    storage: Optional[DataStorage] = None
+    processor: DataProcessor, storage: Optional[DataStorage] = None
 ) -> UnifiedPipeline:
     """Create a patient data processing pipeline."""
     return PipelineFactory.create_patient_data_pipeline(processor, storage)

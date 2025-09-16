@@ -24,7 +24,9 @@ def main():
     print("=" * 60)
 
     # Load patient data
-    patient_file = PROJECT_ROOT / "breast_cancer_patients_demo.json"
+    patient_file = (
+        PROJECT_ROOT / "examples" / "data" / "breast_cancer_patients_demo.json"
+    )
     if not patient_file.exists():
         print(f"❌ Patient data file not found: {patient_file}")
         print("   Run the full demo first to generate patient data")
@@ -32,7 +34,7 @@ def main():
 
     print(f"📄 Loading patient data from: {patient_file}")
 
-    with open(patient_file, 'r') as f:
+    with open(patient_file, "r") as f:
         patient_data = json.load(f)[0]  # Get first patient
 
     print("✅ Patient data loaded successfully")
@@ -61,7 +63,7 @@ def main():
         ("RxNorm", "RxNorm:"),
         ("LOINC", "LOINC:"),
         ("ICD", "ICD:"),
-        ("mCODE", "(mCODE:")
+        ("mCODE", "(mCODE:"),
     ]
 
     for name, pattern in code_patterns:
