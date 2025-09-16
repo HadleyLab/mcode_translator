@@ -8,8 +8,8 @@ import uuid
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.utils import Loggable
-from .models import BenchmarkResult as PydanticBenchmarkResult
 
+from .models import BenchmarkResult as PydanticBenchmarkResult
 
 # Use the Pydantic BenchmarkResult model
 BenchmarkResult = PydanticBenchmarkResult

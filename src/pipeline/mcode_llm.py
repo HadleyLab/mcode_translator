@@ -619,7 +619,11 @@ class McodeMapper(LlmBase, Loggable):
             return False
 
         # Check if code is present and is a string (not nested dict)
-        if "code" not in element or not isinstance(element["code"], str) or not element["code"]:
+        if (
+            "code" not in element
+            or not isinstance(element["code"], str)
+            or not element["code"]
+        ):
             return False
 
         # Check if system is present

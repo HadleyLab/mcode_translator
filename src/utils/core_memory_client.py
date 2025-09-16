@@ -174,23 +174,88 @@ class CoreMemoryClient:
         except Exception as e:
             raise CoreMemoryError(f"Failed to get spaces: {e}")
 
-    def get_clinical_trials_space_id(self) -> str:
+    def create_space(self, name: str, description: str = "") -> str:
         """
-        Get or create the "Clinical Trials" space ID.
+        Create a new space in CORE Memory.
+
+        Args:
+            name: Name of the space to create
+            description: Optional description for the space
 
         Returns:
-            Space ID for the "Clinical Trials" space
+            Space ID of the created space
+
+        Raises:
+            CoreMemoryError: If space creation fails
+        """
+        # Use direct API call to create space (not through MCP tools)
+        # Remove the MCP path and source parameter to get the base URL
+        base_url = self.url.split("/api/v1/mcp")[0]
+        url = f"{base_url}/api/v1/spaces"
+        payload = {"name": name, "description": description}
+
+        try:
+            response = requests.post(
+                url,
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+                timeout=60,
+            )
+            response.raise_for_status()
+            data = response.json()
+            space_id = data.get("space", {}).get("id") or data.get("id")
+            if not space_id:
+                raise CoreMemoryError(f"Unexpected create_space response: {data}")
+            return space_id
+        except Exception as e:
+            raise CoreMemoryError(f"Failed to create space '{name}': {e}")
+
+    def get_or_create_space(self, name: str, description: str = "") -> str:
+        """
+        Get existing space or create a new one.
+
+        Args:
+            name: Name of the space
+            description: Description for new space if created
+
+        Returns:
+            Space ID
         """
         spaces = self.get_spaces()
 
-        # Look for existing "Clinical Trials" space
+        # Look for existing space
         for space in spaces:
-            if space.get("name") == "Clinical Trials" and space.get("writable", True):
+            if space.get("name") == name and space.get("writable", True):
                 return space.get("id") or space.get("spaceId")
 
-        # If not found, we would ideally create it, but that's not supported by the current API
-        # For now, we'll return None and let the ingest method use the default space
-        return None
+        # Create new space if not found
+        return self.create_space(name, description)
+
+    def get_clinical_trials_space_id(self) -> str:
+        """
+        Get or create the "mCODE Research Protocols" space ID.
+
+        Returns:
+            Space ID for the mCODE research protocols space
+        """
+        return self.get_or_create_space(
+            "mCODE Research Protocols",
+            "Space for storing mCODE-aligned clinical trial protocols and eligibility criteria",
+        )
+
+    def get_patients_space_id(self) -> str:
+        """
+        Get or create the "mCODE Patients" space ID.
+
+        Returns:
+            Space ID for the mCODE patients space
+        """
+        return self.get_or_create_space(
+            "mCODE Patients", "Space for storing mCODE-compliant patient oncology data"
+        )
 
     def ingest(
         self,
@@ -241,6 +306,24 @@ class CoreMemoryClient:
             return unwrapped_result
         except Exception as e:
             raise CoreMemoryError(f"Failed to ingest message: {e}")
+
+    def get_ingestion_status(self, space_id: Optional[str] = None) -> dict:
+        """
+        Get the current ingestion queue status for a space.
+
+        Args:
+            space_id: Optional space ID to check status for
+
+        Returns:
+            Dictionary with ingestion status information
+        """
+        # This is a placeholder - CORE Memory may not expose queue status via MCP
+        # In a real implementation, you might need to check the CORE web interface
+        # or use a different API endpoint
+        return {
+            "status": "queued",
+            "message": "Ingestion is queued and will be processed asynchronously. Check the CORE web interface for completion status.",
+        }
 
     def search(
         self, query: str, space_id: Optional[str] = None, limit: int = 10

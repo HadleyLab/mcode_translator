@@ -2,27 +2,19 @@
 Unit tests for Pydantic data models.
 """
 
-import pytest
 from datetime import datetime
-from src.shared.models import (
-    ClinicalTrialData,
-    McodeElement,
-    PipelineResult,
-    ProcessingMetadata,
-    SourceReference,
-    TokenUsage,
-    ValidationResult,
-    WorkflowResult,
-    BenchmarkResult,
-    PatientData,
-    FHIRBundle,
-    FHIRPatient,
-    clinical_trial_from_dict,
-    pipeline_result_from_dict,
-    workflow_result_from_dict,
-    validate_clinical_trial_data,
-    validate_patient_data,
-)
+
+import pytest
+
+from src.shared.models import (BenchmarkResult, ClinicalTrialData, FHIRBundle,
+                               FHIRPatient, McodeElement, PatientData,
+                               PipelineResult, ProcessingMetadata,
+                               SourceReference, TokenUsage, ValidationResult,
+                               WorkflowResult, clinical_trial_from_dict,
+                               pipeline_result_from_dict,
+                               validate_clinical_trial_data,
+                               validate_patient_data,
+                               workflow_result_from_dict)
 
 
 class TestClinicalTrialData:
@@ -35,26 +27,29 @@ class TestClinicalTrialData:
                 "identificationModule": {
                     "nctId": "NCT12345678",
                     "briefTitle": "Test Trial",
-                    "officialTitle": "Official Test Trial Title"
+                    "officialTitle": "Official Test Trial Title",
                 },
                 "eligibilityModule": {
                     "eligibilityCriteria": "Inclusion: Age 18+",
                     "healthyVolunteers": False,
                     "sex": "ALL",
                     "minimumAge": "18 Years",
-                    "maximumAge": "65 Years"
-                }
+                    "maximumAge": "65 Years",
+                },
             },
             "hasResults": False,
             "studyType": "Interventional",
             "overallStatus": "Recruiting",
-            "phase": "Phase 2"
+            "phase": "Phase 2",
         }
 
         trial = clinical_trial_from_dict(data)
         assert trial.nct_id == "NCT12345678"
         assert trial.brief_title == "Test Trial"
-        assert trial.protocolSection.eligibilityModule.eligibilityCriteria == "Inclusion: Age 18+"
+        assert (
+            trial.protocolSection.eligibilityModule.eligibilityCriteria
+            == "Inclusion: Age 18+"
+        )
 
     def test_invalid_clinical_trial_data(self):
         """Test validation of invalid clinical trial data."""
@@ -83,7 +78,7 @@ class TestMcodeElement:
             "display": "Breast Carcinoma",
             "system": "NCIT",
             "confidence_score": 0.95,
-            "evidence_text": "Patient diagnosed with breast cancer"
+            "evidence_text": "Patient diagnosed with breast cancer",
         }
 
         element = McodeElement(**element_data)
@@ -94,8 +89,7 @@ class TestMcodeElement:
         """Test validation of invalid confidence score."""
         with pytest.raises(ValueError):
             McodeElement(
-                element_type="CancerCondition",
-                confidence_score=1.5  # Invalid: > 1.0
+                element_type="CancerCondition", confidence_score=1.5  # Invalid: > 1.0
             )
 
 
@@ -110,27 +104,23 @@ class TestPipelineResult:
                 {
                     "element_type": "CancerCondition",
                     "code": "C4872",
-                    "display": "Breast Carcinoma"
+                    "display": "Breast Carcinoma",
                 }
             ],
             "source_references": [
                 {
                     "document_type": "protocol",
                     "section_name": "eligibility",
-                    "text_snippet": "breast cancer patients"
+                    "text_snippet": "breast cancer patients",
                 }
             ],
             "validation_results": {
                 "compliance_score": 0.85,
                 "validation_errors": [],
-                "required_elements_present": ["CancerCondition"]
+                "required_elements_present": ["CancerCondition"],
             },
-            "metadata": {
-                "engine_type": "LLM",
-                "entities_count": 0,
-                "mapped_count": 1
-            },
-            "original_data": {"test": "data"}
+            "metadata": {"engine_type": "LLM", "entities_count": 0, "mapped_count": 1},
+            "original_data": {"test": "data"},
         }
 
         result = pipeline_result_from_dict(result_data)
@@ -147,7 +137,7 @@ class TestWorkflowResult:
         result_data = {
             "success": True,
             "data": {"trials_processed": 5},
-            "metadata": {"duration": 120.5}
+            "metadata": {"duration": 120.5},
         }
 
         result = workflow_result_from_dict(result_data)
@@ -169,13 +159,13 @@ class TestBenchmarkResult:
                 "source_references": [],
                 "validation_results": {"compliance_score": 0.0},
                 "metadata": {"engine_type": "test"},
-                "original_data": {}
+                "original_data": {},
             },
             "execution_time_seconds": 45.2,
             "status": "success",
             "precision": 0.85,
             "recall": 0.92,
-            "f1_score": 0.88
+            "f1_score": 0.88,
         }
 
         result = BenchmarkResult(**result_data)
@@ -198,26 +188,16 @@ class TestPatientData:
                         "resource": {
                             "resourceType": "Patient",
                             "id": "patient-123",
-                            "identifier": [
-                                {
-                                    "use": "usual",
-                                    "value": "PATIENT123"
-                                }
-                            ],
-                            "name": [
-                                {
-                                    "family": "Doe",
-                                    "given": ["John"]
-                                }
-                            ],
+                            "identifier": [{"use": "usual", "value": "PATIENT123"}],
+                            "name": [{"family": "Doe", "given": ["John"]}],
                             "gender": "male",
-                            "birthDate": "1980-01-01"
+                            "birthDate": "1980-01-01",
                         }
                     }
-                ]
+                ],
             },
             "source_file": "test_patient.json",
-            "archive_name": "breast_cancer_10_years.zip"
+            "archive_name": "breast_cancer_10_years.zip",
         }
 
         patient = PatientData(**patient_data)
@@ -230,7 +210,7 @@ class TestPatientData:
         invalid_data = {
             "bundle": {
                 "resourceType": "Invalid",  # Wrong resource type
-                "type": "collection"
+                "type": "collection",
             }
         }
 
@@ -244,19 +224,12 @@ class TestTokenUsage:
 
     def test_token_usage_with_total(self):
         """Test token usage with explicit total."""
-        usage = TokenUsage(
-            prompt_tokens=100,
-            completion_tokens=50,
-            total_tokens=150
-        )
+        usage = TokenUsage(prompt_tokens=100, completion_tokens=50, total_tokens=150)
         assert usage.total_tokens == 150
 
     def test_token_usage_calculate_total(self):
         """Test automatic total calculation."""
-        usage = TokenUsage(
-            prompt_tokens=100,
-            completion_tokens=50
-        )
+        usage = TokenUsage(prompt_tokens=100, completion_tokens=50)
         assert usage.total_tokens == 150
 
 
@@ -269,7 +242,7 @@ class TestValidationResult:
             compliance_score=0.92,
             validation_errors=["Missing required element"],
             required_elements_present=["CancerCondition", "CancerTreatment"],
-            missing_elements=["TumorMarker"]
+            missing_elements=["TumorMarker"],
         )
         assert result.compliance_score == 0.92
         assert len(result.validation_errors) == 1

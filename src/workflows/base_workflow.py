@@ -10,10 +10,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+from src.shared.models import WorkflowResult
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
-from src.shared.models import WorkflowResult
-
 
 # WorkflowResult is now imported from shared.models
 

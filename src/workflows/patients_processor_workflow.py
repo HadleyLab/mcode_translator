@@ -8,9 +8,9 @@ and stores the resulting summaries to CORE Memory.
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.logging_config import get_logger
-from src.services.summarizer import McodeSummarizer
 
 from .base_workflow import ProcessorWorkflow, WorkflowResult
 
@@ -70,7 +70,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
             for i, patient in enumerate(patients_data):
                 try:
                     self.logger.info(f"Processing patient {i+1}/{len(patients_data)}")
-                    self.logger.debug(f"Patient type: {type(patient)}, keys: {patient.keys() if isinstance(patient, dict) else 'Not a dict'}")
+                    self.logger.debug(
+                        f"Patient type: {type(patient)}, keys: {patient.keys() if isinstance(patient, dict) else 'Not a dict'}"
+                    )
 
                     # Debug: Check patient data integrity before processing
                     entries = patient.get("entry", [])
@@ -79,7 +81,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         resource = entry.get("resource", {})
                         if resource.get("resourceType") == "Patient":
                             name = resource.get("name", [])
-                            self.logger.debug(f"Patient {i+1} name before processing: {name}")
+                            self.logger.debug(
+                                f"Patient {i+1} name before processing: {name}"
+                            )
                             break
 
                     # Extract mCODE elements from patient data
@@ -124,22 +128,33 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                                     break
 
                             if patient_resource:
-                                demographics = self._extract_demographics(patient_resource)
+                                demographics = self._extract_demographics(
+                                    patient_resource
+                                )
                             else:
                                 demographics = {}
                             self.logger.debug(f"Extracted demographics: {demographics}")
                         except Exception as e:
-                            self.logger.error(f"Error preparing data for memory storage: {e}")
+                            self.logger.error(
+                                f"Error preparing data for memory storage: {e}"
+                            )
                             self.logger.debug(f"Patient data: {patient}")
                             raise
 
                         # Add demographic info from mCODE mappings if not already extracted
                         try:
-                            if "gender" not in demographics and "PatientSex" in filtered_mcode:
+                            if (
+                                "gender" not in demographics
+                                and "PatientSex" in filtered_mcode
+                            ):
                                 patient_sex = filtered_mcode["PatientSex"]
-                                self.logger.debug(f"PatientSex type: {type(patient_sex)}, value: {patient_sex}")
+                                self.logger.debug(
+                                    f"PatientSex type: {type(patient_sex)}, value: {patient_sex}"
+                                )
                                 if isinstance(patient_sex, dict):
-                                    demographics["gender"] = patient_sex.get("display", "Unknown")
+                                    demographics["gender"] = patient_sex.get(
+                                        "display", "Unknown"
+                                    )
                                 else:
                                     demographics["gender"] = str(patient_sex)
                         except Exception as e:
@@ -147,11 +162,12 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                             demographics["gender"] = "Unknown"
 
                         # Generate natural language summary for CORE knowledge graph
-                        natural_language_summary = self.summarizer.create_patient_summary(
-                            patient
+                        natural_language_summary = (
+                            self.summarizer.create_patient_summary(patient)
                         )
 
                         mcode_data = {
+                            "original_patient_data": patient,  # Include original patient data for summarizer
                             "mcode_mappings": self._convert_to_mappings_format(
                                 filtered_mcode
                             ),
@@ -220,7 +236,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
         mcode_elements = {}
 
         # Debug: Check patient data at start of method
-        self.logger.debug(f"_extract_patient_mcode_elements called with patient type: {type(patient)}")
+        self.logger.debug(
+            f"_extract_patient_mcode_elements called with patient type: {type(patient)}"
+        )
         if not isinstance(patient, dict):
             self.logger.error(f"Patient is not a dict: {type(patient)} - {patient}")
             return mcode_elements
@@ -238,13 +256,17 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
             resource = entry.get("resource", {})
             self.logger.debug(f"Entry {i} resource type: {type(resource)}")
             if not isinstance(resource, dict):
-                self.logger.error(f"Entry {i} resource is not a dict: {type(resource)} - {resource}")
+                self.logger.error(
+                    f"Entry {i} resource is not a dict: {type(resource)} - {resource}"
+                )
                 continue
 
             resource_type = resource.get("resourceType")
             self.logger.debug(f"Entry {i} resource type: {resource_type}")
             if not isinstance(resource_type, str):
-                self.logger.error(f"Entry {i} resourceType is not a string: {type(resource_type)} - {resource_type}")
+                self.logger.error(
+                    f"Entry {i} resourceType is not a string: {type(resource_type)} - {resource_type}"
+                )
                 continue
 
             try:
@@ -257,7 +279,16 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                     if condition_data:
                         # Check if this is a cancer condition or comorbidity
                         display = condition_data.get("display", "").lower()
-                        if any(term in display for term in ["cancer", "carcinoma", "neoplasm", "tumor", "malignant"]):
+                        if any(
+                            term in display
+                            for term in [
+                                "cancer",
+                                "carcinoma",
+                                "neoplasm",
+                                "tumor",
+                                "malignant",
+                            ]
+                        ):
                             mcode_elements["CancerCondition"] = condition_data
                         else:
                             # This is a comorbidity
@@ -299,7 +330,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         mcode_elements.update(observation_data)
 
                     # Extract comprehensive observations (performance status, vitals, labs)
-                    comprehensive_obs = self._extract_observation_mcode_comprehensive(resource)
+                    comprehensive_obs = self._extract_observation_mcode_comprehensive(
+                        resource
+                    )
                     if comprehensive_obs:
                         mcode_elements.update(comprehensive_obs)
                 elif resource_type == "Procedure":
@@ -332,8 +365,12 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                 if isinstance(name_obj, dict):
                     given_names = name_obj.get("given", [])
                     family_name = name_obj.get("family", "")
-                    self.logger.debug(f"Given names type: {type(given_names)}, value: {given_names}")
-                    self.logger.debug(f"Family name type: {type(family_name)}, value: {family_name}")
+                    self.logger.debug(
+                        f"Given names type: {type(given_names)}, value: {given_names}"
+                    )
+                    self.logger.debug(
+                        f"Family name type: {type(family_name)}, value: {family_name}"
+                    )
 
                     if given_names and family_name:
                         demographics["name"] = f"{given_names[0]} {family_name}"
@@ -348,6 +385,7 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                 demographics["birthDate"] = birth_date
                 try:
                     from datetime import datetime
+
                     birth_year = datetime.fromisoformat(birth_date[:10]).year
                     current_year = datetime.now().year
                     age = current_year - birth_year
@@ -426,7 +464,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                     state = address.get("state", "")
                     country = address.get("country", "")
                     if city or state or country:
-                        demographics["address"] = f"{city}, {state}, {country}".strip(", ")
+                        demographics["address"] = f"{city}, {state}, {country}".strip(
+                            ", "
+                        )
                     else:
                         demographics["address"] = "Unknown"
                 else:
@@ -437,6 +477,7 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
         except Exception as e:
             self.logger.error(f"Error extracting demographics: {e}")
             import traceback
+
             traceback.print_exc()
 
         return demographics
@@ -479,9 +520,13 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
 
             # Map common observations to mCODE elements
             if "estrogen" in display and "receptor" in display:
-                elements["ERReceptorStatus"] = self._extract_receptor_status(observation)
+                elements["ERReceptorStatus"] = self._extract_receptor_status(
+                    observation
+                )
             elif "her2" in display.lower():
-                elements["HER2ReceptorStatus"] = self._extract_receptor_status(observation)
+                elements["HER2ReceptorStatus"] = self._extract_receptor_status(
+                    observation
+                )
             elif "stage" in display or "tnm" in display:
                 elements["TNMStage"] = self._extract_stage_info(observation)
 
@@ -533,7 +578,8 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
 
             display = coding.get("display", "").lower()
             if any(
-                term in display for term in ["biopsy", "mastectomy", "surgery", "resection"]
+                term in display
+                for term in ["biopsy", "mastectomy", "surgery", "resection"]
             ):
                 return {
                     "system": coding.get("system"),
@@ -547,7 +593,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
 
         return None
 
-    def _extract_allergy_mcode(self, allergy: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _extract_allergy_mcode(
+        self, allergy: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Extract mCODE elements from AllergyIntolerance resource."""
         try:
             code = allergy.get("code", {})
@@ -565,7 +613,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
             self.logger.debug(f"Allergy resource: {allergy}")
             return None
 
-    def _extract_immunization_mcode(self, immunization: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _extract_immunization_mcode(
+        self, immunization: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Extract mCODE elements from Immunization resource."""
         try:
             vaccine_code = immunization.get("vaccineCode", {})
@@ -583,7 +633,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
             self.logger.debug(f"Immunization resource: {immunization}")
             return None
 
-    def _extract_family_history_mcode(self, family_history: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _extract_family_history_mcode(
+        self, family_history: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Extract mCODE elements from FamilyMemberHistory resource."""
         try:
             relationship = family_history.get("relationship", {})
@@ -593,11 +645,13 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
             for condition in family_history.get("condition", []):
                 condition_code = condition.get("code", {})
                 condition_coding = condition_code.get("coding", [{}])[0]
-                conditions.append({
-                    "system": condition_coding.get("system"),
-                    "code": condition_coding.get("code"),
-                    "display": condition_coding.get("display"),
-                })
+                conditions.append(
+                    {
+                        "system": condition_coding.get("system"),
+                        "code": condition_coding.get("code"),
+                        "display": condition_coding.get("display"),
+                    }
+                )
 
             return {
                 "relationship": {
@@ -613,7 +667,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
             self.logger.debug(f"Family history resource: {family_history}")
             return None
 
-    def _extract_observation_mcode_comprehensive(self, observation: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_observation_mcode_comprehensive(
+        self, observation: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Extract comprehensive mCODE elements from Observation resource."""
         try:
             elements = {}
@@ -643,7 +699,16 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                     }
 
             # Vital Signs
-            elif any(term in display for term in ["weight", "height", "bmi", "body mass index", "blood pressure"]):
+            elif any(
+                term in display
+                for term in [
+                    "weight",
+                    "height",
+                    "bmi",
+                    "body mass index",
+                    "blood pressure",
+                ]
+            ):
                 if "weight" in display:
                     value_quantity = observation.get("valueQuantity", {})
                     elements["BodyWeight"] = {
@@ -670,7 +735,12 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                     components = observation.get("component", [])
                     systolic = diastolic = None
                     for comp in components:
-                        comp_code = comp.get("code", {}).get("coding", [{}])[0].get("display", "").lower()
+                        comp_code = (
+                            comp.get("code", {})
+                            .get("coding", [{}])[0]
+                            .get("display", "")
+                            .lower()
+                        )
                         comp_value = comp.get("valueQuantity", {}).get("value")
                         if "systolic" in comp_code:
                             systolic = comp_value
@@ -685,7 +755,19 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         }
 
             # Laboratory Results
-            elif any(term in display for term in ["hemoglobin", "wbc", "white blood cell", "platelet", "creatinine", "bilirubin", "alt", "alanine aminotransferase"]):
+            elif any(
+                term in display
+                for term in [
+                    "hemoglobin",
+                    "wbc",
+                    "white blood cell",
+                    "platelet",
+                    "creatinine",
+                    "bilirubin",
+                    "alt",
+                    "alanine aminotransferase",
+                ]
+            ):
                 value_quantity = observation.get("valueQuantity", {})
                 if "hemoglobin" in display:
                     elements["Hemoglobin"] = {
@@ -768,7 +850,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
 
         try:
             for element_name, element_data in mcode_elements.items():
-                self.logger.debug(f"Converting element {element_name}: type={type(element_data)}, value={element_data}")
+                self.logger.debug(
+                    f"Converting element {element_name}: type={type(element_data)}, value={element_data}"
+                )
 
                 if isinstance(element_data, list):
                     # Handle multiple values (e.g., multiple procedures)
@@ -810,14 +894,19 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         }
                     mappings.append(mapping)
         except Exception as e:
-            self.logger.error(f"Error converting mCODE elements to mappings format: {e}")
+            self.logger.error(
+                f"Error converting mCODE elements to mappings format: {e}"
+            )
             self.logger.debug(f"mcode_elements: {mcode_elements}")
             raise
 
         return mappings
 
     def _generate_natural_language_summary(
-        self, patient_id: str, mcode_elements: Dict[str, Any], demographics: Dict[str, Any]
+        self,
+        patient_id: str,
+        mcode_elements: Dict[str, Any],
+        demographics: Dict[str, Any],
     ) -> str:
         """Generate clinical note-style natural language summary for CORE knowledge graph entity extraction."""
         try:
@@ -843,43 +932,70 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
             clinical_note = []
 
             # Patient header with demographics
-            age_description = f"{patient_age} year old" if patient_age != "Unknown" else "age unknown"
-            clinical_note.append(f"{first_name} {last_name} is a {age_description} {patient_gender} Patient (ID: {patient_id}).")
+            age_description = (
+                f"{patient_age} year old" if patient_age != "Unknown" else "age unknown"
+            )
+            clinical_note.append(
+                f"{first_name} {last_name} is a {age_description} {patient_gender} Patient (ID: {patient_id})."
+            )
 
             # Comprehensive demographics section
             demographics_info = []
 
             # Date of birth if available
             if "birthDate" in demographics and demographics["birthDate"] != "Unknown":
-                demographics_info.append(f"Patient date of birth is {demographics['birthDate']} (mCODE: BirthDate)")
+                demographics_info.append(
+                    f"Patient date of birth is {demographics['birthDate']} (mCODE: BirthDate)"
+                )
 
             # Administrative gender
             if patient_gender and patient_gender != "Unknown":
-                demographics_info.append(f"Patient administrative gender is {patient_gender} (mCODE: AdministrativeGender)")
+                demographics_info.append(
+                    f"Patient administrative gender is {patient_gender} (mCODE: AdministrativeGender)"
+                )
 
             # Race and ethnicity with full mCODE qualification
-            demographics_info.append("Patient race is White (mCODE: USCoreRaceExtension; CDC Race:2106-3)")
-            demographics_info.append("Patient ethnicity is Not Hispanic or Latino (mCODE: USCoreEthnicityExtension; CDC Ethnicity:2186-5)")
+            demographics_info.append(
+                "Patient race is White (mCODE: USCoreRaceExtension; CDC Race:2106-3)"
+            )
+            demographics_info.append(
+                "Patient ethnicity is Not Hispanic or Latino (mCODE: USCoreEthnicityExtension; CDC Ethnicity:2186-5)"
+            )
 
             # Birth sex if different from gender
             if "birthSex" in demographics and demographics["birthSex"] != "Unknown":
-                birth_sex_display = self._decode_birth_sex(demographics['birthSex'])
-                demographics_info.append(f"Patient birth sex is {birth_sex_display} (mCODE: BirthSexExtension)")
+                birth_sex_display = self._decode_birth_sex(demographics["birthSex"])
+                demographics_info.append(
+                    f"Patient birth sex is {birth_sex_display} (mCODE: BirthSexExtension)"
+                )
 
             # Marital status if available
-            if "maritalStatus" in demographics and demographics["maritalStatus"] != "Unknown":
-                marital_display = self._decode_marital_status(demographics['maritalStatus'])
-                demographics_info.append(f"Patient marital status is {marital_display} (mCODE: MaritalStatus)")
+            if (
+                "maritalStatus" in demographics
+                and demographics["maritalStatus"] != "Unknown"
+            ):
+                marital_display = self._decode_marital_status(
+                    demographics["maritalStatus"]
+                )
+                demographics_info.append(
+                    f"Patient marital status is {marital_display} (mCODE: MaritalStatus)"
+                )
 
             # Language preferences if available
             if "language" in demographics and demographics["language"] != "Unknown":
-                demographics_info.append(f"Patient preferred language is {demographics['language']} (mCODE: Communication)")
+                demographics_info.append(
+                    f"Patient preferred language is {demographics['language']} (mCODE: Communication)"
+                )
 
             if demographics_info:
                 if len(demographics_info) == 1:
-                    clinical_note.append(f"Patient demographics: {demographics_info[0]}.")
+                    clinical_note.append(
+                        f"Patient demographics: {demographics_info[0]}."
+                    )
                 else:
-                    clinical_note.append(f"Patient demographics: {'; '.join(demographics_info[:-1])} and {demographics_info[-1]}.")
+                    clinical_note.append(
+                        f"Patient demographics: {'; '.join(demographics_info[:-1])} and {demographics_info[-1]}."
+                    )
 
             # Comprehensive mCODE Profile sections
 
@@ -890,22 +1006,38 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                 if isinstance(condition, dict):
                     display = condition.get("display", "Unknown")
                     code = condition.get("code", "Unknown")
-                    system = condition.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                    diagnosis_date = condition.get("onsetDateTime", condition.get("recordedDate", "Unknown"))
-                    clean_display = display.split(" (")[0] if " (" in display else display
+                    system = condition.get("system", "").replace(
+                        "http://snomed.info/sct", "SNOMED"
+                    )
+                    diagnosis_date = condition.get(
+                        "onsetDateTime", condition.get("recordedDate", "Unknown")
+                    )
+                    clean_display = (
+                        display.split(" (")[0] if " (" in display else display
+                    )
 
                     if diagnosis_date and diagnosis_date != "Unknown":
-                        mcode_format = self._format_mcode_element("CancerCondition", system, code)
-                        cancer_diagnoses.append(f"{clean_display} diagnosed on {diagnosis_date} {mcode_format}")
+                        mcode_format = self._format_mcode_element(
+                            "CancerCondition", system, code
+                        )
+                        cancer_diagnoses.append(
+                            f"{clean_display} diagnosed on {diagnosis_date} {mcode_format}"
+                        )
                     else:
-                        mcode_format = self._format_mcode_element("CancerCondition", system, code)
+                        mcode_format = self._format_mcode_element(
+                            "CancerCondition", system, code
+                        )
                         cancer_diagnoses.append(f"{clean_display} {mcode_format}")
 
             if cancer_diagnoses:
                 if len(cancer_diagnoses) == 1:
-                    clinical_note.append(f"Patient has cancer diagnosis: {cancer_diagnoses[0]}.")
+                    clinical_note.append(
+                        f"Patient has cancer diagnosis: {cancer_diagnoses[0]}."
+                    )
                 else:
-                    clinical_note.append(f"Patient has cancer diagnoses: {'; '.join(cancer_diagnoses[:-1])} and {cancer_diagnoses[-1]}.")
+                    clinical_note.append(
+                        f"Patient has cancer diagnoses: {'; '.join(cancer_diagnoses[:-1])} and {cancer_diagnoses[-1]}."
+                    )
 
             # Comprehensive Biomarker Results
             biomarkers = []
@@ -914,36 +1046,64 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                 if isinstance(her2, dict):
                     display = her2.get("display", "Unknown")
                     code = her2.get("code", "Unknown")
-                    system = her2.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                    clean_display = display.split(" (")[0] if " (" in display else display
-                    mcode_format = self._format_mcode_element("HER2ReceptorStatus", system, code)
-                    biomarkers.append(f"HER2 receptor status is {clean_display} {mcode_format}")
+                    system = her2.get("system", "").replace(
+                        "http://snomed.info/sct", "SNOMED"
+                    )
+                    clean_display = (
+                        display.split(" (")[0] if " (" in display else display
+                    )
+                    mcode_format = self._format_mcode_element(
+                        "HER2ReceptorStatus", system, code
+                    )
+                    biomarkers.append(
+                        f"HER2 receptor status is {clean_display} {mcode_format}"
+                    )
 
             if "ERReceptorStatus" in mcode_elements:
                 er = mcode_elements["ERReceptorStatus"]
                 if isinstance(er, dict):
                     display = er.get("display", "Unknown")
                     code = er.get("code", "Unknown")
-                    system = er.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                    clean_display = display.split(" (")[0] if " (" in display else display
-                    mcode_format = self._format_mcode_element("ERReceptorStatus", system, code)
-                    biomarkers.append(f"ER receptor status is {clean_display} {mcode_format}")
+                    system = er.get("system", "").replace(
+                        "http://snomed.info/sct", "SNOMED"
+                    )
+                    clean_display = (
+                        display.split(" (")[0] if " (" in display else display
+                    )
+                    mcode_format = self._format_mcode_element(
+                        "ERReceptorStatus", system, code
+                    )
+                    biomarkers.append(
+                        f"ER receptor status is {clean_display} {mcode_format}"
+                    )
 
             if "PRReceptorStatus" in mcode_elements:
                 pr = mcode_elements["PRReceptorStatus"]
                 if isinstance(pr, dict):
                     display = pr.get("display", "Unknown")
                     code = pr.get("code", "Unknown")
-                    system = pr.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                    clean_display = display.split(" (")[0] if " (" in display else display
-                    mcode_format = self._format_mcode_element("PRReceptorStatus", system, code)
-                    biomarkers.append(f"PR receptor status is {clean_display} {mcode_format}")
+                    system = pr.get("system", "").replace(
+                        "http://snomed.info/sct", "SNOMED"
+                    )
+                    clean_display = (
+                        display.split(" (")[0] if " (" in display else display
+                    )
+                    mcode_format = self._format_mcode_element(
+                        "PRReceptorStatus", system, code
+                    )
+                    biomarkers.append(
+                        f"PR receptor status is {clean_display} {mcode_format}"
+                    )
 
             if biomarkers:
                 if len(biomarkers) == 1:
-                    clinical_note.append(f"Patient biomarker profile includes: {biomarkers[0]}.")
+                    clinical_note.append(
+                        f"Patient biomarker profile includes: {biomarkers[0]}."
+                    )
                 else:
-                    clinical_note.append(f"Patient biomarker profile includes: {'; '.join(biomarkers[:-1])} and {biomarkers[-1]}.")
+                    clinical_note.append(
+                        f"Patient biomarker profile includes: {'; '.join(biomarkers[:-1])} and {biomarkers[-1]}."
+                    )
 
             # Cancer Staging
             staging = []
@@ -952,8 +1112,12 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                 if isinstance(stage, dict):
                     display = stage.get("display", "Unknown")
                     code = stage.get("code", "Unknown")
-                    system = stage.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                    clean_display = display.split(" (")[0] if " (" in display else display
+                    system = stage.get("system", "").replace(
+                        "http://snomed.info/sct", "SNOMED"
+                    )
+                    clean_display = (
+                        display.split(" (")[0] if " (" in display else display
+                    )
                     mcode_format = self._format_mcode_element("TNMStage", system, code)
                     staging.append(f"{clean_display} {mcode_format}")
 
@@ -962,16 +1126,24 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                 if isinstance(stage, dict):
                     display = stage.get("display", "Unknown")
                     code = stage.get("code", "Unknown")
-                    system = stage.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                    clean_display = display.split(" (")[0] if " (" in display else display
-                    mcode_format = self._format_mcode_element("CancerStage", system, code)
+                    system = stage.get("system", "").replace(
+                        "http://snomed.info/sct", "SNOMED"
+                    )
+                    clean_display = (
+                        display.split(" (")[0] if " (" in display else display
+                    )
+                    mcode_format = self._format_mcode_element(
+                        "CancerStage", system, code
+                    )
                     staging.append(f"{clean_display} {mcode_format}")
 
             if staging:
                 if len(staging) == 1:
                     clinical_note.append(f"Patient cancer staging: {staging[0]}.")
                 else:
-                    clinical_note.append(f"Patient cancer staging: {'; '.join(staging[:-1])} and {staging[-1]}.")
+                    clinical_note.append(
+                        f"Patient cancer staging: {'; '.join(staging[:-1])} and {staging[-1]}."
+                    )
 
             # Cancer Treatments and Procedures with dates
             treatments = []
@@ -982,15 +1154,28 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         if isinstance(proc, dict):
                             display = proc.get("display", "Unknown")
                             code = proc.get("code", "Unknown")
-                            system = proc.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                            procedure_date = proc.get("performedDateTime", proc.get("performedPeriod", {}).get("start", "Unknown"))
-                            clean_display = display.split(" (")[0] if " (" in display else display
+                            system = proc.get("system", "").replace(
+                                "http://snomed.info/sct", "SNOMED"
+                            )
+                            procedure_date = proc.get(
+                                "performedDateTime",
+                                proc.get("performedPeriod", {}).get("start", "Unknown"),
+                            )
+                            clean_display = (
+                                display.split(" (")[0] if " (" in display else display
+                            )
 
                             if procedure_date and procedure_date != "Unknown":
-                                mcode_format = self._format_mcode_element("CancerRelatedSurgicalProcedure", system, code)
-                                treatments.append(f"{clean_display} performed on {procedure_date} {mcode_format}")
+                                mcode_format = self._format_mcode_element(
+                                    "CancerRelatedSurgicalProcedure", system, code
+                                )
+                                treatments.append(
+                                    f"{clean_display} performed on {procedure_date} {mcode_format}"
+                                )
                             else:
-                                mcode_format = self._format_mcode_element("CancerRelatedSurgicalProcedure", system, code)
+                                mcode_format = self._format_mcode_element(
+                                    "CancerRelatedSurgicalProcedure", system, code
+                                )
                                 treatments.append(f"{clean_display} {mcode_format}")
 
             if "CancerRelatedMedicationStatement" in mcode_elements:
@@ -1000,9 +1185,15 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         if isinstance(med, dict):
                             display = med.get("display", "Unknown")
                             code = med.get("code", "Unknown")
-                            system = med.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                            clean_display = display.split(" (")[0] if " (" in display else display
-                            mcode_format = self._format_mcode_element("CancerRelatedMedicationStatement", system, code)
+                            system = med.get("system", "").replace(
+                                "http://snomed.info/sct", "SNOMED"
+                            )
+                            clean_display = (
+                                display.split(" (")[0] if " (" in display else display
+                            )
+                            mcode_format = self._format_mcode_element(
+                                "CancerRelatedMedicationStatement", system, code
+                            )
                             treatments.append(f"{clean_display} {mcode_format}")
 
             if "CancerRelatedRadiationProcedure" in mcode_elements:
@@ -1012,16 +1203,26 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         if isinstance(rad, dict):
                             display = rad.get("display", "Unknown")
                             code = rad.get("code", "Unknown")
-                            system = rad.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                            clean_display = display.split(" (")[0] if " (" in display else display
-                            mcode_format = self._format_mcode_element("CancerRelatedRadiationProcedure", system, code)
+                            system = rad.get("system", "").replace(
+                                "http://snomed.info/sct", "SNOMED"
+                            )
+                            clean_display = (
+                                display.split(" (")[0] if " (" in display else display
+                            )
+                            mcode_format = self._format_mcode_element(
+                                "CancerRelatedRadiationProcedure", system, code
+                            )
                             treatments.append(f"{clean_display} {mcode_format}")
 
             if treatments:
                 if len(treatments) == 1:
-                    clinical_note.append(f"Patient cancer treatments include: {treatments[0]}.")
+                    clinical_note.append(
+                        f"Patient cancer treatments include: {treatments[0]}."
+                    )
                 else:
-                    clinical_note.append(f"Patient cancer treatments include: {'; '.join(treatments[:-1])} and {treatments[-1]}.")
+                    clinical_note.append(
+                        f"Patient cancer treatments include: {'; '.join(treatments[:-1])} and {treatments[-1]}."
+                    )
 
             # Genetic Information
             genetics = []
@@ -1032,16 +1233,24 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         if isinstance(variant, dict):
                             display = variant.get("display", "Unknown")
                             code = variant.get("code", "Unknown")
-                            system = variant.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                            clean_display = display.split(" (")[0] if " (" in display else display
-                            mcode_format = self._format_mcode_element("CancerGeneticVariant", system, code)
+                            system = variant.get("system", "").replace(
+                                "http://snomed.info/sct", "SNOMED"
+                            )
+                            clean_display = (
+                                display.split(" (")[0] if " (" in display else display
+                            )
+                            mcode_format = self._format_mcode_element(
+                                "CancerGeneticVariant", system, code
+                            )
                             genetics.append(f"{clean_display} {mcode_format}")
 
             if genetics:
                 if len(genetics) == 1:
                     clinical_note.append(f"Patient genetic information: {genetics[0]}.")
                 else:
-                    clinical_note.append(f"Patient genetic information: {'; '.join(genetics[:-1])} and {genetics[-1]}.")
+                    clinical_note.append(
+                        f"Patient genetic information: {'; '.join(genetics[:-1])} and {genetics[-1]}."
+                    )
 
             # Performance Status
             performance_status = []
@@ -1050,26 +1259,46 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                 if isinstance(ecog, dict):
                     display = ecog.get("display", "Unknown")
                     code = ecog.get("code", "Unknown")
-                    system = ecog.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                    clean_display = display.split(" (")[0] if " (" in display else display
-                    mcode_format = self._format_mcode_element("ECOGPerformanceStatus", system, code)
-                    performance_status.append(f"ECOG performance status is {clean_display} {mcode_format}")
+                    system = ecog.get("system", "").replace(
+                        "http://snomed.info/sct", "SNOMED"
+                    )
+                    clean_display = (
+                        display.split(" (")[0] if " (" in display else display
+                    )
+                    mcode_format = self._format_mcode_element(
+                        "ECOGPerformanceStatus", system, code
+                    )
+                    performance_status.append(
+                        f"ECOG performance status is {clean_display} {mcode_format}"
+                    )
 
             if "KarnofskyPerformanceStatus" in mcode_elements:
                 karnofsky = mcode_elements["KarnofskyPerformanceStatus"]
                 if isinstance(karnofsky, dict):
                     display = karnofsky.get("display", "Unknown")
                     code = karnofsky.get("code", "Unknown")
-                    system = karnofsky.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                    clean_display = display.split(" (")[0] if " (" in display else display
-                    mcode_format = self._format_mcode_element("KarnofskyPerformanceStatus", system, code)
-                    performance_status.append(f"Karnofsky performance status is {clean_display} {mcode_format}")
+                    system = karnofsky.get("system", "").replace(
+                        "http://snomed.info/sct", "SNOMED"
+                    )
+                    clean_display = (
+                        display.split(" (")[0] if " (" in display else display
+                    )
+                    mcode_format = self._format_mcode_element(
+                        "KarnofskyPerformanceStatus", system, code
+                    )
+                    performance_status.append(
+                        f"Karnofsky performance status is {clean_display} {mcode_format}"
+                    )
 
             if performance_status:
                 if len(performance_status) == 1:
-                    clinical_note.append(f"Patient performance status: {performance_status[0]}.")
+                    clinical_note.append(
+                        f"Patient performance status: {performance_status[0]}."
+                    )
                 else:
-                    clinical_note.append(f"Patient performance status: {'; '.join(performance_status[:-1])} and {performance_status[-1]}.")
+                    clinical_note.append(
+                        f"Patient performance status: {'; '.join(performance_status[:-1])} and {performance_status[-1]}."
+                    )
 
             # Vital Signs and Measurements
             vital_signs = []
@@ -1078,33 +1307,43 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                 if isinstance(weight, dict):
                     value = weight.get("value", "Unknown")
                     unit = weight.get("unit", "Unknown")
-                    vital_signs.append(f"Body weight is {value} {unit} (mCODE: BodyWeight)")
+                    vital_signs.append(
+                        f"Body weight is {value} {unit} (mCODE: BodyWeight)"
+                    )
 
             if "BodyHeight" in mcode_elements:
                 height = mcode_elements["BodyHeight"]
                 if isinstance(height, dict):
                     value = height.get("value", "Unknown")
                     unit = height.get("unit", "Unknown")
-                    vital_signs.append(f"Body height is {value} {unit} (mCODE: BodyHeight)")
+                    vital_signs.append(
+                        f"Body height is {value} {unit} (mCODE: BodyHeight)"
+                    )
 
             if "BodyMassIndex" in mcode_elements:
                 bmi = mcode_elements["BodyMassIndex"]
                 if isinstance(bmi, dict):
                     value = bmi.get("value", "Unknown")
-                    vital_signs.append(f"Body mass index is {value} (mCODE: BodyMassIndex)")
+                    vital_signs.append(
+                        f"Body mass index is {value} (mCODE: BodyMassIndex)"
+                    )
 
             if "BloodPressure" in mcode_elements:
                 bp = mcode_elements["BloodPressure"]
                 if isinstance(bp, dict):
                     systolic = bp.get("systolic", "Unknown")
                     diastolic = bp.get("diastolic", "Unknown")
-                    vital_signs.append(f"Blood pressure is {systolic}/{diastolic} mmHg (mCODE: BloodPressure)")
+                    vital_signs.append(
+                        f"Blood pressure is {systolic}/{diastolic} mmHg (mCODE: BloodPressure)"
+                    )
 
             if vital_signs:
                 if len(vital_signs) == 1:
                     clinical_note.append(f"Patient vital signs: {vital_signs[0]}.")
                 else:
-                    clinical_note.append(f"Patient vital signs: {'; '.join(vital_signs[:-1])} and {vital_signs[-1]}.")
+                    clinical_note.append(
+                        f"Patient vital signs: {'; '.join(vital_signs[:-1])} and {vital_signs[-1]}."
+                    )
 
             # Laboratory Results
             lab_results = []
@@ -1113,48 +1352,64 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                 if isinstance(hb, dict):
                     value = hb.get("value", "Unknown")
                     unit = hb.get("unit", "Unknown")
-                    lab_results.append(f"Hemoglobin is {value} {unit} (mCODE: Hemoglobin)")
+                    lab_results.append(
+                        f"Hemoglobin is {value} {unit} (mCODE: Hemoglobin)"
+                    )
 
             if "WhiteBloodCellCount" in mcode_elements:
                 wbc = mcode_elements["WhiteBloodCellCount"]
                 if isinstance(wbc, dict):
                     value = wbc.get("value", "Unknown")
                     unit = wbc.get("unit", "Unknown")
-                    lab_results.append(f"White blood cell count is {value} {unit} (mCODE: WhiteBloodCellCount)")
+                    lab_results.append(
+                        f"White blood cell count is {value} {unit} (mCODE: WhiteBloodCellCount)"
+                    )
 
             if "PlateletCount" in mcode_elements:
                 plt = mcode_elements["PlateletCount"]
                 if isinstance(plt, dict):
                     value = plt.get("value", "Unknown")
                     unit = plt.get("unit", "Unknown")
-                    lab_results.append(f"Platelet count is {value} {unit} (mCODE: PlateletCount)")
+                    lab_results.append(
+                        f"Platelet count is {value} {unit} (mCODE: PlateletCount)"
+                    )
 
             if "Creatinine" in mcode_elements:
                 creat = mcode_elements["Creatinine"]
                 if isinstance(creat, dict):
                     value = creat.get("value", "Unknown")
                     unit = creat.get("unit", "Unknown")
-                    lab_results.append(f"Creatinine is {value} {unit} (mCODE: Creatinine)")
+                    lab_results.append(
+                        f"Creatinine is {value} {unit} (mCODE: Creatinine)"
+                    )
 
             if "TotalBilirubin" in mcode_elements:
                 bili = mcode_elements["TotalBilirubin"]
                 if isinstance(bili, dict):
                     value = bili.get("value", "Unknown")
                     unit = bili.get("unit", "Unknown")
-                    lab_results.append(f"Total bilirubin is {value} {unit} (mCODE: TotalBilirubin)")
+                    lab_results.append(
+                        f"Total bilirubin is {value} {unit} (mCODE: TotalBilirubin)"
+                    )
 
             if "AlanineAminotransferase" in mcode_elements:
                 alt = mcode_elements["AlanineAminotransferase"]
                 if isinstance(alt, dict):
                     value = alt.get("value", "Unknown")
                     unit = alt.get("unit", "Unknown")
-                    lab_results.append(f"ALT is {value} {unit} (mCODE: AlanineAminotransferase)")
+                    lab_results.append(
+                        f"ALT is {value} {unit} (mCODE: AlanineAminotransferase)"
+                    )
 
             if lab_results:
                 if len(lab_results) == 1:
-                    clinical_note.append(f"Patient laboratory results: {lab_results[0]}.")
+                    clinical_note.append(
+                        f"Patient laboratory results: {lab_results[0]}."
+                    )
                 else:
-                    clinical_note.append(f"Patient laboratory results: {'; '.join(lab_results[:-1])} and {lab_results[-1]}.")
+                    clinical_note.append(
+                        f"Patient laboratory results: {'; '.join(lab_results[:-1])} and {lab_results[-1]}."
+                    )
 
             # Comorbidities and Other Conditions
             comorbidities = []
@@ -1165,16 +1420,24 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         if isinstance(comorbid, dict):
                             display = comorbid.get("display", "Unknown")
                             code = comorbid.get("code", "Unknown")
-                            system = comorbid.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                            clean_display = display.split(" (")[0] if " (" in display else display
-                            mcode_format = self._format_mcode_element("ComorbidCondition", system, code)
+                            system = comorbid.get("system", "").replace(
+                                "http://snomed.info/sct", "SNOMED"
+                            )
+                            clean_display = (
+                                display.split(" (")[0] if " (" in display else display
+                            )
+                            mcode_format = self._format_mcode_element(
+                                "ComorbidCondition", system, code
+                            )
                             comorbidities.append(f"{clean_display} {mcode_format}")
 
             if comorbidities:
                 if len(comorbidities) == 1:
                     clinical_note.append(f"Patient comorbidities: {comorbidities[0]}.")
                 else:
-                    clinical_note.append(f"Patient comorbidities: {'; '.join(comorbidities[:-1])} and {comorbidities[-1]}.")
+                    clinical_note.append(
+                        f"Patient comorbidities: {'; '.join(comorbidities[:-1])} and {comorbidities[-1]}."
+                    )
 
             # Allergies and Intolerances
             allergies = []
@@ -1185,22 +1448,34 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         if isinstance(allergy, dict):
                             display = allergy.get("display", "Unknown")
                             code = allergy.get("code", "Unknown")
-                            system = allergy.get("system", "").replace("http://snomed.info/sct", "SNOMED")
+                            system = allergy.get("system", "").replace(
+                                "http://snomed.info/sct", "SNOMED"
+                            )
                             criticality = allergy.get("criticality", "Unknown")
                             recorded_date = allergy.get("recordedDate", "Unknown")
 
                             if recorded_date and recorded_date != "Unknown":
-                                mcode_format = self._format_mcode_element("AllergyIntolerance", system, code)
-                                allergies.append(f"{display} recorded on {recorded_date} (criticality: {criticality}; {mcode_format})")
+                                mcode_format = self._format_mcode_element(
+                                    "AllergyIntolerance", system, code
+                                )
+                                allergies.append(
+                                    f"{display} recorded on {recorded_date} (criticality: {criticality}; {mcode_format})"
+                                )
                             else:
-                                mcode_format = self._format_mcode_element("AllergyIntolerance", system, code)
-                                allergies.append(f"{display} (criticality: {criticality}; {mcode_format})")
+                                mcode_format = self._format_mcode_element(
+                                    "AllergyIntolerance", system, code
+                                )
+                                allergies.append(
+                                    f"{display} (criticality: {criticality}; {mcode_format})"
+                                )
 
             if allergies:
                 if len(allergies) == 1:
                     clinical_note.append(f"Patient allergies: {allergies[0]}.")
                 else:
-                    clinical_note.append(f"Patient allergies: {'; '.join(allergies[:-1])} and {allergies[-1]}.")
+                    clinical_note.append(
+                        f"Patient allergies: {'; '.join(allergies[:-1])} and {allergies[-1]}."
+                    )
 
             # Immunization History
             immunizations = []
@@ -1211,22 +1486,38 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                         if isinstance(immunization, dict):
                             display = immunization.get("display", "Unknown")
                             code = immunization.get("code", "Unknown")
-                            system = immunization.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                            occurrence_date = immunization.get("occurrenceDateTime", "Unknown")
+                            system = immunization.get("system", "").replace(
+                                "http://snomed.info/sct", "SNOMED"
+                            )
+                            occurrence_date = immunization.get(
+                                "occurrenceDateTime", "Unknown"
+                            )
                             status = immunization.get("status", "Unknown")
 
                             if occurrence_date and occurrence_date != "Unknown":
-                                mcode_format = self._format_mcode_element("Immunization", system, code)
-                                immunizations.append(f"{display} administered on {occurrence_date} (status: {status}; {mcode_format})")
+                                mcode_format = self._format_mcode_element(
+                                    "Immunization", system, code
+                                )
+                                immunizations.append(
+                                    f"{display} administered on {occurrence_date} (status: {status}; {mcode_format})"
+                                )
                             else:
-                                mcode_format = self._format_mcode_element("Immunization", system, code)
-                                immunizations.append(f"{display} (status: {status}; {mcode_format})")
+                                mcode_format = self._format_mcode_element(
+                                    "Immunization", system, code
+                                )
+                                immunizations.append(
+                                    f"{display} (status: {status}; {mcode_format})"
+                                )
 
             if immunizations:
                 if len(immunizations) == 1:
-                    clinical_note.append(f"Patient immunization history: {immunizations[0]}.")
+                    clinical_note.append(
+                        f"Patient immunization history: {immunizations[0]}."
+                    )
                 else:
-                    clinical_note.append(f"Patient immunization history: {'; '.join(immunizations[:-1])} and {immunizations[-1]}.")
+                    clinical_note.append(
+                        f"Patient immunization history: {'; '.join(immunizations[:-1])} and {immunizations[-1]}."
+                    )
 
             # Family History
             family_history = []
@@ -1235,7 +1526,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                 if isinstance(family_list, list):
                     for family in family_list:
                         if isinstance(family, dict):
-                            relationship = family.get("relationship", {}).get("display", "Unknown")
+                            relationship = family.get("relationship", {}).get(
+                                "display", "Unknown"
+                            )
                             conditions = family.get("conditions", [])
                             born = family.get("born", "Unknown")
 
@@ -1244,23 +1537,37 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                                 if isinstance(condition, dict):
                                     cond_display = condition.get("display", "Unknown")
                                     cond_code = condition.get("code", "Unknown")
-                                    cond_system = condition.get("system", "").replace("http://snomed.info/sct", "SNOMED")
-                                    condition_summaries.append(f"{cond_display} ({cond_system}:{cond_code})")
+                                    cond_system = condition.get("system", "").replace(
+                                        "http://snomed.info/sct", "SNOMED"
+                                    )
+                                    condition_summaries.append(
+                                        f"{cond_display} ({cond_system}:{cond_code})"
+                                    )
 
                             if condition_summaries:
                                 if born and born != "Unknown":
-                                    family_history.append(f"{relationship} born {born} with {' and '.join(condition_summaries)} (mCODE: FamilyMemberHistory)")
+                                    family_history.append(
+                                        f"{relationship} born {born} with {' and '.join(condition_summaries)} (mCODE: FamilyMemberHistory)"
+                                    )
                                 else:
-                                    family_history.append(f"{relationship} with {' and '.join(condition_summaries)} (mCODE: FamilyMemberHistory)")
+                                    family_history.append(
+                                        f"{relationship} with {' and '.join(condition_summaries)} (mCODE: FamilyMemberHistory)"
+                                    )
 
             if family_history:
                 if len(family_history) == 1:
-                    clinical_note.append(f"Patient family history: {family_history[0]}.")
+                    clinical_note.append(
+                        f"Patient family history: {family_history[0]}."
+                    )
                 else:
-                    clinical_note.append(f"Patient family history: {'; '.join(family_history[:-1])} and {family_history[-1]}.")
+                    clinical_note.append(
+                        f"Patient family history: {'; '.join(family_history[:-1])} and {family_history[-1]}."
+                    )
 
             summary = " ".join(clinical_note)
-            self.logger.info(f"Generated clinical note summary for patient {patient_id}: {summary}")
+            self.logger.info(
+                f"Generated clinical note summary for patient {patient_id}: {summary}"
+            )
             return summary
 
         except Exception as e:
@@ -1269,12 +1576,7 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
 
     def _decode_birth_sex(self, code: str) -> str:
         """Decode birth sex code to plain English."""
-        birth_sex_map = {
-            "F": "Female",
-            "M": "Male",
-            "UNK": "Unknown",
-            "OTH": "Other"
-        }
+        birth_sex_map = {"F": "Female", "M": "Male", "UNK": "Unknown", "OTH": "Other"}
         return birth_sex_map.get(code.upper(), code)
 
     def _decode_marital_status(self, code: str) -> str:
@@ -1290,7 +1592,7 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
             "T": "Domestic Partner",
             "U": "Unmarried",
             "W": "Widowed",
-            "UNK": "Unknown"
+            "UNK": "Unknown",
         }
         return marital_map.get(code.upper(), code)
 

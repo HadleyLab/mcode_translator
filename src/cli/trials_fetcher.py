@@ -103,7 +103,9 @@ def main() -> None:
         if args.workers > 0:
             # Use concurrent fetching
             import asyncio
-            from src.pipeline.concurrent_fetcher import concurrent_search_and_process
+
+            from src.pipeline.concurrent_fetcher import \
+                concurrent_search_and_process
 
             async def run_concurrent():
                 if args.condition:
@@ -112,17 +114,19 @@ def main() -> None:
                         limit=args.limit,
                         max_workers=args.workers,
                         export_path=args.output if args.output else None,
-                        progress_updates=args.verbose
+                        progress_updates=args.verbose,
                     )
                 elif args.nct_ids:
                     return await concurrent_search_and_process(
                         nct_ids=[nct.strip() for nct in args.nct_ids.split(",")],
                         max_workers=args.workers,
                         export_path=args.output if args.output else None,
-                        progress_updates=args.verbose
+                        progress_updates=args.verbose,
                     )
                 else:
-                    raise ValueError("Concurrent fetching requires --condition or --nct-ids")
+                    raise ValueError(
+                        "Concurrent fetching requires --condition or --nct-ids"
+                    )
 
             result_data = asyncio.run(run_concurrent())
 
@@ -136,7 +140,7 @@ def main() -> None:
                         "fetch_type": "concurrent",
                         "successful": concurrent_result.successful_trials,
                         "failed": concurrent_result.failed_trials,
-                        "duration_seconds": concurrent_result.duration_seconds
+                        "duration_seconds": concurrent_result.duration_seconds,
                     }
 
             result = MockResult(result_data)

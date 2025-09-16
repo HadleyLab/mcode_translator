@@ -106,7 +106,11 @@ class APICache:
 
             # Check if cache has expired (ttl=0 means never expire)
             ttl = cached_data.get("ttl", None)
-            if ttl is not None and ttl > 0 and time.time() - cached_data.get("timestamp", 0) > ttl:
+            if (
+                ttl is not None
+                and ttl > 0
+                and time.time() - cached_data.get("timestamp", 0) > ttl
+            ):
                 os.remove(cache_path)
                 return None
 
@@ -164,8 +168,11 @@ class APICache:
         cache_path = self._get_cache_path(cache_key)
 
         try:
+            # Handle Pydantic models by converting to dict
+            serializable_result = self._make_serializable(result)
+
             cached_data = {
-                "result": result,
+                "result": serializable_result,
                 "timestamp": time.time(),
                 "ttl": self.default_ttl,  # 0 means never expire
                 "namespace": self.namespace,
@@ -175,13 +182,36 @@ class APICache:
             }
 
             with open(cache_path, "w") as f:
-                json.dump(cached_data, f)
+                json.dump(cached_data, f, default=str)
 
             logger.info(
                 f"Cache STORED with key {cache_key[:8]}... in namespace '{self.namespace}'"
             )
         except Exception as e:
             logger.warning(f"Failed to write cache: {e}")
+
+    def _make_serializable(self, obj: Any) -> Any:
+        """
+        Make an object serializable by converting Pydantic models to dicts
+
+        Args:
+            obj: Object to make serializable
+
+        Returns:
+            Serializable version of the object
+        """
+        if hasattr(obj, "model_dump"):
+            # Pydantic model
+            return obj.model_dump()
+        elif isinstance(obj, dict):
+            # Recursively handle dicts
+            return {k: self._make_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            # Recursively handle lists
+            return [self._make_serializable(item) for item in obj]
+        else:
+            # Return as-is for primitive types
+            return obj
 
     def _generate_cache_key(self, key_data: Any) -> str:
         """

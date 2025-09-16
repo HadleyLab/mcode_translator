@@ -18,18 +18,13 @@ import os
 import sys
 from typing import Any, Dict, List, Optional
 
+from src.shared.models import (McodeElement, PipelineResult,
+                               ProcessingMetadata, SourceReference, TokenUsage,
+                               ValidationResult, clinical_trial_from_dict)
+
 from .document_ingestor import DocumentIngestor, DocumentSection
 from .mcode_llm import McodeConfigurationError, McodeMapper, McodeMappingError
 from .pipeline_base import ProcessingPipeline
-from src.shared.models import (
-    McodeElement,
-    PipelineResult,
-    ProcessingMetadata,
-    SourceReference,
-    TokenUsage,
-    ValidationResult,
-    clinical_trial_from_dict,
-)
 
 # Add parent directory to path for absolute imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -78,9 +73,7 @@ class McodePipeline(ProcessingPipeline, Loggable):
         except McodeConfigurationError as e:
             raise ValueError(f"Failed to initialize McodeMapper: {str(e)}")
 
-    def process(
-        self, data: Dict[str, Any], **kwargs
-    ) -> PipelineResult:
+    def process(self, data: Dict[str, Any], **kwargs) -> PipelineResult:
         """
         Process clinical trial data (DataProcessor protocol implementation).
 
@@ -91,7 +84,7 @@ class McodePipeline(ProcessingPipeline, Loggable):
         Returns:
             PipelineResult containing processing results
         """
-        task_id = kwargs.get('task_id')
+        task_id = kwargs.get("task_id")
         return self.process_clinical_trial(data, task_id)
 
     def process_clinical_trial(
@@ -163,7 +156,9 @@ class McodePipeline(ProcessingPipeline, Loggable):
                 try:
                     mcode_elements.append(McodeElement(**mapping))
                 except Exception as e:
-                    self.logger.warning(f"Failed to convert mapping to McodeElement: {e}")
+                    self.logger.warning(
+                        f"Failed to convert mapping to McodeElement: {e}"
+                    )
                     # Keep original if conversion fails
                     mcode_elements.append(mapping)
 

@@ -23,13 +23,17 @@ from typing import Dict, List, Optional
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.utils.config import Config
+# Import centralized utilities
 from src.utils.logging_config import get_logger, setup_logging
+from src.utils.pattern_config import \
+    pattern_manager  # For regex patterns if needed
+from src.utils.token_tracker import TokenUsage, global_token_tracker
 from src.workflows.patients_fetcher_workflow import PatientsFetcherWorkflow
 from src.workflows.patients_processor_workflow import PatientsProcessorWorkflow
 from src.workflows.trials_fetcher_workflow import TrialsFetcherWorkflow
 from src.workflows.trials_processor_workflow import TrialsProcessorWorkflow
-from src.storage.mcode_memory_storage import McodeMemoryStorage
-from src.utils.config import Config
 
 logger = get_logger("end_to_end_processor")
 
@@ -49,7 +53,7 @@ class EndToEndProcessor:
         trials_limit: int = 5,
         patients_limit: int = 5,
         workers: int = 2,
-        store_in_memory: bool = True
+        store_in_memory: bool = True,
     ) -> Dict[str, any]:
         """
         Process a complete condition workflow.
@@ -65,7 +69,9 @@ class EndToEndProcessor:
             Processing results summary
         """
         logger.info(f"🚀 Starting end-to-end processing for condition: {condition}")
-        logger.info(f"📊 Configuration: trials_limit={trials_limit}, patients_limit={patients_limit}, workers={workers}")
+        logger.info(
+            f"📊 Configuration: trials_limit={trials_limit}, patients_limit={patients_limit}, workers={workers}"
+        )
 
         results = {
             "condition": condition,
@@ -73,7 +79,7 @@ class EndToEndProcessor:
             "patients_processed": 0,
             "trials_stored": 0,
             "patients_stored": 0,
-            "errors": []
+            "errors": [],
         }
 
         try:
@@ -81,9 +87,7 @@ class EndToEndProcessor:
             logger.info("🔬 STEP 1: Fetching clinical trials...")
             trials_workflow = TrialsFetcherWorkflow(self.config)
             trials_result = trials_workflow.execute(
-                condition=condition,
-                limit=trials_limit,
-                workers=workers
+                condition=condition, limit=trials_limit, workers=workers
             )
 
             if trials_result.success and trials_result.data:
@@ -93,12 +97,14 @@ class EndToEndProcessor:
 
                 # Step 2: Process trials with mCODE mapping
                 logger.info("🧪 STEP 2: Processing trials with mCODE mapping...")
-                trials_processor = TrialsProcessorWorkflow(self.config, self.memory_storage)
+                trials_processor = TrialsProcessorWorkflow(
+                    self.config, self.memory_storage
+                )
                 trials_process_result = trials_processor.execute(
                     trials_data=trials_data,
                     model=model,
                     store_in_memory=store_in_memory,
-                    workers=workers
+                    workers=workers,
                 )
 
                 if trials_process_result.success:
@@ -107,16 +113,19 @@ class EndToEndProcessor:
                         results["trials_stored"] = len(trials_data)
                     logger.info(f"✅ Processed {len(trials_data)} trials")
                 else:
-                    results["errors"].append(f"Failed to process trials: {trials_process_result.error_message}")
+                    results["errors"].append(
+                        f"Failed to process trials: {trials_process_result.error_message}"
+                    )
             else:
-                results["errors"].append(f"Failed to fetch trials: {trials_result.error_message}")
+                results["errors"].append(
+                    f"Failed to fetch trials: {trials_result.error_message}"
+                )
 
             # Step 3: Fetch synthetic patients
             logger.info("👥 STEP 3: Fetching synthetic patients...")
             patients_workflow = PatientsFetcherWorkflow(self.config)
             patients_result = patients_workflow.execute(
-                archive_path="breast_cancer_10_years",
-                limit=patients_limit
+                archive_path="breast_cancer_10_years", limit=patients_limit
             )
 
             if patients_result.success and patients_result.data:
@@ -126,11 +135,13 @@ class EndToEndProcessor:
 
                 # Step 4: Process patients with mCODE mapping
                 logger.info("🩺 STEP 4: Processing patients with mCODE mapping...")
-                patients_processor = PatientsProcessorWorkflow(self.config, self.memory_storage)
+                patients_processor = PatientsProcessorWorkflow(
+                    self.config, self.memory_storage
+                )
                 patients_process_result = patients_processor.execute(
                     patients_data=patients_data,
                     store_in_memory=store_in_memory,
-                    workers=workers
+                    workers=workers,
                 )
 
                 if patients_process_result.success:
@@ -139,9 +150,13 @@ class EndToEndProcessor:
                         results["patients_stored"] = len(patients_data)
                     logger.info(f"✅ Processed {len(patients_data)} patients")
                 else:
-                    results["errors"].append(f"Failed to process patients: {patients_process_result.error_message}")
+                    results["errors"].append(
+                        f"Failed to process patients: {patients_process_result.error_message}"
+                    )
             else:
-                results["errors"].append(f"Failed to fetch patients: {patients_result.error_message}")
+                results["errors"].append(
+                    f"Failed to fetch patients: {patients_result.error_message}"
+                )
 
         except Exception as e:
             results["errors"].append(f"Unexpected error: {str(e)}")
@@ -150,8 +165,12 @@ class EndToEndProcessor:
         # Summary
         logger.info("📊 END-TO-END PROCESSING SUMMARY")
         logger.info(f"   Condition: {condition}")
-        logger.info(f"   Trials: {results.get('trials_processed', 0)} processed, {results.get('trials_stored', 0)} stored")
-        logger.info(f"   Patients: {results.get('patients_processed', 0)} processed, {results.get('patients_stored', 0)} stored")
+        logger.info(
+            f"   Trials: {results.get('trials_processed', 0)} processed, {results.get('trials_stored', 0)} stored"
+        )
+        logger.info(
+            f"   Patients: {results.get('patients_processed', 0)} processed, {results.get('patients_stored', 0)} stored"
+        )
 
         if results["errors"]:
             logger.warning(f"   Errors: {len(results['errors'])}")
@@ -171,62 +190,66 @@ def main():
     )
     parser.add_argument(
         "--condition",
-        required=True,
-        help="Medical condition to search for (e.g., 'breast cancer')"
+        default="breast cancer",
+        help="Medical condition to search for (default: breast cancer)",
     )
     parser.add_argument(
         "--model",
         default="deepseek-coder",
-        help="LLM model to use for mCODE processing (default: deepseek-coder)"
+        help="LLM model to use for mCODE processing (default: deepseek-coder)",
     )
     parser.add_argument(
         "--trials-limit",
         type=int,
         default=5,
-        help="Number of clinical trials to fetch (default: 5)"
+        help="Number of clinical trials to fetch (default: 5)",
     )
     parser.add_argument(
         "--patients-limit",
         type=int,
         default=5,
-        help="Number of patients to fetch (default: 5)"
+        help="Number of patients to fetch (default: 5)",
     )
     parser.add_argument(
         "--workers",
         type=int,
         default=2,
-        help="Number of concurrent workers (default: 2)"
+        help="Number of concurrent workers (default: 2)",
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Preview mode - process data but skip storing results in CORE memory"
+        help="Preview mode - process data but skip storing results in CORE memory",
     )
     parser.add_argument(
         "--store-in-core-memory",
         action="store_true",
-        help="Explicitly enable storing results in CORE memory (default behavior)"
+        help="Explicitly enable storing results in CORE memory (default behavior)",
+    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
+    parser.add_argument(
+        "--quiet", action="store_true", help="Disable most logging output"
     )
     parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Enable verbose logging"
-    )
-    parser.add_argument(
-        "--quiet",
-        action="store_true",
-        help="Disable most logging output"
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        default=None,
+        help="Set logging level (default: INFO)",
     )
 
     args = parser.parse_args()
 
-    # Setup logging
+    # Setup centralized logging with color support
+    log_level = args.log_level
     if args.quiet:
-        import logging
-        logging.getLogger().setLevel(logging.WARNING)
+        log_level = "WARNING"
     elif args.verbose:
-        import logging
-        logging.getLogger().setLevel(logging.DEBUG)
+        log_level = "DEBUG"
+
+    setup_logging(level=log_level)
+    logger.info("🚀 Starting mCODE Translator End-to-End Processor")
+    logger.info(f"📊 Log level: {log_level or 'default (INFO)'}")
+    logger.info(f"🎨 Colored logging: Enabled")
 
     # Determine memory storage behavior
     # Default: store in memory unless dry-run is specified
@@ -246,17 +269,31 @@ def main():
         trials_limit=args.trials_limit,
         patients_limit=args.patients_limit,
         workers=args.workers,
-        store_in_memory=store_in_memory
+        store_in_memory=store_in_memory,
     )
 
+    # Log token usage summary if available
+    total_usage = global_token_tracker.get_total_usage()
+    if total_usage.total_tokens > 0:
+        logger.info("📊 Token Usage Summary:")
+        logger.info(f"   Total tokens: {total_usage.total_tokens}")
+        logger.info(f"   Prompt tokens: {total_usage.prompt_tokens}")
+        logger.info(f"   Completion tokens: {total_usage.completion_tokens}")
+        logger.info(f"   Model: {total_usage.model_name or 'Unknown'}")
+
     # Print final results
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("🎉 END-TO-END PROCESSING COMPLETE")
-    print("="*60)
+    print("=" * 60)
     print(f"Condition: {args.condition}")
     print(f"Trials processed: {results.get('trials_processed', 0)}")
     print(f"Patients processed: {results.get('patients_processed', 0)}")
     print(f"CORE Memory storage: {'Enabled' if store_in_memory else 'Disabled'}")
+
+    if total_usage.total_tokens > 0:
+        print(
+            f"Token usage: {total_usage.total_tokens} total ({total_usage.prompt_tokens} prompt + {total_usage.completion_tokens} completion)"
+        )
 
     if results.get("errors"):
         print(f"\n⚠️  Errors encountered: {len(results['errors'])}")

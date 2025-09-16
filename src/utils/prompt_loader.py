@@ -516,13 +516,19 @@ class PromptLoader:
             The default prompt content, formatted if arguments provided
         """
         try:
-            return self.get_prompt("direct_mcode_evidence_based_concise", **format_kwargs)
+            return self.get_prompt(
+                "direct_mcode_evidence_based_concise", **format_kwargs
+            )
         except Exception as e:
-            logger.warning(f"Could not load default prompt 'direct_mcode_evidence_based_concise': {e}")
+            logger.warning(
+                f"Could not load default prompt 'direct_mcode_evidence_based_concise': {e}"
+            )
             # Fallback to first available prompt if default fails
             available_prompts = list(self.prompts_config.keys())
             if available_prompts:
-                logger.info(f"Falling back to first available prompt: {available_prompts[0]}")
+                logger.info(
+                    f"Falling back to first available prompt: {available_prompts[0]}"
+                )
                 return self.get_prompt(available_prompts[0], **format_kwargs)
             else:
                 raise ValueError("No prompts available in configuration")

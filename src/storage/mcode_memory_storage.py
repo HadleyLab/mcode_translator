@@ -8,10 +8,10 @@ structure and codes for later retrieval and analysis.
 
 from typing import Any, Dict, List, Optional
 
+from src.services.summarizer import McodeSummarizer
 from src.utils.config import Config
 from src.utils.core_memory_client import CoreMemoryClient, CoreMemoryError
 from src.utils.logging_config import get_logger
-from src.services.summarizer import McodeSummarizer
 
 
 class McodeMemoryStorage:
@@ -62,7 +62,39 @@ class McodeMemoryStorage:
             bool: True if stored successfully
         """
         try:
-            summary = self.summarizer.create_trial_summary(mcode_data)
+            # The summarizer expects the original trial data, not processed mCODE data
+            # Extract the original trial data from mcode_data if available
+            trial_data = mcode_data.get("original_trial_data")
+            if not trial_data:
+                # If original trial data is not available, try to reconstruct from metadata
+                trial_data = {
+                    "protocolSection": {
+                        "identificationModule": {
+                            "nctId": trial_id,
+                            "briefTitle": mcode_data.get("trial_metadata", {}).get(
+                                "brief_title", "Unknown"
+                            ),
+                            "officialTitle": mcode_data.get("trial_metadata", {}).get(
+                                "official_title", "Unknown"
+                            ),
+                        },
+                        "statusModule": {
+                            "overallStatus": mcode_data.get("trial_metadata", {}).get(
+                                "overall_status", "Unknown"
+                            )
+                        },
+                        "designModule": {
+                            "studyType": mcode_data.get("trial_metadata", {}).get(
+                                "study_type", "Unknown"
+                            ),
+                            "phases": mcode_data.get("trial_metadata", {}).get(
+                                "phase", []
+                            ),
+                        },
+                    }
+                }
+
+            summary = self.summarizer.create_trial_summary(trial_data)
             self.client.ingest(summary)
             self.logger.info(f"✅ Stored trial {trial_id} mCODE summary in CORE Memory")
             return True
@@ -87,7 +119,17 @@ class McodeMemoryStorage:
             bool: True if stored successfully
         """
         try:
-            summary = self.summarizer.create_patient_summary(mcode_data)
+            # The summarizer expects the original patient FHIR bundle data
+            # Extract it from mcode_data if available, otherwise use the processed data
+            patient_bundle = mcode_data.get("original_patient_data")
+            if not patient_bundle:
+                # If original data is not available, try to reconstruct or use processed data
+                self.logger.warning(
+                    f"Original patient data not available for {patient_id}, using processed data"
+                )
+                patient_bundle = mcode_data
+
+            summary = self.summarizer.create_patient_summary(patient_bundle)
             self.client.ingest(summary)
             self.logger.info(
                 f"✅ Stored patient {patient_id} mCODE summary in CORE Memory"

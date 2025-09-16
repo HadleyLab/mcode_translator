@@ -8,12 +8,9 @@ and creating configured pipeline components.
 from typing import Any, Dict, Optional
 
 from src.pipeline import McodePipeline
-from src.pipeline.unified_pipeline import (
-    DataProcessor,
-    DataStorage,
-    UnifiedPipeline,
-    create_clinical_trial_pipeline,
-)
+from src.pipeline.unified_pipeline import (DataProcessor, DataStorage,
+                                           UnifiedPipeline,
+                                           create_clinical_trial_pipeline)
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
 
@@ -76,14 +73,13 @@ class DependencyContainer:
             Configured McodePipeline processor
         """
         # Extract configuration from kwargs or use defaults
-        prompt_name = kwargs.get('prompt_name', 'direct_mcode_evidence_based_concise')
-        model_name = kwargs.get('model_name', 'deepseek-coder')  # Use configured default model
+        prompt_name = kwargs.get("prompt_name", "direct_mcode_evidence_based_concise")
+        model_name = kwargs.get(
+            "model_name", "deepseek-coder"
+        )  # Use configured default model
 
         # Create and return the processor
-        return McodePipeline(
-            prompt_name=prompt_name,
-            model_name=model_name
-        )
+        return McodePipeline(prompt_name=prompt_name, model_name=model_name)
 
     def create_memory_storage(self) -> DataStorage:
         """
@@ -97,7 +93,7 @@ class DependencyContainer:
     def create_clinical_trial_pipeline(
         self,
         processor_config: Optional[Dict[str, Any]] = None,
-        include_storage: bool = True
+        include_storage: bool = True,
     ) -> UnifiedPipeline:
         """
         Create a complete clinical trial processing pipeline.
@@ -120,15 +116,12 @@ class DependencyContainer:
             storage = self.create_memory_storage()
 
         # Create and return unified pipeline
-        return create_clinical_trial_pipeline(
-            processor=processor,
-            storage=storage
-        )
+        return create_clinical_trial_pipeline(processor=processor, storage=storage)
 
     def create_patient_data_pipeline(
         self,
         processor_config: Optional[Dict[str, Any]] = None,
-        include_storage: bool = True
+        include_storage: bool = True,
     ) -> UnifiedPipeline:
         """
         Create a complete patient data processing pipeline.
@@ -149,10 +142,8 @@ class DependencyContainer:
             storage = self.create_memory_storage()
 
         from src.pipeline.unified_pipeline import create_patient_data_pipeline
-        return create_patient_data_pipeline(
-            processor=processor,
-            storage=storage
-        )
+
+        return create_patient_data_pipeline(processor=processor, storage=storage)
 
 
 # Global container instance
@@ -181,8 +172,7 @@ def reset_container():
 
 # Convenience functions for common pipeline creation
 def create_trial_pipeline(
-    processor_config: Optional[Dict[str, Any]] = None,
-    include_storage: bool = True
+    processor_config: Optional[Dict[str, Any]] = None, include_storage: bool = True
 ) -> UnifiedPipeline:
     """
     Create a clinical trial processing pipeline using the global container.
@@ -195,14 +185,12 @@ def create_trial_pipeline(
         Configured pipeline
     """
     return get_container().create_clinical_trial_pipeline(
-        processor_config=processor_config,
-        include_storage=include_storage
+        processor_config=processor_config, include_storage=include_storage
     )
 
 
 def create_patient_pipeline(
-    processor_config: Optional[Dict[str, Any]] = None,
-    include_storage: bool = True
+    processor_config: Optional[Dict[str, Any]] = None, include_storage: bool = True
 ) -> UnifiedPipeline:
     """
     Create a patient data processing pipeline using the global container.
@@ -215,6 +203,5 @@ def create_patient_pipeline(
         Configured pipeline
     """
     return get_container().create_patient_data_pipeline(
-        processor_config=processor_config,
-        include_storage=include_storage
+        processor_config=processor_config, include_storage=include_storage
     )
