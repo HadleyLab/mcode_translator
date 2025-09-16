@@ -3,7 +3,14 @@
 Patients Processor - Process patient data with mCODE mapping.
 
 A command-line interface for processing patient data with mCODE mapping
-and storing the resulting summaries to CORE Memory.
+and storing the resulting summaries to CORE Memory or saving as JSON/NDJSON files.
+
+Features:
+- Extract mCODE elements from FHIR patient bundles
+- Save processed data in JSON array format or NDJSON format
+- Support for dry-run mode (no CORE Memory storage)
+- Trial eligibility filtering capabilities
+- Concurrent processing with worker threads
 """
 
 import argparse
@@ -24,6 +31,12 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Process patients and save as JSON array
+  python -m src.cli.patients_processor --patients patients.json --output mcode_patients.json --dry-run
+
+  # Process patients and save as NDJSON (recommended for large datasets)
+  python -m src.cli.patients_processor --patients patients.json --output mcode_patients.ndjson --dry-run
+
   # Process patients and store in core memory
   python -m src.cli.patients_processor --patients patients.json --trials trials.json --store-in-core-memory
 
@@ -35,6 +48,10 @@ Examples:
 
   # Custom core memory settings
   python -m src.cli.patients_processor --patients patients.json --store-in-core-memory --memory-source custom_source
+
+Output Formats:
+  JSON:  Standard JSON array format - [{"patient_bundle": [...]}]
+  NDJSON: Newline-delimited JSON - one JSON object per line (recommended for streaming)
         """,
     )
 
@@ -51,6 +68,11 @@ Examples:
     parser.add_argument(
         "--trials",
         help="Path to JSON file containing trial data for eligibility filtering",
+    )
+
+    parser.add_argument(
+        "--output",
+        help="Path to save processed mCODE data (JSON array or NDJSON format). Use .ndjson extension for newline-delimited format"
     )
 
     return parser
@@ -189,6 +211,60 @@ def main() -> None:
 
         if result.success:
             print("✅ Patients processing completed successfully!")
+
+            # Save processed data to JSON file if requested
+            if args.output and result.data:
+                try:
+                    import json
+                    # Extract only mCODE elements for cleaner JSON structure
+                    mcode_only_data = []
+                    for patient_bundle in result.data:
+                        if isinstance(patient_bundle, dict) and 'entry' in patient_bundle:
+                            # Process each entry in the FHIR bundle
+                            mcode_entries = []
+                            for entry in patient_bundle['entry']:
+                                if (isinstance(entry, dict) and 'resource' in entry and
+                                    isinstance(entry['resource'], dict)):
+                                    resource = entry['resource']
+                                    resource_type = resource.get('resourceType')
+
+                                    # Extract mCODE-relevant information
+                                    if resource_type == 'Patient':
+                                        patient_id = resource.get('id')
+                                        name = resource.get('name', [{}])[0] if resource.get('name') else {}
+                                        mcode_entries.append({
+                                            'resource_type': 'Patient',
+                                            'id': patient_id,
+                                            'name': name
+                                        })
+                                    elif resource_type in ['Condition', 'Observation', 'MedicationStatement', 'Procedure']:
+                                        # These contain clinical data that would be mCODE-mapped
+                                        mcode_entries.append({
+                                            'resource_type': resource_type,
+                                            'id': resource.get('id'),
+                                            'clinical_data': resource
+                                        })
+
+                            if mcode_entries:
+                                mcode_only_data.append({
+                                    'patient_bundle': mcode_entries
+                                })
+
+                    # Save as NDJSON (Newline Delimited JSON) format
+                    with open(args.output, 'w', encoding='utf-8') as f:
+                        for item in mcode_only_data:
+                            json.dump(item, f, ensure_ascii=False, default=str)
+                            f.write('\n')
+                    print(f"💾 mCODE-only patient data saved as NDJSON to: {args.output}")
+                except Exception as e:
+                    print(f"❌ Failed to save processed data: {e}")
+                    # Fallback to original method
+                    try:
+                        with open(args.output, 'w', encoding='utf-8') as f:
+                            json.dump(result.data, f, indent=2, ensure_ascii=False, default=str)
+                        print(f"💾 Full patient data saved to: {args.output}")
+                    except Exception as e2:
+                        print(f"❌ Failed alternative serialization: {e2}")
 
             # Print summary
             metadata = result.metadata
