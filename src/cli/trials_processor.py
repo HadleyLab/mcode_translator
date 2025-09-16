@@ -3,7 +3,14 @@
 Trials Processor - Process clinical trials with mCODE mapping.
 
 A command-line interface for processing clinical trial data with mCODE mapping
-and storing the resulting summaries to CORE Memory.
+and storing the resulting summaries to CORE Memory or saving as JSON/NDJSON files.
+
+Features:
+- Extract mCODE elements from clinical trial data
+- Save processed data in JSON array format or NDJSON format
+- Support for dry-run mode (no CORE Memory storage)
+- Configurable LLM models and prompts
+- Concurrent processing with worker threads
 """
 
 import argparse
@@ -25,6 +32,12 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Process trials and save as JSON array
+  python -m src.cli.trials_processor trials.json --output mcode_trials.json --dry-run
+
+  # Process trials and save as NDJSON (recommended for large datasets)
+  python -m src.cli.trials_processor trials.json --output mcode_trials.ndjson --dry-run
+
   # Process trials from file and store in core memory
   python -m src.cli.trials_processor trials.json --store-in-core-memory
 
@@ -39,6 +52,10 @@ Examples:
 
   # Custom core memory settings
   python -m src.cli.trials_processor trials.json --store-in-core-memory --memory-source custom_source
+
+Output Formats:
+  JSON:  Standard JSON array format - [{"trial_id": "...", "mcode_elements": {...}}]
+  NDJSON: Newline-delimited JSON - one JSON object per line (recommended for streaming)
         """,
     )
 
@@ -51,6 +68,11 @@ Examples:
 
     # Input arguments
     parser.add_argument("input_file", help="Path to JSON file containing trial data")
+
+    parser.add_argument(
+        "--output",
+        help="Path to save processed mCODE data (JSON array or NDJSON format). Use .ndjson extension for newline-delimited format"
+    )
 
     return parser
 
@@ -153,6 +175,96 @@ def main() -> None:
 
         if result.success:
             logger.info("✅ Trials processing completed successfully!")
+
+            # Save processed data to JSON file if requested
+            if hasattr(args, 'output') and args.output and result.data:
+                try:
+                    import json
+                    # Debug: Check what we actually have
+                    logger.info(f"Debug: result.data type: {type(result.data)}")
+                    if result.data:
+                        logger.info(f"Debug: result.data length: {len(result.data)}")
+                        if len(result.data) > 0:
+                            logger.info(f"Debug: first item type: {type(result.data[0])}")
+                            if hasattr(result.data[0], '__dict__'):
+                                logger.info(f"Debug: first item keys: {list(result.data[0].__dict__.keys())}")
+                                # Check if McodeResults exists
+                                if 'McodeResults' in result.data[0].__dict__:
+                                    logger.info(f"Debug: McodeResults found: {type(result.data[0].__dict__['McodeResults'])}")
+                                else:
+                                    logger.info("Debug: No McodeResults in first item")
+                                    # Show all keys to understand structure
+                                    for key in result.data[0].__dict__.keys():
+                                        logger.info(f"Debug: Key '{key}': {type(result.data[0].__dict__[key])}")
+                            elif isinstance(result.data[0], dict):
+                                logger.info(f"Debug: first item dict keys: {list(result.data[0].keys())}")
+                                if 'McodeResults' in result.data[0]:
+                                    logger.info(f"Debug: McodeResults found in dict: {type(result.data[0]['McodeResults'])}")
+                                else:
+                                    logger.info("Debug: No McodeResults in first dict item")
+
+                    # Extract only mCODE elements for cleaner JSON structure
+                    mcode_only_data = []
+                    for item in result.data:
+                        # Handle both dict objects and objects with __dict__
+                        if isinstance(item, dict):
+                            item_dict = item
+                        elif hasattr(item, '__dict__'):
+                            item_dict = item.__dict__.copy()
+                        else:
+                            continue
+
+                        # Extract trial ID from nested structure
+                        trial_id = None
+                        if ('protocolSection' in item_dict and
+                            'identificationModule' in item_dict['protocolSection']):
+                            trial_id = item_dict['protocolSection']['identificationModule'].get('nctId')
+
+                        # Extract only the McodeResults
+                        if 'McodeResults' in item_dict and item_dict['McodeResults']:
+                            mcode_results = item_dict['McodeResults']
+
+                            # Convert McodeElement objects to dictionaries
+                            if 'mcode_mappings' in mcode_results and mcode_results['mcode_mappings']:
+                                mappings = []
+                                for mapping in mcode_results['mcode_mappings']:
+                                    if hasattr(mapping, '__dict__'):
+                                        mappings.append(mapping.__dict__)
+                                    else:
+                                        mappings.append(mapping)
+                                mcode_results['mcode_mappings'] = mappings
+
+                            # Create clean mCODE-only structure
+                            clean_item = {
+                                'trial_id': trial_id,
+                                'mcode_elements': mcode_results
+                            }
+                            mcode_only_data.append(clean_item)
+                        else:
+                            # If no McodeResults, create a placeholder
+                            logger.warning(f"No McodeResults found for trial {trial_id}")
+                            clean_item = {
+                                'trial_id': trial_id,
+                                'mcode_elements': {'note': 'No mCODE mappings generated'}
+                            }
+                            mcode_only_data.append(clean_item)
+
+                    logger.info(f"Debug: mcode_only_data length: {len(mcode_only_data)}")
+                    # Save as NDJSON (Newline Delimited JSON) format
+                    with open(args.output, 'w', encoding='utf-8') as f:
+                        for item in mcode_only_data:
+                            json.dump(item, f, ensure_ascii=False, default=str)
+                            f.write('\n')
+                    logger.info(f"💾 mCODE-only data saved as NDJSON to: {args.output}")
+                except Exception as e:
+                    logger.error(f"Failed to save processed data: {e}")
+                    # Try alternative serialization
+                    try:
+                        with open(args.output, 'w', encoding='utf-8') as f:
+                            json.dump(str(result.data), f, indent=2, ensure_ascii=False)
+                        logger.info(f"💾 Processed data saved as string to: {args.output}")
+                    except Exception as e2:
+                        logger.error(f"Failed alternative serialization: {e2}")
 
             # Print summary
             metadata = result.metadata
