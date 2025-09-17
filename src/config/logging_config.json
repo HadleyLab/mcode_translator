@@ -5,7 +5,7 @@
   "colored_output": true,
   "handlers": {
     "console": {
-      "level": "DEBUG",
+      "level": "INFO",
       "colors": {
         "DEBUG": "cyan",
         "INFO": "green",
@@ -17,16 +17,28 @@
   },
   "loggers": {
     "mcode_translator": {
-      "level": "DEBUG",
-      "propagate": true
-    },
-    "src.workflows": {
       "level": "INFO",
       "propagate": true
     },
-    "src.storage": {
+    "src.workflows": {
       "level": "WARNING",
       "propagate": true
+    },
+    "src.storage": {
+      "level": "ERROR",
+      "propagate": true
+    },
+    "src.pipeline": {
+      "level": "WARNING",
+      "propagate": true
+    },
+    "src.utils": {
+      "level": "WARNING",
+      "propagate": true
+    },
+    "httpx": {
+      "level": "WARNING",
+      "propagate": false
     },
     "requests": {
       "level": "WARNING",
