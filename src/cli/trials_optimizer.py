@@ -56,7 +56,7 @@ Examples:
 
     parser.add_argument(
         "--trials-file",
-        help="Path to JSON file containing trial data for testing (optional)",
+        help="Path to NDJSON file containing trial data for testing (optional)",
     )
 
     parser.add_argument(
@@ -109,21 +109,16 @@ def main() -> None:
             sys.exit(1)
 
         try:
+            import json
+
+            # Read NDJSON file (one JSON object per line)
+            trials_data = []
             with open(trials_path, "r", encoding="utf-8") as f:
-                import json
-
-                trials_json = json.loads(f.read())
-
-            # Handle different trial data formats
-            if isinstance(trials_json, list):
-                trials_data = trials_json
-            elif isinstance(trials_json, dict):
-                if "studies" in trials_json:
-                    trials_data = trials_json["studies"]
-                elif "successful_trials" in trials_json:
-                    trials_data = trials_json["successful_trials"]
-                else:
-                    trials_data = [trials_json]
+                for line in f:
+                    line = line.strip()
+                    if line:  # Skip empty lines
+                        trial_data = json.loads(line)
+                        trials_data.append(trial_data)
 
             print(f"📋 Loaded {len(trials_data)} trials for optimization testing")
 

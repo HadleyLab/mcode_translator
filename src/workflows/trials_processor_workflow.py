@@ -15,10 +15,10 @@ from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.api_manager import APIManager
 from src.utils.logging_config import get_logger
 
-from .base_workflow import ProcessorWorkflow, WorkflowResult
+from .base_workflow import TrialsProcessorWorkflow, WorkflowResult
 
 
-class TrialsProcessorWorkflow(ProcessorWorkflow):
+class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
     """
     Workflow for processing clinical trials with mCODE mapping.
 
@@ -46,12 +46,15 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         """
         Execute the trials processing workflow.
 
+        By default, does NOT store results to CORE memory. Use store_in_memory=True to enable.
+
         Args:
             **kwargs: Workflow parameters including:
                 - trials_data: List of trial data to process
                 - model: LLM model to use
                 - prompt: Prompt template to use
-                - store_in_memory: Whether to store results in core memory
+                - workers: Number of concurrent workers
+                - store_in_memory: Whether to store results in CORE memory (default: False)
 
         Returns:
             WorkflowResult: Processing results
@@ -62,8 +65,10 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             trials_data = kwargs.get("trials_data", [])
             model = kwargs.get("model")
             prompt = kwargs.get("prompt", "direct_mcode_evidence_based_concise")
-            store_in_memory = kwargs.get("store_in_memory", True)
             workers = kwargs.get("workers", 0)
+
+            # Default to NOT store in CORE memory - use --ingest to enable
+            store_in_memory = False
 
             self.logger.info(
                 f"Extracted parameters: trials_data={len(trials_data) if trials_data else 0}, model={model}, prompt={prompt}, store_in_memory={store_in_memory}"
@@ -126,7 +131,6 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                                     trial,
                                     model,
                                     prompt,
-                                    store_in_memory,
                                     i + 1,
                                 ),
                             )
@@ -247,9 +251,17 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                                     trial_id, comprehensive_mcode, trial
                                 )
                             )
-                            self.logger.info(
-                                f"Generated comprehensive trial summary for {trial_id}: {natural_language_summary[:100]}..."
-                            )
+
+                            # Check if we have full trial data for better summarization
+                            has_full_data = self._check_trial_has_full_data(trial)
+                            if has_full_data:
+                                self.logger.info(
+                                    f"✅ Generated comprehensive trial summary for {trial_id} using full clinical data: {natural_language_summary[:100]}..."
+                                )
+                            else:
+                                self.logger.info(
+                                    f"⚠️  Generated trial summary for {trial_id} using partial data (consider using NCT ID for complete data): {natural_language_summary[:100]}..."
+                                )
 
                             # Add natural language summary to the enhanced trial data
                             if "McodeResults" not in enhanced_trial:
@@ -261,7 +273,7 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                                 f"Added natural language summary to enhanced_trial McodeResults: {len(natural_language_summary)} chars"
                             )
 
-                            # Store to core memory if requested
+                            # Store to CORE memory if requested
                             if store_in_memory and self.memory_storage:
                                 # Prepare comprehensive mCODE data for storage
                                 mcode_data = {
@@ -333,8 +345,7 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                     "success_rate": success_rate,
                     "model_used": model,
                     "prompt_used": prompt,
-                    "stored_in_memory": store_in_memory
-                    and self.memory_storage is not None,
+                    "stored_in_memory": store_in_memory and self.memory_storage is not None,
                 },
             )
 
@@ -579,6 +590,11 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         """Extract eligibility criteria in mCODE space for patient matching."""
         elements = {}
 
+        # Type guard: ensure eligibility is a dict
+        if not isinstance(eligibility, dict):
+            self.logger.warning(f"Expected dict for eligibility, got {type(eligibility)}")
+            return elements
+
         # Age criteria mapping to mCODE
         min_age = eligibility.get("minimumAge")
         max_age = eligibility.get("maximumAge")
@@ -626,13 +642,29 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         """Extract trial conditions as mCODE CancerCondition for matching."""
         elements = {}
 
+        # Type guard: ensure conditions is a dict
+        if not isinstance(conditions, dict):
+            self.logger.warning(f"Expected dict for conditions, got {type(conditions)}")
+            return elements
+
         condition_list = conditions.get("conditions", [])
         if condition_list:
             cancer_conditions = []
             comorbid_conditions = []
 
             for condition in condition_list:
-                condition_name = condition.get("name", "").lower()
+                # Handle both dict and string formats for conditions
+                if isinstance(condition, dict):
+                    condition_name = condition.get("name", "").lower()
+                    condition_code = condition.get("code", "Unknown")
+                elif isinstance(condition, str):
+                    # Handle case where condition is just a string
+                    condition_name = condition.lower()
+                    condition_code = "Unknown"
+                    self.logger.debug(f"Condition is string format: {condition}")
+                else:
+                    self.logger.warning(f"Unexpected condition type {type(condition)}: {condition}")
+                    continue
 
                 # Check if it's a cancer condition
                 if any(
@@ -654,10 +686,8 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                     cancer_conditions.append(
                         {
                             "system": "http://snomed.info/sct",
-                            "code": condition.get("code", "Unknown"),
-                            "display": condition.get(
-                                "name", "Unknown cancer condition"
-                            ),
+                            "code": condition_code,
+                            "display": condition_name if condition_name else "Unknown cancer condition",
                             "interpretation": "Confirmed",
                         }
                     )
@@ -665,8 +695,8 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
                     comorbid_conditions.append(
                         {
                             "system": "http://snomed.info/sct",
-                            "code": condition.get("code", "Unknown"),
-                            "display": condition.get("name", "Unknown condition"),
+                            "code": condition_code,
+                            "display": condition_name if condition_name else "Unknown condition",
                         }
                     )
 
@@ -683,12 +713,22 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         """Extract trial interventions as mCODE CancerRelatedMedicationStatement."""
         elements = {}
 
+        # Type guard: ensure interventions is a dict
+        if not isinstance(interventions, dict):
+            self.logger.warning(f"Expected dict for interventions, got {type(interventions)}")
+            return elements
+
         intervention_list = interventions.get("interventions", [])
         if intervention_list:
             medication_interventions = []
             other_interventions = []
 
             for intervention in intervention_list:
+                # Type guard: ensure intervention is a dict
+                if not isinstance(intervention, dict):
+                    self.logger.warning(f"Expected dict for intervention, got {type(intervention)}: {intervention}")
+                    continue
+
                 intervention_type = intervention.get("type", "").lower()
                 intervention_name = intervention.get("name", "")
                 description = intervention.get("description", "")
@@ -722,6 +762,11 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
     def _extract_trial_design_mcode(self, design: Dict[str, Any]) -> Dict[str, Any]:
         """Extract trial design elements for mCODE mapping."""
         elements = {}
+
+        # Type guard: ensure design is a dict
+        if not isinstance(design, dict):
+            self.logger.warning(f"Expected dict for design, got {type(design)}")
+            return elements
 
         # Study type
         study_type = design.get("studyType")
@@ -760,6 +805,11 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
     def _extract_trial_temporal_mcode(self, status: Dict[str, Any]) -> Dict[str, Any]:
         """Extract temporal information for trial phases and timelines."""
         elements = {}
+
+        # Type guard: ensure status is a dict
+        if not isinstance(status, dict):
+            self.logger.warning(f"Expected dict for status, got {type(status)}")
+            return elements
 
         # Overall status
         overall_status = status.get("overallStatus")
@@ -800,6 +850,11 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
     def _extract_trial_sponsor_mcode(self, sponsor: Dict[str, Any]) -> Dict[str, Any]:
         """Extract sponsor and organization information."""
         elements = {}
+
+        # Type guard: ensure sponsor is a dict
+        if not isinstance(sponsor, dict):
+            self.logger.warning(f"Expected dict for sponsor, got {type(sponsor)}")
+            return elements
 
         # Lead sponsor
         lead_sponsor = sponsor.get("leadSponsor", {})
@@ -1001,7 +1056,6 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
         trial: Dict[str, Any],
         model: str,
         prompt: str,
-        store_in_memory: bool,
         index: int,
     ) -> tuple:
         """
@@ -1011,7 +1065,6 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             trial: Trial data to process
             model: LLM model to use
             prompt: Prompt template to use
-            store_in_memory: Whether to store in CORE memory
             index: Trial index for logging
 
         Returns:
@@ -1198,3 +1251,55 @@ class TrialsProcessorWorkflow(ProcessorWorkflow):
             "memory_storage_available": self.memory_storage is not None,
             "cache_stats": self.get_cache_stats(),
         }
+
+    def _check_trial_has_full_data(self, trial: Dict[str, Any]) -> bool:
+        """Check if trial data appears to be complete (from full study API) vs partial (from search API)."""
+        if not trial or not isinstance(trial, dict):
+            return False
+
+        protocol_section = trial.get("protocolSection", {})
+        if not isinstance(protocol_section, dict):
+            return False
+
+        # Check for fields that indicate full study data
+        indicators = []
+
+        # 1. Detailed eligibility criteria (longer than search results)
+        eligibility = protocol_section.get("eligibilityModule", {})
+        if isinstance(eligibility, dict):
+            criteria = eligibility.get("eligibilityCriteria", "")
+            if criteria and len(criteria) > 100:  # Search results are usually truncated
+                indicators.append(True)
+
+        # 2. Interventions with detailed information
+        arms = protocol_section.get("armsInterventionsModule", {})
+        if isinstance(arms, dict):
+            interventions = arms.get("interventions", [])
+            if interventions and len(interventions) > 0:
+                # Check if interventions have detailed descriptions
+                detailed_interventions = any(
+                    isinstance(i, dict) and i.get("description", "")
+                    for i in interventions
+                )
+                if detailed_interventions:
+                    indicators.append(True)
+
+        # 3. Outcomes module (rarely present in search results)
+        outcomes = protocol_section.get("outcomesModule", {})
+        if isinstance(outcomes, dict) and outcomes.get("primaryOutcomes"):
+            indicators.append(True)
+
+        # 4. Derived section (only in full study data)
+        derived_section = trial.get("derivedSection")
+        if derived_section and isinstance(derived_section, dict):
+            indicators.append(True)
+
+        # 5. Detailed sponsor/collaborator information
+        sponsor = protocol_section.get("sponsorCollaboratorsModule", {})
+        if isinstance(sponsor, dict):
+            collaborators = sponsor.get("collaborators", [])
+            if collaborators and len(collaborators) > 0:
+                indicators.append(True)
+
+        # Consider data complete if we have at least 3 indicators
+        return len(indicators) >= 3

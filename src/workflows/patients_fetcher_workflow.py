@@ -171,18 +171,20 @@ class PatientsFetcherWorkflow(FetcherWorkflow):
             }
 
     def _save_results(self, data: List[Dict[str, Any]], output_path: str) -> None:
-        """Save fetch results to file."""
+        """Save fetch results to file in NDJSON format."""
         try:
             output_file = Path(output_path)
 
             # Create output directory if it doesn't exist
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
-            # Save as JSON array
+            # Save as NDJSON (one JSON object per line)
             with open(output_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+                for item in data:
+                    json.dump(item, f, ensure_ascii=False)
+                    f.write('\n')
 
-            self.logger.info(f"💾 Patient data saved to: {output_file}")
+            self.logger.info(f"💾 Patient data saved to: {output_file} (NDJSON format)")
 
         except Exception as e:
             self.logger.error(f"Failed to save patient data to {output_path}: {e}")

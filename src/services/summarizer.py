@@ -325,6 +325,13 @@ class McodeSummarizer:
         if not trial_data or not trial_data.get("protocolSection"):
             raise ValueError("Trial data is missing or not in the expected format.")
 
+        # Check data completeness and alert user if full trial data is missing
+        completeness_alert = self._check_trial_data_completeness(trial_data)
+        if completeness_alert:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(completeness_alert)
+
         # Extract key information from trial data
         protocol_section = trial_data.get("protocolSection", {})
         identification = protocol_section.get("identificationModule", {})
@@ -1630,3 +1637,83 @@ class McodeSummarizer:
                 # Always add space before new sentence since all sentences end with periods
                 result += " " + sentence
         return result
+
+    def _check_trial_data_completeness(self, trial_data: Dict[str, Any]) -> str:
+        """
+        Check if trial data appears to be from search results (incomplete) vs full study data.
+
+        Args:
+            trial_data: Trial data dictionary
+
+        Returns:
+            str: Alert message if data appears incomplete, empty string if complete
+        """
+        if not trial_data or not isinstance(trial_data, dict):
+            return ""
+
+        protocol_section = trial_data.get("protocolSection", {})
+        if not isinstance(protocol_section, dict):
+            return ""
+
+        # Check for fields that are typically missing in search results but present in full study data
+        missing_fields = []
+
+        # Check for detailed eligibility criteria (often truncated in search)
+        eligibility = protocol_section.get("eligibilityModule", {})
+        if isinstance(eligibility, dict):
+            criteria = eligibility.get("eligibilityCriteria", "")
+            if not criteria or len(criteria) < 50:  # Very short criteria likely truncated
+                missing_fields.append("detailed eligibility criteria")
+        else:
+            missing_fields.append("eligibility criteria")
+
+        # Check for intervention details
+        arms = protocol_section.get("armsInterventionsModule", {})
+        if isinstance(arms, dict):
+            interventions = arms.get("interventions", [])
+            if not interventions or len(interventions) == 0:
+                missing_fields.append("intervention details")
+        else:
+            missing_fields.append("intervention details")
+
+        # Check for outcomes module (rarely in search results)
+        outcomes = protocol_section.get("outcomesModule", {})
+        if isinstance(outcomes, dict):
+            primary_outcomes = outcomes.get("primaryOutcomes", [])
+            if not primary_outcomes or len(primary_outcomes) == 0:
+                missing_fields.append("primary outcomes")
+        else:
+            missing_fields.append("primary outcomes")
+
+        # Check for sponsor collaborators details
+        sponsor = protocol_section.get("sponsorCollaboratorsModule", {})
+        if isinstance(sponsor, dict):
+            collaborators = sponsor.get("collaborators", [])
+            if not collaborators or len(collaborators) == 0:
+                missing_fields.append("collaborator information")
+        else:
+            missing_fields.append("sponsor information")
+
+        # Check for derived section (only in full study data)
+        derived_section = trial_data.get("derivedSection")
+        if not derived_section or not isinstance(derived_section, dict):
+            missing_fields.append("derived section with additional codes")
+
+        if missing_fields:
+            nct_id = "Unknown"
+            try:
+                identification = protocol_section.get("identificationModule", {})
+                if isinstance(identification, dict):
+                    nct_id = identification.get("nctId", "Unknown")
+            except:
+                pass
+
+            alert_msg = (
+                f"⚠️  TRIAL DATA QUALITY ALERT: Trial {nct_id} appears to be missing complete clinical data. "
+                f"Missing fields: {', '.join(missing_fields)}. "
+                "For better summarization quality, use specific NCT IDs instead of condition search "
+                "to get complete clinical trial data from ClinicalTrials.gov."
+            )
+            return alert_msg
+
+        return ""
