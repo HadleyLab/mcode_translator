@@ -51,7 +51,10 @@ class TestClinicalTrialsProcessorWorkflow:
         # Valid trial data
         valid_trial = {
             "protocolSection": {
-                "identificationModule": {"nctId": "NCT123"}
+                "identificationModule": {"nctId": "NCT123"},
+                "eligibilityModule": {
+                    "eligibilityCriteria": "Inclusion criteria: ..."
+                }
             }
         }
 
@@ -65,7 +68,8 @@ class TestClinicalTrialsProcessorWorkflow:
         stats = processor.get_processing_stats()
 
         assert isinstance(stats, dict)
-        assert "config" in stats
+        assert "status" in stats
+        assert stats["status"] == "pipeline_not_initialized"
 
 
 class TestTrialsFetcherWorkflow:
