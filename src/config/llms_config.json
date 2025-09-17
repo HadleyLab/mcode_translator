@@ -12,30 +12,34 @@
           "max_tokens": 4096
         }
       },
-      "gpt-4": {
+      "gpt-4o": {
         "provider": "openai",
-        "model_name": "gpt-4",
+        "model_name": "gpt-4o",
+        "api_key_env_var": "OPENAI_API_KEY",
         "api_base": "https://api.openai.com/v1",
-        "max_tokens": 8192,
-        "temperature": 0.1,
+        "default_parameters": {
+          "temperature": 0.1,
+          "max_tokens": 4096
+        },
         "timeout_seconds": 60,
         "rate_limit_per_minute": 200
       },
       "claude-3": {
         "provider": "anthropic",
-        "model_name": "claude-3-sonnet-20240229",
+        "model_name": "claude-3-5-sonnet-20241022",
+        "api_key_env_var": "ANTHROPIC_API_KEY",
         "api_base": "https://api.anthropic.com",
-        "max_tokens": 4096,
-        "temperature": 0.1,
+        "default_parameters": {
+          "temperature": 0.1,
+          "max_tokens": 4096
+        },
         "timeout_seconds": 60,
         "rate_limit_per_minute": 50
       }
     },
     "optimization": {
       "test_models": [
-        "deepseek-coder",
-        "gpt-4",
-        "claude-3"
+        "gpt-4o"
       ],
       "metrics": [
         "accuracy",

@@ -129,14 +129,21 @@ class LLMService:
                 api_key=api_key
             )
 
-            # Make API call
-            response = client.chat.completions.create(
-                model=llm_config.model_identifier,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=temperature,
-                max_tokens=max_tokens,
-                response_format={"type": "json_object"}
-            )
+            # Make API call - conditionally use response_format for supported models
+            call_params = {
+                "model": llm_config.model_identifier,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": temperature,
+                "max_tokens": max_tokens
+            }
+
+            # Only use response_format for models that support it (newer OpenAI models)
+            if "gpt-4o" in llm_config.model_identifier.lower() or "gpt-4-turbo" in llm_config.model_identifier.lower():
+                call_params["response_format"] = {"type": "json_object"}
+                self.logger.debug(f"Using response_format for model: {llm_config.model_identifier}")
+
+            self.logger.debug(f"Making LLM API call to {llm_config.model_identifier}")
+            response = client.chat.completions.create(**call_params)
 
             # Extract token usage using existing utility
             from src.utils.token_tracker import extract_token_usage_from_response
@@ -152,7 +159,22 @@ class LLMService:
             if not response_content:
                 raise ValueError("Empty LLM response")
 
-            return json.loads(response_content)
+            self.logger.debug(f"Raw LLM response: {response_content}")
+
+            try:
+                # Handle markdown-wrapped JSON responses (```json ... ```)
+                cleaned_content = response_content.strip()
+                if cleaned_content.startswith('```json') and cleaned_content.endswith('```'):
+                    # Extract JSON from markdown code block
+                    json_start = cleaned_content.find('{')
+                    json_end = cleaned_content.rfind('}')
+                    if json_start != -1 and json_end != -1:
+                        cleaned_content = cleaned_content[json_start:json_end+1]
+                
+                return json.loads(cleaned_content)
+            except json.JSONDecodeError as e:
+                self.logger.error(f"JSON decode failed for response: {response_content}")
+                raise ValueError(f"Invalid JSON response: {str(e)}") from e
 
         except Exception as e:
             self.logger.error(f"LLM API call failed: {str(e)}")

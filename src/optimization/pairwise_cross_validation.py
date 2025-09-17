@@ -21,10 +21,7 @@ import numpy as np
 from scipy.stats import kendalltau, ttest_ind
 
 from src.pipeline import McodePipeline
-from src.pipeline.task_queue import (BenchmarkTask, PipelineTaskQueue,
-                                     initialize_task_queue,
-                                     shutdown_task_queue)
-from src.shared.benchmark_result import BenchmarkResult
+from src.shared.models import BenchmarkResult, McodeElement, PipelineResult
 from src.shared.types import TaskStatus
 from src.utils.llm_loader import LLMLoader
 from src.utils.logging_config import get_logger, setup_logging
@@ -85,18 +82,15 @@ class PairwiseCrossValidator:
         # Task queue for async processing
         self.task_queue: Optional[PipelineTaskQueue] = None
 
-    async def initialize(self, max_workers: int = 3) -> None:
-        """Initialize the async task queue."""
-        self.logger.info(
-            f"🚀 Initializing pairwise validator with {max_workers} workers"
-        )
-        self.task_queue = await initialize_task_queue(max_workers=max_workers)
+    def initialize(self) -> None:
+        """Initialize the validator."""
+        # Ensure logging is configured
+        setup_logging("INFO")
+        self.logger.info("🚀 Initializing pairwise validator")
 
-    async def shutdown(self) -> None:
-        """Shutdown the task queue."""
-        if self.task_queue:
-            self.logger.info("🛑 Shutting down pairwise validator")
-            await shutdown_task_queue()
+    def shutdown(self) -> None:
+        """Shutdown the validator."""
+        self.logger.info("🛑 Shutting down pairwise validator")
 
     def get_available_prompts(self) -> List[str]:
         """Get list of available prompt names."""
@@ -173,14 +167,9 @@ class PairwiseCrossValidator:
         self.logger.info(f"🔄 Generated {len(tasks)} pairwise comparison tasks")
         return tasks
 
-    async def run_pairwise_validation(
-        self, tasks: List[PairwiseComparisonTask], max_workers: int = 3
-    ) -> None:
-        """Run pairwise validation using async task queue."""
-        if not self.task_queue:
-            await self.initialize(max_workers)
-
-        self.logger.info(f"🔬 Running pairwise validation with {max_workers} workers")
+    def run_pairwise_validation(self, tasks: List[PairwiseComparisonTask]) -> None:
+        """Run pairwise validation."""
+        self.logger.info("🔬 Running pairwise validation")
         start_time = time.time()
 
         # Process all tasks
@@ -189,7 +178,7 @@ class PairwiseCrossValidator:
 
         for task in tasks:
             try:
-                await self._process_pairwise_task(task)
+                self._process_pairwise_task(task)
                 processed_tasks += 1
 
                 # Progress logging
@@ -207,7 +196,7 @@ class PairwiseCrossValidator:
         duration = time.time() - start_time
         self.logger.info(f"🏁 Pairwise validation completed in {duration:.2f} seconds")
 
-    async def _process_pairwise_task(self, task: PairwiseComparisonTask) -> None:
+    def _process_pairwise_task(self, task: PairwiseComparisonTask) -> None:
         """Process a single pairwise comparison task."""
         task.start_time = time.time()
         task.status = TaskStatus.PROCESSING
@@ -221,15 +210,16 @@ class PairwiseCrossValidator:
                 gold_pipeline = McodePipeline(
                     prompt_name=task.gold_prompt, model_name=task.gold_model
                 )
-                pipeline_result = await asyncio.to_thread(
-                    gold_pipeline.process_clinical_trial, task.trial_data
-                )
+                pipeline_result = gold_pipeline.process(task.trial_data)
 
                 # Convert to BenchmarkResult
-                benchmark = BenchmarkResult()
-                benchmark.success = True
-                benchmark.mcode_mappings = pipeline_result.mcode_mappings or []
-                benchmark.validation_results = pipeline_result.validation_results or {}
+                benchmark = BenchmarkResult(
+                    task_id=f"{task.gold_prompt}_{task.gold_model}_{task.trial_id}",
+                    trial_id=task.trial_id,
+                    pipeline_result=pipeline_result,
+                    execution_time_seconds=0.0,  # Will be set later
+                    status="success"
+                )
 
                 task.gold_result = benchmark
                 self.combination_cache[gold_key] = benchmark
@@ -242,14 +232,15 @@ class PairwiseCrossValidator:
                 comp_pipeline = McodePipeline(
                     prompt_name=task.comp_prompt, model_name=task.comp_model
                 )
-                pipeline_result = await asyncio.to_thread(
-                    comp_pipeline.process_clinical_trial, task.trial_data
-                )
+                pipeline_result = comp_pipeline.process(task.trial_data)
 
-                benchmark = BenchmarkResult()
-                benchmark.success = True
-                benchmark.mcode_mappings = pipeline_result.mcode_mappings or []
-                benchmark.validation_results = pipeline_result.validation_results or {}
+                benchmark = BenchmarkResult(
+                    task_id=f"{task.comp_prompt}_{task.comp_model}_{task.trial_id}",
+                    trial_id=task.trial_id,
+                    pipeline_result=pipeline_result,
+                    execution_time_seconds=0.0,  # Will be set later
+                    status="success"
+                )
 
                 task.comp_result = benchmark
                 self.combination_cache[comp_key] = benchmark
@@ -273,8 +264,8 @@ class PairwiseCrossValidator:
         if not task.gold_result or not task.comp_result:
             return
 
-        gold_mappings = task.gold_result.mcode_mappings
-        comp_mappings = task.comp_result.mcode_mappings
+        gold_mappings = task.gold_result.pipeline_result.mcode_mappings
+        comp_mappings = task.comp_result.pipeline_result.mcode_mappings
 
         # Mapping-level metrics only
         mapping_metrics = self._calculate_mapping_metrics(gold_mappings, comp_mappings)
@@ -284,74 +275,104 @@ class PairwiseCrossValidator:
             **mapping_metrics,
             "gold_mappings_count": len(gold_mappings),
             "comp_mappings_count": len(comp_mappings),
-            "gold_compliance_score": task.gold_result.validation_results.get(
-                "compliance_score", 0
-            ),
-            "comp_compliance_score": task.comp_result.validation_results.get(
-                "compliance_score", 0
-            ),
+            "gold_compliance_score": task.gold_result.pipeline_result.validation_results.compliance_score,
+            "comp_compliance_score": task.comp_result.pipeline_result.validation_results.compliance_score,
         }
 
     def _calculate_mapping_metrics(
-        self, gold_mappings: List[Dict], comp_mappings: List[Dict]
+        self, gold_mappings: List[McodeElement], comp_mappings: List[McodeElement]
     ) -> Dict[str, Any]:
-        """Calculate mapping-level comparison metrics with detailed examples."""
-        # Convert mappings to comparable strings
-        gold_strings = [
-            f"{m.get('mcode_element', '')}={json.dumps(m.get('value', ''))}"
-            for m in gold_mappings
-        ]
-        comp_strings = [
-            f"{m.get('mcode_element', '')}={json.dumps(m.get('value', ''))}"
-            for m in comp_mappings
-        ]
+        """Calculate mapping-level comparison metrics with detailed examples and edge case handling."""
+        try:
+            # Convert mappings to comparable strings with validation
+            gold_strings = []
+            for m in gold_mappings:
+                if m.element_type and m.code:
+                    gold_strings.append(f"{m.element_type}={json.dumps(m.code)}")
+                else:
+                    self.logger.warning(f"Invalid gold mapping: element_type={m.element_type}, code={m.code}")
 
-        gold_set = set(gold_strings)
-        comp_set = set(comp_strings)
-        intersection = gold_set.intersection(comp_set)
-        union = gold_set.union(comp_set)
+            comp_strings = []
+            for m in comp_mappings:
+                if m.element_type and m.code:
+                    comp_strings.append(f"{m.element_type}={json.dumps(m.code)}")
+                else:
+                    self.logger.warning(f"Invalid comp mapping: element_type={m.element_type}, code={m.code}")
 
-        # Jaccard similarity
-        jaccard = len(intersection) / len(union) if union else 0
+            gold_set = set(gold_strings)
+            comp_set = set(comp_strings)
+            intersection = gold_set.intersection(comp_set)
+            union = gold_set.union(comp_set)
 
-        # Precision/recall metrics
-        true_positives = len(intersection)
-        false_positives = len(comp_set - gold_set)
-        false_negatives = len(gold_set - comp_set)
+            # Jaccard similarity
+            jaccard = len(intersection) / len(union) if union else 0
 
-        precision = (
-            true_positives / (true_positives + false_positives)
-            if (true_positives + false_positives) > 0
-            else 0
-        )
-        recall = (
-            true_positives / (true_positives + false_negatives)
-            if (true_positives + false_negatives) > 0
-            else 0
-        )
-        f1 = (
-            2 * (precision * recall) / (precision + recall)
-            if (precision + recall) > 0
-            else 0
-        )
+            # Precision/recall metrics
+            true_positives = len(intersection)
+            false_positives = len(comp_set - gold_set)
+            false_negatives = len(gold_set - comp_set)
 
-        # Get detailed examples
-        true_positive_examples = list(intersection)[:5]  # Limit to 5 examples
-        false_positive_examples = list(comp_set - gold_set)[:5]  # Limit to 5 examples
-        false_negative_examples = list(gold_set - comp_set)[:5]  # Limit to 5 examples
+            precision = (
+                true_positives / (true_positives + false_positives)
+                if (true_positives + false_positives) > 0
+                else 0
+            )
+            recall = (
+                true_positives / (true_positives + false_negatives)
+                if (true_positives + false_negatives) > 0
+                else 0
+            )
+            f1 = (
+                2 * (precision * recall) / (precision + recall)
+                if (precision + recall) > 0
+                else 0
+            )
 
-        return {
-            "mapping_jaccard_similarity": jaccard,
-            "mapping_precision": precision,
-            "mapping_recall": recall,
-            "mapping_f1_score": f1,
-            "mapping_true_positives": true_positives,
-            "mapping_false_positives": false_positives,
-            "mapping_false_negatives": false_negatives,
-            "true_positive_examples": true_positive_examples,
-            "false_positive_examples": false_positive_examples,
-            "false_negative_examples": false_negative_examples,
-        }
+            # Get detailed examples with better formatting
+            true_positive_examples = list(intersection)[:5]  # Limit to 5 examples
+            false_positive_examples = list(comp_set - gold_set)[:5]  # Limit to 5 examples
+            false_negative_examples = list(gold_set - comp_set)[:5]  # Limit to 5 examples
+
+            # Additional metrics for quality assessment
+            gold_confidence_avg = sum(m.confidence_score or 0 for m in gold_mappings) / len(gold_mappings) if gold_mappings else 0
+            comp_confidence_avg = sum(m.confidence_score or 0 for m in comp_mappings) / len(comp_mappings) if comp_mappings else 0
+
+            return {
+                "mapping_jaccard_similarity": jaccard,
+                "mapping_precision": precision,
+                "mapping_recall": recall,
+                "mapping_f1_score": f1,
+                "mapping_true_positives": true_positives,
+                "mapping_false_positives": false_positives,
+                "mapping_false_negatives": false_negatives,
+                "gold_mappings_count": len(gold_mappings),
+                "comp_mappings_count": len(comp_mappings),
+                "gold_avg_confidence": gold_confidence_avg,
+                "comp_avg_confidence": comp_confidence_avg,
+                "true_positive_examples": true_positive_examples,
+                "false_positive_examples": false_positive_examples,
+                "false_negative_examples": false_negative_examples,
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error calculating mapping metrics: {e}")
+            return {
+                "mapping_jaccard_similarity": 0.0,
+                "mapping_precision": 0.0,
+                "mapping_recall": 0.0,
+                "mapping_f1_score": 0.0,
+                "mapping_true_positives": 0,
+                "mapping_false_positives": 0,
+                "mapping_false_negatives": 0,
+                "gold_mappings_count": len(gold_mappings),
+                "comp_mappings_count": len(comp_mappings),
+                "gold_avg_confidence": 0.0,
+                "comp_avg_confidence": 0.0,
+                "true_positive_examples": [],
+                "false_positive_examples": [],
+                "false_negative_examples": [],
+                "error": str(e)
+            }
 
     def _extract_trial_id(self, trial_data: Dict[str, Any], index: int) -> str:
         """Extract trial ID from trial data."""

@@ -46,17 +46,12 @@ Clinical Text:
 {{
   "mcode_mappings": [
     {{
-      "resourceType": "Condition|Observation|MedicationStatement|Patient",
-      "mcode_element": "CancerCondition|TNMStage|CancerTreatment|etc",
-      "code": {{
-        "system": "http://snomed.info/sct",
-        "code": "SNOMED_CODE",
-        "display": "Display_Name"
-      }},
-      "value": "Mapped_Value",
-      "mapping_confidence": 0.0-1.0,
-      "source_text_fragment": "EXACT quoted text from source",
-      "mapping_rationale": "Brief justification"
+      "element_type": "CancerCondition|CancerTreatment|TNMStage|etc",
+      "code": "SNOMED_CODE",
+      "display": "Human readable name",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 0.0,
+      "evidence_text": "EXACT quoted text from source supporting this mapping"
     }}
   ],
   "metadata": {{
@@ -72,9 +67,12 @@ Clinical Text:
 2. Identify explicit mCODE-relevant information
 3. Map only what is clearly stated
 4. Provide exact source text fragments
-5. Assign realistic confidence scores
+5. Assign realistic confidence scores (0.0-1.0)
 6. Generate concise, accurate mappings
-7. Return ONLY valid JSON, no additional text
-8. Ensure all JSON is valid and parseable
-9. Properly escape any special characters within string values
-10. Do not include any text outside of the JSON structure
+7. **STRICT JSON COMPLIANCE**: Return ONLY valid JSON, no additional text
+8. **REQUIRED FIELDS**: Each mapping MUST include element_type, code, display, system, confidence_score, evidence_text
+9. **VALIDATION RULES**: confidence_score must be 0.0-1.0, evidence_text must be non-empty string
+10. **ERROR PREVENTION**: If any required field is missing, do not create the mapping
+11. Ensure all JSON is valid and parseable
+12. Properly escape any special characters within string values
+13. Do not include any text outside of the JSON structure
