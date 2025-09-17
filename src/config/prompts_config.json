@@ -1,6 +1,6 @@
 {
   "prompts": {
-    "default": "direct_mcode_evidence_based_concise",
+    "default": "test",
     "available": {
       "direct_mcode_evidence_based_concise": {
         "name": "Direct mCODE Evidence-Based Concise",
@@ -16,7 +16,7 @@
         "file": "direct_mcode_evidence_based.txt",
         "category": "evidence_based",
         "complexity": "high",
-        "expected_quality": 0.90
+        "expected_quality": 0.9
       },
       "direct_mcode_minimal": {
         "name": "Direct mCODE Minimal",
@@ -24,7 +24,7 @@
         "file": "direct_mcode_minimal.txt",
         "category": "minimal",
         "complexity": "low",
-        "expected_quality": 0.70
+        "expected_quality": 0.7
       },
       "direct_mcode_comprehensive": {
         "name": "Direct mCODE Comprehensive",
@@ -40,7 +40,7 @@
         "file": "direct_mcode_structured.txt",
         "category": "structured",
         "complexity": "medium",
-        "expected_quality": 0.80
+        "expected_quality": 0.8
       }
     },
     "categories": {
@@ -62,9 +62,22 @@
       }
     },
     "optimization": {
-      "test_prompts": ["direct_mcode_evidence_based_concise", "direct_mcode_minimal"],
-      "quality_metrics": ["completeness", "accuracy", "consistency"],
-      "performance_metrics": ["speed", "token_usage"]
+      "test_prompts": [
+        "direct_mcode_evidence_based_concise",
+        "direct_mcode_minimal"
+      ],
+      "quality_metrics": [
+        "completeness",
+        "accuracy",
+        "consistency"
+      ],
+      "performance_metrics": [
+        "speed",
+        "token_usage"
+      ],
+      "optimized_prompt": "test",
+      "optimization_score": 0.8,
+      "last_optimized": "2025-09-17T12:54:35.112447"
     }
   }
 }

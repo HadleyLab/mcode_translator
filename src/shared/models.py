@@ -39,42 +39,72 @@ class EligibilityModule(BaseModel):
 
 
 class Condition(BaseModel):
-    """Medical condition information."""
+    """Medical condition information - flexible to match API response."""
 
-    name: str = Field(..., description="Condition name")
+    name: Optional[str] = Field(None, description="Condition name")
     code: Optional[str] = Field(None, description="Condition code")
     codeSystem: Optional[str] = Field(None, description="Coding system")
+
+    @model_validator(mode="before")
+    @classmethod
+    def handle_string_condition(cls, values):
+        """Handle conditions that come as strings from API."""
+        if isinstance(values, str):
+            return {"name": values}
+        return values
+
+
+class ArmGroup(BaseModel):
+    """Trial arm group information."""
+
+    label: Optional[str] = Field(None, description="Arm group label")
+    type: Optional[str] = Field(None, description="Arm group type")
+    description: Optional[str] = Field(None, description="Arm group description")
+    interventionNames: Optional[List[str]] = Field(None, description="Intervention names")
 
 
 class Intervention(BaseModel):
     """Trial intervention information."""
 
-    name: str = Field(..., description="Intervention name")
     type: Optional[str] = Field(None, description="Intervention type")
+    name: Optional[str] = Field(None, description="Intervention name")
     description: Optional[str] = Field(None, description="Intervention description")
+    armGroupLabels: Optional[List[str]] = Field(None, description="Arm group labels")
+    otherNames: Optional[List[str]] = Field(None, description="Other names")
 
 
 class ProtocolSection(BaseModel):
-    """Clinical trial protocol section."""
+    """Clinical trial protocol section - flexible to match API response."""
 
     identificationModule: IdentificationModule
     eligibilityModule: Optional[EligibilityModule] = None
-    conditionsModule: Optional[Dict[str, List[Condition]]] = Field(
-        None, description="Trial conditions"
+    conditionsModule: Optional[Dict[str, Any]] = Field(
+        None, description="Trial conditions - flexible structure"
     )
-    armsInterventionsModule: Optional[Dict[str, List[Intervention]]] = Field(
-        None, description="Trial interventions"
+    armsInterventionsModule: Optional[Dict[str, Any]] = Field(
+        None, description="Trial interventions - flexible structure"
     )
+    statusModule: Optional[Dict[str, Any]] = Field(None, description="Status information")
+    sponsorCollaboratorsModule: Optional[Dict[str, Any]] = Field(None, description="Sponsor info")
+    oversightModule: Optional[Dict[str, Any]] = Field(None, description="Oversight info")
+    descriptionModule: Optional[Dict[str, Any]] = Field(None, description="Description info")
+    designModule: Optional[Dict[str, Any]] = Field(None, description="Design info")
+    outcomesModule: Optional[Dict[str, Any]] = Field(None, description="Outcomes info")
+    contactsLocationsModule: Optional[Dict[str, Any]] = Field(None, description="Contacts info")
 
 
 class ClinicalTrialData(BaseModel):
-    """Complete clinical trial data structure."""
+    """Complete clinical trial data structure - flexible to match API response."""
 
     protocolSection: ProtocolSection
     hasResults: Optional[bool] = Field(False, description="Whether trial has results")
     studyType: Optional[str] = Field(None, description="Study type")
     overallStatus: Optional[str] = Field(None, description="Trial status")
     phase: Optional[str] = Field(None, description="Trial phase")
+    resultsSection: Optional[Dict[str, Any]] = Field(None, description="Results section")
+
+    # Allow extra fields to match API response
+    model_config = {"extra": "allow"}
 
     @property
     def nct_id(self) -> str:

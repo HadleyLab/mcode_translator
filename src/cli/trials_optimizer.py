@@ -19,25 +19,28 @@ from src.workflows.trials_optimizer_workflow import TrialsOptimizerWorkflow
 def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser for trials optimizer."""
     parser = argparse.ArgumentParser(
-        description="Optimize mCODE translation parameters",
+        description="Optimize mCODE translation parameters for breast cancer trials",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Optimize with default settings
-  python -m src.cli.trials_optimizer
+   # Optimize breast cancer trials with default settings
+   python -m src.cli.trials_optimizer --condition "breast cancer"
 
-  # Test specific prompts and models
-  python -m src.cli.trials_optimizer --prompts direct_mcode_evidence_based,evidence_based_minimal --models gpt-4,claude-3
+   # Test specific prompts and models with cross validation
+   python -m src.cli.trials_optimizer --condition "breast cancer" --prompts direct_mcode_evidence_based_concise,direct_mcode_evidence_based --models deepseek-coder,gpt-4 --cv-folds 5
 
-  # Limit combinations and save results
-  python -m src.cli.trials_optimizer --max-combinations 5 --save-config optimal_config.json
+   # Use existing trials file for optimization
+   python -m src.cli.trials_optimizer --trials-file breast_cancer_trials.ndjson --cv-folds 3
 
-  # List available prompts and models
-  python -m src.cli.trials_optimizer --list-prompts
-  python -m src.cli.trials_optimizer --list-models
+   # Save optimal configuration
+   python -m src.cli.trials_optimizer --condition "breast cancer" --save-config optimal_breast_cancer_config.json
 
-  # Verbose output
-  python -m src.cli.trials_optimizer --verbose
+   # List available prompts and models
+   python -m src.cli.trials_optimizer --list-prompts
+   python -m src.cli.trials_optimizer --list-models
+
+   # Verbose output with custom limits
+   python -m src.cli.trials_optimizer --condition "breast cancer" --limit 20 --cv-folds 3 --verbose
         """,
     )
 
@@ -46,6 +49,27 @@ Examples:
 
     # Optimizer-specific arguments
     McodeCLI.add_optimizer_args(parser)
+
+    # Breast cancer specific arguments
+    parser.add_argument(
+        "--condition",
+        required=True,
+        help="Medical condition to fetch trials for"
+    )
+
+    parser.add_argument(
+        "--limit",
+        type=int,
+        required=True,
+        help="Maximum number of trials to fetch for optimization"
+    )
+
+    parser.add_argument(
+        "--cv-folds",
+        type=int,
+        required=True,
+        help="Number of cross validation folds"
+    )
 
     # Additional arguments
     parser.add_argument(
@@ -111,33 +135,73 @@ def main() -> None:
         try:
             import json
 
-            # Read NDJSON file (one JSON object per line)
-            trials_data = []
             with open(trials_path, "r", encoding="utf-8") as f:
-                for line in f:
+                file_content = f.read().strip()
+
+            # Try to parse as single JSON object first
+            try:
+                json_data = json.loads(file_content)
+                if isinstance(json_data, dict) and "successful_trials" in json_data:
+                    # Format: {"summary": {...}, "successful_trials": [...]}
+                    trials_data = json_data["successful_trials"]
+                elif isinstance(json_data, dict) and "studies" in json_data:
+                    # Format: {"studies": [...]}
+                    trials_data = json_data["studies"]
+                elif isinstance(json_data, list):
+                    # Format: [...]
+                    trials_data = json_data
+                else:
+                    raise ValueError("Unknown JSON structure")
+            except json.JSONDecodeError:
+                # Try to parse as NDJSON (one JSON object per line)
+                trials_data = []
+                for line in file_content.split('\n'):
                     line = line.strip()
-                    if line:  # Skip empty lines
+                    if line:
                         trial_data = json.loads(line)
                         trials_data.append(trial_data)
 
-            print(f"📋 Loaded {len(trials_data)} trials for optimization testing")
+            if not trials_data:
+                raise ValueError("No trial data found in file")
+
+            print(f"📋 Loaded {len(trials_data)} trials from file for optimization testing")
 
         except Exception as e:
             print(f"❌ Failed to load trials data: {e}")
             sys.exit(1)
     else:
-        print("⚠️  No trials file provided. Using sample data for optimization.")
-        # Could load default sample trials here
+        # Fetch live breast cancer trials data
+        print(f"🔍 Fetching live breast cancer trials (limit: {args.limit})...")
+        from src.workflows.trials_fetcher_workflow import TrialsFetcherWorkflow
+
+        fetcher_workflow = TrialsFetcherWorkflow(config)
+        fetch_result = fetcher_workflow.execute(
+            condition=args.condition,
+            limit=args.limit
+        )
+
+        if not fetch_result.success or not fetch_result.data:
+            raise RuntimeError(f"Failed to fetch trials: {fetch_result.error_message}")
+
+        trials_data = fetch_result.data
+        print(f"📋 Fetched {len(trials_data)} live breast cancer trials for optimization")
 
     # Prepare workflow parameters
-    workflow_kwargs = {"trials_data": trials_data}
+    workflow_kwargs = {
+        "trials_data": trials_data,
+        "cv_folds": args.cv_folds
+    }
 
-    # Parse prompts and models
+    # Parse prompts and models - use defaults if not specified
     if args.prompts:
         workflow_kwargs["prompts"] = [p.strip() for p in args.prompts.split(",")]
+    else:
+        workflow_kwargs["prompts"] = ["direct_mcode_evidence_based_concise"]
 
     if args.models:
         workflow_kwargs["models"] = [m.strip() for m in args.models.split(",")]
+    else:
+        workflow_kwargs["models"] = ["deepseek-coder"]
 
     if args.max_combinations:
         workflow_kwargs["max_combinations"] = args.max_combinations
@@ -173,13 +237,15 @@ def main() -> None:
             metadata = result.metadata
             if metadata:
                 combinations_tested = metadata.get("total_combinations_tested", 0)
+                cv_folds = metadata.get("cv_folds", 3)
                 successful_tests = metadata.get("successful_tests", 0)
                 best_score = metadata.get("best_score", 0)
                 best_combo = metadata.get("best_combination")
 
                 print(f"🧪 Combinations tested: {combinations_tested}")
+                print(f"🔀 Cross validation folds: {cv_folds}")
                 print(f"✅ Successful tests: {successful_tests}")
-                print(f"🏆 Best score: {best_score:.3f}")
+                print(f"🏆 Best CV score: {best_score:.3f}")
 
                 if best_combo:
                     print(f"🤖 Best model: {best_combo.get('model', 'unknown')}")
@@ -194,9 +260,11 @@ def main() -> None:
                 for i, combo_result in enumerate(result.data):
                     if combo_result.get("success"):
                         combo = combo_result.get("combination", {})
-                        score = combo_result.get("average_score", 0)
+                        cv_score = combo_result.get("cv_average_score", 0)
+                        cv_std = combo_result.get("cv_std_score", 0)
+                        folds = combo_result.get("cv_folds", 3)
                         print(
-                            f"  {i+1}. {combo.get('model')} + {combo.get('prompt')}: {score:.3f}"
+                            f"  {i+1}. {combo.get('model')} + {combo.get('prompt')}: {cv_score:.3f} ± {cv_std:.3f} ({folds}-fold CV)"
                         )
                     else:
                         combo = combo_result.get("combination", {})

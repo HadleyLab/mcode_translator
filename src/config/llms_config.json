@@ -1,6 +1,6 @@
 {
   "models": {
-    "default": "deepseek-coder",
+    "default": "test",
     "available": {
       "deepseek-coder": {
         "provider": "deepseek",
@@ -32,9 +32,21 @@
       }
     },
     "optimization": {
-      "test_models": ["deepseek-coder", "gpt-4", "claude-3"],
-      "metrics": ["accuracy", "speed", "cost"],
-      "sample_size": 10
+      "test_models": [
+        "deepseek-coder",
+        "gpt-4",
+        "claude-3"
+      ],
+      "metrics": [
+        "accuracy",
+        "speed",
+        "cost"
+      ],
+      "sample_size": 10,
+      "optimized_model": "test",
+      "optimized_prompt": "test",
+      "optimization_score": 0.8,
+      "last_optimized": "2025-09-17T12:54:35.111059"
     }
   }
 }
