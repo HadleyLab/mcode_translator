@@ -105,7 +105,8 @@ def main() -> None:
 
     # Initialize and execute workflow
     try:
-        workflow = PatientsFetcherWorkflow(config)
+        # Disable CORE memory for fetching operations unless explicitly requested
+        workflow = PatientsFetcherWorkflow(config, memory_storage=False)
         result = workflow.execute(**workflow_kwargs)
 
         if result.success:

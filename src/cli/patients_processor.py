@@ -30,23 +30,26 @@ def create_parser() -> argparse.ArgumentParser:
         description="Process patient data with mCODE mapping",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  # Process patients and save as NDJSON (recommended for large datasets)
-  python -m src.cli.patients_processor --in patients.ndjson --output mcode_patients.ndjson
+ Examples:
+   # Process patients and save as NDJSON (recommended for large datasets)
+   python -m src.cli.patients_processor --in patients.json --out mcode_patients.ndjson
 
-  # Process patients and store in core memory
-  python -m src.cli.patients_processor --in patients.ndjson --trials trials.ndjson --ingest
+   # Process patients and store in core memory
+   python -m src.cli.patients_processor --in patients.json --trials trials.ndjson --ingest
 
-  # Process patients with trial filtering
-  python -m src.cli.patients_processor --in patients.ndjson --trials trials.ndjson --ingest
+   # Process patients with trial filtering
+   python -m src.cli.patients_processor --in patients.json --trials trials.ndjson --ingest
 
-  # Custom core memory settings
-  python -m src.cli.patients_processor --in patients.ndjson --ingest --memory-source custom_source
+   # Custom core memory settings
+   python -m src.cli.patients_processor --in patients.json --ingest --memory-source custom_source
 
-Output Formats:
-  JSON:  Standard JSON array format - [{"patient_bundle": [...]}]
-  NDJSON: Newline-delimited JSON - one JSON object per line (recommended for streaming)
-        """,
+ Input Formats:
+   JSON:  Standard JSON array format - [{"entry": [...], ...}]
+   NDJSON: Newline-delimited JSON - one JSON object per line
+
+ Output Formats:
+   NDJSON: Newline-delimited JSON - one JSON object per line (recommended for streaming)
+         """,
     )
 
     # Add shared arguments
@@ -135,10 +138,39 @@ def main() -> None:
         import json
 
         if args.input_file:
-            # Read NDJSON file (one JSON object per line)
+            # Try to read as JSON array first, then fall back to NDJSON
             patients_list = []
             with open(patients_path, "r", encoding="utf-8") as f:
-                for line in f:
+                content = f.read().strip()
+
+            if not content:
+                print("❌ Patients file is empty")
+                sys.exit(1)
+
+            # Try to parse as JSON array first
+            try:
+                json_data = json.loads(content)
+                if isinstance(json_data, list):
+                    # JSON array format
+                    for patient_data in json_data:
+                        if isinstance(patient_data, dict) and "entry" in patient_data:
+                            # Single FHIR Bundle
+                            patients_list.append(patient_data)
+                        else:
+                            print(f"❌ Invalid patient data format in array. Expected FHIR Bundle.")
+                            continue
+                    print(f"📄 Read {len(patients_list)} patients from JSON array format")
+                elif isinstance(json_data, dict) and "entry" in json_data:
+                    # Single FHIR Bundle
+                    patients_list = [json_data]
+                    print("📄 Read single patient from JSON format")
+                else:
+                    print("❌ Invalid JSON format. Expected FHIR Bundle array or object.")
+                    sys.exit(1)
+            except json.JSONDecodeError:
+                # Fall back to NDJSON format
+                print("📄 JSON parsing failed, trying NDJSON format...")
+                for line in content.split('\n'):
                     line = line.strip()
                     if line:  # Skip empty lines
                         patient_data = json.loads(line)
@@ -149,6 +181,7 @@ def main() -> None:
                         else:
                             print(f"❌ Invalid patient data format in line. Expected FHIR Bundle.")
                             continue
+                print(f"📄 Read {len(patients_list)} patients from NDJSON format")
         else:
             # Read from stdin as NDJSON
             patients_list = []
@@ -207,7 +240,7 @@ def main() -> None:
     }
 
     # Initialize core memory storage if requested
-    memory_storage = None
+    memory_storage = False  # Default to disabled
     if args.ingest:
         try:
             # Use centralized configuration

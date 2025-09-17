@@ -31,26 +31,29 @@ def create_parser() -> argparse.ArgumentParser:
         description="Process clinical trials with mCODE mapping",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  # Process trials and save as NDJSON (recommended for large datasets)
-  python -m src.cli.trials_processor trials.ndjson --output mcode_trials.ndjson
+ Examples:
+   # Process trials and save as NDJSON (recommended for large datasets)
+   python -m src.cli.trials_processor trials.json --out mcode_trials.ndjson
 
-  # Process trials from file and store in core memory
-  python -m src.cli.trials_processor trials.ndjson --ingest
+   # Process trials from file and store in core memory
+   python -m src.cli.trials_processor trials.json --ingest
 
-  # Process with specific model and prompt
-  python -m src.cli.trials_processor trials.ndjson --model gpt-4 --prompt direct_mcode_evidence_based
+   # Process with specific model and prompt
+   python -m src.cli.trials_processor trials.json --model gpt-4 --prompt direct_mcode_evidence_based
 
-  # Process single trial
-  python -m src.cli.trials_processor single_trial.ndjson --ingest
+   # Process single trial
+   python -m src.cli.trials_processor single_trial.json --ingest
 
-  # Custom core memory settings
-  python -m src.cli.trials_processor trials.ndjson --ingest --memory-source custom_source
+   # Custom core memory settings
+   python -m src.cli.trials_processor trials.json --ingest --memory-source custom_source
 
-Output Formats:
-  JSON:  Standard JSON array format - [{"trial_id": "...", "mcode_elements": {...}}]
-  NDJSON: Newline-delimited JSON - one JSON object per line (recommended for streaming)
-        """,
+ Input Formats:
+   JSON:  Standard JSON array format - [{"protocolSection": {...}, ...}]
+   NDJSON: Newline-delimited JSON - one JSON object per line
+
+ Output Formats:
+   NDJSON: Newline-delimited JSON - one JSON object per line (recommended for streaming)
+         """,
     )
 
     # Add shared arguments
@@ -110,13 +113,37 @@ def main() -> None:
         import json
 
         if args.input_file:
-            # Read NDJSON file (one JSON object per line)
+            # Try to read as JSON array first, then fall back to NDJSON
             trial_data = []
             with open(input_path, "r", encoding="utf-8") as f:
-                for line in f:
+                content = f.read().strip()
+
+            if not content:
+                logger.error("Input file is empty")
+                sys.exit(1)
+
+            # Try to parse as JSON array first
+            try:
+                json_data = json.loads(content)
+                if isinstance(json_data, list):
+                    # JSON array format
+                    trial_data = json_data
+                    logger.info(f"📄 Read {len(trial_data)} trials from JSON array format")
+                elif isinstance(json_data, dict):
+                    # Single JSON object
+                    trial_data = [json_data]
+                    logger.info("📄 Read single trial from JSON format")
+                else:
+                    logger.error("Invalid JSON format. Expected array or object.")
+                    sys.exit(1)
+            except json.JSONDecodeError:
+                # Fall back to NDJSON format
+                logger.info("📄 JSON parsing failed, trying NDJSON format...")
+                for line in content.split('\n'):
                     line = line.strip()
                     if line:  # Skip empty lines
                         trial_data.append(json.loads(line))
+                logger.info(f"📄 Read {len(trial_data)} trials from NDJSON format")
         else:
             # Read from stdin as NDJSON
             trial_data = []
@@ -172,7 +199,7 @@ def main() -> None:
         sys.exit(1)
 
     # Initialize core memory storage if requested
-    memory_storage = None
+    memory_storage = False  # Default to disabled
     if args.ingest:
         try:
             # Use centralized configuration

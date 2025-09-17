@@ -104,7 +104,8 @@ def main() -> None:
 
     # Execute workflow (sequential only - concurrent functionality removed for simplicity)
     try:
-        workflow = TrialsFetcherWorkflow(config)
+        # Disable CORE memory for fetching operations unless explicitly requested
+        workflow = TrialsFetcherWorkflow(config, memory_storage=False)
         result = workflow.execute(**workflow_kwargs)
 
         # Print results (common for both concurrent and sequential)
