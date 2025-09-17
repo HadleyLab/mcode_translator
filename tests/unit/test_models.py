@@ -10,11 +10,7 @@ from src.shared.models import (BenchmarkResult, ClinicalTrialData, FHIRBundle,
                                FHIRPatient, McodeElement, PatientData,
                                PipelineResult, ProcessingMetadata,
                                SourceReference, TokenUsage, ValidationResult,
-                               WorkflowResult, clinical_trial_from_dict,
-                               pipeline_result_from_dict,
-                               validate_clinical_trial_data,
-                               validate_patient_data,
-                               workflow_result_from_dict)
+                               WorkflowResult)
 
 
 class TestClinicalTrialData:
@@ -43,7 +39,7 @@ class TestClinicalTrialData:
             "phase": "Phase 2",
         }
 
-        trial = clinical_trial_from_dict(data)
+        trial = ClinicalTrialData(**data)
         assert trial.nct_id == "NCT12345678"
         assert trial.brief_title == "Test Trial"
         assert (
@@ -62,9 +58,9 @@ class TestClinicalTrialData:
             }
         }
 
-        is_valid, error = validate_clinical_trial_data(invalid_data)
-        assert not is_valid
-        assert "nctId" in error
+        with pytest.raises(Exception) as exc_info:
+            ClinicalTrialData(**invalid_data)
+        assert "nctId" in str(exc_info.value)
 
 
 class TestMcodeElement:
@@ -123,7 +119,7 @@ class TestPipelineResult:
             "original_data": {"test": "data"},
         }
 
-        result = pipeline_result_from_dict(result_data)
+        result = PipelineResult(**result_data)
         assert len(result.mcode_mappings) == 1
         assert result.validation_results.compliance_score == 0.85
         assert result.metadata.engine_type == "LLM"
@@ -140,7 +136,7 @@ class TestWorkflowResult:
             "metadata": {"duration": 120.5},
         }
 
-        result = workflow_result_from_dict(result_data)
+        result = WorkflowResult(**result_data)
         assert result.success is True
         assert result.data["trials_processed"] == 5
 
@@ -214,9 +210,9 @@ class TestPatientData:
             }
         }
 
-        is_valid, error = validate_patient_data(invalid_data)
-        assert not is_valid
-        assert "resourceType" in error
+        with pytest.raises(Exception) as exc_info:
+            PatientData(**invalid_data)
+        assert "resourceType" in str(exc_info.value)
 
 
 class TestTokenUsage:
