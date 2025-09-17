@@ -1,6 +1,6 @@
 {
   "prompts": {
-    "default": "test",
+    "default": "direct_mcode_evidence_based_concise",
     "available": {
       "direct_mcode_evidence_based_concise": {
         "name": "Direct mCODE Evidence-Based Concise",
@@ -75,9 +75,9 @@
         "speed",
         "token_usage"
       ],
-      "optimized_prompt": "test",
-      "optimization_score": 0.8,
-      "last_optimized": "2025-09-17T15:05:49.246786"
+      "optimized_prompt": "direct_mcode_evidence_based_concise",
+      "optimization_score": 0.8111111111111112,
+      "last_optimized": "2025-09-17T19:19:03.892720"
     }
   }
 }
