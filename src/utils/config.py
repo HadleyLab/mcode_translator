@@ -36,10 +36,7 @@ class Config:
         self.logging_config = self._load_logging_config()
         self.patterns_config = self._load_patterns_config()
 
-        # Legacy support - load old config.json if it exists
-        self.legacy_config = self._load_legacy_config()
-
-    # Legacy methods removed - now using modular config files
+        # No legacy support - forward compatibility only
 
     def is_cache_enabled(self) -> bool:
         """Check if caching is enabled"""
@@ -408,11 +405,6 @@ class Config:
         """Get demographic patterns"""
         return self.patterns_config["patterns"]["demographic_patterns"]
 
-    # Legacy Support Methods
-    def get_legacy_config(self) -> Optional[Dict[str, Any]]:
-        """Get legacy config for backward compatibility"""
-        return self.legacy_config
-
     def _load_cache_config(self) -> Dict[str, Any]:
         """Load cache configuration from modular config file"""
         return self._load_modular_config("cache_config.json")
@@ -448,17 +440,6 @@ class Config:
     def _load_prompts_config(self) -> Dict[str, Any]:
         """Load prompts configuration from modular config file"""
         return self._load_modular_config("prompts_config.json")
-
-    def _load_legacy_config(self) -> Optional[Dict[str, Any]]:
-        """Load legacy config.json for backward compatibility"""
-        config_path = Path(__file__).parent.parent.parent / "config.json"
-        if config_path.exists():
-            try:
-                with open(config_path, "r") as f:
-                    return json.load(f)
-            except Exception:
-                return None
-        return None
 
     def _load_modular_config(self, filename: str) -> Dict[str, Any]:
         """Load a modular configuration file"""

@@ -431,22 +431,6 @@ class BenchmarkResult(BaseModel):
     error_message: Optional[str] = Field(None, description="Error message if failed")
 
 
-# Utility functions for data conversion
-def clinical_trial_from_dict(data: Dict[str, Any]) -> ClinicalTrialData:
-    """Convert dictionary to ClinicalTrialData model with validation."""
-    return ClinicalTrialData(**data)
-
-
-def pipeline_result_from_dict(data: Dict[str, Any]) -> PipelineResult:
-    """Convert dictionary to PipelineResult model with validation."""
-    return PipelineResult(**data)
-
-
-def workflow_result_from_dict(data: Dict[str, Any]) -> WorkflowResult:
-    """Convert dictionary to WorkflowResult model with validation."""
-    return WorkflowResult(**data)
-
-
 def create_mcode_results_structure(pipeline_result) -> Dict[str, Any]:
     """
     Create standardized McodeResults structure from pipeline result.
@@ -489,36 +473,3 @@ def enhance_trial_with_mcode_results(
     enhanced_trial = trial_data.copy()
     enhanced_trial["McodeResults"] = create_mcode_results_structure(pipeline_result)
     return enhanced_trial
-
-
-# Removed legacy helper functions that are no longer needed:
-# - patient_data_from_dict: Use PatientData(**data) directly
-# - benchmark_result_from_dict: Use BenchmarkResult(**data) directly
-# - benchmark_result_from_dataclass: Migration function no longer needed
-# - patient_bundle_from_dict: Use FHIRBundle(**data) directly
-
-
-def validate_clinical_trial_data(data: Dict[str, Any]) -> tuple[bool, Optional[str]]:
-    """Validate clinical trial data structure.
-
-    Returns:
-        Tuple of (is_valid, error_message)
-    """
-    try:
-        clinical_trial_from_dict(data)
-        return True, None
-    except Exception as e:
-        return False, str(e)
-
-
-def validate_patient_data(data: Dict[str, Any]) -> tuple[bool, Optional[str]]:
-    """Validate patient data structure.
-
-    Returns:
-        Tuple of (is_valid, error_message)
-    """
-    try:
-        patient_data_from_dict(data)
-        return True, None
-    except Exception as e:
-        return False, str(e)
