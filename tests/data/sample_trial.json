@@ -1,0 +1,25 @@
+{
+  "nct_id": "NCT12345678",
+  "title": "Phase 2 Study of Test Drug in Breast Cancer",
+  "status": "Recruiting",
+  "phases": ["Phase 2"],
+  "conditions": ["Breast Cancer", "HER2 Positive Breast Cancer"],
+  "eligibility": {
+    "criteria": "Inclusion Criteria:\n- Age >= 18 years\n- Histologically confirmed breast cancer\n- HER2 positive disease\n- ECOG performance status 0-1\n\nExclusion Criteria:\n- Prior chemotherapy for metastatic disease\n- Brain metastases\n- Active infection"
+  },
+  "interventions": [
+    {
+      "type": "Drug",
+      "name": "Test Drug",
+      "description": "Experimental targeted therapy"
+    }
+  ],
+  "locations": [
+    {
+      "facility": "Test Hospital",
+      "city": "Test City",
+      "state": "Test State",
+      "country": "United States"
+    }
+  ]
+}
