@@ -59,8 +59,11 @@ def search_trials(
             "format": "json",
             "query.term": search_expr,
             "pageSize": max_results,
-            "fields": ",".join(fields_list) if fields_list else "",
         }
+
+        # Only add fields parameter if fields are specified
+        if fields_list:
+            params["fields"] = ",".join(fields_list)
 
         # Add page token if provided
         if page_token and page_token != "None":

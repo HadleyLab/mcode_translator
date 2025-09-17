@@ -39,9 +39,13 @@ class BaseWorkflow(ABC):
         Args:
             config: Configuration instance. If None, creates default config.
             memory_storage: CORE memory storage instance. If None, creates default.
+                          Pass False to disable CORE memory entirely.
         """
         self.config = config or Config()
-        self.memory_storage = memory_storage or McodeMemoryStorage()
+        if memory_storage is False:
+            self.memory_storage = None
+        else:
+            self.memory_storage = memory_storage or McodeMemoryStorage()
         self.logger = get_logger(self.__class__.__name__)
 
     @property
@@ -67,6 +71,10 @@ class BaseWorkflow(ABC):
         Returns:
             bool: True if storage was successful
         """
+        if self.memory_storage is None:
+            self.logger.debug(f"CORE memory disabled - skipping storage of {key}")
+            return False
+
         try:
             # Create namespaced key
             namespaced_key = f"{self.memory_space}:{key}"
@@ -102,6 +110,10 @@ class BaseWorkflow(ABC):
         Returns:
             Optional[Dict[str, Any]]: Retrieved data or None if not found
         """
+        if self.memory_storage is None:
+            self.logger.debug(f"CORE memory disabled - cannot retrieve {key}")
+            return None
+
         try:
             namespaced_key = f"{self.memory_space}:{key}"
             data = self.memory_storage.retrieve(namespaced_key)
