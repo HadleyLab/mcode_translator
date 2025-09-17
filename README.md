@@ -11,7 +11,7 @@
 
 *Extract structured medical data from clinical trials using advanced LLM processing and standardized mCODE mappings*
 
-[Quick Start](#-quick-start) • [Documentation](#-documentation) • [Contributing](#-contributing)
+[Quick Start](#-quick-start) • [Documentation](#-documentation) • [Contributing](#-contributing) • [Recent Updates](#-recent-updates)
 
 </div>
 
@@ -23,12 +23,12 @@
 
 ### 🎯 Key Features
 
-- **🤖 AI-Powered Extraction**: Uses state-of-the-art LLMs to understand complex medical criteria
+- **🤖 Multi-Model AI Support**: DeepSeek, GPT-4, Claude with robust JSON parsing and error handling
 - **📊 mCODE Standardization**: Converts free-text eligibility into standardized medical codes
 - **🔄 End-to-End Pipeline**: Fetch → Process → Validate → Store in one seamless workflow
 - **🧪 Comprehensive Testing**: 90%+ test coverage with unit, integration, and performance tests
 - **⚡ High Performance**: Concurrent processing with optimized memory usage
-- **🔒 Type Safety**: Full Pydantic validation for data integrity
+- **🔒 Type Safety**: Full Pydantic validation for data integrity (legacy code eliminated)
 - **🧠 Smart Storage**: Integrates with Core Memory for persistent, searchable results
 
 ### 🚀 Use Cases
@@ -62,6 +62,18 @@
 | **📝 Summarizers** | Natural Language | Generate readable summaries |
 | **⚙️ Optimizers** | Parameter Tuning | Model/prompt optimization |
 | **🧠 Core Memory** | Data Storage | Persistent, searchable storage |
+
+---
+
+## 🆕 Recent Updates
+
+### v2.1.0 - DeepSeek Fixes & Code Cleanup
+- **✅ Fixed DeepSeek JSON Parsing**: Resolved incorrect JSON structure errors from deepseek-coder model
+- **✅ Enhanced Error Handling**: Added robust JSON parsing with fail-fast behavior for malformed responses
+- **✅ Multi-Model Support**: Enabled response_format for DeepSeek, GPT-4, and other compatible models
+- **✅ Legacy Code Removal**: Eliminated all deprecated functions and custom validation helpers
+- **✅ Logging Optimization**: Reduced overwhelming debug output, focus on important INFO/WARNING messages
+- **✅ Type Safety**: Full Pydantic validation with forward compatibility only
 
 ---
 
@@ -286,9 +298,10 @@ python run_tests.py all
 - **Cloud Deployment**: Docker and Kubernetes support
 
 ### 📋 Current Focus
+- [x] **DeepSeek Integration**: Fixed JSON parsing and response handling ✅
 - [ ] Enhanced mCODE coverage (95% → 98%)
 - [ ] Performance optimization (2x speedup)
-- [ ] Additional LLM provider support
+- [ ] Additional LLM provider support (Claude API compatibility)
 - [ ] Web-based UI for trial exploration
 
 ---
