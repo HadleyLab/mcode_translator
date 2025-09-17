@@ -42,26 +42,18 @@ Clinical Text:
 {{
   "mcode_mappings": [
     {{
-      "resourceType": "FHIR resource type (Condition, Observation, MedicationStatement, Procedure, Patient, etc.)",
-      "mcode_element": "Specific mCODE element (CancerCondition, TNMClinicalStageGroup, GenomicVariant, etc.)",
-      "code": {{
-        "system": "http://snomed.info/sct | http://loinc.org | http://hl7.org/fhir/us/mCODE | etc.",
-        "code": "standard terminology code",
-        "display": "human readable display name"
-      }},
-      "value": "mapped value from source text or standard value set",
-      "mapping_confidence": 0.0-1.0,
-      "source_text_fragment": "EXACT quoted text from input that supports this mapping",
-      "mapping_rationale": "concise explanation of mapping logic and evidence strength",
-      "text_location": "section where text was found (e.g., 'inclusion criteria', 'title', 'description')"
+      "element_type": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
+      "code": "standard terminology code",
+      "display": "human readable name",
+      "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
+      "confidence_score": 0.0,
+      "evidence_text": "exact text from clinical text that was mapped"
     }}
   ],
-  "extraction_summary": {{
-    "total_mappings": 0,
-    "high_confidence_mappings": 0,
-    "evidence_based_only": true,
-    "avoided_inferences": 0,
-    "text_coverage_percent": 0.0
+  "metadata": {{
+    "extraction_method": "evidence_based_llm",
+    "text_length": 123,
+    "resource_count": 10
   }}
 }}
 ```

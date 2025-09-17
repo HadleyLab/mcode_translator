@@ -14,17 +14,12 @@ Follow these steps:
 {{
   "mcode_mappings": [
     {{
-      "resourceType": "FHIR resource type",
-      "mcode_element": "mCODE element name",
-      "code": {{
-        "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
-        "code": "standard code from appropriate terminology",
-        "display": "human readable name of the code"
-      }},
-      "value": "mapped value",
-      "mapping_confidence": 0.0-1.0,
-      "source_text_fragment": "exact text",
-      "mapping_rationale": "explanation"
+      "element_type": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
+      "code": "standard code from appropriate terminology",
+      "display": "human readable name of the code",
+      "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
+      "confidence_score": 0.0,
+      "evidence_text": "exact text from clinical text that was mapped"
     }}
   ],
   "metadata": {{

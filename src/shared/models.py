@@ -491,61 +491,11 @@ def enhance_trial_with_mcode_results(
     return enhanced_trial
 
 
-def patient_data_from_dict(data: Dict[str, Any]) -> PatientData:
-    """Convert dictionary to PatientData model with validation."""
-    return PatientData(**data)
-
-
-def benchmark_result_from_dict(data: Dict[str, Any]) -> BenchmarkResult:
-    """Convert dictionary to BenchmarkResult model with validation."""
-    return BenchmarkResult(**data)
-
-
-def benchmark_result_from_dataclass(old_result) -> BenchmarkResult:
-    """Convert old BenchmarkResult dataclass to new Pydantic model."""
-    return BenchmarkResult(
-        task_id=old_result.run_id,
-        trial_id=old_result.test_case_id,
-        pipeline_result=pipeline_result_from_dict(
-            {
-                "extracted_entities": old_result.extracted_entities,
-                "mcode_mappings": old_result.mcode_mappings,
-                "validation_results": old_result.validation_results,
-                "metadata": {
-                    "engine_type": "unknown",
-                    "model_used": getattr(old_result, "api_config_name", None),
-                    "prompt_used": getattr(old_result, "prompt_variant_id", None),
-                },
-                "original_data": {},
-            }
-        ),
-        execution_time_seconds=(
-            old_result.duration_ms / 1000 if old_result.duration_ms else 0
-        ),
-        status="success" if old_result.success else "failed",
-        entities_extracted=old_result.entities_extracted,
-        entities_mapped=old_result.entities_mapped,
-        extraction_completeness=old_result.extraction_completeness,
-        mapping_accuracy=old_result.mapping_accuracy,
-        precision=old_result.precision,
-        recall=old_result.recall,
-        f1_score=old_result.f1_score,
-        compliance_score=old_result.compliance_score,
-        prompt_variant_id=old_result.prompt_variant_id,
-        api_config_name=old_result.api_config_name,
-        test_case_id=old_result.test_case_id,
-        pipeline_type=old_result.pipeline_type,
-        start_time=old_result.start_time,
-        end_time=old_result.end_time,
-        duration_ms=old_result.duration_ms,
-        success=old_result.success,
-        error_message=old_result.error_message,
-    )
-
-
-def patient_bundle_from_dict(data: Dict[str, Any]) -> FHIRBundle:
-    """Convert dictionary to FHIRBundle model with validation."""
-    return FHIRBundle(**data)
+# Removed legacy helper functions that are no longer needed:
+# - patient_data_from_dict: Use PatientData(**data) directly
+# - benchmark_result_from_dict: Use BenchmarkResult(**data) directly
+# - benchmark_result_from_dataclass: Migration function no longer needed
+# - patient_bundle_from_dict: Use FHIRBundle(**data) directly
 
 
 def validate_clinical_trial_data(data: Dict[str, Any]) -> tuple[bool, Optional[str]]:

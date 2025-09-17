@@ -19,17 +19,12 @@ Instructions:
 {{
   "mcode_mappings": [
     {{
-      "resourceType": "FHIR resource type (e.g., Condition, Observation, MedicationStatement, Procedure, GenomicVariant, Patient)",
-      "mcode_element": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
-      "code": {{
-        "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
-        "code": "standard code from appropriate terminology",
-        "display": "human readable name of the code"
-      }},
-      "value": "mapped value according to mCODE value sets",
-      "mapping_confidence": 0.0-1.0,
-      "source_text_fragment": "exact text from clinical text that was mapped",
-      "mapping_rationale": "brief explanation of mapping decision"
+      "element_type": "mCODE element name (e.g., 'CancerCondition', 'GenomicVariant', 'CancerDiseaseStatus')",
+      "code": "standard code from appropriate terminology",
+      "display": "human readable name",
+      "system": "standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)",
+      "confidence_score": 0.0,
+      "evidence_text": "exact text from clinical text that was mapped"
     }}
   ],
   "metadata": {{
