@@ -69,14 +69,15 @@ class TestArchitecture:
         assert patients_processor.memory_storage == mock_memory
 
     def test_optimizer_workflow(self):
-        """Test that optimizer workflow doesn't use core memory."""
+        """Test that optimizer workflow inherits from BaseWorkflow."""
         config = Config()
 
         optimizer = TrialsOptimizerWorkflow(config)
         assert isinstance(optimizer, TrialsOptimizerWorkflow)
+        assert isinstance(optimizer, BaseWorkflow)
 
-        # Should not have memory storage
-        assert not hasattr(optimizer, "memory_storage")
+        # Has memory storage from base class
+        assert hasattr(optimizer, "memory_storage")
 
     @patch("src.utils.core_memory_client.CoreMemoryClient")
     def test_memory_storage(self, mock_client):

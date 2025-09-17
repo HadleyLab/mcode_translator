@@ -12,10 +12,10 @@ from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.logging_config import get_logger
 
-from .base_workflow import PatientsProcessorWorkflow, WorkflowResult
+from .base_workflow import PatientsProcessorWorkflow as BasePatientsProcessorWorkflow, WorkflowResult
 
 
-class PatientsProcessorWorkflow(PatientsProcessorWorkflow):
+class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
     """
     Workflow for processing patient data with mCODE mapping.
 

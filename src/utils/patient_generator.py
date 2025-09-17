@@ -314,9 +314,9 @@ class PatientGenerator:
                 if patient_id:
                     return patient_id
 
-                # Try identifier
+                # Try any identifier with a value
                 for identifier in resource.get("identifier", []):
-                    if identifier.get("use") == "usual" or identifier.get("system"):
+                    if identifier.get("value"):
                         return identifier.get("value")
 
                 # Fallback to name-based ID
@@ -324,6 +324,22 @@ class PatientGenerator:
                 return f"{name.get('family', 'unknown')}_{name.get('given', [''])[0] or 'unknown'}"
 
         return None
+
+    def _matches_patient_id(self, bundle: Dict[str, Any], search_id: str) -> bool:
+        """Check if the bundle matches the search ID (checks ID and identifiers)."""
+        for entry in bundle.get("entry", []):
+            resource = entry.get("resource", {})
+            if resource.get("resourceType") == "Patient":
+                # Check ID
+                if resource.get("id") == search_id:
+                    return True
+
+                # Check identifiers
+                for identifier in resource.get("identifier", []):
+                    if identifier.get("value") == search_id:
+                        return True
+
+        return False
 
     def _shuffle_patients(self) -> None:
         """Shuffle patient order for randomization."""
@@ -343,14 +359,18 @@ class PatientGenerator:
 
     def __next__(self) -> Dict[str, Any]:
         """Get next patient bundle (lazy loading)."""
-        if self._current_index >= len(self._patient_files):
-            raise StopIteration
+        while self._current_index < len(self._patient_files):
+            fname = self._patient_files[self._current_index]
+            self._current_index += 1
 
-        # Load patient from file on demand
-        fname = self._patient_files[self._current_index]
-        patient = self._load_patient_from_file(fname)
-        self._current_index += 1
-        return patient
+            try:
+                patient = self._load_patient_from_file(fname)
+                return patient
+            except Exception as e:
+                self.logger.warning(f"Skipping invalid patient file {fname}: {str(e)}")
+                continue
+
+        raise StopIteration
 
     def _load_patient_from_file(self, fname: str) -> Dict[str, Any]:
         """Load a single patient from a file in the archive."""
@@ -362,16 +382,30 @@ class PatientGenerator:
                     if not content:
                         raise ValueError(f"Empty file {fname}")
 
-                    # Assume JSON format for patient files
-                    data = json.loads(content)
-                    bundle = self._normalize_to_bundle(data)
+                    # Check if this is NDJSON format (contains newlines with JSON objects)
+                    if "\n" in content and fname.endswith(".ndjson"):
+                        # Handle NDJSON format - return first valid patient
+                        lines = [line for line in content.split("\n") if line.strip()]
+                        for line in lines:
+                            try:
+                                data = json.loads(line)
+                                bundle = self._normalize_to_bundle(data)
+                                if bundle:
+                                    return bundle
+                            except json.JSONDecodeError:
+                                continue
+                        raise ValueError(f"No valid JSON found in NDJSON file {fname}")
+                    else:
+                        # Handle single JSON format
+                        data = json.loads(content)
+                        bundle = self._normalize_to_bundle(data)
 
-                    if not bundle:
-                        raise ValueError(
-                            f"Could not normalize data to FHIR bundle in {fname}"
-                        )
+                        if not bundle:
+                            raise ValueError(
+                                f"Could not normalize data to FHIR bundle in {fname}"
+                            )
 
-                    return bundle
+                        return bundle
 
         except Exception as e:
             self.logger.error(f"Failed to load patient from {fname}: {str(e)}")
@@ -436,7 +470,8 @@ class PatientGenerator:
         for fname in self._patient_files:
             try:
                 patient = self._load_patient_from_file(fname)
-                if self._extract_patient_id(patient) == patient_id:
+                # Check if the search term matches the extracted ID or any identifier
+                if self._matches_patient_id(patient, patient_id):
                     return patient
             except Exception as e:
                 self.logger.debug(f"Error loading {fname}: {e}")
@@ -502,6 +537,11 @@ class PatientGenerator:
         self._patient_files = []
         self._current_index = 0
         self._loaded = False
+
+
+
+
+
 
 
 def create_patient_generator(
