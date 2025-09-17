@@ -137,8 +137,10 @@ class LLMService:
                 "max_tokens": max_tokens
             }
 
-            # Only use response_format for models that support it (newer OpenAI models)
-            if "gpt-4o" in llm_config.model_identifier.lower() or "gpt-4-turbo" in llm_config.model_identifier.lower():
+            # Use response_format for models that support it
+            if ("gpt-4o" in llm_config.model_identifier.lower() or
+                "gpt-4-turbo" in llm_config.model_identifier.lower() or
+                "deepseek" in llm_config.model_identifier.lower()):
                 call_params["response_format"] = {"type": "json_object"}
                 self.logger.debug(f"Using response_format for model: {llm_config.model_identifier}")
 
@@ -164,17 +166,66 @@ class LLMService:
             try:
                 # Handle markdown-wrapped JSON responses (```json ... ```)
                 cleaned_content = response_content.strip()
-                if cleaned_content.startswith('```json') and cleaned_content.endswith('```'):
+
+                # Handle deepseek-specific response formats
+                if self.model_name == "deepseek-coder":
+                    # DeepSeek might return JSON with extra formatting or prefixes
+                    if cleaned_content.startswith('```json'):
+                        # Extract JSON from markdown code block
+                        json_start = cleaned_content.find('{')
+                        json_end = cleaned_content.rfind('}')
+                        if json_start != -1 and json_end != -1:
+                            cleaned_content = cleaned_content[json_start:json_end+1]
+                        else:
+                            raise ValueError(f"DeepSeek response contains malformed markdown JSON block: {cleaned_content[:200]}...")
+
+                    # STRICT: Fail fast on truncated or incomplete JSON
+                    if cleaned_content.startswith('{') and not cleaned_content.endswith('}'):
+                        raise ValueError(f"DeepSeek response contains truncated JSON (missing closing brace): {cleaned_content[:200]}...")
+
+                    if cleaned_content.startswith('[') and not cleaned_content.endswith(']'):
+                        raise ValueError(f"DeepSeek response contains truncated JSON (missing closing bracket): {cleaned_content[:200]}...")
+
+                    # Check for obvious JSON structure issues
+                    if cleaned_content.count('{') != cleaned_content.count('}'):
+                        raise ValueError(f"DeepSeek response has mismatched braces: {cleaned_content.count('{')} opening vs {cleaned_content.count('}')} closing")
+
+                    if cleaned_content.count('[') != cleaned_content.count(']'):
+                        raise ValueError(f"DeepSeek response has mismatched brackets: {cleaned_content.count('[')} opening vs {cleaned_content.count(']')} closing")
+
+                    # Remove trailing commas only if they appear to be formatting errors
+                    # But fail if the JSON structure looks fundamentally broken
+                    if ',}' in cleaned_content or ',]' in cleaned_content:
+                        self.logger.warning(f"DeepSeek response contains trailing commas, attempting cleanup: {cleaned_content[:100]}...")
+                        cleaned_content = cleaned_content.replace(',}', '}').replace(',]', ']')
+
+                # Handle general markdown-wrapped JSON responses
+                elif cleaned_content.startswith('```json') and cleaned_content.endswith('```'):
                     # Extract JSON from markdown code block
                     json_start = cleaned_content.find('{')
                     json_end = cleaned_content.rfind('}')
                     if json_start != -1 and json_end != -1:
                         cleaned_content = cleaned_content[json_start:json_end+1]
-                
+
+                # Clean up common JSON formatting issues
+                cleaned_content = cleaned_content.strip()
+                if cleaned_content.startswith('```') and cleaned_content.endswith('```'):
+                    # Remove markdown code blocks if still present
+                    lines = cleaned_content.split('\n')
+                    if len(lines) > 2:
+                        cleaned_content = '\n'.join(lines[1:-1])
+
                 return json.loads(cleaned_content)
             except json.JSONDecodeError as e:
-                self.logger.error(f"JSON decode failed for response: {response_content}")
-                raise ValueError(f"Invalid JSON response: {str(e)}") from e
+                self.logger.error(f"JSON decode failed for model {self.model_name}, response: {response_content[:500]}...")
+                # Try to provide more specific error information
+                if "Expecting ',' delimiter" in str(e):
+                    self.logger.error("JSON parsing error: Missing comma or malformed structure")
+                elif "Expecting ':' delimiter" in str(e):
+                    self.logger.error("JSON parsing error: Missing colon in key-value pair")
+                elif "Expecting value" in str(e):
+                    self.logger.error("JSON parsing error: Unexpected token or missing value")
+                raise ValueError(f"Invalid JSON response from {self.model_name}: {str(e)}") from e
 
         except Exception as e:
             self.logger.error(f"LLM API call failed: {str(e)}")
