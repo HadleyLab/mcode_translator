@@ -2,7 +2,28 @@
 
 This directory contains streamlined examples demonstrating the complete mCODE workflow from data fetching to CORE memory storage.
 
-## 🚀 Quick Start
+## 📓 Current Jupyter Notebook Example
+
+The primary example is the **complete mCODE translator workflow**:
+
+- [`mcode_translator_complete_workflow.ipynb`](mcode_translator_complete_workflow.ipynb) - A self-contained, end-to-end demonstration with:
+  - **Self-Contained Execution**: Downloads patient archives automatically.
+  - **Concurrent Processing**: Uses 5 workers for fetching and processing.
+  - **Optimized for Breast Cancer**: Determines and uses the best model and prompt combination.
+  - **Native IPython Commands**: Uses `!` for streamlined shell command execution.
+  - **Comprehensive Explanations**: Aligns with project documentation to explain each step.
+
+### Obsolete Notebooks
+
+The following notebooks have been marked as obsolete and are no longer maintained:
+- `obsolete_core_ingest_from_uploaded_files.ipynb`
+- `obsolete_enhanced_mcode_demo.ipynb`
+- `obsolete_mcode_pipeline_demo.ipynb`
+- `obsolete_comprehensive_mcode_demo.ipynb`
+
+Please use `mcode_translator_complete_workflow.ipynb` for the most current and complete example.
+
+## � Quick Start
 
 ### Single Command Complete Pipeline
 

@@ -63,6 +63,9 @@ def create_parser() -> argparse.ArgumentParser:
     # Processor-specific arguments
     McodeCLI.add_processor_args(parser)
 
+    # Concurrency arguments
+    McodeCLI.add_concurrency_args(parser)
+
     # Input arguments
     parser.add_argument(
         "input_file",
@@ -169,6 +172,7 @@ def main() -> None:
         "prompt": args.prompt,
         "store_in_memory": args.ingest,
         "workers": args.workers,
+        "cli_args": args,  # Pass CLI args for concurrency configuration
     }
 
     # Handle different input formats

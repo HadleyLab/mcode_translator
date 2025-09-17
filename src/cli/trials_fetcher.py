@@ -67,8 +67,8 @@ Examples:
         help="Output file for trial data (NDJSON format). If not specified, writes to stdout",
     )
 
-    # Processing arguments (for concurrency)
-    McodeCLI.add_processor_args(parser)
+    # Concurrency arguments
+    McodeCLI.add_concurrency_args(parser)
 
     return parser
 
@@ -102,10 +102,16 @@ def main() -> None:
     if args.output_file:
         workflow_kwargs["output_path"] = args.output_file
 
-    # Execute workflow (sequential only - concurrent functionality removed for simplicity)
+    # Pass CLI arguments for concurrency configuration
+    workflow_kwargs["cli_args"] = args
+
+    # Execute workflow with concurrency support
     try:
         # Disable CORE memory for fetching operations unless explicitly requested
         workflow = TrialsFetcherWorkflow(config, memory_storage=False)
+        # Set CLI args for concurrency configuration
+        if hasattr(workflow, '_set_cli_args'):
+            workflow._set_cli_args(args)
         result = workflow.execute(**workflow_kwargs)
 
         # Print results (common for both concurrent and sequential)

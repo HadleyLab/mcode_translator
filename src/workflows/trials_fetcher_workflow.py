@@ -13,6 +13,7 @@ from src.utils.fetcher import (ClinicalTrialsAPIError, get_full_study,
                                search_trials)
 from typing import Tuple
 from src.utils.logging_config import get_logger
+from src.utils.concurrency import TaskQueue, create_task, get_fetcher_pool
 
 from .base_workflow import FetcherWorkflow, WorkflowResult
 
@@ -35,6 +36,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                 - nct_ids: List of NCT IDs to fetch
                 - limit: Maximum number of results
                 - output_path: Where to save results
+                - cli_args: CLI arguments for concurrency configuration
 
         Returns:
             WorkflowResult: Fetch results
@@ -46,6 +48,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
             nct_ids = kwargs.get("nct_ids")
             limit = kwargs.get("limit", 10)
             output_path = kwargs.get("output_path")
+            cli_args = kwargs.get("cli_args")  # CLI arguments for concurrency
 
             # Validate inputs
             if not self._validate_fetch_params(condition, nct_id, nct_ids):
@@ -137,26 +140,50 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
 
             self.logger.info(f"📥 Fetching full study data for {len(nct_ids)} NCT IDs")
 
-            # Step 3: Fetch full study data for each NCT ID
+            # Step 3: Fetch full study data for each NCT ID concurrently
             full_trials = []
             successful_fetches = 0
 
-            for nct_id in nct_ids:
-                try:
-                    full_trial = get_full_study(nct_id)
-                    if full_trial:
-                        full_trials.append(full_trial)
-                        successful_fetches += 1
-                        self.logger.debug(f"✅ Fetched full data for {nct_id}")
-                    else:
-                        self.logger.warning(f"❌ No data returned for {nct_id}")
-                except Exception as e:
-                    self.logger.error(f"❌ Failed to fetch full data for {nct_id}: {e}")
-                    # Still include basic trial data if full fetch fails
-                    full_trials.append(trial)
-                    continue
+            # Create tasks for concurrent fetching
+            tasks = []
+            for i, nct_id in enumerate(nct_ids):
+                task = create_task(
+                    task_id=f"full_fetch_{i}",
+                    func=self._fetch_single_trial_data,
+                    nct_id=nct_id
+                )
+                tasks.append(task)
 
-            self.logger.info(f"📊 Full data fetch complete: {successful_fetches}/{len(nct_ids)} successful")
+            # Execute tasks concurrently
+            fetcher_pool = get_fetcher_pool()
+            task_queue = TaskQueue(max_workers=fetcher_pool.max_workers, name="FullDataFetcherQueue")
+
+            def progress_callback(completed, total, result):
+                nct_id = nct_ids[int(result.task_id.split('_')[2])]
+                if result.success and result.result:
+                    self.logger.debug(f"✅ Fetched full data for {nct_id}")
+                else:
+                    self.logger.warning(f"❌ No data returned for {nct_id}")
+
+            task_results = task_queue.execute_tasks(tasks, progress_callback=progress_callback)
+
+            # Process results
+            for task_result in task_results:
+                nct_id = nct_ids[int(task_result.task_id.split('_')[2])]
+
+                if task_result.success and task_result.result:
+                    full_trials.append(task_result.result)
+                    successful_fetches += 1
+                else:
+                    # Include basic trial data if full fetch fails
+                    basic_trial = next((t for t in basic_trials if
+                                       t.get("protocolSection", {}).get("identificationModule", {}).get("nctId") == nct_id), None)
+                    if basic_trial:
+                        full_trials.append(basic_trial)
+                    if task_result.error:
+                        self.logger.error(f"❌ Failed to fetch full data for {nct_id}: {task_result.error}")
+
+            self.logger.info(f"📊 Concurrent full data fetch complete: {successful_fetches}/{len(nct_ids)} successful")
 
             # Step 4: Validate data completeness
             data_quality = self._assess_data_quality(full_trials)
@@ -221,35 +248,64 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
             return {"success": False, "error": f"Unexpected error: {e}", "data": []}
 
     def _fetch_multiple_trials(self, nct_ids: List[str]) -> Dict[str, Any]:
-        """Fetch multiple trials by NCT IDs."""
+        """Fetch multiple trials by NCT IDs using concurrent workers."""
         try:
-            self.logger.info(f"📥 Fetching {len(nct_ids)} trials")
+            self.logger.info(f"📥 Fetching {len(nct_ids)} trials concurrently")
 
+            # Get concurrency configuration from CLI args
+            cli_args = self._get_cli_args()
+            if cli_args:
+                task_queue = create_task_queue_from_args(cli_args, "fetcher")
+                workers = task_queue.worker_pool.max_workers
+            else:
+                # Fallback to default fetcher pool
+                task_queue = TaskQueue(max_workers=get_fetcher_pool().max_workers, name="FetcherQueue")
+                workers = task_queue.worker_pool.max_workers
+
+            self.logger.info(f"🚀 Using {workers} concurrent workers for fetching")
+
+            # Create tasks for concurrent fetching
+            tasks = []
+            for i, nct_id in enumerate(nct_ids):
+                task = create_task(
+                    task_id=f"fetch_{i}",
+                    func=self._fetch_single_trial_data,
+                    nct_id=nct_id.strip()
+                )
+                tasks.append(task)
+
+            def progress_callback(completed, total, result):
+                nct_id = nct_ids[int(result.task_id.split('_')[1])]
+                if result.success and result.result:
+                    self.logger.info(f"✅ Fetched: {nct_id}")
+                else:
+                    self.logger.warning(f"❌ Failed: {nct_id}")
+
+            task_results = task_queue.execute_tasks(tasks, progress_callback=progress_callback)
+
+            # Process results
             successful_trials = []
             failed_trials = []
 
-            for nct_id in nct_ids:
-                try:
-                    trial = get_full_study(nct_id.strip())
-                    if trial:
-                        successful_trials.append(trial)
-                        self.logger.info(f"✅ Fetched: {nct_id}")
-                    else:
-                        failed_trials.append(nct_id)
-                        self.logger.warning(f"❌ Not found: {nct_id}")
-                except Exception as e:
+            for task_result in task_results:
+                nct_id = nct_ids[int(task_result.task_id.split('_')[1])]
+
+                if task_result.success and task_result.result:
+                    successful_trials.append(task_result.result)
+                else:
                     failed_trials.append(nct_id)
-                    self.logger.error(f"❌ Failed to fetch {nct_id}: {e}")
+                    if task_result.error:
+                        self.logger.error(f"❌ Failed to fetch {nct_id}: {task_result.error}")
 
             success_rate = len(successful_trials) / len(nct_ids) if nct_ids else 0
 
             self.logger.info(
-                f"📊 Fetch complete: {len(successful_trials)}/{len(nct_ids)} successful"
+                f"📊 Concurrent fetch complete: {len(successful_trials)}/{len(nct_ids)} successful"
             )
 
             return {
                 "success": len(successful_trials) > 0,
-                "type": "multiple_trials",
+                "type": "multiple_trials_concurrent",
                 "data": successful_trials,
                 "metadata": {
                     "total_requested": len(nct_ids),
@@ -257,12 +313,22 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                     "failed": len(failed_trials),
                     "success_rate": success_rate,
                     "failed_trials": failed_trials,
+                    "concurrent_workers": task_queue.worker_pool.max_workers,
                 },
             }
 
         except Exception as e:
-            self.logger.error(f"Unexpected error in batch fetch: {e}")
-            return {"success": False, "error": f"Batch fetch error: {e}", "data": []}
+            self.logger.error(f"Unexpected error in concurrent batch fetch: {e}")
+            return {"success": False, "error": f"Concurrent batch fetch error: {e}", "data": []}
+
+    def _fetch_single_trial_data(self, nct_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch a single trial's data (used by concurrent fetcher)."""
+        try:
+            trial = get_full_study(nct_id)
+            return trial
+        except Exception as e:
+            self.logger.debug(f"Failed to fetch {nct_id}: {e}")
+            return None
 
     def _save_results(self, data: List[Dict[str, Any]], output_path: str) -> None:
         """Save fetch results to file in NDJSON format."""
@@ -357,3 +423,12 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                 total_fields += len(fields)
 
         return present_fields / total_fields if total_fields > 0 else 0.0
+
+    def _get_cli_args(self):
+        """Get CLI arguments from the current execution context."""
+        # This will be set by the CLI script when calling execute()
+        return getattr(self, '_cli_args', None)
+
+    def _set_cli_args(self, args):
+        """Set CLI arguments for concurrency configuration."""
+        self._cli_args = args

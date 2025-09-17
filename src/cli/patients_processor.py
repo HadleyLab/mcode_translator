@@ -57,6 +57,9 @@ def create_parser() -> argparse.ArgumentParser:
     McodeCLI.add_memory_args(parser)
     McodeCLI.add_processor_args(parser)
 
+    # Concurrency arguments
+    McodeCLI.add_concurrency_args(parser)
+
     # Input arguments
     parser.add_argument(
         "--in",
@@ -237,6 +240,7 @@ def main() -> None:
         "patients_data": patients_list,
         "trials_criteria": trials_criteria,
         "store_in_memory": args.ingest,
+        "cli_args": args,  # Pass CLI args for concurrency configuration
     }
 
     # Initialize core memory storage if requested
