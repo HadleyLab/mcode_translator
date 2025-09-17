@@ -213,7 +213,8 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                             self.logger.debug(
                                 f"Starting mCODE pipeline processing for trial {i+1}"
                             )
-                            result = self.pipeline.process_clinical_trial(trial)
+                            # Use new ultra-lean pipeline interface
+                            result = self.pipeline.process(trial)
                             self.logger.debug(f"mCODE pipeline result: {result}")
 
                             # Add mCODE results to trial using standardized utility
@@ -1085,7 +1086,8 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             enhanced_trial = None
             mcode_success = False
             try:
-                result = self.pipeline.process_clinical_trial(trial)
+                # Use new ultra-lean pipeline interface
+                result = self.pipeline.process(trial)
                 # Add mCODE results to trial using standardized utility
                 enhanced_trial = enhance_trial_with_mcode_results(trial, result)
                 mcode_success = True

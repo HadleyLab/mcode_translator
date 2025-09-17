@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 from unittest.mock import patch
-from src.pipeline.mcode_pipeline import McodePipeline
+from src.pipeline import McodePipeline
 from src.services.summarizer import McodeSummarizer
 from src.core.dependency_container import DependencyContainer
 
@@ -40,17 +40,10 @@ class TestPipelineIntegration:
         """Test McodePipeline processing real trial data."""
         pipeline = container.create_clinical_trial_pipeline()
 
-        result = pipeline.process_trial(sample_trial_data)
+        result = pipeline.process(sample_trial_data)
 
         assert result is not None
-        assert hasattr(result, 'success')
-        assert result.success is True
-        assert hasattr(result, 'data')
-        assert result.data is not None
-
-        # Check for expected structure in result
-        assert 'trial_data' in result.data
-        assert 'pipeline_result' in result.data
+        assert result.error is None
 
     def test_summarizer_with_real_trial_data(self, sample_trial_data):
         """Test McodeSummarizer with real trial data."""
@@ -81,14 +74,12 @@ class TestPipelineIntegration:
         storage = container.create_memory_storage()
 
         # Process trial
-        result = pipeline.process_trial(sample_trial_data)
+        result = pipeline.process(sample_trial_data)
 
         # Store result
         trial_id = sample_trial_data['protocolSection']['identificationModule']['nctId']
         # Convert PipelineResult to dict format expected by storage
-        pipeline_result_dict = result.data['pipeline_result']
-        if hasattr(pipeline_result_dict, 'model_dump'):
-            pipeline_result_dict = pipeline_result_dict.model_dump()
+        pipeline_result_dict = result.model_dump()
 
         storage_data = {
             "original_trial_data": sample_trial_data,
@@ -206,6 +197,7 @@ class TestPipelineIntegration:
         from src.utils.token_tracker import TokenTracker, TokenUsage
 
         tracker = TokenTracker()
+        tracker.reset()  # Reset before test
 
         # Add usage
         usage = TokenUsage(prompt_tokens=100, completion_tokens=50, total_tokens=150)

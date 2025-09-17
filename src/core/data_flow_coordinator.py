@@ -9,8 +9,9 @@ and storage using the new unified architecture.
 from typing import Any, Dict, List, Optional
 
 from src.core.dependency_container import create_trial_pipeline
-from src.pipeline.unified_pipeline import UnifiedPipeline
+from src.pipeline import McodePipeline
 from src.shared.models import WorkflowResult
+from src.utils.fetcher import get_full_study
 from src.utils.logging_config import get_logger
 
 
@@ -24,14 +25,14 @@ class DataFlowCoordinator:
 
     def __init__(
         self,
-        pipeline: Optional[UnifiedPipeline] = None,
+        pipeline: Optional[McodePipeline] = None,
         config: Optional[Dict[str, Any]] = None,
     ):
         """
         Initialize the data flow coordinator.
 
         Args:
-            pipeline: Injected unified pipeline (created automatically if None)
+            pipeline: Injected pipeline (created automatically if None)
             config: Configuration for the coordinator
         """
         self.logger = get_logger(__name__)
@@ -40,9 +41,8 @@ class DataFlowCoordinator:
         # Dependency injection: pipeline is injected or created
         if pipeline is None:
             processor_config = self.config.get("processor", {})
-            include_storage = self.config.get("include_storage", True)
             self.pipeline = create_trial_pipeline(
-                processor_config=processor_config, include_storage=include_storage
+                processor_config=processor_config, include_storage=False
             )
         else:
             self.pipeline = pipeline
@@ -140,9 +140,6 @@ class DataFlowCoordinator:
         self.logger.info("📥 Phase 1: Fetching clinical trial data")
 
         try:
-            # Import here to avoid circular imports
-            from src.pipeline.fetcher import get_full_study
-
             fetched_trials = []
             failed_fetches = []
 
@@ -221,32 +218,40 @@ class DataFlowCoordinator:
                 f"Processing batch {batch_number}/{total_batches} ({len(batch)} trials)"
             )
 
-            # Process batch using unified pipeline
-            batch_result = self.pipeline.process_trials_batch(
-                trials_data=batch, validate=validate_data, store_results=store_results
-            )
+            # Process batch using simplified pipeline
+            batch_results = []
+            for trial_data in batch:
+                try:
+                    result = self.pipeline.process(trial_data)
+                    batch_results.append(result)
+                except Exception as e:
+                    self.logger.error(f"Failed to process trial: {e}")
+                    # Create a failed result
+                    batch_results.append(type('FailedResult', (), {
+                        'success': False,
+                        'error_message': str(e),
+                        'mcode_mappings': [],
+                        'validation_results': {}
+                    })())
+
+            # Count successful results in this batch
+            successful_in_batch = sum(1 for r in batch_results if getattr(r, 'success', False))
+            total_successful += successful_in_batch
+            total_processed += len(batch)
 
             all_results.append(
                 {
                     "batch_number": batch_number,
                     "batch_size": len(batch),
-                    "result": batch_result,
+                    "results": batch_results,
+                    "successful": successful_in_batch,
+                    "failed": len(batch) - successful_in_batch,
                 }
             )
 
-            if batch_result.success:
-                batch_metadata = batch_result.metadata
-                successful_in_batch = batch_metadata.get("successful", 0)
-                total_successful += successful_in_batch
-                total_processed += len(batch)
-
-                self.logger.info(
-                    f"✅ Batch {batch_number} completed: {successful_in_batch}/{len(batch)} successful"
-                )
-            else:
-                self.logger.error(
-                    f"❌ Batch {batch_number} failed: {batch_result.error_message}"
-                )
+            self.logger.info(
+                f"✅ Batch {batch_number} completed: {successful_in_batch}/{len(batch)} successful"
+            )
 
         return WorkflowResult(
             success=total_successful > 0,
@@ -333,15 +338,15 @@ class DataFlowCoordinator:
         """
         return {
             "coordinator_type": "data_flow_coordinator",
-            "pipeline_type": "unified",
-            "has_validator": hasattr(self.pipeline, "validator"),
-            "has_processor": hasattr(self.pipeline, "processor"),
-            "has_storage": self.pipeline.storage is not None,
+            "pipeline_type": "simplified",
+            "has_validator": False,  # Simplified pipeline doesn't have separate validator
+            "has_processor": True,
+            "has_storage": False,  # Simplified pipeline doesn't include storage
             "config": self.config,
             "capabilities": {
                 "batch_processing": True,
-                "data_validation": True,
-                "result_storage": self.pipeline.storage is not None,
+                "data_validation": False,  # Validation is handled internally
+                "result_storage": False,
                 "progress_tracking": True,
                 "error_handling": True,
             },

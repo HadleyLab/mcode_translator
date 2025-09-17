@@ -9,8 +9,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from src.pipeline.fetcher import (ClinicalTrialsAPIError, get_full_study,
-                                   search_trials)
+from src.utils.fetcher import (ClinicalTrialsAPIError, get_full_study,
+                               search_trials)
 from typing import Tuple
 from src.utils.logging_config import get_logger
 

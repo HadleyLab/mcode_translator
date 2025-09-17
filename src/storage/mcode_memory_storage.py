@@ -10,8 +10,22 @@ from typing import Any, Dict, List, Optional
 
 from src.services.summarizer import McodeSummarizer
 from src.utils.config import Config
+from typing import Protocol
+
 from src.utils.core_memory_client import CoreMemoryClient, CoreMemoryError
 from src.utils.logging_config import get_logger
+
+
+class DataStorage(Protocol):
+    """Protocol for data storage components."""
+
+    def store(self, key: str, data: Dict[str, Any]) -> bool:
+        """Store data with given key. Returns success status."""
+        ...
+
+    def retrieve(self, key: str) -> Optional[Dict[str, Any]]:
+        """Retrieve data by key."""
+        ...
 
 
 class McodeMemoryStorage:

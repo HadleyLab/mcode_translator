@@ -157,7 +157,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             for trial in test_trials:
                 try:
                     # Process trial
-                    result = pipeline.process_clinical_trial(trial)
+                    result = pipeline.process(trial)
 
                     # Calculate quality score
                     score = self._calculate_quality_score(result)
