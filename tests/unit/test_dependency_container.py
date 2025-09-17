@@ -4,7 +4,8 @@ Unit tests for DependencyContainer with mocked dependencies.
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from src.core.dependency_container import DependencyContainer, get_container, set_container, reset_container
-from src.shared.models import PipelineResult
+from src.pipeline import McodePipeline
+from src.storage.mcode_memory_storage import McodeMemoryStorage
 
 
 @pytest.mark.mock
@@ -93,39 +94,21 @@ class TestDependencyContainer:
         assert result == mock_storage
         mock_storage_class.assert_called_once()
 
-    @patch('src.core.dependency_container.create_clinical_trial_pipeline')
     @patch('src.core.dependency_container.McodePipeline')
     @patch('src.core.dependency_container.Config')
-    def test_create_clinical_trial_pipeline(self, mock_config_class, mock_pipeline_class, mock_create_pipeline):
-        """Test creating clinical trial pipeline with mock."""
+    def test_create_mcode_processor(self, mock_config_class, mock_pipeline_class):
+        """Test creating mCODE processor with mock."""
         mock_config = Mock()
         mock_config_class.return_value = mock_config
         mock_pipeline = Mock()
         mock_pipeline_class.return_value = mock_pipeline
-        mock_create_pipeline.return_value = Mock()
 
         container = DependencyContainer(mock_config)
-        result = container.create_clinical_trial_pipeline()
+        result = container.create_mcode_processor()
 
         assert result is not None
-        mock_create_pipeline.assert_called_once()
+        mock_pipeline_class.assert_called_once()
 
-    @patch('src.pipeline.unified_pipeline.create_patient_data_pipeline')
-    @patch('src.core.dependency_container.McodePipeline')
-    @patch('src.core.dependency_container.Config')
-    def test_create_patient_data_pipeline(self, mock_config_class, mock_pipeline_class, mock_create_pipeline):
-        """Test creating patient data pipeline with mock."""
-        mock_config = Mock()
-        mock_config_class.return_value = mock_config
-        mock_pipeline = Mock()
-        mock_pipeline_class.return_value = mock_pipeline
-        mock_create_pipeline.return_value = Mock()
-
-        container = DependencyContainer(mock_config)
-        result = container.create_patient_data_pipeline()
-
-        assert result is not None
-        mock_create_pipeline.assert_called_once()
 
 
 @pytest.mark.mock

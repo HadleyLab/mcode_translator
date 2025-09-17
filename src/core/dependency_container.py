@@ -8,10 +8,8 @@ and creating configured pipeline components.
 from typing import Any, Dict, Optional
 
 from src.pipeline import McodePipeline
-from src.pipeline.unified_pipeline import (DataProcessor, DataStorage,
-                                           UnifiedPipeline,
-                                           create_clinical_trial_pipeline)
-from src.storage.mcode_memory_storage import McodeMemoryStorage
+# Removed unified_pipeline imports - using simplified pipeline directly
+from src.storage.mcode_memory_storage import McodeMemoryStorage, DataStorage
 from src.utils.config import Config
 
 
@@ -62,7 +60,7 @@ class DependencyContainer:
             return self._singletons[name]
         return self._components.get(name)
 
-    def create_mcode_processor(self, **kwargs) -> DataProcessor:
+    def create_mcode_processor(self, **kwargs) -> McodePipeline:
         """
         Create an mCODE processing component.
 
@@ -81,7 +79,7 @@ class DependencyContainer:
         # Create and return the processor
         return McodePipeline(prompt_name=prompt_name, model_name=model_name)
 
-    def create_memory_storage(self) -> DataStorage:
+    def create_memory_storage(self):
         """
         Create a memory storage component.
 
@@ -94,56 +92,40 @@ class DependencyContainer:
         self,
         processor_config: Optional[Dict[str, Any]] = None,
         include_storage: bool = True,
-    ) -> UnifiedPipeline:
+    ) -> McodePipeline:
         """
-        Create a complete clinical trial processing pipeline.
+        Create a clinical trial processing pipeline.
 
         Args:
             processor_config: Configuration for the processor component
-            include_storage: Whether to include storage component
+            include_storage: Whether to include storage component (ignored in simplified architecture)
 
         Returns:
-            Fully configured UnifiedPipeline
+            Configured McodePipeline
         """
         processor_config = processor_config or {}
 
-        # Create processor component
-        processor = self.create_mcode_processor(**processor_config)
-
-        # Create storage component if requested
-        storage = None
-        if include_storage:
-            storage = self.create_memory_storage()
-
-        # Create and return unified pipeline
-        return create_clinical_trial_pipeline(processor=processor, storage=storage)
+        # Create and return simplified pipeline
+        return self.create_mcode_processor(**processor_config)
 
     def create_patient_data_pipeline(
         self,
         processor_config: Optional[Dict[str, Any]] = None,
         include_storage: bool = True,
-    ) -> UnifiedPipeline:
+    ) -> McodePipeline:
         """
-        Create a complete patient data processing pipeline.
+        Create a patient data processing pipeline.
 
         Args:
             processor_config: Configuration for the processor component
-            include_storage: Whether to include storage component
+            include_storage: Whether to include storage component (ignored in simplified architecture)
 
         Returns:
-            Fully configured UnifiedPipeline
+            Configured McodePipeline
         """
         # For now, reuse the same processor (could be specialized later)
         processor_config = processor_config or {}
-        processor = self.create_mcode_processor(**processor_config)
-
-        storage = None
-        if include_storage:
-            storage = self.create_memory_storage()
-
-        from src.pipeline.unified_pipeline import create_patient_data_pipeline
-
-        return create_patient_data_pipeline(processor=processor, storage=storage)
+        return self.create_mcode_processor(**processor_config)
 
 
 # Global container instance
@@ -173,13 +155,13 @@ def reset_container():
 # Convenience functions for common pipeline creation
 def create_trial_pipeline(
     processor_config: Optional[Dict[str, Any]] = None, include_storage: bool = True
-) -> UnifiedPipeline:
+) -> McodePipeline:
     """
     Create a clinical trial processing pipeline using the global container.
 
     Args:
         processor_config: Processor configuration
-        include_storage: Whether to include storage
+        include_storage: Whether to include storage (ignored in simplified architecture)
 
     Returns:
         Configured pipeline
@@ -191,13 +173,13 @@ def create_trial_pipeline(
 
 def create_patient_pipeline(
     processor_config: Optional[Dict[str, Any]] = None, include_storage: bool = True
-) -> UnifiedPipeline:
+) -> McodePipeline:
     """
     Create a patient data processing pipeline using the global container.
 
     Args:
         processor_config: Processor configuration
-        include_storage: Whether to include storage
+        include_storage: Whether to include storage (ignored in simplified architecture)
 
     Returns:
         Configured pipeline

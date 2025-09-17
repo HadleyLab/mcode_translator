@@ -7,6 +7,10 @@ import os
 from pathlib import Path
 from unittest.mock import Mock, patch
 from typing import Dict, Any, List, Generator
+import sys
+
+# Add src directory to path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Setup color logging for all tests
 from src.utils.logging_config import setup_logging, get_logger
