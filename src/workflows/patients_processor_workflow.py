@@ -119,7 +119,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                     # Store to CORE memory if requested
                     if store_in_memory and self.memory_storage:
                         try:
-                            patient_id = self._extract_patient_id(patient)
+                            patient_id = self.extract_patient_id(patient)
                             self.logger.debug(f"Extracted patient ID: {patient_id}")
 
                             # Prepare mCODE data for storage

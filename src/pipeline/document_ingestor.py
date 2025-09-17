@@ -136,7 +136,14 @@ class DocumentIngestor(Loggable):
             # Extract conditions
             conditions = module_data.get("conditions", [])
             if conditions:
-                content_parts.append(f"Conditions: {', '.join(conditions)}")
+                # Handle both string and dict formats for conditions
+                condition_names = []
+                for condition in conditions:
+                    if isinstance(condition, dict):
+                        condition_names.append(condition.get("name", str(condition)))
+                    else:
+                        condition_names.append(str(condition))
+                content_parts.append(f"Conditions: {', '.join(condition_names)}")
 
         elif module_name == "designModule":
             # Extract design information

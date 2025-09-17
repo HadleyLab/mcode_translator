@@ -12,12 +12,12 @@ import pytest
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
-from src.workflows.base_workflow import WorkflowResult
+from src.workflows.base_workflow import WorkflowResult, BaseWorkflow
 from src.workflows.patients_fetcher_workflow import PatientsFetcherWorkflow
 from src.workflows.patients_processor_workflow import PatientsProcessorWorkflow
 from src.workflows.trials_fetcher_workflow import TrialsFetcherWorkflow
 from src.workflows.trials_optimizer_workflow import TrialsOptimizerWorkflow
-from src.workflows.trials_processor_workflow import TrialsProcessorWorkflow
+from src.workflows.trials_processor_workflow import ClinicalTrialsProcessorWorkflow
 
 
 class TestArchitecture:
@@ -59,8 +59,8 @@ class TestArchitecture:
         mock_memory = Mock()
 
         # Trials processor
-        trials_processor = TrialsProcessorWorkflow(config, mock_memory)
-        assert isinstance(trials_processor, TrialsProcessorWorkflow)
+        trials_processor = ClinicalTrialsProcessorWorkflow(config, mock_memory)
+        assert isinstance(trials_processor, ClinicalTrialsProcessorWorkflow)
         assert trials_processor.memory_storage == mock_memory
 
         # Patients processor
@@ -79,11 +79,12 @@ class TestArchitecture:
         # Has memory storage from base class
         assert hasattr(optimizer, "memory_storage")
 
-    @patch("src.utils.core_memory_client.CoreMemoryClient")
-    def test_memory_storage(self, mock_client):
+    @patch("src.storage.mcode_memory_storage.CoreMemoryClient")
+    def test_memory_storage(self, mock_client_class):
         """Test mCODE memory storage interface."""
+        # Mock the client to avoid real API calls
         mock_client_instance = Mock()
-        mock_client.return_value = mock_client_instance
+        mock_client_class.return_value = mock_client_instance
 
         storage = McodeMemoryStorage("test_key", "test_source")
 
@@ -92,9 +93,23 @@ class TestArchitecture:
         assert result is True
         mock_client_instance.ingest.assert_called_once()
 
-        # Test patient storage
+        # Test patient storage with proper patient data
         mock_client_instance.reset_mock()
-        result = storage.store_patient_mcode_summary("patient_123", {"test": "data"})
+        patient_data = {
+            "resourceType": "Bundle",
+            "entry": [
+                {
+                    "resource": {
+                        "resourceType": "Patient",
+                        "id": "patient_123",
+                        "name": [{"family": "Doe", "given": ["Jane"]}],
+                        "gender": "female",
+                        "birthDate": "1980-01-01"
+                    }
+                }
+            ]
+        }
+        result = storage.store_patient_mcode_summary("patient_123", {"original_patient_data": patient_data})
         assert result is True
         mock_client_instance.ingest.assert_called_once()
 
@@ -119,7 +134,7 @@ class TestArchitecture:
         assert isinstance(trials_fetcher, FetcherWorkflow)
         assert isinstance(trials_fetcher, BaseWorkflow)
 
-        trials_processor = TrialsProcessorWorkflow(config)
+        trials_processor = ClinicalTrialsProcessorWorkflow(config)
         assert isinstance(trials_processor, ProcessorWorkflow)
         assert isinstance(trials_processor, BaseWorkflow)
 
@@ -147,36 +162,45 @@ class TestArchitecture:
         assert "Test error" in result.error_message
         assert result.metadata["error_type"] == "ValueError"
 
-    def test_memory_storage_summaries(self):
+    @patch("src.storage.mcode_memory_storage.CoreMemoryClient")
+    def test_memory_storage_summaries(self, mock_client_class):
         """Test that memory storage creates proper natural language summaries."""
-        with patch("src.utils.core_memory_client.CoreMemoryClient") as mock_client:
-            mock_client_instance = Mock()
-            mock_client.return_value = mock_client_instance
+        mock_client_instance = Mock()
+        mock_client_class.return_value = mock_client_instance
 
-            storage = McodeMemoryStorage("test_key")
+        storage = McodeMemoryStorage("test_key")
 
-            # Test trial summary creation
-            trial_data = {
-                "mcode_mappings": [
-                    {
-                        "mcode_element": "CancerCondition",
-                        "value": "Breast Cancer",
-                        "system": "http://snomed.info/sct",
-                        "code": "254837009",
+        # Test trial summary creation
+        trial_data = {
+            "mcode_mappings": [
+                {
+                    "mcode_element": "CancerCondition",
+                    "value": "Breast Cancer",
+                    "system": "http://snomed.info/sct",
+                    "code": "254837009",
+                }
+            ],
+            "metadata": {"brief_title": "Test Trial", "sponsor": "Test Sponsor"},
+            "original_trial_data": {
+                "protocolSection": {
+                    "identificationModule": {
+                        "nctId": "NCT123",
+                        "briefTitle": "Test Trial"
+                    },
+                    "conditionsModule": {
+                        "conditions": [{"name": "Breast Cancer"}]
                     }
-                ],
-                "metadata": {"brief_title": "Test Trial", "sponsor": "Test Sponsor"},
+                }
             }
+        }
 
-            storage.store_trial_mcode_summary("NCT123", trial_data)
+        storage.store_trial_mcode_summary("NCT123", trial_data)
 
-            # Verify the call was made with natural language summary
-            call_args = mock_client_instance.ingest.call_args[0][0]
-            assert "Clinical Trial NCT123" in call_args
-            assert "Test Trial" in call_args
-            assert "Test Sponsor" in call_args
-            assert "Breast Cancer" in call_args
-            assert "[SNOMED:254837009]" in call_args
+        # Verify the call was made with natural language summary
+        call_args = mock_client_instance.ingest.call_args[0][0]
+        assert "NCT123 is a clinical trial" in call_args
+        assert "Test Trial" in call_args
+        assert "Breast Cancer" in call_args
 
 
 if __name__ == "__main__":

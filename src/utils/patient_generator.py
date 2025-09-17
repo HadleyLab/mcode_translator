@@ -22,6 +22,33 @@ from .config import Config
 from .logging_config import get_logger
 
 
+def extract_patient_id(bundle: Dict[str, Any]) -> Optional[str]:
+    """Extract patient ID from bundle."""
+    return _extract_patient_id_from_bundle(bundle)
+
+
+def _extract_patient_id_from_bundle(bundle: Dict[str, Any]) -> Optional[str]:
+    """Extract patient ID from bundle (internal function)."""
+    for entry in bundle.get("entry", []):
+        resource = entry.get("resource", {})
+        if resource.get("resourceType") == "Patient":
+            # Try ID first
+            patient_id = resource.get("id")
+            if patient_id:
+                return patient_id
+
+            # Try any identifier with a value
+            for identifier in resource.get("identifier", []):
+                if identifier.get("value"):
+                    return identifier.get("value")
+
+            # Fallback to name-based ID
+            name = resource.get("name", [{}])[0]
+            return f"{name.get('family', 'unknown')}_{name.get('given', [''])[0] or 'unknown'}"
+
+    return None
+
+
 class PatientNotFoundError(Exception):
     """Raised when a specific patient ID is not found in the archive."""
 
@@ -250,7 +277,7 @@ class PatientGenerator:
                 bundle = self._normalize_to_bundle(data)
 
                 if bundle:
-                    patient_id = self._extract_patient_id(bundle)
+                    patient_id = self.extract_patient_id(bundle)
                     self._patients.append(bundle)
                     if patient_id:
                         self._patient_index[patient_id] = len(self._patients) - 1
@@ -273,7 +300,7 @@ class PatientGenerator:
             bundle = self._normalize_to_bundle(data)
 
             if bundle:
-                patient_id = self._extract_patient_id(bundle)
+                patient_id = self.extract_patient_id(bundle)
                 self._patients.append(bundle)
                 if patient_id:
                     self._patient_index[patient_id] = len(self._patients) - 1
@@ -304,26 +331,9 @@ class PatientGenerator:
 
         return None
 
-    def _extract_patient_id(self, bundle: Dict[str, Any]) -> Optional[str]:
+    def extract_patient_id(self, bundle: Dict[str, Any]) -> Optional[str]:
         """Extract patient ID from bundle."""
-        for entry in bundle.get("entry", []):
-            resource = entry.get("resource", {})
-            if resource.get("resourceType") == "Patient":
-                # Try ID first
-                patient_id = resource.get("id")
-                if patient_id:
-                    return patient_id
-
-                # Try any identifier with a value
-                for identifier in resource.get("identifier", []):
-                    if identifier.get("value"):
-                        return identifier.get("value")
-
-                # Fallback to name-based ID
-                name = resource.get("name", [{}])[0]
-                return f"{name.get('family', 'unknown')}_{name.get('given', [''])[0] or 'unknown'}"
-
-        return None
+        return _extract_patient_id_from_bundle(bundle)
 
     def _matches_patient_id(self, bundle: Dict[str, Any], search_id: str) -> bool:
         """Check if the bundle matches the search ID (checks ID and identifiers)."""
@@ -347,7 +357,7 @@ class PatientGenerator:
         # Rebuild index after shuffling
         self._patient_index = {}
         for i, bundle in enumerate(self._patients):
-            patient_id = self._extract_patient_id(bundle)
+            patient_id = self.extract_patient_id(bundle)
             if patient_id:
                 self._patient_index[patient_id] = i
         self.logger.info(f"Shuffled {len(self._patients)} patients")
@@ -397,7 +407,12 @@ class PatientGenerator:
                         raise ValueError(f"No valid JSON found in NDJSON file {fname}")
                     else:
                         # Handle single JSON format
-                        data = json.loads(content)
+                        try:
+                            data = json.loads(content)
+                        except json.JSONDecodeError as e:
+                            self.logger.warning(f"Invalid JSON in {fname}: {str(e)}")
+                            raise ValueError(f"Invalid JSON in {fname}: {str(e)}")
+
                         bundle = self._normalize_to_bundle(data)
 
                         if not bundle:
@@ -439,15 +454,27 @@ class PatientGenerator:
             max_attempts = min(len(available_files), 10)
             for _ in range(max_attempts):
                 fname = random.choice(available_files)
-                patient = self._load_patient_from_file(fname)
-                patient_id = self._extract_patient_id(patient)
-                if patient_id not in exclude_ids:
-                    return patient
+                try:
+                    patient = self._load_patient_from_file(fname)
+                    patient_id = self.extract_patient_id(patient)
+                    if patient_id not in exclude_ids:
+                        return patient
+                except Exception as e:
+                    self.logger.warning(f"Skipping invalid patient file {fname}: {str(e)}")
+                    continue
             raise ValueError("Could not find available patient after exclusions")
 
-        # Pick random file
-        fname = random.choice(available_files)
-        return self._load_patient_from_file(fname)
+        # Pick random file with error handling
+        max_attempts = min(len(available_files), 10)
+        for _ in range(max_attempts):
+            fname = random.choice(available_files)
+            try:
+                return self._load_patient_from_file(fname)
+            except Exception as e:
+                self.logger.warning(f"Skipping invalid patient file {fname}: {str(e)}")
+                continue
+
+        raise ArchiveLoadError("Could not load any valid patient files")
 
     def get_patient_by_id(self, patient_id: str) -> Dict[str, Any]:
         """
@@ -474,7 +501,7 @@ class PatientGenerator:
                 if self._matches_patient_id(patient, patient_id):
                     return patient
             except Exception as e:
-                self.logger.debug(f"Error loading {fname}: {e}")
+                self.logger.warning(f"Skipping invalid patient file {fname}: {str(e)}")
                 continue
 
         raise PatientNotFoundError(
@@ -505,7 +532,8 @@ class PatientGenerator:
                 patient = self._load_patient_from_file(fname)
                 patients.append(patient)
             except Exception as e:
-                self.logger.warning(f"Failed to load patient from {fname}: {e}")
+                self.logger.warning(f"Skipping invalid patient file {fname}: {str(e)}")
+                continue
 
         return patients
 
@@ -520,7 +548,7 @@ class PatientGenerator:
 
         try:
             for patient in self:
-                patient_id = self._extract_patient_id(patient)
+                patient_id = self.extract_patient_id(patient)
                 if patient_id:
                     patient_ids.append(patient_id)
         finally:
@@ -589,13 +617,13 @@ if __name__ == "__main__":
 
     # Show first patient
     first_patient = next(iter(generator))
-    patient_id = generator._extract_patient_id(first_patient)
+    patient_id = generator.extract_patient_id(first_patient)
     print(f"First patient ID: {patient_id}")
 
     # Show random patient
     try:
         random_patient = generator.get_random_patient()
-        random_id = generator._extract_patient_id(random_patient)
+        random_id = generator.extract_patient_id(random_patient)
         print(f"Random patient ID: {random_id}")
     except Exception as e:
         print(f"Could not get random patient: {e}")

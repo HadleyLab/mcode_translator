@@ -6,6 +6,12 @@
       "resource": {
         "resourceType": "Patient",
         "id": "12345",
+        "name": [
+          {
+            "family": "Smith",
+            "given": ["Jane"]
+          }
+        ],
         "gender": "female",
         "birthDate": "1975-03-15",
         "extension": [
