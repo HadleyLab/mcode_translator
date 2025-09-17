@@ -26,6 +26,11 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
     settings for mCODE processing. Results are saved to config files.
     """
 
+    @property
+    def memory_space(self) -> str:
+        """Optimizer workflows use 'optimization' space."""
+        return "optimization"
+
     def execute(self, **kwargs) -> WorkflowResult:
         """
         Execute the optimization workflow.

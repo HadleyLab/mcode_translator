@@ -276,9 +276,11 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "live: mark test as using real data/services")
     config.addinivalue_line("markers", "slow: mark test as slow running")
     config.addinivalue_line("markers", "performance: mark test as performance benchmark")
+    config.addinivalue_line("markers", "integration: mark test as integration test")
+    config.addinivalue_line("markers", "unit: mark test as unit test")
 
 # Environment variable for enabling live tests
-LIVE_TESTS_ENABLED = os.getenv("ENABLE_LIVE_TESTS", "false").lower() == "true"
+LIVE_TESTS_ENABLED = os.getenv("ENABLE_LIVE_TESTS", "true").lower() == "true"
 
 def pytest_collection_modifyitems(config, items):
     """Skip live tests unless explicitly enabled."""

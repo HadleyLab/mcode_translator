@@ -6,6 +6,7 @@ implementing dependency injection and clear separation of concerns.
 """
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Protocol
 
 from src.shared.models import (ClinicalTrialData, PatientData, PipelineResult,
@@ -130,16 +131,21 @@ class UnifiedPipeline(PipelineComponent):
             pipeline_result = self.processor.process(trial_data, **processing_kwargs)
 
             # Phase 3: Storage (optional)
-            if store_results and self.storage and pipeline_result.success:
+            if store_results and self.storage and pipeline_result.error is None:
                 # Extract trial ID for storage key
                 trial_id = self._extract_trial_id(trial_data)
                 storage_data = {
                     "trial_data": trial_data,
                     "pipeline_result": pipeline_result.model_dump(),
-                    "processing_timestamp": pipeline_result.metadata.processing_timestamp,
+                    "processing_timestamp": datetime.utcnow(),
                 }
 
-                storage_success = self.storage.store(trial_id, storage_data)
+                # Use the appropriate storage method for trials
+                if hasattr(self.storage, 'store_trial_mcode_summary'):
+                    storage_success = self.storage.store_trial_mcode_summary(trial_id, storage_data)
+                else:
+                    # Fallback to generic store if available
+                    storage_success = self.storage.store(trial_id, storage_data)
                 if not storage_success:
                     # Don't fail the entire operation for storage issues
                     pipeline_result.metadata.storage_success = False

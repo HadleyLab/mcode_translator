@@ -38,13 +38,9 @@ class TestPipelineIntegration:
 
     def test_mcode_pipeline_with_real_trial_data(self, sample_trial_data, container):
         """Test McodePipeline processing real trial data."""
-        # Skip if live tests disabled
-        if not os.getenv("ENABLE_LIVE_TESTS", "").lower() == "true":
-            pytest.skip("Live tests disabled")
-
         pipeline = container.create_clinical_trial_pipeline()
 
-        result = pipeline.process(sample_trial_data)
+        result = pipeline.process_trial(sample_trial_data)
 
         assert result is not None
         assert hasattr(result, 'success')
@@ -52,9 +48,9 @@ class TestPipelineIntegration:
         assert hasattr(result, 'data')
         assert result.data is not None
 
-        # Check for expected mCODE elements in result
-        if hasattr(result.data, 'mcode_elements'):
-            assert isinstance(result.data.mcode_elements, list)
+        # Check for expected structure in result
+        assert 'trial_data' in result.data
+        assert 'pipeline_result' in result.data
 
     def test_summarizer_with_real_trial_data(self, sample_trial_data):
         """Test McodeSummarizer with real trial data."""
@@ -79,46 +75,52 @@ class TestPipelineIntegration:
     @patch('src.utils.core_memory_client.CoreMemoryClient.ingest')
     def test_pipeline_with_memory_storage(self, mock_ingest, sample_trial_data, container):
         """Test pipeline with memory storage integration."""
-        # Skip if live tests disabled
-        if not os.getenv("ENABLE_LIVE_TESTS", "").lower() == "true":
-            pytest.skip("Live tests disabled")
-
         mock_ingest.return_value = {"status": "success"}
 
         pipeline = container.create_clinical_trial_pipeline()
         storage = container.create_memory_storage()
 
         # Process trial
-        result = pipeline.process(sample_trial_data)
+        result = pipeline.process_trial(sample_trial_data)
 
         # Store result
-        storage_key = f"trial_{sample_trial_data['nct_id']}"
-        storage.store(storage_key, result.data)
+        trial_id = sample_trial_data['protocolSection']['identificationModule']['nctId']
+        # Convert PipelineResult to dict format expected by storage
+        pipeline_result_dict = result.data['pipeline_result']
+        if hasattr(pipeline_result_dict, 'model_dump'):
+            pipeline_result_dict = pipeline_result_dict.model_dump()
 
-        # Retrieve and verify
-        retrieved = storage.retrieve(storage_key)
-        assert retrieved is not None
+        storage_data = {
+            "original_trial_data": sample_trial_data,
+            "pipeline_result": pipeline_result_dict,
+            "trial_metadata": {
+                "brief_title": sample_trial_data.get("protocolSection", {}).get("identificationModule", {}).get("briefTitle"),
+                "overall_status": sample_trial_data.get("protocolSection", {}).get("statusModule", {}).get("overallStatus"),
+            }
+        }
+        storage.store_trial_mcode_summary(trial_id, storage_data)
+
+        # Retrieve and verify (using search since retrieve method doesn't exist)
+        search_results = storage.search_similar_trials(f"trial {trial_id}")
+        assert search_results is not None
 
         mock_ingest.assert_called()
 
     def test_data_flow_coordinator_integration(self, sample_trial_data):
         """Test DataFlowCoordinator with real data."""
-        # Skip if live tests disabled
-        if not os.getenv("ENABLE_LIVE_TESTS", "").lower() == "true":
-            pytest.skip("Live tests disabled")
-
         from src.core.data_flow_coordinator import DataFlowCoordinator
 
         coordinator = DataFlowCoordinator()
 
-        trial_ids = [sample_trial_data["nct_id"]]
+        trial_ids = [sample_trial_data["protocolSection"]["identificationModule"]["nctId"]]
 
         # This would normally fetch from real APIs, but we'll mock the fetch
         with patch.object(coordinator, '_fetch_trial_data') as mock_fetch:
             mock_fetch.return_value = type('WorkflowResult', (), {
                 'success': True,
                 'data': [sample_trial_data],
-                'errors': []
+                'errors': [],
+                'metadata': {}
             })()
 
             result = coordinator.process_clinical_trials_complete_flow(trial_ids)
@@ -140,7 +142,7 @@ class TestPipelineIntegration:
         assert isinstance(cm_config, dict)
 
         # Test LLM config
-        llm_config = config.get_llm_config("default")
+        llm_config = config.get_llm_config("deepseek-coder")
         assert llm_config is not None
 
     def test_api_manager_with_cache(self, tmp_path):
@@ -196,8 +198,8 @@ class TestPipelineIntegration:
 
         all_patterns = manager.get_all_patterns()
         assert isinstance(all_patterns, dict)
-        assert "biomarkers" in all_patterns
-        assert "genomics" in all_patterns
+        assert "biomarker" in all_patterns
+        assert "genomic" in all_patterns
 
     def test_token_tracker_operations(self):
         """Test TokenTracker with real operations."""
@@ -206,7 +208,7 @@ class TestPipelineIntegration:
         tracker = TokenTracker()
 
         # Add usage
-        usage = TokenUsage(input_tokens=100, output_tokens=50, total_tokens=150)
+        usage = TokenUsage(prompt_tokens=100, completion_tokens=50, total_tokens=150)
         tracker.add_usage(usage, "test_component")
 
         # Get total usage

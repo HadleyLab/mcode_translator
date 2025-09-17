@@ -1,25 +1,55 @@
 {
-  "nct_id": "NCT12345678",
-  "title": "Phase 2 Study of Test Drug in Breast Cancer",
-  "status": "Recruiting",
-  "phases": ["Phase 2"],
-  "conditions": ["Breast Cancer", "HER2 Positive Breast Cancer"],
-  "eligibility": {
-    "criteria": "Inclusion Criteria:\n- Age >= 18 years\n- Histologically confirmed breast cancer\n- HER2 positive disease\n- ECOG performance status 0-1\n\nExclusion Criteria:\n- Prior chemotherapy for metastatic disease\n- Brain metastases\n- Active infection"
-  },
-  "interventions": [
-    {
-      "type": "Drug",
-      "name": "Test Drug",
-      "description": "Experimental targeted therapy"
+  "protocolSection": {
+    "identificationModule": {
+      "nctId": "NCT12345678",
+      "briefTitle": "Phase 2 Study of Test Drug in Breast Cancer",
+      "officialTitle": "A Phase 2 Study of Test Drug in Patients with Breast Cancer"
+    },
+    "statusModule": {
+      "overallStatus": "Recruiting"
+    },
+    "designModule": {
+      "phases": ["Phase 2"]
+    },
+    "conditionsModule": {
+      "conditions": [
+        {
+          "name": "Breast Cancer",
+          "code": "254837009",
+          "codeSystem": "http://snomed.info/sct"
+        },
+        {
+          "name": "HER2 Positive Breast Cancer",
+          "code": "427685000",
+          "codeSystem": "http://snomed.info/sct"
+        }
+      ]
+    },
+    "eligibilityModule": {
+      "eligibilityCriteria": "Inclusion Criteria:\n- Age >= 18 years\n- Histologically confirmed breast cancer\n- HER2 positive disease\n- ECOG performance status 0-1\n\nExclusion Criteria:\n- Prior chemotherapy for metastatic disease\n- Brain metastases\n- Active infection",
+      "minimumAge": "18 Years",
+      "maximumAge": "No upper limit",
+      "sex": "All",
+      "healthyVolunteers": false
+    },
+    "armsInterventionsModule": {
+      "interventions": [
+        {
+          "type": "Drug",
+          "name": "Test Drug",
+          "description": "Experimental targeted therapy"
+        }
+      ]
+    },
+    "locationsModule": {
+      "locations": [
+        {
+          "facility": "Test Hospital",
+          "city": "Test City",
+          "state": "Test State",
+          "country": "United States"
+        }
+      ]
     }
-  ],
-  "locations": [
-    {
-      "facility": "Test Hospital",
-      "city": "Test City",
-      "state": "Test State",
-      "country": "United States"
-    }
-  ]
+  }
 }
