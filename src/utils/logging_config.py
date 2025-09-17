@@ -26,12 +26,12 @@ def setup_logging(level: Optional[str] = None) -> None:
     config_path = Path(__file__).parent.parent / "config" / "logging_config.json"
     try:
         with open(config_path, "r") as f:
-            logging_config = json.load(f)["logging"]
+            logging_config = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         # Fallback to basic configuration if config file is missing or invalid
         logging_config = {
             "default_level": "INFO",
-            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            "format": "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(name)s:%(lineno)d%(reset)s %(message)s",
             "colored_output": True,
             "handlers": {
                 "console": {

@@ -3,8 +3,8 @@
 Trials Optimizer - Optimize mCODE translation parameters.
 
 A command-line interface for testing different combinations of prompts and models
-to find optimal settings for mCODE translation. Results are saved to configuration
-files, not to CORE Memory.
+to find optimal settings for mCODE translation. Results are saved to local
+configuration files only - no CORE Memory storage required.
 """
 
 import argparse
@@ -19,28 +19,25 @@ from src.workflows.trials_optimizer_workflow import TrialsOptimizerWorkflow
 def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser for trials optimizer."""
     parser = argparse.ArgumentParser(
-        description="Optimize mCODE translation parameters for breast cancer trials",
+        description="Optimize mCODE translation parameters using existing trial data files",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-   # Optimize breast cancer trials with default settings
-   python -m src.cli.trials_optimizer --condition "breast cancer"
-
-   # Test specific prompts and models with cross validation
-   python -m src.cli.trials_optimizer --condition "breast cancer" --prompts direct_mcode_evidence_based_concise,direct_mcode_evidence_based --models deepseek-coder,gpt-4 --cv-folds 5
-
-   # Use existing trials file for optimization
+   # Optimize using existing trials file
    python -m src.cli.trials_optimizer --trials-file breast_cancer_trials.ndjson --cv-folds 3
 
+   # Test specific prompts and models with cross validation
+   python -m src.cli.trials_optimizer --trials-file trials.ndjson --cv-folds 5 --prompts direct_mcode_evidence_based_concise,direct_mcode_evidence_based --models deepseek-coder,gpt-4
+
    # Save optimal configuration
-   python -m src.cli.trials_optimizer --condition "breast cancer" --save-config optimal_breast_cancer_config.json
+   python -m src.cli.trials_optimizer --trials-file trials.ndjson --cv-folds 3 --save-config optimal_config.json
 
    # List available prompts and models
    python -m src.cli.trials_optimizer --list-prompts
    python -m src.cli.trials_optimizer --list-models
 
-   # Verbose output with custom limits
-   python -m src.cli.trials_optimizer --condition "breast cancer" --limit 20 --cv-folds 3 --verbose
+   # Verbose output
+   python -m src.cli.trials_optimizer --trials-file trials.ndjson --cv-folds 3 --verbose
         """,
     )
 
@@ -50,18 +47,14 @@ Examples:
     # Optimizer-specific arguments
     McodeCLI.add_optimizer_args(parser)
 
-    # Breast cancer specific arguments
-    parser.add_argument(
-        "--condition",
-        required=True,
-        help="Medical condition to fetch trials for"
-    )
+    # Concurrency arguments
+    McodeCLI.add_concurrency_args(parser)
 
+    # Required arguments for file-based optimization
     parser.add_argument(
-        "--limit",
-        type=int,
+        "--trials-file",
         required=True,
-        help="Maximum number of trials to fetch for optimization"
+        help="Path to NDJSON file containing trial data for testing"
     )
 
     parser.add_argument(
@@ -77,11 +70,6 @@ Examples:
     )
 
     parser.add_argument("--models", help="Comma-separated list of LLM models to test")
-
-    parser.add_argument(
-        "--trials-file",
-        help="Path to NDJSON file containing trial data for testing (optional)",
-    )
 
     parser.add_argument(
         "--list-prompts",
@@ -107,8 +95,8 @@ def main() -> None:
     # Create configuration
     config = McodeCLI.create_config(args)
 
-    # Handle list commands
-    workflow = TrialsOptimizerWorkflow(config)
+    # Handle list commands (no CORE Memory needed for these)
+    workflow = TrialsOptimizerWorkflow(config, memory_storage=False)
 
     if args.list_prompts:
         prompts = workflow.get_available_prompts()
@@ -124,67 +112,49 @@ def main() -> None:
             print(f"  • {model}")
         return
 
-    # Load trial data for testing
-    trials_data = []
-    if args.trials_file:
-        trials_path = Path(args.trials_file)
-        if not trials_path.exists():
-            print(f"❌ Trials file not found: {trials_path}")
-            sys.exit(1)
+    # Load trial data from file (required)
+    trials_path = Path(args.trials_file)
+    if not trials_path.exists():
+        print(f"❌ Trials file not found: {trials_path}")
+        sys.exit(1)
 
+    try:
+        import json
+
+        with open(trials_path, "r", encoding="utf-8") as f:
+            file_content = f.read().strip()
+
+        # Try to parse as single JSON object first
         try:
-            import json
+            json_data = json.loads(file_content)
+            if isinstance(json_data, dict) and "successful_trials" in json_data:
+                # Format: {"summary": {...}, "successful_trials": [...]}
+                trials_data = json_data["successful_trials"]
+            elif isinstance(json_data, dict) and "studies" in json_data:
+                # Format: {"studies": [...]}
+                trials_data = json_data["studies"]
+            elif isinstance(json_data, list):
+                # Format: [...]
+                trials_data = json_data
+            else:
+                raise ValueError("Unknown JSON structure")
+        except json.JSONDecodeError:
+            # Try to parse as NDJSON (one JSON object per line)
+            trials_data = []
+            for line in file_content.split('\n'):
+                line = line.strip()
+                if line:
+                    trial_data = json.loads(line)
+                    trials_data.append(trial_data)
 
-            with open(trials_path, "r", encoding="utf-8") as f:
-                file_content = f.read().strip()
+        if not trials_data:
+            raise ValueError("No trial data found in file")
 
-            # Try to parse as single JSON object first
-            try:
-                json_data = json.loads(file_content)
-                if isinstance(json_data, dict) and "successful_trials" in json_data:
-                    # Format: {"summary": {...}, "successful_trials": [...]}
-                    trials_data = json_data["successful_trials"]
-                elif isinstance(json_data, dict) and "studies" in json_data:
-                    # Format: {"studies": [...]}
-                    trials_data = json_data["studies"]
-                elif isinstance(json_data, list):
-                    # Format: [...]
-                    trials_data = json_data
-                else:
-                    raise ValueError("Unknown JSON structure")
-            except json.JSONDecodeError:
-                # Try to parse as NDJSON (one JSON object per line)
-                trials_data = []
-                for line in file_content.split('\n'):
-                    line = line.strip()
-                    if line:
-                        trial_data = json.loads(line)
-                        trials_data.append(trial_data)
+        print(f"📋 Loaded {len(trials_data)} trials from file for optimization testing")
 
-            if not trials_data:
-                raise ValueError("No trial data found in file")
-
-            print(f"📋 Loaded {len(trials_data)} trials from file for optimization testing")
-
-        except Exception as e:
-            print(f"❌ Failed to load trials data: {e}")
-            sys.exit(1)
-    else:
-        # Fetch live breast cancer trials data
-        print(f"🔍 Fetching live breast cancer trials (limit: {args.limit})...")
-        from src.workflows.trials_fetcher_workflow import TrialsFetcherWorkflow
-
-        fetcher_workflow = TrialsFetcherWorkflow(config)
-        fetch_result = fetcher_workflow.execute(
-            condition=args.condition,
-            limit=args.limit
-        )
-
-        if not fetch_result.success or not fetch_result.data:
-            raise RuntimeError(f"Failed to fetch trials: {fetch_result.error_message}")
-
-        trials_data = fetch_result.data
-        print(f"📋 Fetched {len(trials_data)} live breast cancer trials for optimization")
+    except Exception as e:
+        print(f"❌ Failed to load trials data: {e}")
+        sys.exit(1)
 
     # Prepare workflow parameters
     workflow_kwargs = {
@@ -209,6 +179,9 @@ def main() -> None:
     if args.save_config:
         workflow_kwargs["output_config"] = args.save_config
 
+    # Pass CLI arguments for concurrency configuration
+    workflow_kwargs["cli_args"] = args
+
     # Validate combinations if specified
     if args.prompts and args.models:
         prompts_list = workflow_kwargs["prompts"]
@@ -226,8 +199,9 @@ def main() -> None:
                 print(f"  • {combo}")
             sys.exit(1)
 
-    # Initialize and execute workflow
+    # Initialize and execute workflow (disable CORE Memory - optimizer saves to local files only)
     try:
+        workflow = TrialsOptimizerWorkflow(config, memory_storage=False)
         result = workflow.execute(**workflow_kwargs)
 
         if result.success:

@@ -62,6 +62,38 @@ class McodeCLI:
         )
 
     @staticmethod
+    def add_concurrency_args(parser: argparse.ArgumentParser) -> None:
+        """Add unified concurrency arguments for all components."""
+        concurrency_group = parser.add_argument_group("concurrency options")
+
+        concurrency_group.add_argument(
+            "--workers",
+            type=int,
+            default=0,
+            help="Number of concurrent workers (0 = sequential, >0 = concurrent)",
+        )
+
+        concurrency_group.add_argument(
+            "--worker-pool",
+            choices=["fetcher", "processor", "optimizer", "custom"],
+            default="custom",
+            help="Use predefined worker pool sizes (fetcher=4, processor=8, optimizer=2)",
+        )
+
+        concurrency_group.add_argument(
+            "--max-queue-size",
+            type=int,
+            default=1000,
+            help="Maximum number of tasks in queue (default: 1000)",
+        )
+
+        concurrency_group.add_argument(
+            "--task-timeout",
+            type=float,
+            help="Timeout for individual task execution (seconds)",
+        )
+
+    @staticmethod
     def add_processor_args(parser: argparse.ArgumentParser) -> None:
         """Add arguments specific to data processing workflows."""
         parser.add_argument(
@@ -85,12 +117,8 @@ class McodeCLI:
             help="Batch size for processing (default: 10)",
         )
 
-        parser.add_argument(
-            "--workers",
-            type=int,
-            default=0,
-            help="Number of concurrent workers (0 = sequential, >0 = concurrent)",
-        )
+        # Add unified concurrency arguments
+        McodeCLI.add_concurrency_args(parser)
 
     @staticmethod
     def add_optimizer_args(parser: argparse.ArgumentParser) -> None:

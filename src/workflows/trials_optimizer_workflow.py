@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 
 from src.pipeline import McodePipeline
 from src.utils.logging_config import get_logger
+from src.utils.concurrency import TaskQueue, create_task, get_optimizer_pool, create_task_queue_from_args
 
 from .base_workflow import BaseWorkflow, WorkflowResult
 
@@ -43,6 +44,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 - max_combinations: Maximum combinations to test
                 - cv_folds: Number of cross validation folds
                 - output_config: Where to save optimal settings
+                - cli_args: CLI arguments for concurrency configuration
 
         Returns:
             WorkflowResult: Optimization results
@@ -77,20 +79,49 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 f"🔬 Testing {len(combinations)} prompt×model combinations with {cv_folds}-fold cross validation"
             )
 
-            # Run optimization with cross validation
+            # Run optimization with concurrent cross validation
             optimization_results = []
             best_result = None
             best_score = 0
 
+            # Get concurrency configuration from CLI args
+            cli_args = kwargs.get("cli_args")
+            if cli_args:
+                task_queue = create_task_queue_from_args(cli_args, "optimizer")
+                workers = task_queue.worker_pool.max_workers
+            else:
+                # Fallback to default optimizer pool
+                task_queue = TaskQueue(max_workers=get_optimizer_pool().max_workers, name="OptimizerQueue")
+                workers = task_queue.worker_pool.max_workers
+
+            self.logger.info(f"🚀 Using {workers} concurrent workers for optimization")
+
+            # Create tasks for concurrent execution
+            tasks = []
             for i, combo in enumerate(combinations):
-                try:
-                    self.logger.info(
-                        f"Testing combination {i+1}/{len(combinations)}: {combo['model']} + {combo['prompt']}"
-                    )
+                task = create_task(
+                    task_id=f"combo_{i}",
+                    func=self._test_combination_cv,
+                    combination=combo,
+                    trials_data=trials_data,
+                    cv_folds=cv_folds
+                )
+                tasks.append(task)
 
-                    # Test combination with cross validation
-                    result = self._test_combination_cv(combo, trials_data, cv_folds)
+            def progress_callback(completed, total, result):
+                if result.success:
+                    combo = result.result.get('combination', {})
+                    score = result.result.get('cv_average_score', 0)
+                    self.logger.info(f"✅ Completed combination {completed}/{total}: {combo.get('model', 'unknown')} + {combo.get('prompt', 'unknown')} (score: {score:.3f})")
+                else:
+                    self.logger.error(f"❌ Failed combination {completed}/{total}: {result.error}")
 
+            task_results = task_queue.execute_tasks(tasks, progress_callback=progress_callback)
+
+            # Process results
+            for task_result in task_results:
+                if task_result.success:
+                    result = task_result.result
                     optimization_results.append(result)
 
                     # Track best result
@@ -98,15 +129,16 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                     if score > best_score:
                         best_score = score
                         best_result = result
-
-                except Exception as e:
-                    self.logger.error(f"Failed to test combination {combo}: {e}")
+                else:
+                    # Handle failed task
+                    combo = tasks[int(task_result.task_id.split('_')[1])].kwargs['combination']
                     error_result = {
                         "combination": combo,
-                        "error": str(e),
+                        "error": str(task_result.error),
                         "success": False,
                     }
                     optimization_results.append(error_result)
+                    self.logger.error(f"Failed to test combination {combo}: {task_result.error}")
 
             # Set default LLM specification based on best result
             if best_result:
