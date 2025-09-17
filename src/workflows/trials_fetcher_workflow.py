@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from src.pipeline.fetcher import (ClinicalTrialsAPIError, get_full_study,
-                                  search_trials)
+                                   search_trials)
+from typing import Tuple
 from src.utils.logging_config import get_logger
 
 from .base_workflow import FetcherWorkflow, WorkflowResult
@@ -95,30 +96,82 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
         return len(provided) == 1  # Exactly one parameter should be provided
 
     def _fetch_by_condition(self, condition: str, limit: int) -> Dict[str, Any]:
-        """Fetch trials by medical condition."""
+        """Fetch trials by medical condition with full study data."""
         try:
             self.logger.info(f"🔍 Searching for trials: '{condition}' (limit: {limit})")
 
+            # Step 1: Search for trials (basic info)
             search_result = search_trials(condition, max_results=limit)
-            trials = search_result.get("studies", [])
+            basic_trials = search_result.get("studies", [])
 
-            if not trials:
+            if not basic_trials:
                 return {
                     "success": False,
                     "error": f"No trials found for condition: {condition}",
                     "data": [],
                 }
 
-            self.logger.info(f"📋 Found {len(trials)} trials")
+            self.logger.info(f"📋 Found {len(basic_trials)} trials in search")
+
+            # Step 2: Extract NCT IDs and fetch full study data
+            nct_ids = []
+            for trial in basic_trials:
+                try:
+                    # Extract NCT ID from search result
+                    protocol_section = trial.get("protocolSection", {})
+                    identification = protocol_section.get("identificationModule", {})
+                    nct_id = identification.get("nctId")
+                    if nct_id:
+                        nct_ids.append(nct_id)
+                except (KeyError, TypeError) as e:
+                    self.logger.warning(f"Could not extract NCT ID from trial: {e}")
+                    continue
+
+            if not nct_ids:
+                self.logger.warning("No valid NCT IDs found in search results")
+                return {
+                    "success": False,
+                    "error": "No valid NCT IDs found in search results",
+                    "data": [],
+                }
+
+            self.logger.info(f"📥 Fetching full study data for {len(nct_ids)} NCT IDs")
+
+            # Step 3: Fetch full study data for each NCT ID
+            full_trials = []
+            successful_fetches = 0
+
+            for nct_id in nct_ids:
+                try:
+                    full_trial = get_full_study(nct_id)
+                    if full_trial:
+                        full_trials.append(full_trial)
+                        successful_fetches += 1
+                        self.logger.debug(f"✅ Fetched full data for {nct_id}")
+                    else:
+                        self.logger.warning(f"❌ No data returned for {nct_id}")
+                except Exception as e:
+                    self.logger.error(f"❌ Failed to fetch full data for {nct_id}: {e}")
+                    # Still include basic trial data if full fetch fails
+                    full_trials.append(trial)
+                    continue
+
+            self.logger.info(f"📊 Full data fetch complete: {successful_fetches}/{len(nct_ids)} successful")
+
+            # Step 4: Validate data completeness
+            data_quality = self._assess_data_quality(full_trials)
 
             return {
                 "success": True,
-                "type": "condition_search",
-                "data": trials,
+                "type": "condition_search_with_full_data",
+                "data": full_trials,
                 "metadata": {
                     "condition": condition,
-                    "total_found": len(trials),
+                    "total_found": len(basic_trials),
                     "limit": limit,
+                    "nct_ids_extracted": len(nct_ids),
+                    "full_data_fetched": successful_fetches,
+                    "data_quality": data_quality,
                 },
             }
 
@@ -212,18 +265,95 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
             return {"success": False, "error": f"Batch fetch error: {e}", "data": []}
 
     def _save_results(self, data: List[Dict[str, Any]], output_path: str) -> None:
-        """Save fetch results to file."""
+        """Save fetch results to file in NDJSON format."""
         try:
             output_file = Path(output_path)
 
             # Create output directory if it doesn't exist
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
+            # Save as NDJSON (one JSON object per line)
             with open(output_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+                for item in data:
+                    json.dump(item, f, ensure_ascii=False)
+                    f.write('\n')
 
-            self.logger.info(f"💾 Results saved to: {output_file}")
+            self.logger.info(f"💾 Results saved to: {output_file} (NDJSON format)")
 
         except Exception as e:
             self.logger.error(f"Failed to save results to {output_path}: {e}")
             raise
+
+    def _assess_data_quality(self, trials: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Assess the completeness and quality of trial data."""
+        if not trials:
+            return {"status": "no_data", "completeness_score": 0.0}
+
+        total_trials = len(trials)
+        complete_trials = 0
+        quality_scores = []
+
+        for trial in trials:
+            score = self._calculate_trial_completeness(trial)
+            quality_scores.append(score)
+            if score >= 0.8:  # Consider trial complete if 80%+ of expected fields present
+                complete_trials += 1
+
+        avg_score = sum(quality_scores) / len(quality_scores) if quality_scores else 0.0
+
+        quality_assessment = {
+            "status": "good" if avg_score >= 0.8 else "partial" if avg_score >= 0.5 else "incomplete",
+            "completeness_score": round(avg_score, 2),
+            "complete_trials": complete_trials,
+            "total_trials": total_trials,
+            "completeness_percentage": round((complete_trials / total_trials) * 100, 1) if total_trials > 0 else 0.0
+        }
+
+        if quality_assessment["status"] != "good":
+            self.logger.warning(
+                f"⚠️  Trial data quality assessment: {quality_assessment['status']} "
+                f"({quality_assessment['completeness_percentage']}% complete, "
+                f"avg score: {quality_assessment['completeness_score']})"
+            )
+            self.logger.info(
+                "💡 For better summarization quality, consider using specific NCT IDs "
+                "instead of condition search to get complete clinical trial data"
+            )
+
+        return quality_assessment
+
+    def _calculate_trial_completeness(self, trial: Dict[str, Any]) -> float:
+        """Calculate completeness score for a single trial (0.0 to 1.0)."""
+        if not isinstance(trial, dict):
+            return 0.0
+
+        protocol_section = trial.get("protocolSection", {})
+        if not isinstance(protocol_section, dict):
+            return 0.0
+
+        # Define expected fields for a complete trial
+        expected_fields = {
+            "identificationModule": ["nctId", "briefTitle", "officialTitle"],
+            "statusModule": ["overallStatus", "startDateStruct", "completionDateStruct"],
+            "descriptionModule": ["briefSummary", "detailedDescription"],
+            "eligibilityModule": ["eligibilityCriteria", "minimumAge", "maximumAge", "sex"],
+            "conditionsModule": ["conditions"],
+            "armsInterventionsModule": ["interventions"],
+            "designModule": ["studyType", "phases", "primaryPurpose"],
+            "sponsorCollaboratorsModule": ["leadSponsor"]
+        }
+
+        total_fields = 0
+        present_fields = 0
+
+        for module_name, fields in expected_fields.items():
+            module = protocol_section.get(module_name, {})
+            if isinstance(module, dict):
+                for field in fields:
+                    total_fields += 1
+                    if field in module and module[field] is not None:
+                        present_fields += 1
+            else:
+                total_fields += len(fields)
+
+        return present_fields / total_fields if total_fields > 0 else 0.0

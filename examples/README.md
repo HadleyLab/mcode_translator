@@ -1,27 +1,25 @@
-# mCODE Translator - End-to-End Examples
+# mCODE Translator - Complete Pipeline Examples
 
 This directory contains streamlined examples demonstrating the complete mCODE workflow from data fetching to CORE memory storage.
 
 ## 🚀 Quick Start
 
-### Single Command End-to-End Processing
+### Single Command Complete Pipeline
 
-The easiest way to get started is using the new end-to-end processor CLI:
+The easiest way to get started is using the `mcode_translate.py` convenience script:
 
 ```bash
 # Activate the conda environment
 source activate mcode_translator
 
 # Process breast cancer data (trials + patients)
-python -m src.cli.end_to_end_processor --condition "breast cancer" --trials-limit 5 --patients-limit 5
+python mcode_translate.py --condition "breast cancer" --limit 5
 
 # Process with custom model and limits
-python -m src.cli.end_to_end_processor \
+python mcode_translate.py \
   --condition "lung cancer" \
-  --model deepseek-coder \
-  --trials-limit 10 \
-  --patients-limit 10 \
-  --workers 4 \
+  --limit 10 \
+  --ingest \
   --verbose
 ```
 
@@ -30,18 +28,15 @@ python -m src.cli.end_to_end_processor \
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--condition` | Medical condition to search for (required) | - |
-| `--model` | LLM model for mCODE processing | `deepseek-coder` |
-| `--trials-limit` | Number of clinical trials to fetch | `5` |
-| `--patients-limit` | Number of patients to fetch | `5` |
-| `--workers` | Number of concurrent workers | `2` |
-| `--dry-run` | Preview mode - process but don't store | `false` |
-| `--store-in-core-memory` | Explicitly enable CORE memory storage | `true` |
+| `--nct-ids` | Specific NCT IDs to process | - |
+| `--limit` | Number of trials/patients to process | `3` |
+| `--optimize` | Run parameter optimization first | `false` |
+| `--ingest` | Store results in CORE Memory | `false` |
 | `--verbose` | Enable verbose logging | `false` |
-| `--quiet` | Disable most logging output | `false` |
 
 ## 🔄 Complete Workflow
 
-The end-to-end processor performs these steps automatically:
+The `mcode_translate.py` script performs these steps automatically:
 
 1. **🔬 Fetch Clinical Trials** - Searches ClinicalTrials.gov for the specified condition
 2. **🧪 Process Trials** - Applies mCODE mapping with detailed codes (SNOMED, MeSH, etc.)
@@ -83,28 +78,19 @@ The CLI provides flexible memory storage options:
 ### Default Behavior (Store in CORE Memory)
 ```bash
 # Default: stores results in CORE memory
-python -m src.cli.end_to_end_processor --condition "breast cancer"
+python mcode_translate.py --condition "breast cancer" --ingest
 ```
 
-### Preview Mode (Dry Run)
+### File Output Mode
 ```bash
-# Process data but don't store in CORE memory
-python -m src.cli.end_to_end_processor --condition "breast cancer" --dry-run
-```
-
-### Explicit Storage Control
-```bash
-# Explicitly enable storage (same as default)
-python -m src.cli.end_to_end_processor --condition "breast cancer" --store-in-core-memory
+# Process and save results to files (no CORE memory storage)
+python mcode_translate.py --condition "breast cancer"
 ```
 
 ### Logging Control
 ```bash
 # Verbose logging for debugging
-python -m src.cli.end_to_end_processor --condition "breast cancer" --verbose
-
-# Quiet mode (minimal logging)
-python -m src.cli.end_to_end_processor --condition "breast cancer" --quiet
+python mcode_translate.py --condition "breast cancer" --verbose
 ```
 
 ## 🎯 Key Features
@@ -140,31 +126,22 @@ The system includes these synthetic patient archives:
 ### Custom Model Selection
 ```bash
 # Use different LLM models
-python -m src.cli.end_to_end_processor --condition "prostate cancer" --model gpt-4
+python mcode_translate.py --condition "prostate cancer" --optimize
 ```
 
 ### High-Volume Processing
 ```bash
 # Process large datasets with more workers
-python -m src.cli.end_to_end_processor \
+python mcode_translate.py \
   --condition "diabetes" \
-  --trials-limit 50 \
-  --patients-limit 100 \
-  --workers 8 \
+  --limit 50 \
+  --ingest \
   --verbose
-```
-
-### Preview Mode (Dry Run)
-```bash
-# Process data but skip CORE memory storage for testing
-python -m src.cli.end_to_end_processor \
-  --condition "hypertension" \
-  --dry-run
 ```
 
 ## 🏗️ Architecture
 
-The end-to-end processor integrates multiple components:
+The `mcode_translate.py` script integrates multiple components:
 
 - **Workflows**: Modular processing pipelines
 - **Services**: Core business logic (summarization, mCODE mapping)
@@ -197,7 +174,7 @@ The end-to-end processor integrates multiple components:
 ### Debug Mode
 ```bash
 # Enable verbose logging for troubleshooting
-python -m src.cli.end_to_end_processor --condition "test" --verbose
+python mcode_translate.py --condition "test" --verbose
 ```
 
 ## 🎉 Success Metrics

@@ -37,7 +37,7 @@ class McodeCLI:
     def add_memory_args(parser: argparse.ArgumentParser) -> None:
         """Add core memory storage arguments."""
         parser.add_argument(
-            "--store-in-core-memory",
+            "--ingest",
             action="store_true",
             help="Store results in CORE Memory",
         )
@@ -48,11 +48,6 @@ class McodeCLI:
             help="Source identifier for CORE Memory storage (default: mcode_translator)",
         )
 
-        parser.add_argument(
-            "--dry-run",
-            action="store_true",
-            help="Preview what would be stored without actually storing",
-        )
 
     @staticmethod
     def add_fetcher_args(parser: argparse.ArgumentParser) -> None:

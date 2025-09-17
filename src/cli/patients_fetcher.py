@@ -23,16 +23,16 @@ def create_parser() -> argparse.ArgumentParser:
         epilog="""
 Examples:
   # Fetch patients from breast cancer archive
-  python -m src.cli.patients_fetcher --archive breast_cancer_10_years -o patients.json
+  python -m src.cli.patients_fetcher --archive breast_cancer_10_years -o patients.ndjson
 
   # Fetch specific patient by ID
-  python -m src.cli.patients_fetcher --archive breast_cancer_10_years --patient-id patient_123 -o patient.json
+  python -m src.cli.patients_fetcher --archive breast_cancer_10_years --patient-id patient_123 -o patient.ndjson
 
   # List available archives
   python -m src.cli.patients_fetcher --list-archives
 
   # Verbose output with custom limit
-  python -m src.cli.patients_fetcher --archive mixed_cancer_lifetime --limit 50 --verbose -o patients.json
+  python -m src.cli.patients_fetcher --archive mixed_cancer_lifetime --limit 50 --verbose -o patients.ndjson
         """,
     )
 
@@ -60,8 +60,12 @@ Examples:
         help="List available patient archives and exit",
     )
 
-    # Output arguments
-    McodeCLI.add_fetcher_args(parser)
+    # I/O arguments
+    parser.add_argument(
+        "--out",
+        dest="output_file",
+        help="Output file for patient data (NDJSON format). If not specified, writes to stdout",
+    )
 
     return parser
 
@@ -96,8 +100,8 @@ def main() -> None:
     if args.patient_id:
         workflow_kwargs["patient_id"] = args.patient_id
 
-    if args.output:
-        workflow_kwargs["output_path"] = args.output
+    if args.output_file:
+        workflow_kwargs["output_path"] = args.output_file
 
     # Initialize and execute workflow
     try:
@@ -113,8 +117,10 @@ def main() -> None:
                 total_fetched = metadata.get("total_fetched", 0)
                 print(f"📊 Total patients fetched: {total_fetched}")
 
-                if args.output:
-                    print(f"💾 Results saved to: {args.output}")
+                if args.output_file:
+                    print(f"💾 Results saved to: {args.output_file}")
+                else:
+                    print("📤 Results written to stdout")
 
                 # Print additional details
                 fetch_type = metadata.get("fetch_type")

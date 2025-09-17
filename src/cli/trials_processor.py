@@ -8,7 +8,7 @@ and storing the resulting summaries to CORE Memory or saving as JSON/NDJSON file
 Features:
 - Extract mCODE elements from clinical trial data
 - Save processed data in JSON array format or NDJSON format
-- Support for dry-run mode (no CORE Memory storage)
+- Optional CORE Memory storage (use --ingest to enable)
 - Configurable LLM models and prompts
 - Concurrent processing with worker threads
 """
@@ -22,7 +22,7 @@ from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
-from src.workflows.trials_processor_workflow import TrialsProcessorWorkflow
+from src.workflows.trials_processor_workflow import ClinicalTrialsProcessorWorkflow
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -32,26 +32,20 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Process trials and save as JSON array
-  python -m src.cli.trials_processor trials.json --output mcode_trials.json --dry-run
-
   # Process trials and save as NDJSON (recommended for large datasets)
-  python -m src.cli.trials_processor trials.json --output mcode_trials.ndjson --dry-run
+  python -m src.cli.trials_processor trials.ndjson --output mcode_trials.ndjson
 
   # Process trials from file and store in core memory
-  python -m src.cli.trials_processor trials.json --store-in-core-memory
+  python -m src.cli.trials_processor trials.ndjson --ingest
 
   # Process with specific model and prompt
-  python -m src.cli.trials_processor trials.json --model gpt-4 --prompt direct_mcode_evidence_based
+  python -m src.cli.trials_processor trials.ndjson --model gpt-4 --prompt direct_mcode_evidence_based
 
   # Process single trial
-  python -m src.cli.trials_processor single_trial.json --store-in-core-memory
-
-  # Dry run to preview what would be stored
-  python -m src.cli.trials_processor trials.json --dry-run --verbose
+  python -m src.cli.trials_processor single_trial.ndjson --ingest
 
   # Custom core memory settings
-  python -m src.cli.trials_processor trials.json --store-in-core-memory --memory-source custom_source
+  python -m src.cli.trials_processor trials.ndjson --ingest --memory-source custom_source
 
 Output Formats:
   JSON:  Standard JSON array format - [{"trial_id": "...", "mcode_elements": {...}}]
@@ -67,11 +61,22 @@ Output Formats:
     McodeCLI.add_processor_args(parser)
 
     # Input arguments
-    parser.add_argument("input_file", help="Path to JSON file containing trial data")
+    parser.add_argument(
+        "input_file",
+        nargs="?",
+        help="Path to NDJSON file containing trial data (or use --in)"
+    )
 
     parser.add_argument(
-        "--output",
-        help="Path to save processed mCODE data (JSON array or NDJSON format). Use .ndjson extension for newline-delimited format",
+        "--in",
+        dest="input_file",
+        help="Path to NDJSON file containing trial data (alternative to positional argument)"
+    )
+
+    parser.add_argument(
+        "--out",
+        dest="output_file",
+        help="Path to save processed mCODE data (NDJSON format). If not specified, writes to stdout",
     )
 
     return parser
@@ -86,8 +91,13 @@ def main() -> None:
     McodeCLI.setup_logging(args)
     logger = get_logger(__name__)
 
-    # Validate input file
-    input_path = Path(args.input_file)
+    # Determine input file (positional argument takes precedence)
+    input_file = args.input_file
+    if not input_file:
+        logger.error("No input file specified. Use positional argument or --in")
+        sys.exit(1)
+
+    input_path = Path(input_file)
     if not input_path.exists():
         logger.error(f"Input file not found: {input_path}")
         sys.exit(1)
@@ -95,19 +105,29 @@ def main() -> None:
     # Create configuration
     config = McodeCLI.create_config(args)
 
-    # Load input data
+    # Load input data from file or stdin
     try:
-        with open(input_path, "r", encoding="utf-8") as f:
-            input_data = f.read().strip()
-
-        if not input_data:
-            logger.error(f"Input file is empty: {input_path}")
-            sys.exit(1)
-
-        # Parse JSON
         import json
 
-        trial_data = json.loads(input_data)
+        if args.input_file:
+            # Read NDJSON file (one JSON object per line)
+            trial_data = []
+            with open(input_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:  # Skip empty lines
+                        trial_data.append(json.loads(line))
+        else:
+            # Read from stdin as NDJSON
+            trial_data = []
+            for line in sys.stdin:
+                line = line.strip()
+                if line:  # Skip empty lines
+                    trial_data.append(json.loads(line))
+
+        if not trial_data:
+            logger.error("No input data provided")
+            sys.exit(1)
 
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON in input file: {e}")
@@ -120,7 +140,7 @@ def main() -> None:
     workflow_kwargs = {
         "model": args.model,
         "prompt": args.prompt,
-        "store_in_memory": args.store_in_core_memory and not args.dry_run,
+        "store_in_memory": args.ingest,
         "workers": args.workers,
     }
 
@@ -151,9 +171,9 @@ def main() -> None:
         logger.error("Invalid input format. Expected JSON array or object.")
         sys.exit(1)
 
-    # Initialize core memory storage if needed
+    # Initialize core memory storage if requested
     memory_storage = None
-    if args.store_in_core_memory:
+    if args.ingest:
         try:
             # Use centralized configuration
             memory_storage = McodeMemoryStorage(source=args.memory_source)
@@ -170,7 +190,7 @@ def main() -> None:
     # Initialize and execute workflow
     try:
         logger.info("Initializing trials processor workflow...")
-        workflow = TrialsProcessorWorkflow(config, memory_storage)
+        workflow = ClinicalTrialsProcessorWorkflow(config, memory_storage)
         logger.info("Executing trials processor workflow...")
         result = workflow.execute(**workflow_kwargs)
         logger.info("Trials processor workflow execution completed")
@@ -178,50 +198,13 @@ def main() -> None:
         if result.success:
             logger.info("✅ Trials processing completed successfully!")
 
-            # Save processed data to JSON file if requested
-            if hasattr(args, "output") and args.output and result.data:
+            # Save processed mCODE data to file or stdout
+            if result.data:
                 try:
                     import json
 
-                    # Debug: Check what we actually have
-                    logger.info(f"Debug: result.data type: {type(result.data)}")
-                    if result.data:
-                        logger.info(f"Debug: result.data length: {len(result.data)}")
-                        if len(result.data) > 0:
-                            logger.info(
-                                f"Debug: first item type: {type(result.data[0])}"
-                            )
-                            if hasattr(result.data[0], "__dict__"):
-                                logger.info(
-                                    f"Debug: first item keys: {list(result.data[0].__dict__.keys())}"
-                                )
-                                # Check if McodeResults exists
-                                if "McodeResults" in result.data[0].__dict__:
-                                    logger.info(
-                                        f"Debug: McodeResults found: {type(result.data[0].__dict__['McodeResults'])}"
-                                    )
-                                else:
-                                    logger.info("Debug: No McodeResults in first item")
-                                    # Show all keys to understand structure
-                                    for key in result.data[0].__dict__.keys():
-                                        logger.info(
-                                            f"Debug: Key '{key}': {type(result.data[0].__dict__[key])}"
-                                        )
-                            elif isinstance(result.data[0], dict):
-                                logger.info(
-                                    f"Debug: first item dict keys: {list(result.data[0].keys())}"
-                                )
-                                if "McodeResults" in result.data[0]:
-                                    logger.info(
-                                        f"Debug: McodeResults found in dict: {type(result.data[0]['McodeResults'])}"
-                                    )
-                                else:
-                                    logger.info(
-                                        "Debug: No McodeResults in first dict item"
-                                    )
-
-                    # Extract only mCODE elements for cleaner JSON structure
-                    mcode_only_data = []
+                    # Extract mCODE elements for output
+                    mcode_data = []
                     for item in result.data:
                         # Handle both dict objects and objects with __dict__
                         if isinstance(item, dict):
@@ -241,7 +224,7 @@ def main() -> None:
                                 "identificationModule"
                             ].get("nctId")
 
-                        # Extract only the McodeResults
+                        # Extract mCODE results and original trial data
                         if "McodeResults" in item_dict and item_dict["McodeResults"]:
                             mcode_results = item_dict["McodeResults"]
 
@@ -258,45 +241,47 @@ def main() -> None:
                                         mappings.append(mapping)
                                 mcode_results["mcode_mappings"] = mappings
 
-                            # Create clean mCODE-only structure
-                            clean_item = {
+                            # Create output structure with mCODE data and original trial
+                            output_item = {
                                 "trial_id": trial_id,
                                 "mcode_elements": mcode_results,
+                                "original_trial_data": item_dict,  # Keep original for summarizer
                             }
-                            mcode_only_data.append(clean_item)
+                            mcode_data.append(output_item)
                         else:
-                            # If no McodeResults, create a placeholder
+                            # If no McodeResults, include original data anyway
                             logger.warning(
                                 f"No McodeResults found for trial {trial_id}"
                             )
-                            clean_item = {
+                            output_item = {
                                 "trial_id": trial_id,
                                 "mcode_elements": {
                                     "note": "No mCODE mappings generated"
                                 },
+                                "original_trial_data": item_dict,
                             }
-                            mcode_only_data.append(clean_item)
+                            mcode_data.append(output_item)
 
-                    logger.info(
-                        f"Debug: mcode_only_data length: {len(mcode_only_data)}"
-                    )
-                    # Save as NDJSON (Newline Delimited JSON) format
-                    with open(args.output, "w", encoding="utf-8") as f:
-                        for item in mcode_only_data:
-                            json.dump(item, f, ensure_ascii=False, default=str)
-                            f.write("\n")
-                    logger.info(f"💾 mCODE-only data saved as NDJSON to: {args.output}")
+                    # Output as NDJSON to file or stdout
+                    if args.output_file:
+                        with open(args.output_file, "w", encoding="utf-8") as f:
+                            for item in mcode_data:
+                                json.dump(item, f, ensure_ascii=False, default=str)
+                                f.write("\n")
+                        logger.info(f"💾 mCODE data saved as NDJSON to: {args.output_file}")
+                    else:
+                        # Write to stdout
+                        for item in mcode_data:
+                            json.dump(item, sys.stdout, ensure_ascii=False, default=str)
+                            sys.stdout.write("\n")
+                        sys.stdout.flush()
+                        logger.info("📤 mCODE data written to stdout")
+
                 except Exception as e:
                     logger.error(f"Failed to save processed data: {e}")
-                    # Try alternative serialization
-                    try:
-                        with open(args.output, "w", encoding="utf-8") as f:
-                            json.dump(str(result.data), f, indent=2, ensure_ascii=False)
-                        logger.info(
-                            f"💾 Processed data saved as string to: {args.output}"
-                        )
-                    except Exception as e2:
-                        logger.error(f"Failed alternative serialization: {e2}")
+                    if args.verbose:
+                        import traceback
+                        traceback.print_exc()
 
             # Print summary
             metadata = result.metadata
@@ -311,12 +296,14 @@ def main() -> None:
                 logger.info(f"❌ Failed: {failed}")
                 logger.info(f"📈 Success rate: {success_rate:.1f}%")
 
-                if args.store_in_core_memory:
+                if args.ingest:
                     stored = metadata.get("stored_in_memory", False)
                     if stored:
                         logger.info("🧠 mCODE summaries stored in CORE Memory")
                     else:
-                        logger.info("💾 mCODE summaries NOT stored (dry run or error)")
+                        logger.info("💾 mCODE summaries NOT stored (error)")
+                else:
+                    logger.info("💾 mCODE summaries NOT stored (storage disabled)")
 
                 # Print model/prompt info
                 model_used = metadata.get("model_used")

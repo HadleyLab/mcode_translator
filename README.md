@@ -139,6 +139,106 @@ for mapping in result.data.mcode_mappings:
     print(f"Element: {mapping.element_type}, Confidence: {mapping.confidence_score}")
 ```
 
+## 🚀 Quick Start
+
+### One-Command Pipeline
+
+The easiest way to get started is using the `mcode_translate.py` convenience script:
+
+```bash
+# Process specific clinical trials
+python mcode_translate.py --nct-ids NCT04348955 NCT03247478
+
+# Search by medical condition
+python mcode_translate.py --condition "breast cancer" --limit 5
+
+# Optimize parameters automatically
+python mcode_translate.py --nct-ids NCT04348955 --optimize
+
+# Process without CORE Memory storage
+python mcode_translate.py --condition "lung cancer"
+```
+
+### What It Does
+
+The script automatically runs the complete pipeline:
+
+1. **🔬 Fetch** - Gets clinical trials and synthetic patients
+2. **🧪 Process** - Applies mCODE mapping to extract structured elements
+3. **📝 Summarize** - Generates natural language summaries
+4. **🧠 Store** - Saves results in CORE Memory for future use
+
+### Pipeline Architecture
+
+For more control, use the individual CLI tools:
+
+```bash
+# Progressive data transformation
+python -m src.cli.trials_fetcher --nct-ids NCT123 --out trials.json
+python -m src.cli.trials_processor --in trials.json --out mcode.ndjson
+python -m src.cli.trials_summarizer --in mcode.ndjson --ingest
+```
+
+### Advanced Usage
+
+#### Streaming Pipeline (Memory Efficient)
+```bash
+# Use stdin/stdout for large datasets
+python -m src.cli.trials_fetcher --nct-ids NCT123 | \\
+python -m src.cli.trials_processor | \\
+python -m src.cli.trials_summarizer --ingest
+```
+
+#### Optimization
+```bash
+# Find best model/prompt combination
+python -m src.cli.trials_optimizer --save-config optimal.json
+```
+
+### Output Files
+
+The pipeline generates:
+- `raw_trials.json` - Original clinical trial data
+- `raw_patients.json` - Original patient data
+- `mcode_trials.ndjson` - mCODE-mapped trial elements
+- `mcode_patients.ndjson` - mCODE-mapped patient elements
+
+### Configuration
+
+Make sure you have:
+- ✅ Conda environment: `mcode_translator`
+- ✅ API keys: `CLINICAL_TRIALS_API_KEY`, `COREAI_API_KEY`
+- ✅ Required packages installed
+
+### Examples
+
+#### Basic Usage
+```bash
+# Quick test with specific trials
+python mcode_translate.py --nct-ids NCT04348955 --verbose
+```
+
+#### Production Run
+```bash
+# Process multiple trials with optimization
+python mcode_translate.py --condition "breast cancer" --limit 10 --optimize
+```
+
+#### Development Testing
+```bash
+# Test with multiple trials
+python mcode_translate.py --nct-ids NCT04348955 NCT03247478 --verbose
+```
+
+### Troubleshooting
+
+- **API Key Issues**: Check `.env` file and environment variables
+- **Data Quality**: Use specific NCT IDs for complete trial data
+- **Performance**: Use `--workers` for concurrent processing
+- **Memory**: Use streaming pipeline for large datasets
+
+For detailed walkthroughs, see `mcode_pipeline_demo.ipynb`.
+
 ### Basic Usage
 
 #### 1. Fetch Clinical Trials
@@ -150,7 +250,7 @@ python -m src.cli.trials_fetcher --condition "breast cancer" -o trials.json
 #### 2. Process Trials with mCODE
 ```bash
 # Process trials and store mCODE summaries in Core Memory
-python -m src.cli.trials_processor trials.json --store-in-core-memory
+python -m src.cli.trials_processor trials.json --ingest
 ```
 
 #### 3. Fetch Patient Data
@@ -162,7 +262,7 @@ python -m src.cli.patients_fetcher --archive breast_cancer_10_years -o patients.
 #### 4. Process Patients with mCODE
 ```bash
 # Process patients with trial filtering and store summaries
-python -m src.cli.patients_processor --patients patients.json --trials trials.json --store-in-core-memory
+python -m src.cli.patients_processor --patients patients.json --trials trials.json --ingest
 ```
 
 #### 5. Optimize mCODE Parameters
@@ -183,9 +283,8 @@ All CLI commands support:
 ### Core Memory Arguments
 
 Processor commands support:
-- `--store-in-core-memory`: Store results in CORE Memory
+- `--ingest`: Store results in CORE Memory
 - `--memory-source`: Source identifier for storage
-- `--dry-run`: Preview without storing
 
 ### trials_fetcher
 
@@ -208,13 +307,13 @@ Process clinical trials with mCODE mapping and store summaries.
 
 ```bash
 # Basic processing with storage
-python -m src.cli.trials_processor trials.json --store-in-core-memory
+python -m src.cli.trials_processor trials.json --ingest
 
 # Custom model and prompt
 python -m src.cli.trials_processor trials.json --model gpt-4 --prompt direct_mcode_evidence_based
 
-# Dry run to preview
-python -m src.cli.trials_processor trials.json --dry-run --verbose
+# Process and save to file
+python -m src.cli.trials_processor trials.ndjson --out mcode_trials.ndjson --verbose
 ```
 
 ### patients_fetcher
@@ -238,10 +337,10 @@ Process patient data with mCODE mapping and store summaries.
 
 ```bash
 # Process with trial filtering
-python -m src.cli.patients_processor --patients patients.json --trials trials.json --store-in-core-memory
+python -m src.cli.patients_processor --patients patients.json --trials trials.json --ingest
 
 # Process without filtering
-python -m src.cli.patients_processor --patients patients.json --store-in-core-memory
+python -m src.cli.patients_processor --patients patients.json --ingest
 ```
 
 ### trials_optimizer

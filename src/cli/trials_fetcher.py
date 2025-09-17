@@ -23,13 +23,13 @@ def create_parser() -> argparse.ArgumentParser:
         epilog="""
 Examples:
   # Fetch trials by condition
-  python -m src.cli.trials_fetcher --condition "breast cancer" -o trials.json
+  python -m src.cli.trials_fetcher --condition "breast cancer" -o trials.ndjson
 
   # Fetch specific trial by NCT ID
-  python -m src.cli.trials_fetcher --nct-id NCT12345678 -o trial.json
+  python -m src.cli.trials_fetcher --nct-id NCT12345678 -o trial.ndjson
 
   # Fetch multiple trials
-  python -m src.cli.trials_fetcher --nct-ids NCT12345678,NCT87654321 -o trials.json
+  python -m src.cli.trials_fetcher --nct-ids NCT12345678,NCT87654321 -o trials.ndjson
 
   # Verbose output with custom config
   python -m src.cli.trials_fetcher --condition "lung cancer" --verbose --config custom.json
@@ -60,8 +60,12 @@ Examples:
         help="Maximum number of trials to fetch (default: 10)",
     )
 
-    # Output arguments
-    McodeCLI.add_fetcher_args(parser)
+    # I/O arguments
+    parser.add_argument(
+        "--out",
+        dest="output_file",
+        help="Output file for trial data (NDJSON format). If not specified, writes to stdout",
+    )
 
     # Processing arguments (for concurrency)
     McodeCLI.add_processor_args(parser)
@@ -95,8 +99,8 @@ def main() -> None:
     elif args.nct_ids:
         workflow_kwargs["nct_ids"] = [nct.strip() for nct in args.nct_ids.split(",")]
 
-    if args.output:
-        workflow_kwargs["output_path"] = args.output
+    if args.output_file:
+        workflow_kwargs["output_path"] = args.output_file
 
     # Handle concurrent execution
     try:
@@ -160,8 +164,10 @@ def main() -> None:
                 total_fetched = metadata.get("total_fetched", 0)
                 print(f"📊 Total trials fetched: {total_fetched}")
 
-                if args.output:
-                    print(f"💾 Results saved to: {args.output}")
+                if args.output_file:
+                    print(f"💾 Results saved to: {args.output_file}")
+                else:
+                    print("📤 Results written to stdout")
 
                 # Print additional details
                 fetch_type = metadata.get("fetch_type")

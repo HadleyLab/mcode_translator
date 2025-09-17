@@ -12,10 +12,10 @@ from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.logging_config import get_logger
 
-from .base_workflow import ProcessorWorkflow, WorkflowResult
+from .base_workflow import PatientsProcessorWorkflow, WorkflowResult
 
 
-class PatientsProcessorWorkflow(ProcessorWorkflow):
+class PatientsProcessorWorkflow(PatientsProcessorWorkflow):
     """
     Workflow for processing patient data with mCODE mapping.
 
@@ -37,11 +37,13 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
         """
         Execute the patients processing workflow.
 
+        By default, does NOT store results to CORE memory. Use store_in_memory=True to enable.
+
         Args:
             **kwargs: Workflow parameters including:
                 - patients_data: List of patient data to process
                 - trials_criteria: Optional trial criteria for filtering
-                - store_in_memory: Whether to store results in core memory
+                - store_in_memory: Whether to store results in CORE memory (default: False)
 
         Returns:
             WorkflowResult: Processing results
@@ -50,7 +52,9 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
             # Extract parameters
             patients_data = kwargs.get("patients_data", [])
             trials_criteria = kwargs.get("trials_criteria")
-            store_in_memory = kwargs.get("store_in_memory", True)
+
+            # Default to NOT store in CORE memory - use --ingest to enable
+            store_in_memory = False
 
             if not patients_data:
                 return self._create_result(
@@ -112,7 +116,7 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                     processed_patients.append(processed_patient)
                     successful_count += 1
 
-                    # Store to core memory if requested
+                    # Store to CORE memory if requested
                     if store_in_memory and self.memory_storage:
                         try:
                             patient_id = self._extract_patient_id(patient)
@@ -216,8 +220,7 @@ class PatientsProcessorWorkflow(ProcessorWorkflow):
                     "failed": failed_count,
                     "success_rate": success_rate,
                     "trial_criteria_applied": trials_criteria is not None,
-                    "stored_in_memory": store_in_memory
-                    and self.memory_storage is not None,
+                    "stored_in_memory": store_in_memory and self.memory_storage is not None,
                 },
             )
 
