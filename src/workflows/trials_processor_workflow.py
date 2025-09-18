@@ -222,13 +222,13 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
     ) -> Optional[Dict[str, Any]]:
         """Get cached processed trial result if available."""
         trial_id = self._extract_trial_id(trial)
+        import hashlib
         cache_key_data = {
             "function": "processed_trial",
             "trial_id": trial_id,
             "model": model,
             "prompt": prompt,
-            "trial_hash": hash(str(trial))
-            % 1000000,  # Include trial content hash for cache invalidation
+            "trial_hash": hashlib.md5(str(trial).encode('utf-8')).hexdigest()[:8],
         }
 
         cached_result = self.workflow_cache.get_by_key(cache_key_data)
@@ -247,7 +247,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             "trial_id": trial_id,
             "model": model,
             "prompt": prompt,
-            "trial_hash": hash(str(processed_trial)) % 1000000,
+            "trial_hash": hashlib.md5(str(processed_trial).encode('utf-8')).hexdigest()[:8],
         }
 
         # Convert McodeElement objects to dicts for JSON serialization
@@ -284,7 +284,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         cache_key_data = {
             "function": "mcode_extraction",
             "trial_id": trial_id,
-            "trial_hash": hash(str(trial)) % 1000000,
+            "trial_hash": hashlib.md5(str(trial).encode('utf-8')).hexdigest()[:8],
         }
 
         cached_result = self.mcode_cache.get_by_key(cache_key_data)
@@ -308,8 +308,8 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         cache_key_data = {
             "function": "natural_language_summary",
             "trial_id": trial_id,
-            "mcode_hash": hash(str(mcode_elements)) % 1000000,
-            "trial_hash": hash(str(trial_data)) % 1000000,
+            "mcode_hash": hashlib.md5(str(mcode_elements).encode('utf-8')).hexdigest()[:8],
+            "trial_hash": hashlib.md5(str(trial_data).encode('utf-8')).hexdigest()[:8],
         }
 
         cached_result = self.summary_cache.get_by_key(cache_key_data)
@@ -333,7 +333,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         try:
             return trial["protocolSection"]["identificationModule"]["nctId"]
         except (KeyError, TypeError):
-            return f"unknown_trial_{hash(str(trial)) % 10000}"
+            return f"unknown_trial_{hashlib.md5(str(trial).encode('utf-8')).hexdigest()[:8]}"
 
     def _extract_trial_mcode_elements(self, trial: Dict[str, Any]) -> Dict[str, Any]:
         """
