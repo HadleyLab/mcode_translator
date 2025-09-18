@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 """
 Test Validation Pipeline Parallelization
 
-A test script to demonstrate and verify the validation pipeline parallelization:
+Tests for validation pipeline parallelization:
 - Parallel batch processing of multiple trials
 - Parallel input validation
 - Parallel section processing
@@ -12,6 +11,7 @@ A test script to demonstrate and verify the validation pipeline parallelization:
 
 import json
 import time
+import pytest
 from pathlib import Path
 
 from src.pipeline.pipeline import McodePipeline
@@ -20,7 +20,8 @@ from src.utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 
-def load_sample_trials(count: int = 5) -> list:
+@pytest.fixture
+def trials_data():
     """Load sample trial data for testing."""
     sample_trials = []
 
@@ -32,6 +33,7 @@ def load_sample_trials(count: int = 5) -> list:
     ]
 
     loaded_count = 0
+    count = 8  # Default count for testing
     for sample_file in sample_files:
         if Path(sample_file).exists() and loaded_count < count:
             try:
@@ -63,150 +65,43 @@ def load_sample_trials(count: int = 5) -> list:
     return sample_trials[:count]
 
 
-def test_sequential_processing(trials_data: list) -> tuple:
+def test_sequential_processing(trials_data: list):
     """Test sequential processing for baseline comparison."""
-    print("🔄 Testing sequential processing...")
-
     pipeline = McodePipeline()
 
     start_time = time.time()
     results = pipeline.process_batch(trials_data)
     sequential_time = time.time() - start_time
 
-    print(f"  Sequential processing time: {sequential_time:.2f}s")
-    print(f"  Results: {len(results)} trials processed")
+    assert len(results) == len(trials_data), "Should process all trials"
+    assert sequential_time >= 0, "Processing time should be non-negative"
+    assert all(r is not None for r in results), "All results should be valid"
 
-    return results, sequential_time
 
-
-def test_parallel_processing(trials_data: list, max_workers: int = 4) -> tuple:
+def test_parallel_processing(trials_data: list):
     """Test parallel processing with validation pipeline."""
-    print(f"\n🔄 Testing parallel processing with {max_workers} workers...")
-
+    max_workers = 4
     pipeline = McodePipeline()
 
     start_time = time.time()
     results = pipeline.process_batch_parallel(trials_data, max_workers=max_workers)
     parallel_time = time.time() - start_time
 
-    print(f"  Parallel processing time: {parallel_time:.2f}s")
-    print(f"  Results: {len(results)} trials processed")
-    return results, parallel_time
+    assert len(results) == len(trials_data), "Should process all trials"
+    assert parallel_time >= 0, "Processing time should be non-negative"
+    assert all(r is not None for r in results), "All results should be valid"
 
 
-def test_parallel_validation_only(trials_data: list, max_workers: int = 4) -> tuple:
+def test_parallel_validation_only(trials_data: list):
     """Test parallel validation without full processing."""
-    print(f"\n🔍 Testing parallel validation only with {max_workers} workers...")
-
+    max_workers = 4
     pipeline = McodePipeline()
 
     start_time = time.time()
     validation_results = pipeline.validate_batch_parallel(trials_data, max_workers=max_workers)
     validation_time = time.time() - start_time
 
-    valid_count = sum(validation_results)
-    print(f"  Parallel validation time: {validation_time:.2f}s")
-    print(f"  Results: {valid_count}/{len(validation_results)} trials valid")
+    assert len(validation_results) == len(trials_data), "Should validate all trials"
+    assert validation_time >= 0, "Validation time should be non-negative"
+    assert isinstance(validation_results, list), "Should return list of validation results"
 
-    return validation_results, validation_time
-
-
-def compare_performance(sequential_time: float, parallel_time: float, validation_time: float, trial_count: int):
-    """Compare and display performance metrics."""
-    print("\n" + "=" * 60)
-    print("📊 PERFORMANCE COMPARISON")
-    print("=" * 60)
-
-    print("\n⏱️  TIMING RESULTS:")
-    print(f"  • Sequential time: {sequential_time:.2f}s")
-    print(f"  • Parallel time: {parallel_time:.2f}s")
-    print(f"  • Validation time: {validation_time:.2f}s")
-
-    if parallel_time > 0:
-        speedup = sequential_time / parallel_time
-        print(f"  • Speedup: {speedup:.2f}x")
-        efficiency = (speedup / 4) * 100  # Assuming 4 workers
-        print(f"  • Efficiency: {efficiency:.1f}%")
-
-    print("\n📈 PER-TRIAL METRICS:")
-    print(f"  • Sequential: {sequential_time/trial_count:.3f}s per trial")
-    print(f"  • Parallel: {parallel_time/trial_count:.3f}s per trial")
-    print(f"  • Validation: {validation_time/trial_count:.3f}s per trial")
-
-    print("\n✅ VALIDATION RESULTS:")
-    print(f"  • Parallel validation: {validation_time:.3f}s per trial")
-    print(f"  • Trials processed: {trial_count}")
-def analyze_results(results: list):
-    """Analyze processing results."""
-    print("\n" + "=" * 60)
-    print("📋 RESULTS ANALYSIS")
-    print("=" * 60)
-
-    successful = sum(1 for r in results if r and not r.error)
-    failed = sum(1 for r in results if r and r.error)
-    total_elements = sum(len(r.mcode_mappings) if r else 0 for r in results)
-    avg_compliance = sum(r.validation_results.compliance_score if r else 0 for r in results) / len(results) if results else 0
-
-    print("\n🔢 PROCESSING SUMMARY:")
-    print(f"  • Successful trials: {successful}")
-    print(f"  • Failed trials: {failed}")
-    print(f"  • Total mCODE elements: {total_elements}")
-    print(f"  • Average compliance: {avg_compliance:.2f}")
-
-    if successful > 0:
-        print(f"  • Success rate: {(successful/len(results))*100:.1f}%")
-
-    print("\n📊 ELEMENT DISTRIBUTION:")
-    element_types = {}
-    for result in results:
-        if result and result.mcode_mappings:
-            for elem in result.mcode_mappings:
-                elem_type = elem.element_type
-                element_types[elem_type] = element_types.get(elem_type, 0) + 1
-
-    for elem_type, count in sorted(element_types.items()):
-        print(f"  • {elem_type}: {count}")
-
-
-def main():
-    """Run all validation parallelization tests."""
-    print("🚀 Validation Pipeline Parallelization Tests")
-    print("=" * 60)
-
-    # Load sample data
-    trial_count = 8  # Good number for demonstrating parallelization
-    print(f"📥 Loading {trial_count} sample trials...")
-
-    trials_data = load_sample_trials(trial_count)
-    print(f"✅ Loaded {len(trials_data)} trials")
-
-    try:
-        # Test sequential processing (baseline)
-        seq_results, seq_time = test_sequential_processing(trials_data)
-
-        # Test parallel processing
-        par_results, par_time = test_parallel_processing(trials_data, max_workers=4)
-
-        # Test parallel validation only
-        val_results, val_time = test_parallel_validation_only(trials_data, max_workers=4)
-
-        # Compare performance
-        compare_performance(seq_time, par_time, val_time, trial_count)
-
-        # Analyze results
-        analyze_results(par_results)
-
-        print("\n" + "=" * 60)
-        print("✅ All validation parallelization tests completed successfully!")
-
-    except Exception as e:
-        print(f"\n❌ Test failed: {e}")
-        import traceback
-        traceback.print_exc()
-        return 1
-
-    return 0
-
-
-if __name__ == "__main__":
-    exit(main())
