@@ -75,8 +75,10 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 prompts, models, max_combinations
             )
 
+            total_trials = len(trials_data)
+            total_tasks = len(combinations) * cv_folds * max(1, total_trials // cv_folds)
             self.logger.info(
-                f"🔬 Testing {len(combinations)} prompt×model combinations with {cv_folds}-fold cross validation"
+                f"🔬 Fully asynchronous optimization: {len(combinations)} combinations × {cv_folds} folds × ~{total_trials // cv_folds} trials = {total_tasks} concurrent tasks"
             )
 
             # Run optimization with concurrent cross validation
@@ -96,49 +98,87 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
             self.logger.info(f"🚀 Using {workers} concurrent workers for optimization")
 
-            # Create tasks for concurrent execution
+            # Create tasks for fully asynchronous execution
+            # Break down to individual trial processing for maximum parallelism
             tasks = []
-            for i, combo in enumerate(combinations):
-                task = create_task(
-                    task_id=f"combo_{i}",
-                    func=self._test_combination_cv,
-                    combination=combo,
-                    trials_data=trials_data,
-                    cv_folds=cv_folds
-                )
-                tasks.append(task)
+            task_id = 0
+            for combo_idx, combo in enumerate(combinations):
+                for fold in range(cv_folds):
+                    # Split data into train/validation for this fold
+                    val_size = max(1, len(trials_data) // cv_folds)
+                    val_start = fold * val_size
+                    val_end = min((fold + 1) * val_size, len(trials_data))
+                    val_trials = trials_data[val_start:val_end]
+
+                    # Create individual tasks for each trial in this fold
+                    for trial_idx, trial in enumerate(val_trials):
+                        task = create_task(
+                            task_id=f"trial_{task_id}",
+                            func=self._test_single_trial,
+                            combination=combo,
+                            trial=trial,
+                            fold=fold,
+                            combo_idx=combo_idx
+                        )
+                        tasks.append(task)
+                        task_id += 1
+
+            # Track results by combination for aggregation
+            combo_results = {i: {"scores": [], "errors": []} for i in range(len(combinations))}
 
             def progress_callback(completed, total, result):
                 if result.success:
-                    combo = result.result.get('combination', {})
-                    score = result.result.get('cv_average_score', 0)
-                    self.logger.info(f"✅ Completed combination {completed}/{total}: {combo.get('model', 'unknown')} + {combo.get('prompt', 'unknown')} (score: {score:.3f})")
+                    combo_idx = result.result.get('combo_idx', 0)
+                    score = result.result.get('score', 0)
+                    combo = combinations[combo_idx]
+                    combo_results[combo_idx]["scores"].append(score)
+                    self.logger.debug(f"✅ Trial {completed}/{total}: {combo['model']} + {combo['prompt']} (score: {score:.3f})")
                 else:
-                    self.logger.error(f"❌ Failed combination {completed}/{total}: {result.error}")
+                    combo_idx = result.result.get('combo_idx', 0) if result.result else 0
+                    combo_results[combo_idx]["errors"].append(str(result.error))
+                    self.logger.debug(f"❌ Failed trial {completed}/{total}: {result.error}")
 
             task_results = task_queue.execute_tasks(tasks, progress_callback=progress_callback)
 
-            # Process results
-            for task_result in task_results:
-                if task_result.success:
-                    result = task_result.result
+            # Aggregate results by combination
+            for combo_idx, combo in enumerate(combinations):
+                scores = combo_results[combo_idx]["scores"]
+                errors = combo_results[combo_idx]["errors"]
+
+                if scores:
+                    # Calculate CV statistics for this combination
+                    cv_average_score = sum(scores) / len(scores)
+                    cv_std = (sum((s - cv_average_score) ** 2 for s in scores) / len(scores)) ** 0.5
+
+                    result = {
+                        "combination": combo,
+                        "success": True,
+                        "cv_average_score": cv_average_score,
+                        "cv_std_score": cv_std,
+                        "fold_scores": scores,  # Individual trial scores
+                        "cv_folds": cv_folds,
+                        "total_trials": len(scores),
+                        "errors": errors,
+                        "timestamp": datetime.now().isoformat(),
+                    }
                     optimization_results.append(result)
 
                     # Track best result
-                    score = result.get("cv_average_score", 0)
-                    if score > best_score:
-                        best_score = score
+                    if cv_average_score > best_score:
+                        best_score = cv_average_score
                         best_result = result
+
+                    self.logger.info(f"✅ Completed combination: {combo['model']} + {combo['prompt']} (CV score: {cv_average_score:.3f} ± {cv_std:.3f})")
                 else:
-                    # Handle failed task
-                    combo = tasks[int(task_result.task_id.split('_')[1])].kwargs['combination']
+                    # No successful trials for this combination
                     error_result = {
                         "combination": combo,
-                        "error": str(task_result.error),
                         "success": False,
+                        "error": f"All {len(errors)} trials failed: {errors[:3]}...",  # Show first 3 errors
+                        "timestamp": datetime.now().isoformat(),
                     }
                     optimization_results.append(error_result)
-                    self.logger.error(f"Failed to test combination {combo}: {task_result.error}")
+                    self.logger.error(f"❌ Failed combination {combo['model']} + {combo['prompt']}: All trials failed")
 
             # Set default LLM specification based on best result
             if best_result:
@@ -184,10 +224,48 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
         return combinations
 
+    def _test_single_trial(
+        self, combination: Dict[str, str], trial: Dict[str, Any], fold: int, combo_idx: int
+    ) -> Dict[str, Any]:
+        """Test a single trial with a specific prompt×model combination."""
+        prompt_name = combination["prompt"]
+        model_name = combination["model"]
+
+        try:
+            # Initialize pipeline with this combination
+            pipeline = McodePipeline(prompt_name=prompt_name, model_name=model_name)
+
+            # Process single trial
+            result = pipeline.process(trial)
+
+            # Calculate quality score
+            score = self._calculate_quality_score(result)
+
+            return {
+                "combination": combination,
+                "combo_idx": combo_idx,
+                "fold": fold,
+                "trial_score": score,
+                "score": score,  # For aggregation
+                "success": True,
+                "timestamp": datetime.now().isoformat(),
+            }
+
+        except Exception as e:
+            return {
+                "combination": combination,
+                "combo_idx": combo_idx,
+                "fold": fold,
+                "success": False,
+                "error": str(e),
+                "score": 0.0,  # Failed trials get 0 score
+                "timestamp": datetime.now().isoformat(),
+            }
+
     def _test_combination_cv(
         self, combination: Dict[str, str], trials_data: List[Dict[str, Any]], cv_folds: int
     ) -> Dict[str, Any]:
-        """Test a specific prompt×model combination using cross validation."""
+        """Test a specific prompt×model combination using cross validation (legacy method)."""
         prompt_name = combination["prompt"]
         model_name = combination["model"]
 
