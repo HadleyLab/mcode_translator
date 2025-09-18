@@ -4,13 +4,13 @@
     "prompt": "direct_mcode_evidence_based_concise",
     "cv_score": 0.8111111111111112,
     "cv_std": 0.26712922844825127,
-    "optimization_timestamp": "2025-09-17T19:19:03.893768",
+    "optimization_timestamp": "2025-09-17T21:19:56.721647",
     "optimizer_version": "2.0.0"
   },
   "metadata": {
     "combinations_tested": 0,
     "cv_folds": 3,
-    "total_trials": 5,
+    "total_trials": 3,
     "fold_scores": [
       0.43333333333333335,
       1.0,
