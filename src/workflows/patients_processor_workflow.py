@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.utils.concurrency import TaskQueue, create_task
 from src.utils.logging_config import get_logger
 
 from .base_workflow import PatientsProcessorWorkflow as BasePatientsProcessorWorkflow, WorkflowResult
@@ -62,146 +63,45 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                     error_message="No patient data provided for processing.",
                 )
 
-            # Process patients
+            # Process patients concurrently using TaskQueue
+            self.logger.info(
+                f"🔬 Processing {len(patients_data)} patients with mCODE mapping (concurrent)"
+            )
+
+            # Create tasks for concurrent processing
+            tasks = []
+            for i, patient in enumerate(patients_data):
+                task = create_task(
+                    task_id=f"patient_{i}",
+                    func=self._process_single_patient,
+                    patient=patient,
+                    patient_index=i,
+                    trials_criteria=trials_criteria,
+                    store_in_memory=store_in_memory
+                )
+                tasks.append(task)
+
+            # Execute tasks concurrently
+            task_queue = TaskQueue(max_workers=8, name="PatientProcessor")  # Use 8 workers for patient processing
+            task_results = task_queue.execute_tasks(tasks)
+
+            # Process results
             processed_patients = []
             successful_count = 0
             failed_count = 0
 
-            self.logger.info(
-                f"🔬 Processing {len(patients_data)} patients with mCODE mapping"
-            )
-
-            for i, patient in enumerate(patients_data):
-                try:
-                    self.logger.info(f"Processing patient {i+1}/{len(patients_data)}")
-                    self.logger.debug(
-                        f"Patient type: {type(patient)}, keys: {patient.keys() if isinstance(patient, dict) else 'Not a dict'}"
-                    )
-
-                    # Debug: Check patient data integrity before processing
-                    entries = patient.get("entry", [])
-                    self.logger.debug(f"Patient {i+1} has {len(entries)} entries")
-                    for j, entry in enumerate(entries[:3]):  # Check first 3 entries
-                        resource = entry.get("resource", {})
-                        if resource.get("resourceType") == "Patient":
-                            name = resource.get("name", [])
-                            self.logger.debug(
-                                f"Patient {i+1} name before processing: {name}"
-                            )
-                            break
-
-                    # Extract mCODE elements from patient data
-                    patient_mcode = self._extract_patient_mcode_elements(patient)
-
-                    # Filter based on trial criteria if provided
-                    if trials_criteria:
-                        filtered_mcode = self._filter_by_trial_criteria(
-                            patient_mcode, trials_criteria
-                        )
-                        self.logger.info(
-                            f"Filtered patient mCODE elements: {len(filtered_mcode)}/{len(patient_mcode)}"
-                        )
-                    else:
-                        filtered_mcode = patient_mcode
-
-                    # Create processed patient data
-                    processed_patient = patient.copy()
-                    processed_patient["filtered_mcode_elements"] = filtered_mcode
-                    processed_patient["mcode_processing_metadata"] = {
-                        "original_elements_count": len(patient_mcode),
-                        "filtered_elements_count": len(filtered_mcode),
-                        "trial_criteria_applied": trials_criteria is not None,
-                    }
-
-                    processed_patients.append(processed_patient)
+            for result in task_results:
+                if result.success:
+                    processed_patients.append(result.result)
                     successful_count += 1
-
-                    # Store to CORE memory if requested
-                    if store_in_memory and self.memory_storage:
-                        try:
-                            patient_id = self.extract_patient_id(patient)
-                            self.logger.debug(f"Extracted patient ID: {patient_id}")
-
-                            # Prepare mCODE data for storage
-                            # Extract demographics from the Patient resource specifically
-                            patient_resource = None
-                            for entry in patient.get("entry", []):
-                                resource = entry.get("resource", {})
-                                if resource.get("resourceType") == "Patient":
-                                    patient_resource = resource
-                                    break
-
-                            if patient_resource:
-                                demographics = self._extract_demographics(
-                                    patient_resource
-                                )
-                            else:
-                                demographics = {}
-                            self.logger.debug(f"Extracted demographics: {demographics}")
-                        except Exception as e:
-                            self.logger.error(
-                                f"Error preparing data for memory storage: {e}"
-                            )
-                            self.logger.debug(f"Patient data: {patient}")
-                            raise
-
-                        # Add demographic info from mCODE mappings if not already extracted
-                        try:
-                            if (
-                                "gender" not in demographics
-                                and "PatientSex" in filtered_mcode
-                            ):
-                                patient_sex = filtered_mcode["PatientSex"]
-                                self.logger.debug(
-                                    f"PatientSex type: {type(patient_sex)}, value: {patient_sex}"
-                                )
-                                if isinstance(patient_sex, dict):
-                                    demographics["gender"] = patient_sex.get(
-                                        "display", "Unknown"
-                                    )
-                                else:
-                                    demographics["gender"] = str(patient_sex)
-                        except Exception as e:
-                            self.logger.error(f"Error processing PatientSex: {e}")
-                            demographics["gender"] = "Unknown"
-
-                        # Generate natural language summary for CORE knowledge graph
-                        natural_language_summary = (
-                            self.summarizer.create_patient_summary(patient)
-                        )
-
-                        mcode_data = {
-                            "original_patient_data": patient,  # Include original patient data for summarizer
-                            "mcode_mappings": self._convert_to_mappings_format(
-                                filtered_mcode
-                            ),
-                            "natural_language_summary": natural_language_summary,
-                            "demographics": demographics,
-                            "metadata": processed_patient.get(
-                                "mcode_processing_metadata", {}
-                            ),
-                        }
-
-                        success = self.memory_storage.store_patient_mcode_summary(
-                            patient_id, mcode_data
-                        )
-                        if success:
-                            self.logger.info(
-                                f"✅ Stored patient {patient_id} mCODE summary"
-                            )
-                        else:
-                            self.logger.warning(
-                                f"❌ Failed to store patient {patient_id} mCODE summary"
-                            )
-
-                except Exception as e:
-                    self.logger.error(f"Failed to process patient {i+1}: {e}")
-                    failed_count += 1
-
-                    # Add error information to patient
-                    error_patient = patient.copy()
-                    error_patient["McodeProcessingError"] = str(e)
+                else:
+                    self.logger.error(f"Task {result.task_id} failed: {result.error}")
+                    # Create error patient for failed processing
+                    patient_index = int(result.task_id.split('_')[1])
+                    error_patient = patients_data[patient_index].copy()
+                    error_patient["McodeProcessingError"] = str(result.error)
                     processed_patients.append(error_patient)
+                    failed_count += 1
 
             # Calculate success rate
             total_count = len(patients_data)
@@ -226,6 +126,153 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
 
         except Exception as e:
             return self._handle_error(e, "patients processing")
+
+    def _process_single_patient(
+        self,
+        patient: Dict[str, Any],
+        patient_index: int,
+        trials_criteria: Optional[Dict[str, Any]],
+        store_in_memory: bool
+    ) -> Dict[str, Any]:
+        """
+        Process a single patient with mCODE mapping.
+
+        Args:
+            patient: Patient data to process
+            patient_index: Index of patient for logging
+            trials_criteria: Optional trial criteria for filtering
+            store_in_memory: Whether to store results in CORE memory
+
+        Returns:
+            Processed patient data with mCODE elements
+        """
+        try:
+            self.logger.info(f"Processing patient {patient_index+1}")
+            self.logger.debug(
+                f"Patient type: {type(patient)}, keys: {patient.keys() if isinstance(patient, dict) else 'Not a dict'}"
+            )
+
+            # Debug: Check patient data integrity before processing
+            entries = patient.get("entry", [])
+            self.logger.debug(f"Patient {patient_index+1} has {len(entries)} entries")
+            for j, entry in enumerate(entries[:3]):  # Check first 3 entries
+                resource = entry.get("resource", {})
+                if resource.get("resourceType") == "Patient":
+                    name = resource.get("name", [])
+                    self.logger.debug(
+                        f"Patient {patient_index+1} name before processing: {name}"
+                    )
+                    break
+
+            # Extract mCODE elements from patient data
+            patient_mcode = self._extract_patient_mcode_elements(patient)
+
+            # Filter based on trial criteria if provided
+            if trials_criteria:
+                filtered_mcode = self._filter_by_trial_criteria(
+                    patient_mcode, trials_criteria
+                )
+                self.logger.info(
+                    f"Filtered patient mCODE elements: {len(filtered_mcode)}/{len(patient_mcode)}"
+                )
+            else:
+                filtered_mcode = patient_mcode
+
+            # Create processed patient data
+            processed_patient = patient.copy()
+            processed_patient["filtered_mcode_elements"] = filtered_mcode
+            processed_patient["mcode_processing_metadata"] = {
+                "original_elements_count": len(patient_mcode),
+                "filtered_elements_count": len(filtered_mcode),
+                "trial_criteria_applied": trials_criteria is not None,
+            }
+
+            # Store to CORE memory if requested
+            if store_in_memory and self.memory_storage:
+                try:
+                    patient_id = self.extract_patient_id(patient)
+                    self.logger.debug(f"Extracted patient ID: {patient_id}")
+
+                    # Prepare mCODE data for storage
+                    # Extract demographics from the Patient resource specifically
+                    patient_resource = None
+                    for entry in patient.get("entry", []):
+                        resource = entry.get("resource", {})
+                        if resource.get("resourceType") == "Patient":
+                            patient_resource = resource
+                            break
+
+                    if patient_resource:
+                        demographics = self._extract_demographics(
+                            patient_resource
+                        )
+                    else:
+                        demographics = {}
+                    self.logger.debug(f"Extracted demographics: {demographics}")
+                except Exception as e:
+                    self.logger.error(
+                        f"Error preparing data for memory storage: {e}"
+                    )
+                    self.logger.debug(f"Patient data: {patient}")
+                    raise
+
+                # Add demographic info from mCODE mappings if not already extracted
+                try:
+                    if (
+                        "gender" not in demographics
+                        and "PatientSex" in filtered_mcode
+                    ):
+                        patient_sex = filtered_mcode["PatientSex"]
+                        self.logger.debug(
+                            f"PatientSex type: {type(patient_sex)}, value: {patient_sex}"
+                        )
+                        if isinstance(patient_sex, dict):
+                            demographics["gender"] = patient_sex.get(
+                                "display", "Unknown"
+                            )
+                        else:
+                            demographics["gender"] = str(patient_sex)
+                except Exception as e:
+                    self.logger.error(f"Error processing PatientSex: {e}")
+                    demographics["gender"] = "Unknown"
+
+                # Generate natural language summary for CORE knowledge graph
+                natural_language_summary = (
+                    self.summarizer.create_patient_summary(patient)
+                )
+
+                mcode_data = {
+                    "original_patient_data": patient,  # Include original patient data for summarizer
+                    "mcode_mappings": self._convert_to_mappings_format(
+                        filtered_mcode
+                    ),
+                    "natural_language_summary": natural_language_summary,
+                    "demographics": demographics,
+                    "metadata": processed_patient.get(
+                        "mcode_processing_metadata", {}
+                    ),
+                }
+
+                success = self.memory_storage.store_patient_mcode_summary(
+                    patient_id, mcode_data
+                )
+                if success:
+                    self.logger.info(
+                        f"✅ Stored patient {patient_id} mCODE summary"
+                    )
+                else:
+                    self.logger.warning(
+                        f"❌ Failed to store patient {patient_id} mCODE summary"
+                    )
+
+            return processed_patient
+
+        except Exception as e:
+            self.logger.error(f"Failed to process patient {patient_index+1}: {e}")
+            # Add error information to patient
+            error_patient = patient.copy()
+            error_patient["McodeProcessingError"] = str(e)
+            return error_patient
 
     def _extract_patient_mcode_elements(
         self, patient: Dict[str, Any]
