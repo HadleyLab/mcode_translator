@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 from src.core.dependency_container import create_trial_pipeline
 from src.pipeline import McodePipeline
 from src.shared.models import WorkflowResult
-from src.utils.fetcher import get_full_study
+from src.utils.fetcher import get_full_study, get_full_studies_batch
 from src.utils.logging_config import get_logger
 
 
@@ -140,19 +140,21 @@ class DataFlowCoordinator:
         self.logger.info("📥 Phase 1: Fetching clinical trial data")
 
         try:
+            # Use batch processing for better performance
+            self.logger.info(f"🔄 Batch fetching {len(trial_ids)} trials")
+            batch_results = get_full_studies_batch(trial_ids, max_workers=8)
+
             fetched_trials = []
             failed_fetches = []
 
-            for i, trial_id in enumerate(trial_ids):
-                try:
-                    self.logger.debug(
-                        f"Fetching trial {i+1}/{len(trial_ids)}: {trial_id}"
-                    )
-                    trial_data = get_full_study(trial_id)
-                    fetched_trials.append(trial_data)
-                except Exception as e:
-                    self.logger.warning(f"Failed to fetch {trial_id}: {str(e)}")
-                    failed_fetches.append({"trial_id": trial_id, "error": str(e)})
+            for trial_id, result in batch_results.items():
+                if isinstance(result, dict) and "error" not in result:
+                    fetched_trials.append(result)
+                    self.logger.debug(f"✅ Fetched: {trial_id}")
+                else:
+                    error_msg = result.get("error", "Unknown error") if isinstance(result, dict) else str(result)
+                    self.logger.warning(f"❌ Failed to fetch {trial_id}: {error_msg}")
+                    failed_fetches.append({"trial_id": trial_id, "error": error_msg})
 
             if not fetched_trials:
                 return WorkflowResult(
@@ -162,6 +164,9 @@ class DataFlowCoordinator:
                     metadata={"failed_fetches": failed_fetches},
                 )
 
+            success_rate = len(fetched_trials) / len(trial_ids) if trial_ids else 0
+            self.logger.info(f"📊 Batch fetch complete: {len(fetched_trials)}/{len(trial_ids)} successful ({success_rate:.1%})")
+
             return WorkflowResult(
                 success=True,
                 data=fetched_trials,
@@ -169,7 +174,9 @@ class DataFlowCoordinator:
                     "total_requested": len(trial_ids),
                     "total_fetched": len(fetched_trials),
                     "total_failed": len(failed_fetches),
+                    "success_rate": success_rate,
                     "failed_fetches": failed_fetches,
+                    "processing_method": "batch_api_calls"
                 },
             )
 
