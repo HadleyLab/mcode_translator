@@ -30,7 +30,8 @@ def run_command(cmd, cwd=None, env=None):
 
 def activate_conda_env():
     """Get the command to activate conda environment."""
-    return "source activate mcode_translator && "
+    # Skipped since using default conda env
+    return ""
 
 
 def run_unit_tests(args):

@@ -53,14 +53,12 @@ Examples:
     # Required arguments for file-based optimization
     parser.add_argument(
         "--trials-file",
-        required=True,
         help="Path to NDJSON file containing trial data for testing"
     )
 
     parser.add_argument(
         "--cv-folds",
         type=int,
-        required=True,
         help="Number of cross validation folds"
     )
 
@@ -111,6 +109,15 @@ def main() -> None:
         for model in models:
             print(f"  • {model}")
         return
+
+    # Validate required arguments for optimization
+    if not args.trials_file:
+        print("❌ --trials-file is required for optimization")
+        sys.exit(1)
+
+    if args.cv_folds is None:
+        print("❌ --cv-folds is required for optimization")
+        sys.exit(1)
 
     # Load trial data from file (required)
     trials_path = Path(args.trials_file)
