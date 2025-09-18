@@ -93,6 +93,11 @@ Examples:
         "--list-models", action="store_true", help="List available models and exit"
     )
 
+    parser.add_argument(
+        "--save-mcode-elements",
+        help="Save all processed mCODE elements to JSON file for analysis"
+    )
+
     return parser
 
 
@@ -199,6 +204,9 @@ def main() -> None:
 
     if args.save_config:
         workflow_kwargs["output_config"] = args.save_config
+
+    if getattr(args, 'save_mcode_elements', None):
+        workflow_kwargs["save_mcode_elements"] = args.save_mcode_elements
 
     # Pass CLI arguments for concurrency configuration
     workflow_kwargs["cli_args"] = args
