@@ -307,8 +307,9 @@ def search_multiple_queries(
     # Create tasks for concurrent queries
     tasks = []
     for query in search_queries:
+        import hashlib
         task = create_task(
-            task_id=f"query_{hash(query) % 10000}",
+            task_id=f"query_{hashlib.md5(query.encode('utf-8')).hexdigest()[:8]}",
             func=search_trials,
             search_expr=query,
             fields=fields,

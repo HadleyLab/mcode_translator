@@ -1675,5 +1675,6 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                 if patient_id:
                     return str(patient_id)
 
+        import hashlib
         # Fallback to hash of patient data
-        return f"patient_{hash(str(patient)) % 10000}"
+        return f"patient_{hashlib.md5(str(patient).encode('utf-8')).hexdigest()[:8]}"

@@ -110,10 +110,10 @@ class LLMService:
                 self._update_performance_stats(0.0, cache_hit=True, tokens_used=0, error=False)
                 # Log the cached response for clarity
                 self.logger.debug(f"  Cached response: {cached_result.get('response_json', {})}")
-                return cached_result.get("mcode_elements", [])
+                return [McodeElement(**elem) for elem in cached_result.get("mcode_elements", [])]
 
             # Make LLM call using existing infrastructure
-            self.logger.info(f"🔍 CACHE MISS → 🚀 API CALL: {self.model_name}")
+            self.logger.debug(f"🔍 CACHE MISS → 🚀 API CALL: {self.model_name}")
             response_json = self._call_llm_api(prompt, llm_config)
 
             # Parse response using existing models
@@ -122,7 +122,7 @@ class LLMService:
             # Cache result using existing API manager
             cache_data = {"mcode_elements": [elem.model_dump() for elem in mcode_elements], "response_json": response_json}
             llm_cache.set_by_key(cache_data, cache_key)
-            self.logger.info(f"💾 CACHE SAVED: {self.model_name}")
+            self.logger.debug(f"💾 CACHE SAVED: {self.model_name}")
 
             # Periodic cleanup of old clients
             self._cleanup_old_clients()
@@ -552,11 +552,13 @@ class LLMService:
         Returns:
             Enhanced cache key dictionary
         """
-        # Basic cache key
+        import hashlib
+
+        # Basic cache key with deterministic hashing
         basic_key = {
             "model": self.model_name,
             "prompt": self.prompt_name,
-            "text_hash": hash(clinical_text)
+            "text_hash": hashlib.md5(clinical_text.encode('utf-8')).hexdigest()
         }
 
         # Add semantic fingerprinting for better cache hits
@@ -567,7 +569,7 @@ class LLMService:
         enhanced_key = {
             **basic_key,
             "text_length": text_length,
-            "text_sample_hash": hash(text_sample),
+            "text_sample_hash": hashlib.md5(text_sample.encode('utf-8')).hexdigest(),
             "semantic_fingerprint": self._generate_semantic_fingerprint(clinical_text)
         }
 
