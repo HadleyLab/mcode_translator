@@ -12,9 +12,65 @@
           "max_tokens": 8192
         }
       },
+      "deepseek-chat": {
+        "provider": "deepseek",
+        "model_name": "deepseek-chat",
+        "api_key_env_var": "DEEPSEEK_API_KEY",
+        "base_url": "https://api.deepseek.com",
+        "default_parameters": {
+          "temperature": 0.1,
+          "max_tokens": 8192
+        }
+      },
+      "deepseek-reasoner": {
+        "provider": "deepseek",
+        "model_name": "deepseek-reasoner",
+        "api_key_env_var": "DEEPSEEK_API_KEY",
+        "base_url": "https://api.deepseek.com",
+        "default_parameters": {
+          "temperature": 0.1,
+          "max_tokens": 8192
+        }
+      },
+      "gpt-4-turbo": {
+        "provider": "openai",
+        "model_name": "gpt-4-turbo-preview",
+        "api_key_env_var": "OPENAI_API_KEY",
+        "api_base": "https://api.openai.com/v1",
+        "default_parameters": {
+          "temperature": 0.1,
+          "max_tokens": 4096
+        },
+        "timeout_seconds": 60,
+        "rate_limit_per_minute": 200
+      },
       "gpt-4o": {
         "provider": "openai",
         "model_name": "gpt-4o",
+        "api_key_env_var": "OPENAI_API_KEY",
+        "api_base": "https://api.openai.com/v1",
+        "default_parameters": {
+          "temperature": 0.1,
+          "max_tokens": 4096
+        },
+        "timeout_seconds": 60,
+        "rate_limit_per_minute": 200
+      },
+      "gpt-4o-mini": {
+        "provider": "openai",
+        "model_name": "gpt-4o-mini",
+        "api_key_env_var": "OPENAI_API_KEY",
+        "api_base": "https://api.openai.com/v1",
+        "default_parameters": {
+          "temperature": 0.1,
+          "max_tokens": 4096
+        },
+        "timeout_seconds": 60,
+        "rate_limit_per_minute": 200
+      },
+      "gpt-3.5-turbo": {
+        "provider": "openai",
+        "model_name": "gpt-3.5-turbo",
         "api_key_env_var": "OPENAI_API_KEY",
         "api_base": "https://api.openai.com/v1",
         "default_parameters": {
@@ -49,8 +105,8 @@
       "sample_size": 10,
       "optimized_model": "deepseek-coder",
       "optimized_prompt": "direct_mcode_evidence_based_concise",
-      "optimization_score": 1.0,
-      "last_optimized": "2025-09-18T11:33:48.193970"
+      "optimization_score": 0.48177254901960787,
+      "last_optimized": "2025-09-18T15:07:59.707027"
     }
   }
 }

@@ -77,7 +77,17 @@ class LLMService:
                     self.logger.warning(f"No API key available for {self.model_name} - returning empty results")
                     return []
             except Exception as e:
-                self.logger.warning(f"API key check failed for {self.model_name}: {e} - returning empty results")
+                error_msg = f"API key configuration error for model {self.model_name}"
+                self.logger.warning(f"API key error for {self.model_name}: {str(e)}")
+
+                # Provide specific guidance based on error type
+                if "not found in config" in str(e):
+                    self.logger.warning(f"  Model '{self.model_name}' not found in configuration")
+                elif "Environment variable" in str(e):
+                    self.logger.warning(f"  Missing required environment variable for {self.model_name}")
+                else:
+                    self.logger.warning("  Check model configuration and environment variables")
+
                 return []
 
             # Get LLM config from existing file-based system
@@ -96,20 +106,23 @@ class LLMService:
             cached_result = llm_cache.get_by_key(cache_key)
 
             if cached_result is not None:
-                self.logger.info(f"💾 LLM cache hit for {self.model_name}")
+                self.logger.info(f"💾 CACHE HIT: {self.model_name}")
                 self._update_performance_stats(0.0, cache_hit=True, tokens_used=0, error=False)
+                # Log the cached response for clarity
+                self.logger.debug(f"  Cached response: {cached_result.get('response_json', {})}")
                 return cached_result.get("mcode_elements", [])
 
             # Make LLM call using existing infrastructure
+            self.logger.info(f"🔍 CACHE MISS → 🚀 API CALL: {self.model_name}")
             response_json = self._call_llm_api(prompt, llm_config)
 
             # Parse response using existing models
             mcode_elements = self._parse_llm_response(response_json)
 
             # Cache result using existing API manager
-            cache_data = {"mcode_elements": [elem.model_dump() for elem in mcode_elements]}
+            cache_data = {"mcode_elements": [elem.model_dump() for elem in mcode_elements], "response_json": response_json}
             llm_cache.set_by_key(cache_data, cache_key)
-            self.logger.info(f"✅ LLM result cached for {self.model_name}")
+            self.logger.info(f"💾 CACHE SAVED: {self.model_name}")
 
             # Periodic cleanup of old clients
             self._cleanup_old_clients()
@@ -117,7 +130,7 @@ class LLMService:
             return mcode_elements
 
         except Exception as e:
-            self.logger.error(f"❌ LLM mapping failed: {str(e)}")
+            self.logger.error(f"❌ LLM mapping failed for {self.model_name}: {str(e)}")
             return []
 
     def _call_llm_api(self, prompt: str, llm_config) -> Dict[str, Any]:
@@ -133,7 +146,6 @@ class LLMService:
         """
         import openai
 
-        start_time = time.time()
         tokens_used = 0
         error_occurred = False
 
@@ -145,23 +157,8 @@ class LLMService:
             # Use cached client for connection reuse (optimization)
             client = self._get_cached_client(self.model_name)
 
-            # Make API call - conditionally use response_format for supported models
-            call_params = {
-                "model": llm_config.model_identifier,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": temperature,
-                "max_tokens": max_tokens
-            }
-
-            # Use response_format for models that support it
-            if ("gpt-4o" in llm_config.model_identifier.lower() or
-                "gpt-4-turbo" in llm_config.model_identifier.lower() or
-                "deepseek" in llm_config.model_identifier.lower()):
-                call_params["response_format"] = {"type": "json_object"}
-                self.logger.debug(f"Using response_format for model: {llm_config.model_identifier}")
-
-            self.logger.info(f"🤖 Making LLM API call to {llm_config.model_identifier}")
-            response = client.chat.completions.create(**call_params)
+            # Make API call with aggressive rate limiting handling
+            response = self._make_api_call_with_rate_limiting(client, llm_config, prompt, temperature, max_tokens)
 
             # Extract token usage using existing utility
             from src.utils.token_tracker import extract_token_usage_from_response
@@ -235,24 +232,171 @@ class LLMService:
                 return json.loads(cleaned_content)
             except json.JSONDecodeError as e:
                 error_occurred = True
-                self.logger.error(f"JSON decode failed for model {self.model_name}, response: {response_content[:500]}...")
-                # Try to provide more specific error information
+                # Provide detailed error information for debugging
+                error_msg = f"JSON parsing failed for model {self.model_name}"
+                self.logger.error(f"❌ JSON parsing error for {self.model_name}: {str(e)}")
+                self.logger.error(f"  Response preview: {response_content[:300]}...")
+
+                # Check for common issues
                 if "Expecting ',' delimiter" in str(e):
-                    self.logger.error("JSON parsing error: Missing comma or malformed structure")
+                    self.logger.error("  Issue: Missing comma or malformed JSON structure")
                 elif "Expecting ':' delimiter" in str(e):
-                    self.logger.error("JSON parsing error: Missing colon in key-value pair")
+                    self.logger.error("  Issue: Missing colon in key-value pair")
                 elif "Expecting value" in str(e):
-                    self.logger.error("JSON parsing error: Unexpected token or missing value")
-                raise ValueError(f"Invalid JSON response from {self.model_name}: {str(e)}") from e
+                    self.logger.error("  Issue: Unexpected token or missing value")
+                elif "Unterminated string" in str(e):
+                    self.logger.error("  Issue: Unterminated string literal")
+                else:
+                    self.logger.error("  Issue: General JSON syntax error")
+
+                # Check if response looks like plain text instead of JSON
+                if not cleaned_content.strip().startswith(('{', '[')):
+                    self.logger.error(f"  Model {self.model_name} returned plain text instead of JSON")
+                    self.logger.error("  This model may not support structured JSON output properly")
+
+                raise ValueError(f"Model {self.model_name} returned invalid JSON: {str(e)} | Response: {response_content[:200]}...") from e
 
         except Exception as e:
             error_occurred = True
-            self.logger.error(f"💥 LLM API call failed: {str(e)}")
+            self.logger.error(f"💥 LLM API call failed for {self.model_name}: {str(e)}")
             raise
         finally:
             # Update performance statistics
-            request_time = time.time() - start_time
-            self._update_performance_stats(request_time, cache_hit=False, tokens_used=tokens_used, error=error_occurred)
+            if 'start_time' in locals() or 'start_time' in globals():
+                request_time = time.time() - start_time
+                self._update_performance_stats(request_time, cache_hit=False, tokens_used=tokens_used, error=error_occurred)
+
+    def _make_api_call_with_rate_limiting(self, client, llm_config, prompt: str, temperature: float, max_tokens: int):
+        """
+        Make API call with aggressive rate limiting and exponential backoff retry logic.
+
+        Args:
+            client: OpenAI client instance
+            llm_config: LLM configuration
+            prompt: Formatted prompt
+            temperature: Temperature parameter
+            max_tokens: Max tokens parameter
+
+        Returns:
+            OpenAI API response
+
+        Raises:
+            Exception: If all retry attempts fail
+        """
+        import random
+        import openai
+
+        start_time = time.time()
+        # Aggressive retry configuration for rate limiting
+        max_retries = 10  # Much more aggressive than the default 3
+        base_delay = 1.0  # Base delay in seconds
+        max_delay = 60.0  # Maximum delay between retries
+        backoff_factor = 2.0  # Exponential backoff multiplier
+
+        # Make API call - conditionally use response_format for supported models
+        call_params = {
+            "model": llm_config.model_identifier,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature,
+            "max_tokens": max_tokens
+        }
+
+        # Use response_format for models that support it
+        if ("gpt-4o" in llm_config.model_identifier.lower() or
+            "gpt-4-turbo" in llm_config.model_identifier.lower() or
+            "deepseek" in llm_config.model_identifier.lower()):
+            call_params["response_format"] = {"type": "json_object"}
+            self.logger.debug(f"Using response_format for model: {llm_config.model_identifier}")
+
+        for attempt in range(max_retries + 1):
+            try:
+                if attempt == 0:
+                    self.logger.info(f"🚀 API CALL: {llm_config.model_identifier}")
+                else:
+                    self.logger.warning(f"🔄 RETRY {attempt}/{max_retries}: {llm_config.model_identifier}")
+
+                response = client.chat.completions.create(**call_params)
+                api_time = time.time() - start_time
+                self.logger.info(f"✅ API RESPONSE: {llm_config.model_identifier} ({api_time:.2f}s)")
+                return response
+
+            except Exception as e:
+                # Check if this is a rate limit error by examining the error message/code
+                error_str = str(e).lower()
+                is_rate_limit = (
+                    'rate limit' in error_str or
+                    '429' in error_str or
+                    'too many requests' in error_str or
+                    'quota exceeded' in error_str
+                )
+
+                if is_rate_limit:
+                    # Extract rate limit information from the error
+                    error_data = getattr(e, 'body', {})
+                    if isinstance(error_data, dict) and 'error' in error_data:
+                        error_info = error_data['error']
+                        error_type = error_info.get('type', 'unknown')
+                        error_message = error_info.get('message', str(e))
+
+                        # Parse retry time from message if available
+                        retry_after = None
+                        if 'Please try again in' in error_message:
+                            try:
+                                # Extract milliseconds from message like "Please try again in 524ms"
+                                retry_match = error_message.split('Please try again in')[1].strip()
+                                if retry_match.endswith('ms'):
+                                    retry_after = float(retry_match[:-2]) / 1000.0  # Convert ms to seconds
+                                elif retry_match.endswith('s'):
+                                    retry_after = float(retry_match[:-1])
+                            except (ValueError, IndexError):
+                                pass
+
+                        self.logger.warning(f"🚦 RATE LIMIT hit for {llm_config.model_identifier}")
+                        self.logger.warning(f"  Type: {error_type}")
+                        self.logger.warning(f"  Message: {error_message}")
+                        if retry_after:
+                            self.logger.warning(f"  Suggested retry after: {retry_after:.2f}s")
+                    else:
+                        # Fallback for rate limit detection without structured error data
+                        self.logger.warning(f"🚦 RATE LIMIT detected for {llm_config.model_identifier}")
+                        self.logger.warning(f"  Error: {str(e)}")
+                        retry_after = None
+
+                    # If this is the last attempt, don't retry
+                    if attempt == max_retries:
+                        self.logger.error(f"💥 RATE LIMIT retry exhausted after {max_retries} attempts for {llm_config.model_identifier}")
+                        raise
+
+                    # Calculate delay with exponential backoff and jitter
+                    if retry_after:
+                        # Use the API's suggested retry time if available
+                        delay = retry_after
+                    else:
+                        # Calculate exponential backoff delay
+                        delay = min(base_delay * (backoff_factor ** attempt), max_delay)
+
+                    # Add jitter to prevent thundering herd
+                    jitter = random.uniform(0.1, 1.0) * delay * 0.1
+                    total_delay = delay + jitter
+
+                    self.logger.info(f"⏳ Waiting {total_delay:.2f}s before retry {attempt + 1}/{max_retries}")
+                    time.sleep(total_delay)
+                    continue  # Continue to next retry attempt
+
+                # If not a rate limit error, handle as regular API error
+                if attempt == max_retries:
+                    self.logger.error(f"💥 API error retry exhausted after {max_retries} attempts: {str(e)}")
+                    raise
+                else:
+                    # For non-rate-limit errors, use shorter delay
+                    delay = min(base_delay * (1.5 ** attempt), 10.0)  # Shorter backoff for API errors
+                    jitter = random.uniform(0.1, 1.0) * delay * 0.1
+                    total_delay = delay + jitter
+
+                    self.logger.warning(f"⚠️ API error on attempt {attempt + 1}: {str(e)}")
+                    self.logger.info(f"⏳ Waiting {total_delay:.2f}s before retry")
+                    time.sleep(total_delay)
+
 
     def _parse_llm_response(self, response_json: Dict[str, Any]) -> List[McodeElement]:
         """
@@ -300,7 +444,7 @@ class LLMService:
             cache_key in self._last_client_use and
             current_time - self._last_client_use[cache_key] < 300):  # 5 minutes
 
-            self.logger.debug(f"🔄 Reusing cached client for {model_name}")
+            self.logger.debug(f"Reusing cached client for {model_name}")
             self._last_client_use[cache_key] = current_time
             return self._client_cache[cache_key]
 
@@ -312,8 +456,8 @@ class LLMService:
             client = openai.OpenAI(
                 base_url=base_url,
                 api_key=api_key,
-                # Enable connection reuse
-                max_retries=3,
+                # Disable built-in retries since we handle them at application level
+                max_retries=0,
                 timeout=60.0
             )
 
@@ -321,7 +465,7 @@ class LLMService:
             self._client_cache[cache_key] = client
             self._last_client_use[cache_key] = current_time
 
-            self.logger.debug(f"✨ Created new cached client for {model_name}")
+            self.logger.debug(f"Created new cached client for {model_name}")
             return client
 
         except Exception as e:
@@ -339,7 +483,7 @@ class LLMService:
         Returns:
             List of lists containing McodeElement instances for each text
         """
-        self.logger.info(f"🔄 Batch processing {len(clinical_texts)} texts with {max_workers} workers")
+        self.logger.info(f"Batch processing {len(clinical_texts)} texts with {max_workers} workers")
 
         # Prepare batch tasks
         batch_tasks = []
@@ -357,9 +501,9 @@ class LLMService:
 
         def progress_callback(completed, total, result):
             if result.success:
-                self.logger.info(f"✅ Completed batch task {result.task_id}")
+                self.logger.info(f"Completed batch task {result.task_id}")
             else:
-                self.logger.error(f"❌ Failed batch task {result.task_id}: {result.error}")
+                self.logger.error(f"Failed batch task {result.task_id}: {result.error}")
 
         task_results = task_queue.execute_tasks(batch_tasks, progress_callback=progress_callback)
 
@@ -377,7 +521,7 @@ class LLMService:
                 failed_tasks += 1
                 self.logger.warning(f"Batch task {result.task_id} failed: {result.error}")
 
-        self.logger.info(f"📊 Batch processing complete: {successful_tasks} successful, {failed_tasks} failed")
+        self.logger.info(f"Batch processing complete: {successful_tasks} successful, {failed_tasks} failed")
         return results
 
     def _process_single_text_batch(self, clinical_text: str, task_index: int) -> List[McodeElement]:
@@ -523,7 +667,7 @@ class LLMService:
             cleanup_count += 1
 
         if cleanup_count > 0:
-            self.logger.info(f"🧹 Cleaned up {cleanup_count} old cached clients")
+            self.logger.info(f"Cleaned up {cleanup_count} old cached clients")
 
         return cleanup_count
 

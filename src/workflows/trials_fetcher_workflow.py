@@ -272,7 +272,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                 # Extract concurrency settings from CLI args if available
                 max_workers = getattr(cli_args, 'max_workers', 8)
 
-            self.logger.info(f"🚀 Using batch processing with {max_workers} concurrent workers")
+            self.logger.info(f"🤖 Using batch processing with {max_workers} concurrent workers")
 
             # Use the optimized batch processing function
             batch_results = get_full_studies_batch(nct_ids, max_workers=max_workers)

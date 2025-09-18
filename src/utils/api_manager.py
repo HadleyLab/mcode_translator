@@ -116,9 +116,8 @@ class APICache:
                 os.remove(cache_path)
                 return None
 
-            logger.info(
-                f"Cache HIT with key {cache_key[:8]}... in namespace '{self.namespace}'"
-            )
+            # Disable verbose cache logging to avoid confusion
+            pass
             return cached_data["result"]
         except Exception as e:
             logger.warning(f"Failed to read cache: {e}")
@@ -186,9 +185,8 @@ class APICache:
             with open(cache_path, "w") as f:
                 json.dump(cached_data, f, default=str)
 
-            logger.info(
-                f"Cache STORED with key {cache_key[:8]}... in namespace '{self.namespace}'"
-            )
+            # Disable verbose cache logging to avoid confusion
+            pass
         except Exception as e:
             logger.warning(f"Failed to write cache: {e}")
 

@@ -9,12 +9,26 @@ configuration files only - no CORE Memory storage required.
 
 import argparse
 import sys
+import time
 from pathlib import Path
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 from src.shared.cli_utils import McodeCLI
 from src.utils.config import Config
 from src.workflows.trials_optimizer_workflow import TrialsOptimizerWorkflow
 
+
+class SummaryHandler(FileSystemEventHandler):
+    """Event handler for real-time summary of optimization runs."""
+    def __init__(self, workflow):
+        self.workflow = workflow
+
+    def on_created(self, event):
+        if event.is_directory or not event.src_path.endswith('.json'):
+            return
+        print("\n📊 Real-time summary updated:")
+        self.workflow.summarize_benchmark_validations()
 
 def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser for trials optimizer."""
@@ -206,6 +220,16 @@ def main() -> None:
                 print(f"  • {combo}")
             sys.exit(1)
 
+    # Setup real-time summary
+    runs_dir = "optimization_runs"
+    Path(runs_dir).mkdir(exist_ok=True)
+    event_handler = SummaryHandler(workflow)
+    observer = Observer()
+    observer.schedule(event_handler, runs_dir, recursive=False)
+    observer.start()
+    print("👀 Watching for new run results in real-time...")
+
+
     # Initialize and execute workflow (disable CORE Memory - optimizer saves to local files only)
     try:
         workflow = TrialsOptimizerWorkflow(config, memory_storage=False)
@@ -214,45 +238,9 @@ def main() -> None:
         if result.success:
             print("✅ Optimization completed successfully!")
 
-            # Print summary
-            metadata = result.metadata
-            if metadata:
-                combinations_tested = metadata.get("total_combinations_tested", 0)
-                cv_folds = metadata.get("cv_folds", 3)
-                successful_tests = metadata.get("successful_tests", 0)
-                best_score = metadata.get("best_score", 0)
-                best_combo = metadata.get("best_combination")
-
-                print(f"🧪 Combinations tested: {combinations_tested}")
-                print(f"🔀 Cross validation folds: {cv_folds}")
-                print(f"✅ Successful tests: {successful_tests}")
-                print(f"🏆 Best CV score: {best_score:.3f}")
-
-                if best_combo:
-                    print(f"🤖 Best model: {best_combo.get('model', 'unknown')}")
-                    print(f"📝 Best prompt: {best_combo.get('prompt', 'unknown')}")
-
-                if args.save_config:
-                    print(f"💾 Optimal config saved to: {args.save_config}")
-
-            # Print detailed results
-            if result.data:
-                print("\n📊 Detailed Results:")
-                for i, combo_result in enumerate(result.data):
-                    if combo_result.get("success"):
-                        combo = combo_result.get("combination", {})
-                        cv_score = combo_result.get("cv_average_score", 0)
-                        cv_std = combo_result.get("cv_std_score", 0)
-                        folds = combo_result.get("cv_folds", 3)
-                        print(
-                            f"  {i+1}. {combo.get('model')} + {combo.get('prompt')}: {cv_score:.3f} ± {cv_std:.3f} ({folds}-fold CV)"
-                        )
-                    else:
-                        combo = combo_result.get("combination", {})
-                        error = combo_result.get("error", "Unknown error")
-                        print(
-                            f"  {i+1}. {combo.get('model')} + {combo.get('prompt')}: FAILED - {error}"
-                        )
+            # Print final summary
+            print("\n📊 FINAL SUMMARY:")
+            workflow.summarize_benchmark_validations()
 
         else:
             print(f"❌ Optimization failed: {result.error_message}")
@@ -268,6 +256,9 @@ def main() -> None:
 
             traceback.print_exc()
         sys.exit(1)
+    finally:
+        observer.stop()
+        observer.join()
 
 
 if __name__ == "__main__":

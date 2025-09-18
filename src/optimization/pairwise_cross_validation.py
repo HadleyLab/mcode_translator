@@ -87,7 +87,7 @@ class PairwiseCrossValidator:
         """Initialize the validator."""
         # Ensure logging is configured
         setup_logging("INFO")
-        self.logger.info("🚀 Initializing pairwise validator")
+        self.logger.info("🤖 Initializing pairwise validator")
 
     def shutdown(self) -> None:
         """Shutdown the validator."""

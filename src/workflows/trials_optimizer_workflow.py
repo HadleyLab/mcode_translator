@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional
 from src.pipeline import McodePipeline
 from src.utils.logging_config import get_logger
 from src.utils.concurrency import TaskQueue, create_task, get_optimizer_pool, create_task_queue_from_args
+from src.utils.metrics import BenchmarkMetrics
 
 from .base_workflow import BaseWorkflow, WorkflowResult
 
@@ -70,10 +71,28 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 )
                 cv_folds = len(trials_data)
 
+            # Log optimization scope for clarity
+            self.logger.info(f"🔬 OPTIMIZATION SCOPE:")
+            self.logger.info(f"   📊 Prompts: {len(prompts)} ({', '.join(prompts)})")
+            self.logger.info(f"   🤖 Models: {len(models)} ({', '.join(models)})")
+            self.logger.info(f"   📈 Max combinations: {max_combinations}")
+            self.logger.info(f"   📋 Trials: {len(trials_data)}")
+            self.logger.info(f"   🔄 CV folds: {cv_folds}")
+
             # Generate combinations to test
             combinations = self._generate_combinations(
                 prompts, models, max_combinations
             )
+
+            # Log actual combinations generated
+            total_possible = len(prompts) * len(models)
+            self.logger.info(f"🎯 COMBINATIONS GENERATED:")
+            self.logger.info(f"   📊 Total possible: {total_possible}")
+            self.logger.info(f"   ✅ Actually testing: {len(combinations)}")
+            if len(combinations) < total_possible:
+                self.logger.info(f"   ✂️  Limited by max_combinations={max_combinations}")
+            else:
+                self.logger.info(f"   🎉 Testing ALL possible combinations!")
 
             self.logger.info(f"🧪 Generated {len(combinations)} combinations to test:")
             for i, combo in enumerate(combinations, 1):
@@ -106,7 +125,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 task_queue = TaskQueue(max_workers=get_optimizer_pool().max_workers, name="OptimizerQueue")
                 workers = task_queue.worker_pool.max_workers
 
-            self.logger.info(f"🚀 Using {workers} concurrent workers for optimization")
+            self.logger.info(f"🤖 Using {workers} concurrent workers for optimization")
 
             # Create tasks for fully asynchronous execution
             # Break down to individual trial processing for maximum parallelism
@@ -138,14 +157,16 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 self.logger.warning(f"⚠️  Task count mismatch: expected {total_tasks}, created {len(tasks)}")
 
             # Track results by combination for aggregation
-            combo_results = {i: {"scores": [], "errors": []} for i in range(len(combinations))}
+            combo_results = {i: {"scores": [], "errors": [], "metrics": []} for i in range(len(combinations))}
 
             def progress_callback(completed, total, result):
                 if result.success:
                     combo_idx = result.result.get('combo_idx', 0)
                     score = result.result.get('score', 0)
+                    metrics = result.result.get('quality_metrics', {})
                     combo = combinations[combo_idx]
                     combo_results[combo_idx]["scores"].append(score)
+                    combo_results[combo_idx]["metrics"].append(metrics)
                     fold = result.result.get('fold', 0)
                     self.logger.info(f"✅ Trial {completed}/{total}: {combo['model']} + {combo['prompt']} (fold {fold}, score: {score:.3f})")
                 else:
@@ -156,15 +177,26 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
             task_results = task_queue.execute_tasks(tasks, progress_callback=progress_callback)
 
+            # Create directory for saving individual runs
+            runs_dir = Path("optimization_runs")
+            runs_dir.mkdir(exist_ok=True)
+            run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
             # Aggregate results by combination
             for combo_idx, combo in enumerate(combinations):
                 scores = combo_results[combo_idx]["scores"]
                 errors = combo_results[combo_idx]["errors"]
+                all_metrics = combo_results[combo_idx]["metrics"]
 
                 if scores:
                     # Calculate CV statistics for this combination
                     cv_average_score = sum(scores) / len(scores)
                     cv_std = (sum((s - cv_average_score) ** 2 for s in scores) / len(scores)) ** 0.5
+
+                    # Aggregate detailed metrics
+                    avg_precision = sum(m.get("precision", 0) for m in all_metrics) / len(all_metrics)
+                    avg_recall = sum(m.get("recall", 0) for m in all_metrics) / len(all_metrics)
+                    avg_f1 = sum(m.get("f1_score", 0) for m in all_metrics) / len(all_metrics)
 
                     result = {
                         "combination": combo,
@@ -176,8 +208,20 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                         "total_trials": len(scores),
                         "errors": errors,
                         "timestamp": datetime.now().isoformat(),
+                        "metrics": {
+                            "precision": avg_precision,
+                            "recall": avg_recall,
+                            "f1_score": avg_f1
+                        }
                     }
                     optimization_results.append(result)
+
+                    # Save individual run result
+                    run_filename = f"run_{run_timestamp}_{combo['model']}_{combo['prompt'].replace('/', '_')}.json"
+                    run_path = runs_dir / run_filename
+                    with open(run_path, "w", encoding="utf-8") as f:
+                        json.dump(result, f, indent=2, ensure_ascii=False)
+                    self.logger.info(f"💾 Saved run result to: {run_path}")
 
                     # Track best result
                     if cv_average_score > best_score:
@@ -194,6 +238,14 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                         "timestamp": datetime.now().isoformat(),
                     }
                     optimization_results.append(error_result)
+
+                    # Save failed run result
+                    run_filename = f"run_{run_timestamp}_{combo['model']}_{combo['prompt'].replace('/', '_')}_FAILED.json"
+                    run_path = runs_dir / run_filename
+                    with open(run_path, "w", encoding="utf-8") as f:
+                        json.dump(error_result, f, indent=2, ensure_ascii=False)
+                    self.logger.info(f"💾 Saved failed run result to: {run_path}")
+
                     self.logger.error(f"❌ Failed combination {combo['model']} + {combo['prompt']}: All trials failed")
 
             # Set default LLM specification based on best result
@@ -212,7 +264,8 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             self.logger.info(f"📊 Optimization complete!")
             self.logger.info(f"   ✅ Successful combinations: {successful_combinations}/{total_combinations}")
             self.logger.info(f"   📈 Total trials processed: {total_trials_processed}")
-            self.logger.info(f"   🏆 Best CV score: {best_score:.3f} ({best_result['combination']['model']} + {best_result['combination']['prompt']})")
+            if best_result:
+                self.logger.info(f"   🏆 Best CV score: {best_score:.3f} ({best_result['combination']['model']} + {best_result['combination']['prompt']})")
 
             return self._create_result(
                 success=len(optimization_results) > 0,
@@ -269,7 +322,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
         for prompt in prompts:
             for model in models:
-                if len(combinations) >= max_combinations:
+                if max_combinations > 0 and len(combinations) >= max_combinations:
                     break
                 combinations.append({"prompt": prompt, "model": model})
 
@@ -289,8 +342,14 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             # Process single trial
             result = pipeline.process(trial)
 
-            # Calculate quality score
-            score = self._calculate_quality_score(result)
+            # Calculate quality metrics
+            # Assuming ground truth is stored in the trial data
+            ground_truth = trial.get("mcode_ground_truth", [])
+            predicted = [elem.model_dump() for elem in result.mcode_mappings]
+            
+            benchmark_metrics = BenchmarkMetrics.compare_mcode_elements(predicted, ground_truth)
+            metrics = benchmark_metrics.calculate_metrics()
+            score = metrics["f1_score"]
 
             return {
                 "combination": combination,
@@ -298,6 +357,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 "fold": fold,
                 "trial_score": score,
                 "score": score,  # For aggregation
+                "quality_metrics": metrics,  # Store detailed metrics
                 "success": True,
                 "timestamp": datetime.now().isoformat(),
             }
@@ -312,118 +372,6 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 "score": 0.0,  # Failed trials get 0 score
                 "timestamp": datetime.now().isoformat(),
             }
-
-    def _test_combination_cv(
-        self, combination: Dict[str, str], trials_data: List[Dict[str, Any]], cv_folds: int
-    ) -> Dict[str, Any]:
-        """Test a specific prompt×model combination using cross validation (legacy method)."""
-        prompt_name = combination["prompt"]
-        model_name = combination["model"]
-
-        try:
-            # Initialize pipeline with this combination
-            pipeline = McodePipeline(prompt_name=prompt_name, model_name=model_name)
-
-            # Perform k-fold cross validation
-            fold_scores = []
-            fold_sizes = []
-
-            for fold in range(cv_folds):
-                # Split data into train/validation for this fold
-                val_size = max(1, len(trials_data) // cv_folds)
-                val_start = fold * val_size
-                val_end = min((fold + 1) * val_size, len(trials_data))
-
-                val_trials = trials_data[val_start:val_end]
-                fold_sizes.append(len(val_trials))
-
-                # Test on validation trials
-                fold_trial_scores = []
-                for trial in val_trials:
-                    try:
-                        # Process trial
-                        result = pipeline.process(trial)
-
-                        # Calculate quality score
-                        score = self._calculate_quality_score(result)
-                        fold_trial_scores.append(score)
-
-                    except Exception as e:
-                        self.logger.warning(
-                            f"Failed to process trial in fold {fold} with {model_name}: {e}"
-                        )
-                        fold_trial_scores.append(0.0)
-
-                # Average score for this fold
-                fold_avg_score = sum(fold_trial_scores) / len(fold_trial_scores) if fold_trial_scores else 0.0
-                fold_scores.append(fold_avg_score)
-
-            # Calculate cross validation statistics
-            cv_average_score = sum(fold_scores) / len(fold_scores) if fold_scores else 0.0
-            cv_std = (sum((s - cv_average_score) ** 2 for s in fold_scores) / len(fold_scores)) ** 0.5 if fold_scores else 0.0
-
-            return {
-                "combination": combination,
-                "success": True,
-                "cv_average_score": cv_average_score,
-                "cv_std_score": cv_std,
-                "fold_scores": fold_scores,
-                "fold_sizes": fold_sizes,
-                "cv_folds": cv_folds,
-                "total_trials": len(trials_data),
-                "timestamp": datetime.now().isoformat(),
-            }
-
-        except Exception as e:
-            return {
-                "combination": combination,
-                "success": False,
-                "error": str(e),
-                "timestamp": datetime.now().isoformat(),
-            }
-
-    def _test_combination(
-        self, combination: Dict[str, str], trials_data: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
-        """Test a specific prompt×model combination (legacy method for backward compatibility)."""
-        return self._test_combination_cv(combination, trials_data, cv_folds=3)
-
-    def _calculate_quality_score(self, result) -> float:
-        """
-        Calculate a quality score for mCODE processing results.
-
-        This is a simplified scoring function. In practice, this would
-        use more sophisticated metrics.
-        """
-        try:
-            # Base score from number of mappings
-            mappings_count = (
-                len(result.mcode_mappings) if hasattr(result, "mcode_mappings") else 0
-            )
-
-            # Bonus for validation results
-            validation_bonus = 0
-            if hasattr(result, "validation_results") and result.validation_results:
-                # validation_results is a ValidationResult object, not a dict
-                compliance = getattr(result.validation_results, "compliance_score", 0)
-                validation_bonus = compliance * 0.2
-
-            # Bonus for source references
-            reference_bonus = 0
-            if hasattr(result, "source_references") and result.source_references:
-                reference_bonus = min(len(result.source_references) * 0.1, 0.3)
-
-            # Calculate total score (0-1 scale)
-            base_score = min(
-                mappings_count / 20.0, 1.0
-            )  # Expect ~20 mappings for good quality
-            total_score = min(base_score + validation_bonus + reference_bonus, 1.0)
-
-            return total_score
-
-        except Exception as e:
-            self.logger.warning(f"Error calculating quality score: {e}")
-            return 0.0
 
     def _save_optimal_config(
         self, best_result: Dict[str, Any], output_path: str
@@ -444,6 +392,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                     "cv_folds": best_result.get("cv_folds", 3),
                     "total_trials": best_result.get("total_trials", 0),
                     "fold_scores": best_result.get("fold_scores", []),
+                    "metrics": best_result.get("metrics", {})
                 },
             }
 
@@ -527,7 +476,6 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         # This would typically come from configuration
         return [
             # OpenAI models
-            "gpt-4",
             "gpt-4-turbo",
             "gpt-4o",
             "gpt-4o-mini",
@@ -535,7 +483,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             # DeepSeek models
             "deepseek-coder",
             "deepseek-chat",
-            "deepseek-instruction",
+            "deepseek-reasoner",
             # Other models (for compatibility)
             "claude-3",
             "llama-3"
@@ -556,3 +504,120 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         available_models = self.get_available_models()
 
         return prompt in available_prompts and model in available_models
+
+    def summarize_benchmark_validations(self, runs_dir: str = "optimization_runs") -> Dict[str, Any]:
+        """
+        Review all saved benchmark validations and pick the best one.
+
+        Args:
+            runs_dir: Directory containing saved run results
+
+        Returns:
+            Dict containing summary of all runs and the best combination
+        """
+        runs_path = Path(runs_dir)
+        if not runs_path.exists():
+            return {
+                "success": False,
+                "error": f"Runs directory not found: {runs_dir}",
+                "total_runs": 0,
+                "best_result": None
+            }
+
+        all_results = []
+        best_result = None
+        best_score = 0
+
+        # Load all run files
+        for run_file in runs_path.glob("run_*.json"):
+            try:
+                with open(run_file, "r", encoding="utf-8") as f:
+                    result = json.load(f)
+                    all_results.append(result)
+
+                    # Check if this is the best result
+                    if result.get("success") and result.get("cv_average_score", 0) > best_score:
+                        best_score = result["cv_average_score"]
+                        best_result = result
+
+            except Exception as e:
+                self.logger.warning(f"Failed to load run file {run_file}: {e}")
+
+        if not all_results:
+            return {
+                "success": False,
+                "error": "No valid run files found",
+                "total_runs": 0,
+                "best_result": None
+            }
+
+        # Calculate summary statistics
+        successful_runs = [r for r in all_results if r.get("success")]
+        failed_runs = [r for r in all_results if not r.get("success")]
+
+        scores = [r.get("cv_average_score", 0) for r in successful_runs]
+        avg_score = sum(scores) / len(scores) if scores else 0
+        std_score = (sum((s - avg_score) ** 2 for s in scores) / len(scores)) ** 0.5 if scores else 0
+
+        # Calculate precision, recall, and F1 statistics
+        precision_scores = [r["metrics"].get("precision", 0) for r in successful_runs if "metrics" in r]
+        recall_scores = [r["metrics"].get("recall", 0) for r in successful_runs if "metrics" in r]
+        f1_scores = [r["metrics"].get("f1_score", 0) for r in successful_runs if "metrics" in r]
+
+        # Calculate averages for detailed metrics
+        avg_precision = sum(precision_scores) / len(precision_scores) if precision_scores else 0
+        avg_recall = sum(recall_scores) / len(recall_scores) if recall_scores else 0
+        avg_f1 = sum(f1_scores) / len(f1_scores) if f1_scores else 0
+
+        # Calculate standard deviations
+        precision_std = (sum((p - avg_precision) ** 2 for p in precision_scores) / len(precision_scores)) ** 0.5 if precision_scores else 0
+        recall_std = (sum((r - avg_recall) ** 2 for r in recall_scores) / len(recall_scores)) ** 0.5 if recall_scores else 0
+        f1_std = (sum((f - avg_f1) ** 2 for f in f1_scores) / len(f1_scores)) ** 0.5 if f1_scores else 0
+
+        summary = {
+            "success": True,
+            "total_runs": len(all_results),
+            "successful_runs": len(successful_runs),
+            "failed_runs": len(failed_runs),
+            "average_score": avg_score,
+            "std_score": std_score,
+            # Detailed metrics
+            "precision": {
+                "mean": avg_precision,
+                "std": precision_std,
+                "count": len(precision_scores)
+            },
+            "recall": {
+                "mean": avg_recall,
+                "std": recall_std,
+                "count": len(recall_scores)
+            },
+            "f1_score": {
+                "mean": avg_f1,
+                "std": f1_std,
+                "count": len(f1_scores)
+            },
+            "best_result": best_result,
+            "all_results": all_results,
+            "summary_timestamp": datetime.now().isoformat()
+        }
+
+        self.logger.info(f"📊 Benchmark Summary:")
+        self.logger.info(f"   📁 Total runs: {len(all_results)}")
+        self.logger.info(f"   ✅ Successful: {len(successful_runs)}")
+        self.logger.info(f"   ❌ Failed: {len(failed_runs)}")
+        self.logger.info(f"   📈 Average score: {avg_score:.3f} ± {std_score:.3f}")
+
+        # Log detailed metrics if available
+        if precision_scores:
+            self.logger.info(f"   🎯 Precision: {avg_precision:.3f} ± {precision_std:.3f} (n={len(precision_scores)})")
+        if recall_scores:
+            self.logger.info(f"   📊 Recall: {avg_recall:.3f} ± {recall_std:.3f} (n={len(recall_scores)})")
+        if f1_scores:
+            self.logger.info(f"   🏆 F1 Score: {avg_f1:.3f} ± {f1_std:.3f} (n={len(f1_scores)})")
+
+        if best_result:
+            combo = best_result.get("combination", {})
+            self.logger.info(f"   🏆 Best: {combo.get('model')} + {combo.get('prompt')} (score: {best_score:.3f})")
+
+        return summary

@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 from src.utils.logging_config import get_logger
 
@@ -101,3 +101,46 @@ class MatchingMetrics:
         self.logger.info("Top matching treatments:")
         for treatment, count in summary["top_treatments"]:
             self.logger.info(f"  - {treatment}: {count}")
+
+
+class BenchmarkMetrics:
+    """Calculates and stores precision, recall, and F1-score for benchmark validation."""
+
+    def __init__(self, true_positives: int = 0, false_positives: int = 0, false_negatives: int = 0):
+        self.tp = true_positives
+        self.fp = false_positives
+        self.fn = false_negatives
+
+    def calculate_metrics(self) -> Dict[str, float]:
+        """
+        Calculates precision, recall, and F1-score.
+
+        Returns:
+            A dictionary containing precision, recall, and F1-score.
+        """
+        precision = self.tp / (self.tp + self.fp) if (self.tp + self.fp) > 0 else 0
+        recall = self.tp / (self.tp + self.fn) if (self.tp + self.fn) > 0 else 0
+        f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+
+        return {"precision": precision, "recall": recall, "f1_score": f1}
+
+    @staticmethod
+    def compare_mcode_elements(predicted: List[Dict[str, Any]], ground_truth: List[Dict[str, Any]]) -> 'BenchmarkMetrics':
+        """
+        Compares predicted mCODE elements against ground truth and calculates metrics.
+
+        Args:
+            predicted: A list of predicted mCODE elements.
+            ground_truth: A list of ground truth mCODE elements.
+
+        Returns:
+            A BenchmarkMetrics object with calculated TP, FP, and FN.
+        """
+        predicted_set = {json.dumps(d, sort_keys=True) for d in predicted}
+        ground_truth_set = {json.dumps(d, sort_keys=True) for d in ground_truth}
+
+        tp = len(predicted_set.intersection(ground_truth_set))
+        fp = len(predicted_set - ground_truth_set)
+        fn = len(ground_truth_set - predicted_set)
+
+        return BenchmarkMetrics(tp, fp, fn)
