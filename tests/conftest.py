@@ -238,9 +238,41 @@ def test_logger():
     """Logger fixture for tests that need logging."""
     return get_logger("test_logger")
 
+
+@pytest.fixture
+def mock_pipeline_result():
+    """Mock pipeline result for testing."""
+    from src.shared.models import PipelineResult, ValidationResult, ProcessingMetadata
+    return PipelineResult(
+        mcode_mappings=[],
+        validation_results=ValidationResult(compliance_score=1.0),
+        metadata=ProcessingMetadata(engine_type="test"),
+        original_data={}
+    )
+
+
+@pytest.fixture
+def mock_mcode_element():
+    """Mock mCODE element for testing."""
+    from src.shared.models import McodeElement
+    return McodeElement(
+        element_type="PrimaryCancerCondition",
+        code="12345",
+        system="http://snomed.info/sct",
+        display="Test Cancer Condition"
+    )
+
 # Test data factories
 def create_test_trial(nct_id: str = "NCT12345678", **kwargs) -> Dict[str, Any]:
-    """Factory for creating test trial data."""
+    """Factory for creating test trial data.
+
+    Args:
+        nct_id: ClinicalTrials.gov ID
+        **kwargs: Additional trial fields to override defaults
+
+    Returns:
+        Dictionary containing trial data
+    """
     base_trial = {
         "nct_id": nct_id,
         "title": kwargs.get("title", "Test Trial"),
@@ -255,7 +287,15 @@ def create_test_trial(nct_id: str = "NCT12345678", **kwargs) -> Dict[str, Any]:
     return base_trial
 
 def create_test_patient(patient_id: str = "12345", **kwargs) -> Dict[str, Any]:
-    """Factory for creating test patient data."""
+    """Factory for creating test patient data.
+
+    Args:
+        patient_id: Patient identifier
+        **kwargs: Additional patient fields to override defaults
+
+    Returns:
+        Dictionary containing patient bundle data
+    """
     base_patient = {
         "resourceType": "Bundle",
         "id": patient_id,

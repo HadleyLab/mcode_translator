@@ -118,6 +118,10 @@ class TestPerformanceBenchmarks:
         assert isinstance(result, str)
         assert len(result) > 100  # Ensure meaningful summary
 
+        # Performance assertion: should complete within reasonable time
+        # Note: benchmark provides timing info, but we add explicit check
+        assert benchmark.stats.stats.mean < 5.0, f"Trial summary should complete in < 5s, got {benchmark.stats.stats.mean:.2f}s"
+
     def test_summarizer_patient_summary_performance(self, benchmark, large_patient_bundle):
         """Benchmark patient summary generation performance."""
         summarizer = McodeSummarizer()
@@ -129,6 +133,9 @@ class TestPerformanceBenchmarks:
 
         assert result is not None
         assert isinstance(result, str)
+
+        # Performance assertion: should complete within reasonable time
+        assert benchmark.stats.stats.mean < 10.0, f"Patient summary should complete in < 10s, got {benchmark.stats.stats.mean:.2f}s"
 
     def test_token_tracker_add_usage_performance(self, benchmark):
         """Benchmark token usage tracking performance."""
@@ -143,10 +150,13 @@ class TestPerformanceBenchmarks:
                 )
                 tracker.add_usage(usage, f"component_{i % 10}")
 
-        benchmark(add_usage_batch)
+        result = benchmark(add_usage_batch)
 
         total_usage = tracker.get_total_usage()
         assert total_usage.total_tokens > 0
+
+        # Performance assertion: should handle 1000 operations quickly
+        assert benchmark.stats.stats.mean < 1.0, f"Token tracking should complete in < 1s, got {benchmark.stats.stats.mean:.2f}s"
 
     def test_token_tracker_get_stats_performance(self, benchmark):
         """Benchmark getting token usage statistics."""
@@ -183,6 +193,9 @@ class TestPerformanceBenchmarks:
 
         result = benchmark(cache_operations)
         assert result == test_data
+
+        # Performance assertion: cache operations should be fast
+        assert benchmark.stats.stats.mean < 0.5, f"Cache operations should complete in < 0.5s, got {benchmark.stats.stats.mean:.2f}s"
 
     def test_json_processing_performance(self, benchmark, large_trial_data):
         """Benchmark JSON serialization/deserialization."""
