@@ -84,7 +84,7 @@ class LLMService:
             cached_result = llm_cache.get_by_key(cache_key)
 
             if cached_result is not None:
-                self.logger.debug(f"LLM cache hit for {self.model_name}")
+                self.logger.info(f"LLM cache hit for {self.model_name}")
                 return cached_result.get("mcode_elements", [])
 
             # Make LLM call using existing infrastructure
@@ -96,6 +96,7 @@ class LLMService:
             # Cache result using existing API manager
             cache_data = {"mcode_elements": [elem.model_dump() for elem in mcode_elements]}
             llm_cache.set_by_key(cache_data, cache_key)
+            self.logger.info(f"LLM result cached for {self.model_name}")
 
             return mcode_elements
 
@@ -144,7 +145,7 @@ class LLMService:
                 call_params["response_format"] = {"type": "json_object"}
                 self.logger.debug(f"Using response_format for model: {llm_config.model_identifier}")
 
-            self.logger.debug(f"Making LLM API call to {llm_config.model_identifier}")
+            self.logger.info(f"Making LLM API call to {llm_config.model_identifier}")
             response = client.chat.completions.create(**call_params)
 
             # Extract token usage using existing utility
