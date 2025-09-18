@@ -75,11 +75,21 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 prompts, models, max_combinations
             )
 
-            total_trials = len(trials_data)
-            total_tasks = len(combinations) * cv_folds * max(1, total_trials // cv_folds)
+            self.logger.info(f"🧪 Generated {len(combinations)} combinations to test:")
+            for i, combo in enumerate(combinations, 1):
+                self.logger.info(f"  {i}. {combo['model']} + {combo['prompt']}")
+
+            # Create proper k-fold splits
+            fold_indices = self._create_kfold_splits(len(trials_data), cv_folds)
+            total_trials_per_fold = [len(fold) for fold in fold_indices]
+            total_trials_processed = sum(total_trials_per_fold)
+
+            # Each combination is tested on each trial in each fold for maximum parallelism
+            total_tasks = len(combinations) * total_trials_processed
             self.logger.info(
-                f"🔬 Fully asynchronous optimization: {len(combinations)} combinations × {cv_folds} folds × ~{total_trials // cv_folds} trials = {total_tasks} concurrent tasks"
+                f"🔬 Fully asynchronous optimization: {len(combinations)} combinations × {total_trials_processed} trials = {total_tasks} concurrent tasks"
             )
+            self.logger.info(f"📊 Fold sizes: {total_trials_per_fold} (total: {total_trials_processed} trials)")
 
             # Run optimization with concurrent cross validation
             optimization_results = []
@@ -102,13 +112,13 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             # Break down to individual trial processing for maximum parallelism
             tasks = []
             task_id = 0
+
             for combo_idx, combo in enumerate(combinations):
+                self.logger.debug(f"📋 Creating tasks for combination {combo_idx + 1}: {combo['model']} + {combo['prompt']}")
                 for fold in range(cv_folds):
-                    # Split data into train/validation for this fold
-                    val_size = max(1, len(trials_data) // cv_folds)
-                    val_start = fold * val_size
-                    val_end = min((fold + 1) * val_size, len(trials_data))
-                    val_trials = trials_data[val_start:val_end]
+                    # Get validation trials for this fold
+                    val_indices = fold_indices[fold]
+                    val_trials = [trials_data[i] for i in val_indices]
 
                     # Create individual tasks for each trial in this fold
                     for trial_idx, trial in enumerate(val_trials):
@@ -123,6 +133,10 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                         tasks.append(task)
                         task_id += 1
 
+            self.logger.info(f"✅ Created {len(tasks)} tasks for execution")
+            if len(tasks) != total_tasks:
+                self.logger.warning(f"⚠️  Task count mismatch: expected {total_tasks}, created {len(tasks)}")
+
             # Track results by combination for aggregation
             combo_results = {i: {"scores": [], "errors": []} for i in range(len(combinations))}
 
@@ -132,11 +146,13 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                     score = result.result.get('score', 0)
                     combo = combinations[combo_idx]
                     combo_results[combo_idx]["scores"].append(score)
-                    self.logger.debug(f"✅ Trial {completed}/{total}: {combo['model']} + {combo['prompt']} (score: {score:.3f})")
+                    fold = result.result.get('fold', 0)
+                    self.logger.info(f"✅ Trial {completed}/{total}: {combo['model']} + {combo['prompt']} (fold {fold}, score: {score:.3f})")
                 else:
                     combo_idx = result.result.get('combo_idx', 0) if result.result else 0
                     combo_results[combo_idx]["errors"].append(str(result.error))
-                    self.logger.debug(f"❌ Failed trial {completed}/{total}: {result.error}")
+                    combo_name = combinations[combo_idx]['model'] + " + " + combinations[combo_idx]['prompt'] if combo_idx < len(combinations) else "unknown"
+                    self.logger.warning(f"❌ Failed trial {completed}/{total}: {combo_name} - {result.error}")
 
             task_results = task_queue.execute_tasks(tasks, progress_callback=progress_callback)
 
@@ -188,7 +204,15 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             if output_config and best_result:
                 self._save_optimal_config(best_result, output_config)
 
-            self.logger.info(f"📊 Optimization complete. Best CV score: {best_score:.3f}")
+            # Final summary
+            successful_combinations = len([r for r in optimization_results if r.get("success", False)])
+            total_combinations = len(combinations)
+            total_trials_processed = sum(len(r.get("fold_scores", [])) for r in optimization_results if r.get("success", False))
+
+            self.logger.info(f"📊 Optimization complete!")
+            self.logger.info(f"   ✅ Successful combinations: {successful_combinations}/{total_combinations}")
+            self.logger.info(f"   📈 Total trials processed: {total_trials_processed}")
+            self.logger.info(f"   🏆 Best CV score: {best_score:.3f} ({best_result['combination']['model']} + {best_result['combination']['prompt']})")
 
             return self._create_result(
                 success=len(optimization_results) > 0,
@@ -209,6 +233,33 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
         except Exception as e:
             return self._handle_error(e, "trials optimization")
+
+    def _create_kfold_splits(self, n_samples: int, n_folds: int) -> List[List[int]]:
+        """
+        Create k-fold cross validation splits.
+
+        Args:
+            n_samples: Total number of samples
+            n_folds: Number of folds
+
+        Returns:
+            List of lists, where each inner list contains indices for that fold's validation set
+        """
+        indices = list(range(n_samples))
+        fold_sizes = [n_samples // n_folds] * n_folds
+        remainder = n_samples % n_folds
+
+        # Distribute remainder across first few folds
+        for i in range(remainder):
+            fold_sizes[i] += 1
+
+        folds = []
+        start = 0
+        for size in fold_sizes:
+            folds.append(indices[start:start + size])
+            start += size
+
+        return folds
 
     def _generate_combinations(
         self, prompts: List[str], models: List[str], max_combinations: int
@@ -474,7 +525,21 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
     def get_available_models(self) -> List[str]:
         """Get list of available LLM models."""
         # This would typically come from configuration
-        return ["deepseek-coder", "gpt-4", "claude-3", "llama-3"]
+        return [
+            # OpenAI models
+            "gpt-4",
+            "gpt-4-turbo",
+            "gpt-4o",
+            "gpt-4o-mini",
+            "gpt-3.5-turbo",
+            # DeepSeek models
+            "deepseek-coder",
+            "deepseek-chat",
+            "deepseek-instruction",
+            # Other models (for compatibility)
+            "claude-3",
+            "llama-3"
+        ]
 
     def validate_combination(self, prompt: str, model: str) -> bool:
         """

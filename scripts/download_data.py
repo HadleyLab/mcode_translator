@@ -6,9 +6,9 @@ A command-line interface for downloading synthetic patient data archives
 with concurrent processing for improved performance.
 
 Usage:
-    python scripts/download_data.py --archives breast_cancer_10_years,mixed_cancer_lifetime
-    python scripts/download_data.py --all --workers 4
-    python scripts/download_data.py --list
+    python -m scripts.download_data --archives breast_cancer_10_years,mixed_cancer_lifetime
+    python -m scripts.download_data --all --workers 4
+    python -m scripts.download_data --list
 """
 
 import argparse
@@ -32,19 +32,19 @@ def create_parser() -> argparse.ArgumentParser:
         epilog="""
 Examples:
   # Download specific archives concurrently
-  python scripts/download_data.py --archives breast_cancer_10_years,mixed_cancer_lifetime
+  python -m scripts.download_data --archives breast_cancer_10_years,mixed_cancer_lifetime
 
   # Download all available archives with 4 concurrent workers
-  python scripts/download_data.py --all --workers 4
+  python -m scripts.download_data --all --workers 4
 
   # List available archives
-  python scripts/download_data.py --list
+  python -m scripts.download_data --list
 
   # Force re-download existing archives
-  python scripts/download_data.py --all --force
+  python -m scripts.download_data --all --force
 
   # Download to custom directory
-  python scripts/download_data.py --all --output-dir /path/to/custom/dir
+  python -m scripts.download_data --all --output-dir /path/to/custom/dir
 
 The script supports concurrent downloading of multiple archives simultaneously
 for improved performance compared to sequential downloads.
