@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from src.utils.fetcher import (ClinicalTrialsAPIError, get_full_study,
-                               search_trials)
+                               search_trials, get_full_studies_batch,
+                               search_trials_parallel)
 from typing import Tuple
 from src.utils.logging_config import get_logger
 from src.utils.concurrency import TaskQueue, create_task, get_fetcher_pool
@@ -103,9 +104,21 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
         try:
             self.logger.info(f"🔍 Searching for trials: '{condition}' (limit: {limit})")
 
-            # Step 1: Search for trials (basic info)
-            search_result = search_trials(condition, max_results=limit)
-            basic_trials = search_result.get("studies", [])
+            # Step 1: Search for trials (basic info) with parallel pagination if needed
+            if limit > 100:
+                # Use parallel search for large result sets
+                self.logger.info(f"🔄 Using parallel search for {limit} results")
+                search_result = search_trials_parallel(
+                    condition,
+                    max_results=limit,
+                    page_size=100,  # API limit per page
+                    max_workers=4
+                )
+                basic_trials = search_result.get("studies", [])
+            else:
+                # Use regular search for smaller result sets
+                search_result = search_trials(condition, max_results=limit)
+                basic_trials = search_result.get("studies", [])
 
             if not basic_trials:
                 return {
@@ -248,64 +261,44 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
             return {"success": False, "error": f"Unexpected error: {e}", "data": []}
 
     def _fetch_multiple_trials(self, nct_ids: List[str]) -> Dict[str, Any]:
-        """Fetch multiple trials by NCT IDs using concurrent workers."""
+        """Fetch multiple trials by NCT IDs using optimized batch processing."""
         try:
-            self.logger.info(f"📥 Fetching {len(nct_ids)} trials concurrently")
+            self.logger.info(f"📥 Fetching {len(nct_ids)} trials using batch processing")
 
             # Get concurrency configuration from CLI args
             cli_args = self._get_cli_args()
+            max_workers = 8  # Default batch size
             if cli_args:
-                task_queue = create_task_queue_from_args(cli_args, "fetcher")
-                workers = task_queue.worker_pool.max_workers
-            else:
-                # Fallback to default fetcher pool
-                task_queue = TaskQueue(max_workers=get_fetcher_pool().max_workers, name="FetcherQueue")
-                workers = task_queue.worker_pool.max_workers
+                # Extract concurrency settings from CLI args if available
+                max_workers = getattr(cli_args, 'max_workers', 8)
 
-            self.logger.info(f"🚀 Using {workers} concurrent workers for fetching")
+            self.logger.info(f"🚀 Using batch processing with {max_workers} concurrent workers")
 
-            # Create tasks for concurrent fetching
-            tasks = []
-            for i, nct_id in enumerate(nct_ids):
-                task = create_task(
-                    task_id=f"fetch_{i}",
-                    func=self._fetch_single_trial_data,
-                    nct_id=nct_id.strip()
-                )
-                tasks.append(task)
-
-            def progress_callback(completed, total, result):
-                nct_id = nct_ids[int(result.task_id.split('_')[1])]
-                if result.success and result.result:
-                    self.logger.info(f"✅ Fetched: {nct_id}")
-                else:
-                    self.logger.warning(f"❌ Failed: {nct_id}")
-
-            task_results = task_queue.execute_tasks(tasks, progress_callback=progress_callback)
+            # Use the optimized batch processing function
+            batch_results = get_full_studies_batch(nct_ids, max_workers=max_workers)
 
             # Process results
             successful_trials = []
             failed_trials = []
 
-            for task_result in task_results:
-                nct_id = nct_ids[int(task_result.task_id.split('_')[1])]
-
-                if task_result.success and task_result.result:
-                    successful_trials.append(task_result.result)
+            for nct_id, result in batch_results.items():
+                if isinstance(result, dict) and "error" not in result:
+                    successful_trials.append(result)
+                    self.logger.debug(f"✅ Fetched: {nct_id}")
                 else:
                     failed_trials.append(nct_id)
-                    if task_result.error:
-                        self.logger.error(f"❌ Failed to fetch {nct_id}: {task_result.error}")
+                    error_msg = result.get("error", "Unknown error") if isinstance(result, dict) else str(result)
+                    self.logger.warning(f"❌ Failed to fetch {nct_id}: {error_msg}")
 
             success_rate = len(successful_trials) / len(nct_ids) if nct_ids else 0
 
             self.logger.info(
-                f"📊 Concurrent fetch complete: {len(successful_trials)}/{len(nct_ids)} successful"
+                f"📊 Batch fetch complete: {len(successful_trials)}/{len(nct_ids)} successful"
             )
 
             return {
                 "success": len(successful_trials) > 0,
-                "type": "multiple_trials_concurrent",
+                "type": "multiple_trials_batch",
                 "data": successful_trials,
                 "metadata": {
                     "total_requested": len(nct_ids),
@@ -313,13 +306,14 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                     "failed": len(failed_trials),
                     "success_rate": success_rate,
                     "failed_trials": failed_trials,
-                    "concurrent_workers": task_queue.worker_pool.max_workers,
+                    "batch_workers": max_workers,
+                    "processing_method": "batch_api_calls"
                 },
             }
 
         except Exception as e:
-            self.logger.error(f"Unexpected error in concurrent batch fetch: {e}")
-            return {"success": False, "error": f"Concurrent batch fetch error: {e}", "data": []}
+            self.logger.error(f"Unexpected error in batch fetch: {e}")
+            return {"success": False, "error": f"Batch fetch error: {e}", "data": []}
 
     def _fetch_single_trial_data(self, nct_id: str) -> Optional[Dict[str, Any]]:
         """Fetch a single trial's data (used by concurrent fetcher)."""
