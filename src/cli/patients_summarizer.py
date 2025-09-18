@@ -23,7 +23,7 @@ from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
-from src.workflows.patients_processor_workflow import PatientsProcessorWorkflow
+from src.workflows.patients_summarizer_workflow import PatientsSummarizerWorkflow
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -156,13 +156,9 @@ def main() -> None:
     # Initialize and execute workflow
     try:
         logger.info("Initializing patients summarizer workflow...")
-        workflow = PatientsProcessorWorkflow(config, memory_storage)
+        workflow = PatientsSummarizerWorkflow(config, memory_storage)
 
-        # Only run summarization part (skip mCODE processing)
         logger.info("Generating natural language summaries...")
-
-        # We'll need to modify the workflow to support summarization-only mode
-        # For now, run full workflow but focus on summarization
         result = workflow.execute(**workflow_kwargs)
 
         if result.success:

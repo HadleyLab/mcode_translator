@@ -57,9 +57,6 @@ def create_parser() -> argparse.ArgumentParser:
     McodeCLI.add_memory_args(parser)
     McodeCLI.add_processor_args(parser)
 
-    # Concurrency arguments
-    McodeCLI.add_concurrency_args(parser)
-
     # Input arguments
     parser.add_argument(
         "--in",

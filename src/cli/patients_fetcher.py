@@ -121,7 +121,7 @@ def main() -> None:
                 if args.output_file:
                     print(f"💾 Results saved to: {args.output_file}")
                 else:
-                    print("📤 Results written to stdout")
+                    print(f"📤 Results written to stdout: {total_fetched} records (NDJSON format)")
 
                 # Print additional details
                 fetch_type = metadata.get("fetch_type")

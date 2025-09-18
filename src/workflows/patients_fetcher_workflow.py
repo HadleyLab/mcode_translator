@@ -56,9 +56,11 @@ class PatientsFetcherWorkflow(FetcherWorkflow):
             else:
                 results = self._fetch_multiple_patients(archive_path, limit)
 
-            # Save results if output path provided
+            # Save results if output path provided, otherwise output to stdout
             if output_path and results["success"]:
                 self._save_results(results["data"], output_path)
+            elif results["success"]:
+                self._output_to_stdout(results["data"])
 
             return self._create_result(
                 success=results["success"],
@@ -188,6 +190,21 @@ class PatientsFetcherWorkflow(FetcherWorkflow):
 
         except Exception as e:
             self.logger.error(f"Failed to save patient data to {output_path}: {e}")
+            raise
+
+    def _output_to_stdout(self, data: List[Dict[str, Any]]) -> None:
+        """Output fetch results to stdout in NDJSON format."""
+        try:
+            import sys
+            for item in data:
+                json.dump(item, sys.stdout, ensure_ascii=False)
+                sys.stdout.write('\n')
+            sys.stdout.flush()
+
+            self.logger.info(f"📤 Patient data written to stdout: {len(data)} records (NDJSON format)")
+
+        except Exception as e:
+            self.logger.error(f"Failed to output patient data to stdout: {e}")
             raise
 
     def list_available_archives(self) -> List[str]:

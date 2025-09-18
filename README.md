@@ -110,8 +110,7 @@ Get up and running in **5 minutes**!
 
 ### Prerequisites
 - Python 3.10+
-- ClinicalTrials.gov API key
-- Core Memory API key
+- CORE Memory API key (optional, for persistent storage)
 
 ### Installation
 ```bash
@@ -122,9 +121,8 @@ cd mcode-translator
 # Install dependencies
 pip install -r requirements.txt
 
-# Set up environment
-export CLINICAL_TRIALS_API_KEY="your_key_here"
-export CORE_MEMORY_API_KEY="your_key_here"
+# Set up environment (optional, for CORE Memory storage)
+export COREAI_API_KEY="your_core_memory_key_here"
 ```
 
 ### 🎯 Your First mCODE Translation
@@ -199,14 +197,24 @@ python -m src.cli.trials_optimizer --save-config optimal.json
 
 ### Environment Variables
 ```bash
-# Required
-CLINICAL_TRIALS_API_KEY=your_clinical_trials_key
-CORE_MEMORY_API_KEY=your_core_memory_key
+# Optional (for CORE Memory storage)
+COREAI_API_KEY=your_core_memory_key
 
 # Optional
 ENABLE_LIVE_TESTS=false  # Enable integration tests
 LOG_LEVEL=INFO
 ```
+
+### .env File Support
+You can also create a `.env` file in the project root:
+```bash
+COREAI_API_KEY=your_core_memory_key_here
+```
+
+### Running Without CORE Memory
+The mCODE Translator works without CORE Memory API key:
+- **Steps 1-7**: Full data processing and local summarization
+- **Steps 8a-8b**: Skipped gracefully (use `--ingest` flag to enable when key is available)
 
 ### Configuration Files
 The system uses modular configuration:

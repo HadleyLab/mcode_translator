@@ -57,10 +57,17 @@ class McodeMemoryStorage:
         self.batch_size = self.config.get_core_memory_batch_size()
         self.default_spaces = self.config.get_core_memory_default_spaces()
 
-        # Initialize client with centralized config
-        self.client = CoreMemoryClient(
-            api_key=self.api_key, base_url=self.base_url, source=self.source
-        )
+        # Defer client initialization until first use to avoid auth errors during import
+        self._client = None
+
+    @property
+    def client(self) -> CoreMemoryClient:
+        """Lazy initialization of the CORE Memory client."""
+        if self._client is None:
+            self._client = CoreMemoryClient(
+                api_key=self.api_key, base_url=self.base_url, source=self.source
+            )
+        return self._client
 
     def store_trial_mcode_summary(
         self, trial_id: str, mcode_data: Dict[str, Any]
