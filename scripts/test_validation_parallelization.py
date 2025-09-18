@@ -89,7 +89,7 @@ def test_parallel_processing(trials_data: list, max_workers: int = 4) -> tuple:
     results = pipeline.process_batch_parallel(trials_data, max_workers=max_workers)
     parallel_time = time.time() - start_time
 
-    print(f"  Sequential processing time: {sequential_time:.2f}s")
+    print(f"  Parallel processing time: {parallel_time:.2f}s")
     print(f"  Results: {len(results)} trials processed")
     return results, parallel_time
 
