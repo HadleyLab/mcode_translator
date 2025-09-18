@@ -21,19 +21,19 @@
       "propagate": true
     },
     "src.workflows": {
-      "level": "WARNING",
+      "level": "INFO",
       "propagate": true
     },
     "src.storage": {
-      "level": "ERROR",
+      "level": "INFO",
       "propagate": true
     },
     "src.pipeline": {
-      "level": "WARNING",
+      "level": "INFO",
       "propagate": true
     },
     "src.utils": {
-      "level": "WARNING",
+      "level": "INFO",
       "propagate": true
     },
     "httpx": {
