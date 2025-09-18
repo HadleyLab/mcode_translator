@@ -132,6 +132,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                                     model,
                                     prompt,
                                     i + 1,
+                                    store_in_memory,
                                 ),
                             )
                             tasks.append(task)
@@ -175,152 +176,15 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                 failed_count = 0
 
                 for i, trial in enumerate(trials_data):
-                    try:
-                        self.logger.info(
-                            f"🔬 Processing trial {i+1}/{len(trials_data)}"
-                        )
-                        self.logger.debug(
-                            f"Trial type: {type(trial)}, keys: {trial.keys() if isinstance(trial, dict) else 'Not a dict'}"
-                        )
-
-                        # Debug: Check trial data integrity before processing
-                        protocol_section = trial.get("protocolSection", {})
-                        identification = protocol_section.get(
-                            "identificationModule", {}
-                        )
-                        trial_id = identification.get("nctId", "Unknown")
-                        self.logger.debug(f"Trial {i+1} NCT ID: {trial_id}")
-                        self.logger.debug(
-                            f"Trial {i+1} brief title: {identification.get('briefTitle', 'Unknown')}"
-                        )
-
-                        # Check for cached processed trial result
-                        cached_result = self._get_cached_trial_result(
-                            trial, model, prompt
-                        )
-                        if cached_result is not None:
-                            self.logger.info(
-                                f"✅ Cache HIT for trial {trial_id} - using cached result"
-                            )
-                            processed_trials.append(cached_result)
-                            successful_count += 1
-                            continue
-
-                        # Try to process with mCODE pipeline
-                        enhanced_trial = None
-                        mcode_success = False
-                        try:
-                            self.logger.debug(
-                                f"Starting mCODE pipeline processing for trial {i+1}"
-                            )
-                            # Use new ultra-lean pipeline interface
-                            result = self.pipeline.process(trial)
-                            self.logger.debug(f"mCODE pipeline result: {result}")
-
-                            # Add mCODE results to trial using standardized utility
-                            enhanced_trial = enhance_trial_with_mcode_results(
-                                trial, result
-                            )
-                            mcode_success = True
-                        except Exception as mcode_error:
-                            self.logger.warning(
-                                f"mCODE pipeline failed for trial {trial_id}: {mcode_error}"
-                            )
-                            # Create basic enhanced trial without mCODE results
-                            enhanced_trial = trial.copy()
-                            enhanced_trial["McodeProcessingError"] = str(mcode_error)
-
-                        # Cache the processed trial result
-                        self._cache_trial_result(enhanced_trial, model, prompt)
-
-                        # Always generate natural language summary, regardless of mCODE success
-                        self.logger.debug(
-                            f"Generating natural language summary for trial {trial_id}"
-                        )
-                        try:
-                            # Extract comprehensive mCODE elements from trial data (with caching)
-                            comprehensive_mcode = (
-                                self._extract_trial_mcode_elements_cached(trial)
-                            )
-                            self.logger.debug(
-                                f"Extracted {len(comprehensive_mcode)} mCODE elements: {list(comprehensive_mcode.keys())}"
-                            )
-
-                            # Create natural language summary for CORE knowledge graph (with caching)
-                            natural_language_summary = (
-                                self._generate_trial_natural_language_summary_cached(
-                                    trial_id, comprehensive_mcode, trial
-                                )
-                            )
-
-                            # Check if we have full trial data for better summarization
-                            has_full_data = self._check_trial_has_full_data(trial)
-                            if has_full_data:
-                                self.logger.info(
-                                    f"✅ Generated comprehensive trial summary for {trial_id} using full clinical data: {natural_language_summary[:100]}..."
-                                )
-                            else:
-                                self.logger.info(
-                                    f"⚠️  Generated trial summary for {trial_id} using partial data (consider using NCT ID for complete data): {natural_language_summary[:100]}..."
-                                )
-
-                            # Add natural language summary to the enhanced trial data
-                            if "McodeResults" not in enhanced_trial:
-                                enhanced_trial["McodeResults"] = {}
-                            enhanced_trial["McodeResults"][
-                                "natural_language_summary"
-                            ] = natural_language_summary
-                            self.logger.debug(
-                                f"Added natural language summary to enhanced_trial McodeResults: {len(natural_language_summary)} chars"
-                            )
-
-                            # Store to CORE memory if requested
-                            if store_in_memory and self.memory_storage:
-                                # Prepare comprehensive mCODE data for storage
-                                mcode_data = {
-                                    "mcode_mappings": self._convert_trial_mcode_to_mappings_format(
-                                        comprehensive_mcode
-                                    ),
-                                    "natural_language_summary": natural_language_summary,
-                                    "comprehensive_mcode_elements": comprehensive_mcode,
-                                    "trial_metadata": self._extract_trial_metadata(
-                                        trial
-                                    ),
-                                    "pipeline_results": enhanced_trial.get(
-                                        "McodeResults", {}
-                                    ),
-                                    "original_trial_data": trial,  # Include original trial data for summarizer
-                                }
-
-                                success = self.memory_storage.store_trial_mcode_summary(
-                                    trial_id, mcode_data
-                                )
-                                if success:
-                                    self.logger.info(
-                                        f"✅ Stored trial {trial_id} mCODE summary"
-                                    )
-                                else:
-                                    self.logger.warning(
-                                        f"❌ Failed to store trial {trial_id} mCODE summary"
-                                    )
-                        except Exception as summary_error:
-                            self.logger.error(
-                                f"Failed to generate summary for trial {trial_id}: {summary_error}"
-                            )
-
-                        processed_trials.append(enhanced_trial)
-                        if mcode_success:
-                            successful_count += 1
-                        # Still count as processed even if mCODE failed but summary succeeded
-
-                    except Exception as e:
-                        self.logger.error(f"Failed to process trial {i+1}: {e}")
+                    result = self._process_single_trial_sync(
+                        trial, model, prompt, i + 1, store_in_memory
+                    )
+                    trial_result, success = result
+                    processed_trials.append(trial_result)
+                    if success:
+                        successful_count += 1
+                    else:
                         failed_count += 1
-
-                        # Add error information to trial
-                        error_trial = trial.copy()
-                        error_trial["ProcessingError"] = str(e)
-                        processed_trials.append(error_trial)
 
             # Calculate success rate
             total_count = len(trials_data)
@@ -1058,6 +922,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         model: str,
         prompt: str,
         index: int,
+        store_in_memory: bool = False,
     ) -> tuple:
         """
         Process a single trial synchronously for concurrent processing.
@@ -1101,58 +966,6 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
 
             # Cache the processed trial result
             self._cache_trial_result(enhanced_trial, model, prompt)
-
-            # Always generate natural language summary, regardless of mCODE success
-            trial_id = self._extract_trial_id(trial)
-            try:
-                # Extract comprehensive mCODE elements from trial data (with caching)
-                comprehensive_mcode = self._extract_trial_mcode_elements_cached(trial)
-
-                # Create natural language summary for CORE knowledge graph (with caching)
-                natural_language_summary = (
-                    self._generate_trial_natural_language_summary_cached(
-                        trial_id, comprehensive_mcode, trial
-                    )
-                )
-                self.logger.info(
-                    f"Generated comprehensive trial summary for {trial_id}: {natural_language_summary[:100]}..."
-                )
-
-                # Add natural language summary to the enhanced trial data
-                if "McodeResults" not in enhanced_trial:
-                    enhanced_trial["McodeResults"] = {}
-                enhanced_trial["McodeResults"][
-                    "natural_language_summary"
-                ] = natural_language_summary
-                self.logger.debug(
-                    f"Added natural language summary to enhanced_trial McodeResults: {len(natural_language_summary)} chars"
-                )
-
-                # Store to core memory if requested
-                if store_in_memory and self.memory_storage:
-                    mcode_data = {
-                        "mcode_mappings": self._convert_trial_mcode_to_mappings_format(
-                            comprehensive_mcode
-                        ),
-                        "natural_language_summary": natural_language_summary,
-                        "comprehensive_mcode_elements": comprehensive_mcode,
-                        "trial_metadata": self._extract_trial_metadata(trial),
-                        "pipeline_results": enhanced_trial.get("McodeResults", {}),
-                    }
-
-                    success = self.memory_storage.store_trial_mcode_summary(
-                        trial_id, mcode_data
-                    )
-                    if success:
-                        self.logger.info(f"✅ Stored trial {trial_id} mCODE summary")
-                    else:
-                        self.logger.warning(
-                            f"❌ Failed to store trial {trial_id} mCODE summary"
-                        )
-            except Exception as summary_error:
-                self.logger.error(
-                    f"Failed to generate summary for trial {trial_id}: {summary_error}"
-                )
 
             return enhanced_trial, mcode_success
 

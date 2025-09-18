@@ -236,17 +236,11 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                     self.logger.error(f"Error processing PatientSex: {e}")
                     demographics["gender"] = "Unknown"
 
-                # Generate natural language summary for CORE knowledge graph
-                natural_language_summary = (
-                    self.summarizer.create_patient_summary(patient)
-                )
-
                 mcode_data = {
                     "original_patient_data": patient,  # Include original patient data for summarizer
                     "mcode_mappings": self._convert_to_mappings_format(
                         filtered_mcode
                     ),
-                    "natural_language_summary": natural_language_summary,
                     "demographics": demographics,
                     "metadata": processed_patient.get(
                         "mcode_processing_metadata", {}

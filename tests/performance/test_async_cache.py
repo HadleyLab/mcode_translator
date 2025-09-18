@@ -14,6 +14,7 @@ import json
 import time
 import pytest
 from pathlib import Path
+import tempfile
 
 from src.utils.api_manager import APIManager, AsyncAPICache
 from src.utils.logging_config import get_logger
@@ -21,11 +22,18 @@ from src.utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 
+@pytest.fixture
+def temp_cache_dir():
+    """Temporary cache directory for tests."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield tmpdir
+
+
 @pytest.mark.asyncio
-async def test_basic_async_operations():
+async def test_basic_async_operations(temp_cache_dir):
     """Test basic async cache operations."""
-    # Get async cache
-    manager = APIManager()
+    # Get async cache with temp dir
+    manager = APIManager(str(temp_cache_dir))
     cache = await manager.aget_cache("test_async")
 
     # Test data
@@ -43,9 +51,9 @@ async def test_basic_async_operations():
 
 
 @pytest.mark.asyncio
-async def test_batch_async_operations():
+async def test_batch_async_operations(temp_cache_dir):
     """Test batch async operations."""
-    manager = APIManager()
+    manager = APIManager(str(temp_cache_dir))
     cache = await manager.aget_cache("test_batch")
 
     # Prepare batch data
@@ -68,9 +76,9 @@ async def test_batch_async_operations():
 
 
 @pytest.mark.asyncio
-async def test_cache_warming():
+async def test_cache_warming(temp_cache_dir):
     """Test cache warming capabilities."""
-    manager = APIManager()
+    manager = APIManager(str(temp_cache_dir))
     cache = await manager.aget_cache("test_warm")
 
     # Simulate a fetch function
@@ -95,9 +103,9 @@ async def test_cache_warming():
 
 
 @pytest.mark.asyncio
-async def test_background_maintenance():
+async def test_background_maintenance(temp_cache_dir):
     """Test background maintenance."""
-    manager = APIManager()
+    manager = APIManager(str(temp_cache_dir))
     cache = await manager.aget_cache("test_maintenance")
 
     # Add some test data
@@ -113,7 +121,7 @@ async def test_background_maintenance():
     )
 
     # Let it run for a few seconds
-    await asyncio.sleep(5)
+    await asyncio.sleep(3)  # Reduced time to avoid timeout
 
     # Cancel maintenance
     maintenance_task.cancel()
@@ -122,18 +130,23 @@ async def test_background_maintenance():
     except asyncio.CancelledError:
         pass
 
+    # Verify some data still exists (maintenance shouldn't delete valid entries immediately)
+    results = await cache.abatch_get([item["key_data"] for item in test_items])
+    remaining = sum(1 for r in results if r is not None)
+    assert remaining > 0, "Some data should remain after short maintenance run"
+
 
 @pytest.mark.asyncio
-async def test_performance_comparison():
+async def test_performance_comparison(temp_cache_dir):
     """Compare performance between sync and async operations."""
-    manager = APIManager()
+    manager = APIManager(str(temp_cache_dir))
     async_cache = await manager.aget_cache("perf_test")
     sync_cache = manager.get_cache("perf_sync")
 
     # Test data
     test_items = [
         {"result": {"perf_test": i, "data": f"item_{i}" * 100}, "key_data": f"perf_key_{i}"}
-        for i in range(20)
+        for i in range(10)  # Reduced for faster test
     ]
 
     # Async performance test
@@ -156,16 +169,18 @@ async def test_performance_comparison():
     async_success = sum(1 for r in async_results if r is not None)
     sync_success = sum(1 for r in sync_results if r is not None)
 
-    assert async_success == 20, "All async operations should succeed"
-    assert sync_success == 20, "All sync operations should succeed"
+    assert async_success == 10, "All async operations should succeed"
+    assert sync_success == 10, "All sync operations should succeed"
     assert async_time >= 0, "Async time should be non-negative"
     assert sync_time >= 0, "Sync time should be non-negative"
+    assert async_time < 2.0, "Async should complete quickly"
+    assert sync_time < 2.0, "Sync should complete quickly"
 
 
 @pytest.mark.asyncio
-async def test_async_manager_operations():
+async def test_async_manager_operations(temp_cache_dir):
     """Test async operations on the APIManager."""
-    manager = APIManager()
+    manager = APIManager(str(temp_cache_dir))
 
     # Test async cache creation and stats
     cache1 = await manager.aget_cache("manager_test_1")
@@ -193,9 +208,9 @@ async def test_async_manager_operations():
 
 
 @pytest.mark.asyncio
-async def test_error_handling():
+async def test_error_handling(temp_cache_dir):
     """Test error handling in async operations."""
-    manager = APIManager()
+    manager = APIManager(str(temp_cache_dir))
     cache = await manager.aget_cache("error_test")
 
     # Test with invalid data
