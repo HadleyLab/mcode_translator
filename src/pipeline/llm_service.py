@@ -415,11 +415,51 @@ class LLMService:
 
         for item in mcode_data:
             try:
-                # Use existing McodeElement model
-                element = McodeElement(**item)
+                # Map LLM response fields to McodeElement expected fields
+                mapped_item = {}
+
+                # Map element_type (required field)
+                if "mcode_element" in item:
+                    mapped_item["element_type"] = item["mcode_element"]
+                elif "element_type" in item:
+                    mapped_item["element_type"] = item["element_type"]
+                else:
+                    # Skip items without element type
+                    self.logger.warning(f"Skipping mCODE element without element_type: {item}")
+                    continue
+
+                # Map code field - handle nested code structure
+                if "code" in item:
+                    if isinstance(item["code"], dict):
+                        # Extract code value from nested structure
+                        mapped_item["code"] = item["code"].get("code")
+                        # Also extract display and system if available
+                        if "display" in item["code"]:
+                            mapped_item["display"] = item["code"]["display"]
+                        if "system" in item["code"]:
+                            mapped_item["system"] = item["code"]["system"]
+                    else:
+                        # Direct code value
+                        mapped_item["code"] = str(item["code"])
+
+                # Map confidence_score
+                if "mapping_confidence" in item:
+                    mapped_item["confidence_score"] = item["mapping_confidence"]
+                elif "confidence_score" in item:
+                    mapped_item["confidence_score"] = item["confidence_score"]
+
+                # Map evidence_text
+                if "source_text_fragment" in item:
+                    mapped_item["evidence_text"] = item["source_text_fragment"]
+                elif "evidence_text" in item:
+                    mapped_item["evidence_text"] = item["evidence_text"]
+
+                # Create McodeElement with mapped fields
+                element = McodeElement(**mapped_item)
                 elements.append(element)
+
             except Exception as e:
-                self.logger.warning(f"Failed to parse mCODE element: {e}")
+                self.logger.warning(f"Failed to parse mCODE element: {e} | Item: {item}")
                 continue
 
         return elements

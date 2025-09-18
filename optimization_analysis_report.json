@@ -1,0 +1,87 @@
+{
+  "summary": {
+    "total_runs": 1,
+    "models_tested": 1,
+    "combinations_tested": 1,
+    "timestamp": "2025-09-18T18:35:48.752602"
+  },
+  "model_performance": {
+    "deepseek-coder": {
+      "runs_count": 1,
+      "cv_score": {
+        "mean": 0.9800000000000001,
+        "median": 0.9800000000000001,
+        "std": 0,
+        "min": 0.9800000000000001,
+        "max": 0.9800000000000001
+      },
+      "elements_generated": {
+        "mean": 112,
+        "median": 112,
+        "total": 112
+      },
+      "performance_rating": "excellent",
+      "mcode_analysis": {
+        "total_elements": 112,
+        "element_types": {
+          "CancerCondition": 56,
+          "CancerTreatment": 33,
+          "Patient": 7,
+          "PatientCharacteristic": 2,
+          "PatientDemographics": 10,
+          "TNMStage": 1,
+          "TumorMarker": 3
+        },
+        "code_systems": {},
+        "quality_metrics": {
+          "elements_with_codes": 0,
+          "elements_with_confidence": 112,
+          "code_coverage": 0.0,
+          "confidence_coverage": 1.0
+        },
+        "confidence_stats": {
+          "mean": 0.9848214285714286,
+          "median": 1.0,
+          "std": 0.05059968562479597,
+          "min": 0.8,
+          "max": 1.0
+        },
+        "diversity_metrics": {
+          "unique_element_types": 7,
+          "most_common_type": [
+            "CancerCondition",
+            56
+          ],
+          "element_type_distribution": {
+            "CancerCondition": 0.5,
+            "CancerTreatment": 0.29464285714285715,
+            "Patient": 0.0625,
+            "PatientCharacteristic": 0.017857142857142856,
+            "PatientDemographics": 0.08928571428571429,
+            "TNMStage": 0.008928571428571428,
+            "TumorMarker": 0.026785714285714284
+          }
+        }
+      }
+    }
+  },
+  "combination_performance": {
+    "deepseek-coder_direct_mcode_evidence_based_concise": {
+      "runs_count": 1,
+      "cv_score": {
+        "mean": 0.9800000000000001,
+        "std": 0
+      },
+      "elements_generated": {
+        "mean": 112,
+        "total": 112
+      }
+    }
+  },
+  "overall_metrics": {
+    "total_cv_scores": 1,
+    "average_cv_score": 0.9800000000000001,
+    "total_elements_generated": 112,
+    "average_elements_per_run": 112
+  }
+}

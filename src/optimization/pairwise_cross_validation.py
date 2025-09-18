@@ -168,34 +168,52 @@ class PairwiseCrossValidator:
         self.logger.info(f"🔄 Generated {len(tasks)} pairwise comparison tasks")
         return tasks
 
-    def run_pairwise_validation(self, tasks: List[PairwiseComparisonTask]) -> None:
-        """Run pairwise validation."""
+    def run_pairwise_validation(self, tasks: List[PairwiseComparisonTask], max_workers: int = 5) -> None:
+        """Run pairwise validation with concurrent processing."""
         self.logger.info("🔬 Running pairwise validation")
         start_time = time.time()
 
-        # Process all tasks
-        processed_tasks = 0
-        total_tasks = len(tasks)
+        # Initialize task queue if not already done
+        if self.task_queue is None:
+            self.task_queue = TaskQueue(max_workers=max_workers, name="PairwiseValidator")
 
+        # Convert tasks to Task objects for TaskQueue
+        from src.utils.concurrency import Task
+        queue_tasks = []
         for task in tasks:
-            try:
-                self._process_pairwise_task(task)
-                processed_tasks += 1
+            queue_task = Task(
+                id=task.task_id,
+                func=self._process_pairwise_task_async,
+                args=(task,),
+                kwargs={}
+            )
+            queue_tasks.append(queue_task)
 
-                # Progress logging
-                if processed_tasks % 10 == 0:
-                    progress = (processed_tasks / total_tasks) * 100
-                    self.logger.info(
-                        f"📊 Progress: {processed_tasks}/{total_tasks} ({progress:.1f}%)"
-                    )
+        self.logger.info(f"🚀 Starting concurrent processing with {max_workers} workers")
 
-            except Exception as e:
-                self.logger.error(f"❌ Failed to process task {task.task_id}: {e}")
-                task.status = TaskStatus.FAILED
-                task.error_message = str(e)
+        def progress_callback(completed, total, result):
+            if completed % 10 == 0:
+                progress = (completed / total) * 100
+                self.logger.info(f"📊 Progress: {completed}/{total} ({progress:.1f}%)")
+
+        # Execute tasks concurrently
+        task_results = self.task_queue.execute_tasks(queue_tasks, progress_callback=progress_callback)
+
+        # Process results
+        successful_tasks = 0
+        failed_tasks = 0
+
+        for result in task_results:
+            if result.success:
+                successful_tasks += 1
+                # Task result is already stored in the task object
+            else:
+                failed_tasks += 1
+                self.logger.error(f"❌ Task failed: {result.error}")
 
         duration = time.time() - start_time
         self.logger.info(f"🏁 Pairwise validation completed in {duration:.2f} seconds")
+        self.logger.info(f"✅ Successful: {successful_tasks}, Failed: {failed_tasks}")
 
     def _process_pairwise_task(self, task: PairwiseComparisonTask) -> None:
         """Process a single pairwise comparison task."""
@@ -259,6 +277,14 @@ class PairwiseCrossValidator:
             task.status = TaskStatus.FAILED
             task.error_message = str(e)
             raise
+
+    def _process_pairwise_task_async(self, task: PairwiseComparisonTask) -> Dict[str, Any]:
+        """Async version of pairwise task processing for TaskQueue."""
+        try:
+            self._process_pairwise_task(task)
+            return {"success": True, "task_id": task.task_id}
+        except Exception as e:
+            return {"success": False, "task_id": task.task_id, "error": str(e)}
 
     def _calculate_comparison_metrics(self, task: PairwiseComparisonTask) -> None:
         """Calculate comprehensive comparison metrics between gold and comparator."""
