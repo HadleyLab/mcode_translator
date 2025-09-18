@@ -23,6 +23,7 @@ from scipy.stats import kendalltau, ttest_ind
 from src.pipeline import McodePipeline
 from src.shared.models import BenchmarkResult, McodeElement, PipelineResult
 from src.shared.types import TaskStatus
+from src.utils.concurrency import TaskQueue
 from src.utils.llm_loader import LLMLoader
 from src.utils.logging_config import get_logger, setup_logging
 from src.utils.prompt_loader import PromptLoader
@@ -80,7 +81,7 @@ class PairwiseCrossValidator:
         self.summary_stats: Dict[str, Any] = {}
 
         # Task queue for async processing
-        self.task_queue: Optional[PipelineTaskQueue] = None
+        self.task_queue: Optional[TaskQueue] = None
 
     def initialize(self) -> None:
         """Initialize the validator."""

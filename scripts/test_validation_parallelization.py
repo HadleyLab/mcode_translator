@@ -73,7 +73,8 @@ def test_sequential_processing(trials_data: list) -> tuple:
     results = pipeline.process_batch(trials_data)
     sequential_time = time.time() - start_time
 
-    print(".2f"    print(f"  Results: {len(results)} trials processed")
+    print(f"  Sequential processing time: {sequential_time:.2f}s")
+    print(f"  Results: {len(results)} trials processed")
 
     return results, sequential_time
 
@@ -104,7 +105,8 @@ def test_parallel_validation_only(trials_data: list, max_workers: int = 4) -> tu
     validation_time = time.time() - start_time
 
     valid_count = sum(validation_results)
-    print(".2f"    print(f"  Results: {valid_count}/{len(validation_results)} trials valid")
+    print(f"  Parallel validation time: {validation_time:.2f}s")
+    print(f"  Results: {valid_count}/{len(validation_results)} trials valid")
 
     return validation_results, validation_time
 
@@ -115,18 +117,25 @@ def compare_performance(sequential_time: float, parallel_time: float, validation
     print("📊 PERFORMANCE COMPARISON")
     print("=" * 60)
 
-    print("
-⏱️  TIMING RESULTS:"    print(".2f"    print(".2f"    print(".2f"
+    print("\n⏱️  TIMING RESULTS:")
+    print(f"  • Sequential time: {sequential_time:.2f}s")
+    print(f"  • Parallel time: {parallel_time:.2f}s")
+    print(f"  • Validation time: {validation_time:.2f}s")
+
     if parallel_time > 0:
         speedup = sequential_time / parallel_time
-        print(".2f"
+        print(f"  • Speedup: {speedup:.2f}x")
         efficiency = (speedup / 4) * 100  # Assuming 4 workers
-        print(".1f"
-    print("
-📈 PER-TRIAL METRICS:"    print(".3f"    print(".3f"    print(".3f"
-    print("
-✅ VALIDATION RESULTS:"    print(f"  • Parallel validation: {validation_time:.3f}s per trial")
-    print(".1f"
+        print(f"  • Efficiency: {efficiency:.1f}%")
+
+    print("\n📈 PER-TRIAL METRICS:")
+    print(f"  • Sequential: {sequential_time/trial_count:.3f}s per trial")
+    print(f"  • Parallel: {parallel_time/trial_count:.3f}s per trial")
+    print(f"  • Validation: {validation_time/trial_count:.3f}s per trial")
+
+    print("\n✅ VALIDATION RESULTS:")
+    print(f"  • Parallel validation: {validation_time:.3f}s per trial")
+    print(f"  • Trials processed: {trial_count}")
 def analyze_results(results: list):
     """Analyze processing results."""
     print("\n" + "=" * 60)
@@ -138,15 +147,17 @@ def analyze_results(results: list):
     total_elements = sum(len(r.mcode_mappings) if r else 0 for r in results)
     avg_compliance = sum(r.validation_results.compliance_score if r else 0 for r in results) / len(results) if results else 0
 
-    print("
-🔢 PROCESSING SUMMARY:"    print(f"  • Successful trials: {successful}")
+    print("\n🔢 PROCESSING SUMMARY:")
+    print(f"  • Successful trials: {successful}")
     print(f"  • Failed trials: {failed}")
     print(f"  • Total mCODE elements: {total_elements}")
-    print(".2f"
+    print(f"  • Average compliance: {avg_compliance:.2f}")
+
     if successful > 0:
-        print(".1f"
-    print("
-📊 ELEMENT DISTRIBUTION:"    element_types = {}
+        print(f"  • Success rate: {(successful/len(results))*100:.1f}%")
+
+    print("\n📊 ELEMENT DISTRIBUTION:")
+    element_types = {}
     for result in results:
         if result and result.mcode_mappings:
             for elem in result.mcode_mappings:
