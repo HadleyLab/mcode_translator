@@ -433,14 +433,11 @@ class APIManager:
             cache_namespace: Namespace to clear, or None to clear all caches
         """
         if cache_namespace is None:
-            # Clear all caches
-            tasks = []
-            for cache in self.caches.values():
-                if hasattr(cache, 'aclear'):
-                    tasks.append(cache.aclear())
+            # Clear all async caches
+            tasks = [cache.aclear() for cache in self.caches.values()]
             await asyncio.gather(*tasks, return_exceptions=True)
 
-            # Also clear the base directory of any files
+            # Clear base directory
             try:
                 for filename in os.listdir(self.cache_dir):
                     file_path = os.path.join(self.cache_dir, filename)
@@ -451,10 +448,9 @@ class APIManager:
         else:
             # Clear specific namespace
             if cache_namespace in self.caches:
-                cache = self.caches[cache_namespace]
-                if hasattr(cache, 'aclear'):
-                    await cache.aclear()
-            # Also clear the namespace directory
+                await self.caches[cache_namespace].aclear()
+
+            # Clear namespace directory
             namespace_cache_dir = os.path.join(self.cache_dir, cache_namespace)
             try:
                 if os.path.exists(namespace_cache_dir):
@@ -463,9 +459,7 @@ class APIManager:
                         if os.path.isfile(file_path):
                             os.remove(file_path)
             except Exception as e:
-                logger.warning(
-                    f"Failed to clear namespace cache directory {namespace_cache_dir}: {e}"
-                )
+                logger.warning(f"Failed to clear namespace cache directory {namespace_cache_dir}: {e}")
 
     async def aget_cache_stats(self, cache_namespace: str = None) -> Dict[str, Any]:
         """
@@ -478,24 +472,19 @@ class APIManager:
             Dictionary with cache statistics
         """
         if cache_namespace is None:
-            # Get stats for all caches
+            # Get stats for all async caches
+            tasks = [cache.aget_stats() for cache in self.caches.values() if hasattr(cache, 'aget_stats')]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
             stats = {}
             total_items = 0
             total_size = 0
 
-            tasks = []
-            for namespace, cache in self.caches.items():
-                if hasattr(cache, 'aget_stats'):
-                    tasks.append(cache.aget_stats())
-
-            if tasks:
-                results = await asyncio.gather(*tasks, return_exceptions=True)
-                for (namespace, cache), result in zip(self.caches.items(), results):
-                    if not isinstance(result, Exception):
-                        namespace_stats = result
-                        stats[namespace] = namespace_stats
-                        total_items += namespace_stats.get("cached_items", 0)
-                        total_size += namespace_stats.get("total_size_bytes", 0)
+            for (namespace, cache), result in zip(self.caches.items(), results):
+                if not isinstance(result, Exception):
+                    stats[namespace] = result
+                    total_items += result.get("cached_items", 0)
+                    total_size += result.get("total_size_bytes", 0)
 
             stats["total"] = {
                 "cached_items": total_items,
@@ -506,11 +495,8 @@ class APIManager:
         else:
             # Get stats for specific namespace
             cache = await self.aget_cache(cache_namespace)
-            if hasattr(cache, 'aget_stats'):
-                stats = await cache.aget_stats()
-                return {cache_namespace: stats}
-            else:
-                return {cache_namespace: cache.get_stats()}
+            stats = await cache.aget_stats()
+            return {cache_namespace: stats}
 
 
 class AsyncAPICache:
@@ -588,22 +574,16 @@ class AsyncAPICache:
                 with open(cache_path, "r") as f:
                     cached_data = json.load(f)
 
-                # Check if cache has expired
+                # Check expiration
                 ttl = cached_data.get("ttl", None)
-                if (
-                    ttl is not None
-                    and ttl > 0
-                    and time.time() - cached_data.get("timestamp", 0) > ttl
-                ):
+                if ttl and ttl > 0 and time.time() - cached_data.get("timestamp", 0) > ttl:
                     os.remove(cache_path)
                     return None
 
-                logger.info(
-                    f"Async Cache HIT with key {cache_key[:8]}... in namespace '{self.namespace}'"
-                )
+                logger.debug(f"Async Cache HIT {cache_key[:8]}... in '{self.namespace}'")
                 return cached_data["result"]
             except Exception as e:
-                logger.warning(f"Failed to read cache: {e}")
+                logger.warning(f"Cache read failed: {e}")
                 return None
 
         return await loop.run_in_executor(self.executor, _sync_get)
@@ -645,9 +625,7 @@ class AsyncAPICache:
             cache_path = self._get_cache_path(cache_key)
 
             try:
-                # Handle Pydantic models by converting to dict
                 serializable_result = self._make_serializable(result)
-
                 cached_data = {
                     "result": serializable_result,
                     "timestamp": time.time(),
@@ -661,11 +639,9 @@ class AsyncAPICache:
                 with open(cache_path, "w") as f:
                     json.dump(cached_data, f, default=str)
 
-                logger.info(
-                    f"Async Cache STORED with key {cache_key[:8]}... in namespace '{self.namespace}'"
-                )
+                logger.debug(f"Async Cache STORED {cache_key[:8]}... in '{self.namespace}'")
             except Exception as e:
-                logger.warning(f"Failed to write cache: {e}")
+                logger.warning(f"Cache write failed: {e}")
 
         await loop.run_in_executor(self.executor, _sync_set)
 
@@ -862,15 +838,11 @@ class AsyncAPICache:
     async def _aperform_maintenance(self) -> None:
         """Perform background maintenance tasks"""
         try:
-            # Clean up expired entries
             await self._acleanup_expired()
-
-            # Log statistics
             stats = await self.aget_stats()
-            logger.debug(f"Background maintenance stats for '{self.namespace}': {stats}")
-
+            logger.debug(f"Maintenance stats '{self.namespace}': {stats}")
         except Exception as e:
-            logger.warning(f"Background maintenance failed: {e}")
+            logger.warning(f"Maintenance failed: {e}")
 
     async def _acleanup_expired(self) -> int:
         """Async cleanup expired cache entries"""
