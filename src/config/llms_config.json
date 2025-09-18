@@ -1,6 +1,6 @@
 {
   "models": {
-    "default": "deepseek-coder",
+    "default": "model1",
     "available": {
       "deepseek-coder": {
         "provider": "deepseek",
@@ -47,10 +47,10 @@
         "cost"
       ],
       "sample_size": 10,
-      "optimized_model": "deepseek-coder",
-      "optimized_prompt": "direct_mcode_evidence_based_concise",
-      "optimization_score": 0.8111111111111112,
-      "last_optimized": "2025-09-17T21:19:56.719867"
+      "optimized_model": "model1",
+      "optimized_prompt": "prompt2",
+      "optimization_score": 0.85,
+      "last_optimized": "2025-09-17T21:39:48.435044"
     }
   }
 }
