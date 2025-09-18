@@ -69,7 +69,7 @@ class WorkerPool:
             thread_name_prefix=f"{self.name}-worker"
         )
         self._running = True
-        self.logger.info(f"🚀 Started {self.name} with {self.max_workers} workers")
+        self.logger.info(f"🤖 Started {self.name} with {self.max_workers} workers")
 
     def stop(self):
         """Stop the worker pool."""

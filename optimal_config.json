@@ -1,0 +1,22 @@
+{
+  "optimal_settings": {
+    "model": "deepseek-coder",
+    "prompt": "direct_mcode_evidence_based_concise",
+    "cv_score": 0.48177254901960787,
+    "cv_std": 0.2802658400785864,
+    "optimization_timestamp": "2025-09-18T15:07:59.707512",
+    "optimizer_version": "2.0.0"
+  },
+  "metadata": {
+    "combinations_tested": 0,
+    "cv_folds": 3,
+    "total_trials": 5,
+    "fold_scores": [
+      0.4672156862745098,
+      0.6592156862745098,
+      0.4436078431372549,
+      0.8388235294117647,
+      0.0
+    ]
+  }
+}

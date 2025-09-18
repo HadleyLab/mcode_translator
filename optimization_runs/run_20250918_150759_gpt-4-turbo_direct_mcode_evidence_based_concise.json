@@ -1,0 +1,20 @@
+{
+  "combination": {
+    "prompt": "direct_mcode_evidence_based_concise",
+    "model": "gpt-4-turbo"
+  },
+  "success": true,
+  "cv_average_score": 0.4170509803921568,
+  "cv_std_score": 0.22010347208457026,
+  "fold_scores": [
+    0.5512156862745098,
+    0.3956078431372549,
+    0.5272156862745098,
+    0.0,
+    0.6112156862745098
+  ],
+  "cv_folds": 3,
+  "total_trials": 5,
+  "errors": [],
+  "timestamp": "2025-09-18T15:07:59.706643"
+}
