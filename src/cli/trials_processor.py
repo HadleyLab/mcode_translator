@@ -60,11 +60,8 @@ def create_parser() -> argparse.ArgumentParser:
     McodeCLI.add_core_args(parser)
     McodeCLI.add_memory_args(parser)
 
-    # Processor-specific arguments
+    # Processor-specific arguments (includes concurrency)
     McodeCLI.add_processor_args(parser)
-
-    # Concurrency arguments
-    McodeCLI.add_concurrency_args(parser)
 
     # Input arguments
     parser.add_argument(
