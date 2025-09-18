@@ -180,7 +180,7 @@ class LLMService:
                         else:
                             raise ValueError(f"DeepSeek response contains malformed markdown JSON block: {cleaned_content[:200]}...")
 
-                    # STRICT: Fail fast on truncated or incomplete JSON
+                    # STRICT: Fail fast on truncated or incomplete JSON - no fallback processing
                     if cleaned_content.startswith('{') and not cleaned_content.endswith('}'):
                         raise ValueError(f"DeepSeek response contains truncated JSON (missing closing brace): {cleaned_content[:200]}...")
 
