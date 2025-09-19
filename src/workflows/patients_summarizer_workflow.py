@@ -87,22 +87,56 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
 
             for patient in patients_data:
                 try:
-                    # Convert patient_bundle format to FHIR bundle format if needed
-                    if "patient_bundle" in patient:
-                        # Convert from custom format to FHIR bundle
-                        patient = self._convert_patient_bundle_to_fhir(patient)
-                        self.logger.info(f"Converted bundle has {len(patient.get('entry', []))} entries")
-                        for i, entry in enumerate(patient.get('entry', [])):
-                            resource_type = entry.get('resource', {}).get('resourceType')
-                            self.logger.info(f"Entry {i}: {resource_type}")
-                            if resource_type == "Patient":
-                                patient_res = entry['resource']
-                                self.logger.info(f"Patient resource: name={patient_res.get('name')}, gender={patient_res.get('gender')}, birthDate={patient_res.get('birthDate')}")
+                    # Check if this is already processed mCODE data with summary
+                    if "mcode_elements" in patient and "natural_language_summary" in patient.get("mcode_elements", {}):
+                        # Use existing summary
+                        summary = patient["mcode_elements"]["natural_language_summary"]
+                        patient_id = patient.get("patient_id", self.extract_patient_id(patient))
+                        self.logger.info(f"Using existing summary for patient {patient_id}")
 
-                    # Debug: Check if patient has entry
-                    if "entry" not in patient:
-                        self.logger.error(f"Patient data missing 'entry' key: {list(patient.keys())}")
-                        raise ValueError("Patient data is missing 'entry' key")
+                        # Create processed patient with existing summary
+                        processed_patient = patient.copy()
+                        if "McodeResults" not in processed_patient:
+                            processed_patient["McodeResults"] = {}
+                        processed_patient["McodeResults"]["natural_language_summary"] = summary
+
+                    else:
+                        # Generate new summary from raw data
+                        # Convert patient_bundle format to FHIR bundle format if needed
+                        if "patient_bundle" in patient:
+                            # Convert from custom format to FHIR bundle
+                            patient = self._convert_patient_bundle_to_fhir(patient)
+                            self.logger.info(f"Converted bundle has {len(patient.get('entry', []))} entries")
+                            for i, entry in enumerate(patient.get('entry', [])):
+                                resource_type = entry.get('resource', {}).get('resourceType')
+                                self.logger.info(f"Entry {i}: {resource_type}")
+                                if resource_type == "Patient":
+                                    patient_res = entry['resource']
+                                    self.logger.info(f"Patient resource: name={patient_res.get('name')}, gender={patient_res.get('gender')}, birthDate={patient_res.get('birthDate')}")
+    
+                        # Handle original_patient_data if present
+                        elif "original_patient_data" in patient:
+                            patient = patient["original_patient_data"]
+                            self.logger.info(f"Using original_patient_data, has {len(patient.get('entry', []))} entries")
+    
+                        # Debug: Check if patient has entry
+                        if "entry" not in patient:
+                            self.logger.error(f"Patient data missing 'entry' key: {list(patient.keys())}")
+                            raise ValueError("Patient data is missing 'entry' key")
+
+                        patient_id = self.extract_patient_id(patient)
+
+                        # Generate natural language summary
+                        summary = self.summarizer.create_patient_summary(patient)
+                        self.logger.debug(
+                            f"Generated summary for patient {patient_id}: {summary[:100]}..."
+                        )
+
+                        # Create processed patient with summary
+                        processed_patient = patient.copy()
+                        if "McodeResults" not in processed_patient:
+                            processed_patient["McodeResults"] = {}
+                        processed_patient["McodeResults"]["natural_language_summary"] = summary
 
                     # Debug: Check Patient resource structure
                     patient_resource = None
@@ -135,16 +169,24 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
 
                     # Store in CORE Memory if requested
                     if store_in_memory and self.memory_storage:
-                        # Extract mCODE elements if available
-                        mcode_elements = patient.get("filtered_mcode_elements", [])
-                        demographics = self._extract_patient_demographics(patient)
+                        # Handle storage for both existing and newly generated summaries
+                        if "mcode_elements" in patient:
+                            # Use existing mCODE data
+                            mcode_elements = patient.get("mcode_elements", {}).get("mcode_mappings", [])
+                            demographics = patient.get("mcode_elements", {}).get("demographics", {})
+                            metadata = patient.get("mcode_elements", {}).get("metadata", {})
+                        else:
+                            # Extract from newly processed data
+                            mcode_elements = patient.get("filtered_mcode_elements", [])
+                            demographics = self._extract_patient_demographics(patient)
+                            metadata = patient.get("mcode_processing_metadata", {})
 
                         mcode_data = {
                             "original_patient_data": patient,
                             "mcode_mappings": self._convert_to_mappings_format(mcode_elements),
                             "natural_language_summary": summary,
                             "demographics": demographics,
-                            "metadata": patient.get("mcode_processing_metadata", {}),
+                            "metadata": metadata,
                         }
 
                         success = self.memory_storage.store_patient_mcode_summary(
