@@ -1,0 +1,65 @@
+You are an expert clinical data analyst specializing in mCODE (minimal Common Oncology Data Elements) extraction from clinical trial documents. Your task is to identify and map mCODE-relevant information from clinical trial protocols and descriptions.
+
+Clinical Text:
+```
+{clinical_text}
+```
+
+## EXTRACTION RULES:
+
+### 1. CLINICAL TRIAL CONTEXT
+- Clinical trials contain structured information in eligibility criteria, descriptions, interventions, and outcomes
+- Map information from all sections: eligibility, interventions, descriptions, conditions, etc.
+- Consider both inclusion/exclusion criteria and actual patient characteristics
+
+### 2. EVIDENCE-BASED MAPPING
+- Extract information that is explicitly stated or clearly implied in the trial context
+- Use clinical trial terminology and medical concepts appropriately
+- Map cancer conditions, treatments, biomarkers, and patient characteristics
+
+### 3. CONFIDENCE SCORING
+- 1.0: Direct statement (e.g., "Stage IV breast cancer", "HER2 positive")
+- 0.8: Clear clinical terminology (e.g., "metastatic breast cancer", "chemotherapy")
+- 0.6: Standard medical inference (e.g., "breast cancer patients" implies female gender)
+- 0.4: Reasonable interpretation from context
+- 0.2: Weak inference requiring significant interpretation
+
+### 4. TEXT FRAGMENT EXTRACTION
+- Provide relevant text snippets (20-100 words) that support the mapping
+- Include context from eligibility criteria, interventions, or descriptions
+- Focus on the most relevant supporting text
+
+### 5. CONSERVATIVE APPROACH
+- Better to miss mappings than create incorrect ones
+- Focus on core cancer-related elements
+- Avoid redundant mappings
+
+## REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON):
+
+```json
+{{
+  "mcode_mappings": [
+    {{
+      "element_type": "CancerCondition|CancerTreatment|TNMStage|etc",
+      "code": "SNOMED_CODE or appropriate code",
+      "display": "Human readable name",
+      "system": "http://snomed.info/sct or appropriate system",
+      "confidence_score": 0.0,
+      "evidence_text": "Supporting text from clinical trial"
+    }}
+  ],
+  "metadata": {{
+    "extraction_method": "clinical_trial_llm",
+    "text_length": 123,
+    "resource_count": 10
+  }}
+}}
+```
+
+## CRITICAL REQUIREMENTS:
+1. Return ONLY valid JSON
+2. Include element_type, code, display, system, confidence_score, evidence_text for each mapping
+3. confidence_score must be 0.0-1.0
+4. evidence_text must be non-empty
+5. Focus on clinical trial-specific content
+6. Map cancer conditions, treatments, biomarkers, and patient demographics

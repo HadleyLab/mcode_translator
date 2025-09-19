@@ -39,8 +39,8 @@ def load_trials_from_ndjson(file_path: str, max_trials: Optional[int] = None) ->
 def main():
     """Run comprehensive pairwise cross-validation optimization."""
     parser = argparse.ArgumentParser(description="Run comprehensive mCODE optimization")
-    parser.add_argument("--trials-file", default="raw_trials.ndjson",
-                       help="Path to trials file (NDJSON format)")
+    parser.add_argument("--trials-file", default="data/select_breast_cancer_trials.ndjson",
+                        help="Path to trials file (NDJSON format)")
     parser.add_argument("--max-trials", type=int, default=50,
                        help="Maximum number of trials to use")
     parser.add_argument("--max-comparisons", type=int, default=100,
