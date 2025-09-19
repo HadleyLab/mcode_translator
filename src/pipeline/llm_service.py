@@ -5,6 +5,7 @@ Leverages existing utils infrastructure for maximum performance and minimal redu
 """
 
 import json
+import logging
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -37,31 +38,15 @@ class LLMService:
         self.model_name = model_name
         self.prompt_name = prompt_name
         self.logger = get_logger(__name__)
+        # Set logger to DEBUG level for maximum visibility
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.info(f"🔧 LLM Service initialized for model: {model_name}")
 
         # Leverage existing utils
         self.llm_loader = llm_loader
         self.prompt_loader = prompt_loader
         self.api_manager = APIManager()
         self.token_tracker = global_token_tracker
-
-        # Optimization: Connection pooling and reuse
-        self._client_cache: Dict[str, Any] = {}
-        self._last_client_use: Dict[str, float] = {}
-        self._async_client_cache: Dict[str, Any] = {}
-        self._last_async_client_use: Dict[str, float] = {}
-
-        # Optimization: Performance monitoring
-        self._performance_stats = {
-            "total_requests": 0,
-            "cache_hits": 0,
-            "cache_misses": 0,
-            "total_tokens": 0,
-            "avg_response_time": 0.0,
-            "error_count": 0
-        }
-
-        # Simple async client management - no complex cleanup needed
-        pass
 
     async def map_to_mcode(self, clinical_text: str) -> List[McodeElement]:
         """
@@ -73,67 +58,49 @@ class LLMService:
         Returns:
             List of McodeElement instances
         """
-        try:
-            # Check if API key is available (graceful degradation for testing)
-            try:
-                api_key = self.config.get_api_key(self.model_name)
-                if not api_key:
-                    self.logger.warning(f"No API key available for {self.model_name} - returning empty results")
-                    return []
-            except Exception as e:
-                error_msg = f"API key configuration error for model {self.model_name}"
-                self.logger.warning(f"API key error for {self.model_name}: {str(e)}")
+        self.logger.info(f"🚀 LLM SERVICE: map_to_mcode called for {self.model_name} with text length {len(clinical_text)}")
 
-                # Provide specific guidance based on error type
-                if "not found in config" in str(e):
-                    self.logger.warning(f"  Model '{self.model_name}' not found in configuration")
-                elif "Environment variable" in str(e):
-                    self.logger.warning(f"  Missing required environment variable for {self.model_name}")
-                else:
-                    self.logger.warning("  Check model configuration and environment variables")
+        # Check if API key is available - STRICT: No fallback, fail fast
+        api_key = self.config.get_api_key(self.model_name)
+        if not api_key:
+            raise ValueError(f"No API key available for {self.model_name}")
+        self.logger.info(f"✅ API key found for {self.model_name}")
 
-                return []
+        # Get LLM config from existing file-based system - STRICT: No fallback, fail fast
+        llm_config = self.llm_loader.get_llm(self.model_name)
 
-            # Get LLM config from existing file-based system
-            llm_config = self.llm_loader.get_llm(self.model_name)
+        # Get prompt from existing file-based system - STRICT: No fallback, fail fast
+        prompt = self.prompt_loader.get_prompt(
+            self.prompt_name,
+            clinical_text=clinical_text
+        )
 
-            # Get prompt from existing file-based system
-            prompt = self.prompt_loader.get_prompt(
-                self.prompt_name,
-                clinical_text=clinical_text
-            )
+        # Use enhanced caching for better performance
+        cache_key = self._enhanced_cache_key(clinical_text)
 
-            # Use enhanced caching for better performance
-            cache_key = self._enhanced_cache_key(clinical_text)
+        llm_cache = self.api_manager.get_cache("llm")
+        cached_result = llm_cache.get_by_key(cache_key)
 
-            llm_cache = self.api_manager.get_cache("llm")
-            cached_result = llm_cache.get_by_key(cache_key)
+        if cached_result is not None:
+            self.logger.info(f"💾 CACHE HIT: {self.model_name}")
+            return [McodeElement(**elem) for elem in cached_result.get("mcode_elements", [])]
 
-            if cached_result is not None:
-                self.logger.info(f"💾 CACHE HIT: {self.model_name}")
-                self._update_performance_stats(0.0, cache_hit=True, tokens_used=0, error=False)
-                return [McodeElement(**elem) for elem in cached_result.get("mcode_elements", [])]
+        # Make async LLM call using existing infrastructure - STRICT: No fallback, fail fast
+        self.logger.debug(f"🔍 CACHE MISS → 🚀 ASYNC API CALL: {self.model_name}")
+        response_json = await self._call_llm_api_async(prompt, llm_config)
 
-            # Make async LLM call using existing infrastructure
-            self.logger.debug(f"🔍 CACHE MISS → 🚀 ASYNC API CALL: {self.model_name}")
-            response_json = await self._call_llm_api_async(prompt, llm_config)
+        # Parse response using existing models - STRICT: No fallback, fail fast
+        mcode_elements = self._parse_llm_response(response_json)
 
-            # Parse response using existing models
-            mcode_elements = self._parse_llm_response(response_json)
+        # Cache result using existing API manager
+        cache_data = {"mcode_elements": [elem.model_dump() for elem in mcode_elements], "response_json": response_json}
+        llm_cache.set_by_key(cache_data, cache_key)
+        self.logger.debug(f"💾 CACHE SAVED: {self.model_name}")
 
-            # Cache result using existing API manager
-            cache_data = {"mcode_elements": [elem.model_dump() for elem in mcode_elements], "response_json": response_json}
-            llm_cache.set_by_key(cache_data, cache_key)
-            self.logger.debug(f"💾 CACHE SAVED: {self.model_name}")
+        # Skip cleanup for now to avoid async issues
+        pass
 
-            # Periodic cleanup of old clients
-            await self._cleanup_old_async_clients()
-
-            return mcode_elements
-
-        except Exception as e:
-            self.logger.error(f"❌ LLM mapping failed for {self.model_name}: {str(e)}")
-            return []
+        return mcode_elements
 
     async def _call_llm_api_async(self, prompt: str, llm_config) -> Dict[str, Any]:
         """
@@ -170,8 +137,17 @@ class LLMService:
             temperature = self.config.get_temperature(self.model_name)
             max_tokens = self.config.get_max_tokens(self.model_name)
 
-            # Use cached async client for connection reuse (optimization)
-            client = await self._get_cached_async_client(self.model_name)
+            # Create fresh async client for each request (simple pattern)
+            api_key = self.config.get_api_key(self.model_name)
+            base_url = self.config.get_base_url(self.model_name)
+
+            import openai
+            client = openai.AsyncOpenAI(
+                base_url=base_url,
+                api_key=api_key,
+                max_retries=0,
+                timeout=self.config.get_timeout(self.model_name)
+            )
 
             # Make async API call with aggressive rate limiting handling
             response = await self._make_async_api_call_with_rate_limiting(client, llm_config, prompt, temperature, max_tokens)
@@ -273,14 +249,8 @@ class LLMService:
                 raise ValueError(f"Model {self.model_name} returned invalid JSON: {str(e)} | Response: {response_content[:200]}...") from e
 
         except Exception as e:
-            error_occurred = True
             self.logger.error(f"💥 LLM API call failed for {self.model_name}: {str(e)}")
             raise
-        finally:
-            # Update performance statistics
-            if 'start_time' in locals() or 'start_time' in globals():
-                request_time = time.time() - start_time
-                self._update_performance_stats(request_time, cache_hit=False, tokens_used=tokens_used, error=error_occurred)
 
     async def _make_async_api_call_with_rate_limiting(self, client, llm_config, prompt: str, temperature: float, max_tokens: int):
         """
@@ -329,12 +299,16 @@ class LLMService:
             try:
                 if attempt == 0:
                     self.logger.info(f"🚀 API CALL: {llm_config.model_identifier}")
+                    # DEBUG: Direct print for immediate visibility
+                    print(f"DEBUG - API CALL STARTED: {llm_config.model_identifier}", flush=True)
                 else:
                     self.logger.warning(f"🔄 RETRY {attempt}/{max_retries}: {llm_config.model_identifier}")
+                    print(f"DEBUG - API RETRY {attempt}: {llm_config.model_identifier}", flush=True)
 
                 response = await client.chat.completions.create(**call_params)
                 api_time = time.time() - start_time
                 self.logger.info(f"✅ API RESPONSE: {llm_config.model_identifier} ({api_time:.2f}s)")
+                print(f"DEBUG - API RESPONSE: {llm_config.model_identifier} ({api_time:.2f}s)", flush=True)
                 return response
 
             except Exception as e:
@@ -443,12 +417,18 @@ class LLMService:
         """
         elements = []
 
-        # Try different response formats
-        mcode_data = (
-            response_json.get("mcode_mappings") or
-            response_json.get("mappings") or
-            []
-        )
+        # Handle the actual LLM response format from cache
+        # LLM returns: {"mcode_elements": [...], "response_json": {...}}
+        if "mcode_elements" in response_json:
+            mcode_data = response_json["mcode_elements"]
+        else:
+            # Fallback to other formats for compatibility
+            mcode_data = (
+                response_json.get("mcode_mappings") or
+                response_json.get("mappings") or
+                response_json.get("mapped_elements") or
+                []
+            )
 
         # If no mappings found, try the direct format
         if not mcode_data and "element_type" in response_json:
@@ -456,110 +436,30 @@ class LLMService:
 
         for item in mcode_data:
             try:
-                # Let Pydantic handle validation and type conversion
-                element = McodeElement(**item)
+                # Handle the prompt's expected format with nested code object
+                if "mcode_element" in item and "code" in item:
+                    # Transform from prompt format to Pydantic model format
+                    transformed_item = {
+                        "element_type": item["mcode_element"],
+                        "code": item["code"].get("code") if isinstance(item["code"], dict) else None,
+                        "display": item["code"].get("display") if isinstance(item["code"], dict) else None,
+                        "system": item["code"].get("system") if isinstance(item["code"], dict) else None,
+                        "confidence_score": item.get("mapping_confidence"),
+                        "evidence_text": item.get("source_text_fragment")
+                    }
+                    element = McodeElement(**transformed_item)
+                else:
+                    # Try direct mapping for other formats
+                    element = McodeElement(**item)
+
                 elements.append(element)
             except Exception as e:
                 self.logger.warning(f"Failed to create McodeElement: {e}")
+                self.logger.warning(f"Problematic item: {item}")
                 continue
 
         return elements
 
-    def _get_cached_client(self, model_name: str):
-        """
-        Get cached OpenAI client with connection reuse for performance optimization.
-
-        Args:
-            model_name: Name of the model to get client for
-
-        Returns:
-            Cached OpenAI client instance
-        """
-        import openai
-
-        cache_key = f"{model_name}_{self.config.get_base_url(model_name)}"
-        current_time = time.time()
-
-        # Check if we have a cached client and it's still fresh (< 5 minutes old)
-        if (cache_key in self._client_cache and
-            cache_key in self._last_client_use and
-            current_time - self._last_client_use[cache_key] < 300):  # 5 minutes
-
-            self.logger.debug(f"Reusing cached client for {model_name}")
-            self._last_client_use[cache_key] = current_time
-            return self._client_cache[cache_key]
-
-        # Create new client
-        try:
-            api_key = self.config.get_api_key(model_name)
-            base_url = self.config.get_base_url(model_name)
-
-            client = openai.OpenAI(
-                base_url=base_url,
-                api_key=api_key,
-                # Disable built-in retries since we handle them at application level
-                max_retries=0,
-                timeout=self.config.get_timeout(model_name)
-            )
-
-            # Cache the client
-            self._client_cache[cache_key] = client
-            self._last_client_use[cache_key] = current_time
-
-            self.logger.debug(f"Created new cached client for {model_name}")
-            return client
-
-        except Exception as e:
-            self.logger.error(f"Failed to create client for {model_name}: {e}")
-            raise
-
-    async def _get_cached_async_client(self, model_name: str):
-        """
-        Get cached async OpenAI client with connection reuse for performance optimization.
-
-        Args:
-            model_name: Name of the model to get client for
-
-        Returns:
-            Cached async OpenAI client instance
-        """
-        import openai
-
-        cache_key = f"async_{model_name}_{self.config.get_base_url(model_name)}"
-        current_time = time.time()
-
-        # Check if we have a cached async client and it's still fresh (< 5 minutes old)
-        if (cache_key in self._async_client_cache and
-            cache_key in self._last_async_client_use and
-            current_time - self._last_async_client_use[cache_key] < 300):  # 5 minutes
-
-            self.logger.debug(f"Reusing cached async client for {model_name}")
-            self._last_async_client_use[cache_key] = current_time
-            return self._async_client_cache[cache_key]
-
-        # Create new async client
-        try:
-            api_key = self.config.get_api_key(model_name)
-            base_url = self.config.get_base_url(model_name)
-
-            client = openai.AsyncOpenAI(
-                base_url=base_url,
-                api_key=api_key,
-                # Disable built-in retries since we handle them at application level
-                max_retries=0,
-                timeout=self.config.get_timeout(model_name)
-            )
-
-            # Cache the async client
-            self._async_client_cache[cache_key] = client
-            self._last_async_client_use[cache_key] = current_time
-
-            self.logger.debug(f"Created new cached async client for {model_name}")
-            return client
-
-        except Exception as e:
-            self.logger.error(f"Failed to create async client for {model_name}: {e}")
-            raise
 
 
     def _enhanced_cache_key(self, clinical_text: str) -> Dict[str, Any]:
@@ -623,137 +523,3 @@ class LLMService:
             fingerprint_parts.append("long")
 
         return "_".join(fingerprint_parts) if fingerprint_parts else "generic"
-
-    def get_performance_stats(self) -> Dict[str, Any]:
-        """
-        Get performance statistics for monitoring and optimization.
-
-        Returns:
-            Dictionary with performance metrics
-        """
-        stats = self._performance_stats.copy()
-
-        # Calculate cache hit rate
-        total_cache_requests = stats["cache_hits"] + stats["cache_misses"]
-        if total_cache_requests > 0:
-            stats["cache_hit_rate"] = stats["cache_hits"] / total_cache_requests
-        else:
-            stats["cache_hit_rate"] = 0.0
-
-        # Calculate error rate
-        if stats["total_requests"] > 0:
-            stats["error_rate"] = stats["error_count"] / stats["total_requests"]
-        else:
-            stats["error_rate"] = 0.0
-
-        # Add connection pool stats
-        stats["active_clients"] = len(self._client_cache)
-        stats["oldest_client_age"] = self._get_oldest_client_age()
-
-        return stats
-
-    def _get_oldest_client_age(self) -> float:
-        """Get age of oldest cached client in seconds."""
-        if not self._last_client_use:
-            return 0.0
-
-        current_time = time.time()
-        oldest_age = current_time - min(self._last_client_use.values())
-        return oldest_age
-
-    def _cleanup_old_clients(self, max_age_seconds: int = 600) -> int:
-        """
-        Clean up old cached clients to prevent memory leaks.
-
-        Args:
-            max_age_seconds: Maximum age for cached clients (default: 10 minutes)
-
-        Returns:
-            Number of clients cleaned up
-        """
-        current_time = time.time()
-        cleanup_count = 0
-
-        # Find old clients
-        old_clients = []
-        for cache_key, last_use in self._last_client_use.items():
-            if current_time - last_use > max_age_seconds:
-                old_clients.append(cache_key)
-
-        # Remove old clients
-        for cache_key in old_clients:
-            if cache_key in self._client_cache:
-                del self._client_cache[cache_key]
-            if cache_key in self._last_client_use:
-                del self._last_client_use[cache_key]
-            cleanup_count += 1
-
-        if cleanup_count > 0:
-            self.logger.info(f"Cleaned up {cleanup_count} old cached clients")
-
-        return cleanup_count
-
-    def _cleanup_old_async_clients(self, max_age_seconds: int = 600) -> int:
-        """
-        Clean up old cached async clients to prevent memory leaks.
-        Simple synchronous cleanup - just remove from cache.
-
-        Args:
-            max_age_seconds: Maximum age for cached clients (default: 10 minutes)
-
-        Returns:
-            Number of clients cleaned up
-        """
-        current_time = time.time()
-        cleanup_count = 0
-
-        # Find old async clients
-        old_clients = []
-        for cache_key, last_use in self._last_async_client_use.items():
-            if current_time - last_use > max_age_seconds:
-                old_clients.append(cache_key)
-
-        # Remove old async clients from cache (simple cleanup)
-        for cache_key in old_clients:
-            if cache_key in self._async_client_cache:
-                del self._async_client_cache[cache_key]
-            if cache_key in self._last_async_client_use:
-                del self._last_async_client_use[cache_key]
-            cleanup_count += 1
-
-        if cleanup_count > 0:
-            self.logger.info(f"Cleaned up {cleanup_count} old cached async clients")
-
-        return cleanup_count
-
-    def _update_performance_stats(self, request_time: float, cache_hit: bool, tokens_used: int, error: bool):
-        """
-        Update performance statistics.
-
-        Args:
-            request_time: Time taken for the request
-            cache_hit: Whether this was a cache hit
-            tokens_used: Number of tokens used
-            error: Whether an error occurred
-        """
-        self._performance_stats["total_requests"] += 1
-        self._performance_stats["total_tokens"] += tokens_used
-
-        if cache_hit:
-            self._performance_stats["cache_hits"] += 1
-        else:
-            self._performance_stats["cache_misses"] += 1
-
-        if error:
-            self._performance_stats["error_count"] += 1
-
-        # Update rolling average response time
-        current_avg = self._performance_stats["avg_response_time"]
-        total_requests = self._performance_stats["total_requests"]
-
-        if total_requests == 1:
-            self._performance_stats["avg_response_time"] = request_time
-        else:
-            self._performance_stats["avg_response_time"] = (
-                (current_avg * (total_requests - 1)) + request_time
-            ) / total_requests

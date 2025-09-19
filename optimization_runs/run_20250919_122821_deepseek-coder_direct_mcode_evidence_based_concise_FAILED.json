@@ -1,0 +1,9 @@
+{
+  "combination": {
+    "prompt": "direct_mcode_evidence_based_concise",
+    "model": "deepseek-coder"
+  },
+  "success": false,
+  "error": "All 5 trials failed: [\"object int can't be used in 'await' expression\", \"object int can't be used in 'await' expression\", \"object int can't be used in 'await' expression\"]...",
+  "timestamp": "2025-09-19T12:28:21.953547"
+}

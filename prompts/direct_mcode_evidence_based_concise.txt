@@ -39,30 +39,54 @@ You are an expert clinical data analyst specializing in precise mCODE (minimal C
 ## OUTPUT FORMAT:
 ```json
 {
-  "mapped_elements": [
+  "mcode_elements": [
     {
-      "resourceType": "Condition|Observation|MedicationStatement|Patient",
-      "mcode_element": "CancerCondition|TNMStage|CancerTreatment|etc",
-      "code": {
-        "system": "http://snomed.info/sct",
-        "code": "SNOMED_CODE",
-        "display": "Display_Name"
-      },
-      "value": "Mapped_Value",
-      "mapping_confidence": 0.0-1.0,
-      "source_text_fragment": "EXACT quoted text from source",
-      "mapping_rationale": "Brief justification"
+      "element_type": "CancerCondition",
+      "code": "254837009",
+      "display": "Malignant neoplasm of breast",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "Stage IV HER2 positive breast cancer"
+    },
+    {
+      "element_type": "CancerTreatment",
+      "code": "387172002",
+      "display": "Trastuzumab",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "HER2-targeted monoclonal antibody therapy"
     }
   ]
 }
 ```
 
+## SPECIFIC mCODE ELEMENTS TO LOOK FOR:
+
+### CancerCondition
+- Primary cancer diagnosis (e.g., "breast cancer", "lung carcinoma")
+- Cancer staging (e.g., "Stage IV", "T3N1M0")
+- Histology/morphology (e.g., "adenocarcinoma", "ductal carcinoma")
+
+### CancerTreatment
+- Chemotherapy drugs (e.g., "paclitaxel", "doxorubicin")
+- Targeted therapies (e.g., "trastuzumab", "pertuzumab")
+- Immunotherapy (e.g., "checkpoint inhibitors")
+- Radiation therapy
+- Surgery types (e.g., "lumpectomy", "mastectomy")
+
+### Patient Characteristics
+- Age ranges (e.g., "18-75 years")
+- Sex/gender requirements
+- Performance status
+- Menopausal status
+
 ## INSTRUCTIONS:
 1. Read the clinical text carefully
-2. Identify explicit mCODE-relevant information
-3. Map only what is clearly stated
+2. Look for explicit mentions of cancer conditions, treatments, and patient characteristics
+3. Map only what is clearly stated with direct evidence
 4. Provide exact source text fragments
 5. Assign realistic confidence scores
 6. Generate concise, accurate mappings
+7. If no mCODE elements are found, return an empty array
 
 Now process the following clinical trial text:
