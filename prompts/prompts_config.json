@@ -89,6 +89,14 @@
         "default": true,
         "description": "Evidence-based mCODE mapping with integrated SNOMED CT code reference table for accurate coding",
         "compatible_pipelines": ["McodePipeline"]
+      },
+      {
+        "name": "direct_mcode_clinical_trials",
+        "prompt_type": "DIRECT_MCODE",
+        "prompt_file": "direct_mcode/direct_mcode_clinical_trials.txt",
+        "default": false,
+        "description": "Clinical trial-specific mCODE mapping optimized for structured trial data",
+        "compatible_pipelines": ["McodePipeline"]
       }
     ]
   }

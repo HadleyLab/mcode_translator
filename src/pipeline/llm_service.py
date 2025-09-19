@@ -108,8 +108,6 @@ class LLMService:
             if cached_result is not None:
                 self.logger.info(f"💾 CACHE HIT: {self.model_name}")
                 self._update_performance_stats(0.0, cache_hit=True, tokens_used=0, error=False)
-                # Log the cached response for clarity
-                self.logger.debug(f"  Cached response: {cached_result.get('response_json', {})}")
                 return [McodeElement(**elem) for elem in cached_result.get("mcode_elements", [])]
 
             # Make LLM call using existing infrastructure
@@ -150,6 +148,19 @@ class LLMService:
         error_occurred = False
 
         try:
+            # Check API key availability before making any calls
+            try:
+                api_key = self.config.get_api_key(self.model_name)
+                if not api_key:
+                    self.logger.warning(f"No API key available for {self.model_name} - skipping API call")
+                    raise ValueError(f"API key not configured for model {self.model_name}")
+            except Exception as e:
+                if "not found in config" in str(e) or "API key not configured" in str(e):
+                    self.logger.warning(f"API key configuration issue for {self.model_name}: {e}")
+                    raise ValueError(f"API key not configured for model {self.model_name}")
+                else:
+                    raise
+
             # Use existing config for API details
             temperature = self.config.get_temperature(self.model_name)
             max_tokens = self.config.get_max_tokens(self.model_name)
@@ -400,7 +411,7 @@ class LLMService:
 
     def _parse_llm_response(self, response_json: Dict[str, Any]) -> List[McodeElement]:
         """
-        Parse LLM response into McodeElement instances.
+        Parse LLM response into McodeElement instances using Pydantic validation.
 
         Args:
             response_json: Raw LLM response
@@ -410,56 +421,24 @@ class LLMService:
         """
         elements = []
 
-        # Handle different response formats from LLM
-        mcode_data = response_json.get("mcode_mappings", response_json.get("mappings", []))
+        # Try different response formats
+        mcode_data = (
+            response_json.get("mcode_mappings") or
+            response_json.get("mappings") or
+            []
+        )
+
+        # If no mappings found, try the direct format
+        if not mcode_data and "element_type" in response_json:
+            mcode_data = [response_json]
 
         for item in mcode_data:
             try:
-                # Map LLM response fields to McodeElement expected fields
-                mapped_item = {}
-
-                # Map element_type (required field)
-                if "mcode_element" in item:
-                    mapped_item["element_type"] = item["mcode_element"]
-                elif "element_type" in item:
-                    mapped_item["element_type"] = item["element_type"]
-                else:
-                    # Skip items without element type
-                    self.logger.warning(f"Skipping mCODE element without element_type: {item}")
-                    continue
-
-                # Map code field - handle nested code structure
-                if "code" in item:
-                    if isinstance(item["code"], dict):
-                        # Extract code value from nested structure
-                        mapped_item["code"] = item["code"].get("code")
-                        # Also extract display and system if available
-                        if "display" in item["code"]:
-                            mapped_item["display"] = item["code"]["display"]
-                        if "system" in item["code"]:
-                            mapped_item["system"] = item["code"]["system"]
-                    else:
-                        # Direct code value
-                        mapped_item["code"] = str(item["code"])
-
-                # Map confidence_score
-                if "mapping_confidence" in item:
-                    mapped_item["confidence_score"] = item["mapping_confidence"]
-                elif "confidence_score" in item:
-                    mapped_item["confidence_score"] = item["confidence_score"]
-
-                # Map evidence_text
-                if "source_text_fragment" in item:
-                    mapped_item["evidence_text"] = item["source_text_fragment"]
-                elif "evidence_text" in item:
-                    mapped_item["evidence_text"] = item["evidence_text"]
-
-                # Create McodeElement with mapped fields
-                element = McodeElement(**mapped_item)
+                # Let Pydantic handle validation and type conversion
+                element = McodeElement(**item)
                 elements.append(element)
-
             except Exception as e:
-                self.logger.warning(f"Failed to parse mCODE element: {e} | Item: {item}")
+                self.logger.warning(f"Failed to create McodeElement: {e}")
                 continue
 
         return elements

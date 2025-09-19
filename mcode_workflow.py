@@ -81,9 +81,9 @@ print("Using 15 concurrent workers for maximum speed")
 # Run the optimization
 print()
 print("🚀 Starting optimization...")
+print("💡 Note: Using default trials file. Specify --trials-file to use a different file.")
 result = subprocess.run([
     "python", "-m", "src.cli.trials_optimizer",
-    "--trials-file", "raw_trials.ndjson",
     "--cv-folds", "3",
     "--prompts", PROMPTS_STR,
     "--models", MODELS_STR,
