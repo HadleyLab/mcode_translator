@@ -51,9 +51,9 @@ class McodePipeline:
             self.config, self.model_name, self.prompt_name
         )
 
-    def process(self, trial_data: Dict[str, Any]) -> PipelineResult:
+    async def process(self, trial_data: Dict[str, Any]) -> PipelineResult:
         """
-        Process clinical trial data with ultra-lean data flow.
+        Process clinical trial data with ultra-lean async data flow.
 
         Args:
             trial_data: Raw clinical trial data dictionary
@@ -69,11 +69,11 @@ class McodePipeline:
             # Stage 1: Document processing (existing component)
             sections = self.document_ingestor.ingest_clinical_trial_document(trial_data)
 
-            # Stage 2: LLM processing (existing utils)
+            # Stage 2: Async LLM processing (existing utils)
             all_elements = []
             for section in sections:
                 if section.content and section.content.strip():
-                    elements = self.llm_service.map_to_mcode(section.content)
+                    elements = await self.llm_service.map_to_mcode(section.content)
                     all_elements.extend(elements)
 
             # Stage 3: Return existing PipelineResult (no wrapper)
