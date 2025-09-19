@@ -629,6 +629,8 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             processing_times = [m.get("processing_time_seconds", 0) for m in all_perf_metrics]
             tokens_list = [m.get("tokens_used", 0) for m in all_perf_metrics]
             costs_list = [m.get("estimated_cost_usd", 0) for m in all_perf_metrics]
+            elements_per_second_list = [m.get("elements_per_second", 0) for m in all_perf_metrics]
+            tokens_per_second_list = [m.get("tokens_per_second", 0) for m in all_perf_metrics]
 
             processing_time_std = (sum((t - avg_processing_time) ** 2 for t in processing_times) / len(processing_times)) ** 0.5 if processing_times else 0
             tokens_std = (sum((t - avg_tokens_used) ** 2 for t in tokens_list) / len(tokens_list)) ** 0.5 if tokens_list else 0
@@ -636,6 +638,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         else:
             avg_processing_time = avg_tokens_used = avg_cost = avg_elements_per_second = avg_tokens_per_second = 0
             processing_time_std = tokens_std = cost_std = 0
+            processing_times = tokens_list = costs_list = elements_per_second_list = tokens_per_second_list = []
 
         summary = {
             "success": True,
@@ -671,9 +674,9 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             "token_usage": {
                 "mean_tokens": avg_tokens_used,
                 "std_tokens": tokens_std,
-                "total_measurements": len(tokens_used_list),
-                "min_tokens": min(tokens_used_list) if tokens_used_list else 0,
-                "max_tokens": max(tokens_used_list) if tokens_used_list else 0
+                "total_measurements": len(tokens_list),
+                "min_tokens": min(tokens_list) if tokens_list else 0,
+                "max_tokens": max(tokens_list) if tokens_list else 0
             },
             "cost_analysis": {
                 "mean_cost_usd": avg_cost,
