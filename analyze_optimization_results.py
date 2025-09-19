@@ -2,21 +2,16 @@
 """
 Analyze Optimization Results - Generate comprehensive performance analysis of mCODE models.
 
-This script analyzes the optimization runs saved in the optimization_runs/ directory
-and generates detailed performance metrics for each model with respect to mCODE generation.
+This script analyzes optimization runs and generates detailed performance metrics including
+time, token usage, cost analysis, and mCODE generation quality using the new PerformanceMetrics system.
 """
 
 import json
-import os
 import statistics
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy.stats import ttest_ind
+from typing import Any, Dict, List
 
 
 class OptimizationResultsAnalyzer:
@@ -96,32 +91,31 @@ class OptimizationResultsAnalyzer:
         return analysis
 
     def _analyze_model_results(self, model: str, results: List[Dict]) -> Dict[str, Any]:
-        """Analyze results for a specific model."""
+        """Analyze results for a specific model using new PerformanceMetrics."""
         if not results:
             return {'error': 'No results available'}
 
-        # Extract metrics
+        # Extract metrics using new PerformanceMetrics system
         cv_scores = []
         element_counts = []
-        execution_times = []
+        performance_data = []
         mcode_elements = []
 
         for result in results:
             cv_scores.append(result.get('cv_average_score', 0))
             element_counts.append(result.get('total_elements', 0))
 
+            # Extract performance metrics
+            perf_metrics = result.get('performance_metrics', {})
+            if perf_metrics:
+                performance_data.append(perf_metrics)
+
             # Extract mCODE elements for detailed analysis
             predicted_mcode = result.get('predicted_mcode', [])
             mcode_elements.extend(predicted_mcode)
 
-            # Extract execution time if available
-            timestamp = result.get('timestamp')
-            if timestamp:
-                try:
-                    dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-                    execution_times.append(dt.timestamp())
-                except:
-                    pass
+        # Calculate performance statistics
+        perf_stats = self._calculate_performance_stats(performance_data)
 
         # Calculate statistics
         analysis = {
@@ -139,6 +133,7 @@ class OptimizationResultsAnalyzer:
                 'total': sum(element_counts)
             },
             'performance_rating': self._rate_performance(cv_scores),
+            'performance_metrics': perf_stats,
             'mcode_analysis': self._analyze_mcode_elements(mcode_elements)
         }
 
@@ -149,9 +144,18 @@ class OptimizationResultsAnalyzer:
         if not results:
             return {'error': 'No results available'}
 
-        # Similar analysis as model results but for combinations
+        # Extract metrics
         cv_scores = [r.get('cv_average_score', 0) for r in results]
         element_counts = [r.get('total_elements', 0) for r in results]
+
+        # Extract performance metrics
+        performance_data = []
+        for r in results:
+            perf_metrics = r.get('performance_metrics', {})
+            if perf_metrics:
+                performance_data.append(perf_metrics)
+
+        perf_stats = self._calculate_performance_stats(performance_data)
 
         return {
             'runs_count': len(results),
@@ -162,6 +166,41 @@ class OptimizationResultsAnalyzer:
             'elements_generated': {
                 'mean': statistics.mean(element_counts) if element_counts else 0,
                 'total': sum(element_counts)
+            },
+            'performance_metrics': perf_stats
+        }
+
+    def _calculate_performance_stats(self, performance_data: List[Dict]) -> Dict[str, Any]:
+        """Calculate performance statistics from PerformanceMetrics data."""
+        if not performance_data:
+            return {}
+
+        # Extract metrics
+        processing_times = [p.get('processing_time_seconds', 0) for p in performance_data]
+        tokens_used = [p.get('tokens_used', 0) for p in performance_data]
+        costs = [p.get('estimated_cost_usd', 0) for p in performance_data]
+        elements_per_sec = [p.get('elements_per_second', 0) for p in performance_data]
+        tokens_per_sec = [p.get('tokens_per_second', 0) for p in performance_data]
+
+        return {
+            'processing_time': {
+                'mean': statistics.mean(processing_times) if processing_times else 0,
+                'std': statistics.stdev(processing_times) if len(processing_times) > 1 else 0,
+                'total': sum(processing_times)
+            },
+            'token_usage': {
+                'mean': statistics.mean(tokens_used) if tokens_used else 0,
+                'std': statistics.stdev(tokens_used) if len(tokens_used) > 1 else 0,
+                'total': sum(tokens_used)
+            },
+            'cost_analysis': {
+                'mean_usd': statistics.mean(costs) if costs else 0,
+                'std_usd': statistics.stdev(costs) if len(costs) > 1 else 0,
+                'total_usd': sum(costs)
+            },
+            'throughput': {
+                'elements_per_second': statistics.mean(elements_per_sec) if elements_per_sec else 0,
+                'tokens_per_second': statistics.mean(tokens_per_sec) if tokens_per_sec else 0
             }
         }
 
@@ -173,11 +212,21 @@ class OptimizationResultsAnalyzer:
         all_cv_scores = [r.get('cv_average_score', 0) for r in self.results]
         all_elements = [r.get('total_elements', 0) for r in self.results]
 
+        # Aggregate performance metrics
+        all_performance_data = []
+        for r in self.results:
+            perf_metrics = r.get('performance_metrics', {})
+            if perf_metrics:
+                all_performance_data.append(perf_metrics)
+
+        perf_stats = self._calculate_performance_stats(all_performance_data)
+
         return {
             'total_cv_scores': len(all_cv_scores),
             'average_cv_score': statistics.mean(all_cv_scores) if all_cv_scores else 0,
             'total_elements_generated': sum(all_elements),
-            'average_elements_per_run': statistics.mean(all_elements) if all_elements else 0
+            'average_elements_per_run': statistics.mean(all_elements) if all_elements else 0,
+            'performance_summary': perf_stats
         }
 
     def _analyze_mcode_elements(self, mcode_elements: List[Dict]) -> Dict[str, Any]:
@@ -299,57 +348,69 @@ class OptimizationResultsAnalyzer:
             cv_score = perf.get('cv_score', {})
             rating = perf.get('performance_rating', 'unknown')
             runs = perf.get('runs_count', 0)
+            perf_metrics = perf.get('performance_metrics', {})
 
             print(f"{i}. {model}")
             print(f"   📈 CV Score: {cv_score.get('mean', 0):.3f} ± {cv_score.get('std', 0):.3f}")
             print(f"   📊 Rating: {rating.upper()}")
             print(f"   🎯 Runs: {runs}")
+
+            # Show performance metrics if available
+            if perf_metrics:
+                processing = perf_metrics.get('processing_time', {})
+                tokens = perf_metrics.get('token_usage', {})
+                cost = perf_metrics.get('cost_analysis', {})
+
+                if processing.get('mean', 0) > 0:
+                    print(f"   ⏱️  Time: {processing.get('mean', 0):.2f}s")
+                if tokens.get('mean', 0) > 0:
+                    print(f"   🎫 Tokens: {tokens.get('mean', 0):.0f}")
+                if cost.get('mean_usd', 0) > 0:
+                    print(f"   💰 Cost: ${cost.get('mean_usd', 0):.4f}")
             print()
 
         # Overall metrics
         overall = analysis.get('overall_metrics', {})
+        perf_summary = overall.get('performance_summary', {})
+
         print("📈 OVERALL METRICS:")
         print("-" * 20)
         print(f"📈 Average CV Score: {overall.get('average_cv_score', 0):.3f}")
         print(f"🧬 Total Elements Generated: {overall.get('total_elements_generated', 0)}")
         print(f"📊 Average Elements per Run: {overall.get('average_elements_per_run', 0):.1f}")
 
+        # Performance metrics
+        if perf_summary:
+            processing = perf_summary.get('processing_time', {})
+            tokens = perf_summary.get('token_usage', {})
+            cost = perf_summary.get('cost_analysis', {})
+            throughput = perf_summary.get('throughput', {})
+
+            print("\n⚡ PERFORMANCE ANALYSIS:")
+            print("-" * 25)
+            print(f"⏱️  Avg Processing Time: {processing.get('mean', 0):.2f}s ± {processing.get('std', 0):.2f}s")
+            print(f"🎫 Avg Token Usage: {tokens.get('mean', 0):.0f} ± {tokens.get('std', 0):.0f}")
+            print(f"💰 Avg Cost: ${cost.get('mean_usd', 0):.4f} ± ${cost.get('std_usd', 0):.4f}")
+            print(f"🚀 Throughput: {throughput.get('elements_per_second', 0):.1f} elem/s, {throughput.get('tokens_per_second', 0):.0f} tok/s")
+
         # mCODE Analysis Summary
         print("\n🧬 MCODE ELEMENT ANALYSIS:")
         print("-" * 30)
 
-        # Get mCODE analysis from the best performing model
+        # Show best model mCODE analysis
         model_perf = analysis.get('model_performance', {})
         if model_perf:
             best_model = max(model_perf.items(), key=lambda x: x[1].get('cv_score', {}).get('mean', 0))
             mcode_analysis = best_model[1].get('mcode_analysis', {})
 
             if mcode_analysis and 'error' not in mcode_analysis:
-                print(f"📊 Total mCODE Elements: {mcode_analysis.get('total_elements', 0)}")
-                print(f"🎯 Unique Element Types: {mcode_analysis.get('diversity_metrics', {}).get('unique_element_types', 0)}")
-
-                # Element type distribution
-                element_types = mcode_analysis.get('element_types', {})
-                if element_types:
-                    print("🔍 Element Type Distribution:")
-                    sorted_types = sorted(element_types.items(), key=lambda x: x[1], reverse=True)
-                    for elem_type, count in sorted_types[:5]:  # Top 5
-                        percentage = (count / mcode_analysis['total_elements']) * 100
-                        print(f"   • {elem_type}: {count} ({percentage:.1f}%)")
-
-                # Quality metrics
                 quality = mcode_analysis.get('quality_metrics', {})
-                if quality:
-                    print("✨ Quality Metrics:")
-                    print(f"   • Code Coverage: {quality.get('code_coverage', 0):.1%}")
-                    print(f"   • Confidence Coverage: {quality.get('confidence_coverage', 0):.1%}")
-
-                # Confidence statistics
-                confidence_stats = mcode_analysis.get('confidence_stats', {})
-                if confidence_stats:
-                    print("🎯 Confidence Statistics:")
-                    print(f"   • Mean: {confidence_stats.get('mean', 0):.3f}")
-                    print(f"   • Range: {confidence_stats.get('min', 0):.3f} - {confidence_stats.get('max', 0):.3f}")
+                print("\n🧬 BEST MODEL MCODE ANALYSIS:")
+                print("-" * 30)
+                print(f"📊 Total Elements: {mcode_analysis.get('total_elements', 0)}")
+                print(f"🎯 Unique Types: {mcode_analysis.get('diversity_metrics', {}).get('unique_element_types', 0)}")
+                print(f"🔢 Code Coverage: {quality.get('code_coverage', 0):.1%}")
+                print(f"🎯 Confidence Coverage: {quality.get('confidence_coverage', 0):.1%}")
 
         print("\n✅ Comprehensive Analysis Complete!")
 

@@ -10,7 +10,9 @@
         "default_parameters": {
           "temperature": 0.1,
           "max_tokens": 8192
-        }
+        },
+        "timeout_seconds": 90,
+        "rate_limit_per_minute": 100
       },
       "deepseek-chat": {
         "provider": "deepseek",
@@ -20,7 +22,9 @@
         "default_parameters": {
           "temperature": 0.1,
           "max_tokens": 8192
-        }
+        },
+        "timeout_seconds": 90,
+        "rate_limit_per_minute": 100
       },
       "deepseek-reasoner": {
         "provider": "deepseek",
@@ -30,7 +34,9 @@
         "default_parameters": {
           "temperature": 0.1,
           "max_tokens": 8192
-        }
+        },
+        "timeout_seconds": 180,
+        "rate_limit_per_minute": 50
       },
       "gpt-4-turbo": {
         "provider": "openai",

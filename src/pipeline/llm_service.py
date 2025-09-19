@@ -498,7 +498,7 @@ class LLMService:
                 api_key=api_key,
                 # Disable built-in retries since we handle them at application level
                 max_retries=0,
-                timeout=60.0
+                timeout=self.config.get_timeout(model_name)
             )
 
             # Cache the client

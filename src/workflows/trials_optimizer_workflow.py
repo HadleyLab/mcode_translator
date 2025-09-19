@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional
 from src.pipeline import McodePipeline
 from src.utils.logging_config import get_logger
 from src.utils.concurrency import TaskQueue, create_task, get_optimizer_pool, create_task_queue_from_args
-from src.utils.metrics import BenchmarkMetrics
+from src.utils.metrics import BenchmarkMetrics, PerformanceMetrics
 
 from .base_workflow import BaseWorkflow, WorkflowResult
 
@@ -344,6 +344,10 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         prompt_name = combination["prompt"]
         model_name = combination["model"]
 
+        # Initialize performance tracking
+        perf_metrics = PerformanceMetrics()
+        perf_metrics.start_tracking()
+
         try:
             # Initialize pipeline with this combination
             pipeline = McodePipeline(prompt_name=prompt_name, model_name=model_name)
@@ -353,19 +357,29 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
             # Calculate quality metrics
             predicted = [elem.model_dump() for elem in result.mcode_mappings]
+            num_elements = len(predicted)
+
+            # Get token usage from global tracker
+            from src.utils.token_tracker import global_token_tracker
+            token_usage = global_token_tracker.get_usage_summary()
+            tokens_used = token_usage.get("total_tokens", 0) if token_usage else 0
+
+            # Stop performance tracking
+            perf_metrics.stop_tracking(tokens_used=tokens_used, elements_processed=num_elements)
 
             # Use number of mCODE elements as basic score (more elements = better performance)
-            # Normalize to 0-1 scale (assuming ~10 elements is good performance)
-            num_elements = len(predicted)
             score = min(num_elements / 10.0, 1.0)  # Cap at 1.0
 
-            # For now, use element count as a proxy for quality metrics
-            # In a full implementation, this would compare against ground truth
+            # Get performance metrics
+            perf_data = perf_metrics.get_metrics()
+
+            # Enhanced quality metrics
             metrics = {
-                "precision": score,  # Use score as proxy for precision
-                "recall": score,     # Use score as proxy for recall
+                "precision": score,
+                "recall": score,
                 "f1_score": score,
-                "element_count": num_elements
+                "element_count": num_elements,
+                **perf_data  # Include all performance metrics
             }
 
             return {
@@ -373,21 +387,26 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 "combo_idx": combo_idx,
                 "fold": fold,
                 "trial_score": score,
-                "score": score,  # For aggregation
-                "quality_metrics": metrics,  # Store detailed metrics
-                "predicted_mcode": predicted,  # Save processed mcode elements
+                "score": score,
+                "quality_metrics": metrics,
+                "predicted_mcode": predicted,
+                "performance_metrics": perf_metrics.to_dict(),
                 "success": True,
                 "timestamp": datetime.now().isoformat(),
             }
 
         except Exception as e:
+            # Stop tracking even on failure
+            perf_metrics.stop_tracking(tokens_used=0, elements_processed=0)
+
             return {
                 "combination": combination,
                 "combo_idx": combo_idx,
                 "fold": fold,
                 "success": False,
                 "error": str(e),
-                "score": 0.0,  # Failed trials get 0 score
+                "score": 0.0,
+                "performance_metrics": perf_metrics.to_dict(),
                 "timestamp": datetime.now().isoformat(),
             }
 
@@ -592,6 +611,32 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         recall_std = (sum((r - avg_recall) ** 2 for r in recall_scores) / len(recall_scores)) ** 0.5 if recall_scores else 0
         f1_std = (sum((f - avg_f1) ** 2 for f in f1_scores) / len(f1_scores)) ** 0.5 if f1_scores else 0
 
+        # Aggregate performance metrics using PerformanceMetrics class
+        all_perf_metrics = []
+        for r in successful_runs:
+            if "performance_metrics" in r:
+                all_perf_metrics.append(r["performance_metrics"])
+
+        # Calculate aggregated performance statistics
+        if all_perf_metrics:
+            avg_processing_time = sum(m.get("processing_time_seconds", 0) for m in all_perf_metrics) / len(all_perf_metrics)
+            avg_tokens_used = sum(m.get("tokens_used", 0) for m in all_perf_metrics) / len(all_perf_metrics)
+            avg_cost = sum(m.get("estimated_cost_usd", 0) for m in all_perf_metrics) / len(all_perf_metrics)
+            avg_elements_per_second = sum(m.get("elements_per_second", 0) for m in all_perf_metrics) / len(all_perf_metrics)
+            avg_tokens_per_second = sum(m.get("tokens_per_second", 0) for m in all_perf_metrics) / len(all_perf_metrics)
+
+            # Calculate standard deviations
+            processing_times = [m.get("processing_time_seconds", 0) for m in all_perf_metrics]
+            tokens_list = [m.get("tokens_used", 0) for m in all_perf_metrics]
+            costs_list = [m.get("estimated_cost_usd", 0) for m in all_perf_metrics]
+
+            processing_time_std = (sum((t - avg_processing_time) ** 2 for t in processing_times) / len(processing_times)) ** 0.5 if processing_times else 0
+            tokens_std = (sum((t - avg_tokens_used) ** 2 for t in tokens_list) / len(tokens_list)) ** 0.5 if tokens_list else 0
+            cost_std = (sum((c - avg_cost) ** 2 for c in costs_list) / len(costs_list)) ** 0.5 if costs_list else 0
+        else:
+            avg_processing_time = avg_tokens_used = avg_cost = avg_elements_per_second = avg_tokens_per_second = 0
+            processing_time_std = tokens_std = cost_std = 0
+
         summary = {
             "success": True,
             "total_runs": len(all_results),
@@ -614,6 +659,39 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 "mean": avg_f1,
                 "std": f1_std,
                 "count": len(f1_scores)
+            },
+            # Time and token analysis
+            "processing_time": {
+                "mean_seconds": avg_processing_time,
+                "std_seconds": processing_time_std,
+                "total_measurements": len(processing_times),
+                "min_seconds": min(processing_times) if processing_times else 0,
+                "max_seconds": max(processing_times) if processing_times else 0
+            },
+            "token_usage": {
+                "mean_tokens": avg_tokens_used,
+                "std_tokens": tokens_std,
+                "total_measurements": len(tokens_used_list),
+                "min_tokens": min(tokens_used_list) if tokens_used_list else 0,
+                "max_tokens": max(tokens_used_list) if tokens_used_list else 0
+            },
+            "cost_analysis": {
+                "mean_cost_usd": avg_cost,
+                "std_cost_usd": cost_std,
+                "total_measurements": len(costs_list),
+                "min_cost_usd": min(costs_list) if costs_list else 0,
+                "max_cost_usd": max(costs_list) if costs_list else 0,
+                "total_estimated_cost_usd": sum(costs_list) if costs_list else 0
+            },
+            "performance_metrics": {
+                "elements_per_second": {
+                    "mean": avg_elements_per_second,
+                    "total_measurements": len(elements_per_second_list)
+                },
+                "tokens_per_second": {
+                    "mean": avg_tokens_per_second,
+                    "total_measurements": len(tokens_per_second_list)
+                }
             },
             "best_result": best_result,
             "all_results": all_results,

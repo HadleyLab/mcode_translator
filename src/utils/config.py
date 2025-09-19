@@ -58,6 +58,20 @@ class Config:
         """Get request timeout in seconds"""
         return self.cache_config["request"]["timeout_seconds"]
 
+    def get_timeout(self, model_name: str) -> int:
+        """
+        Get timeout for a specific model, with a fallback to a default value.
+
+        Args:
+            model_name: The name of the model.
+
+        Returns:
+            The timeout in seconds.
+        """
+        model_config = self.get_llm_config(model_name)
+        # Fallback to a default of 60 seconds if not specified for the model
+        return getattr(model_config, 'timeout_seconds', 60) or 60
+
     def get_clinical_trials_base_url(self) -> str:
         """Get clinical trials API base URL"""
         return self.apis_config["apis"]["clinical_trials"]["base_url"]

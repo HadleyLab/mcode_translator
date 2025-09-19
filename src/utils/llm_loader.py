@@ -29,6 +29,8 @@ class LLMConfig:
     api_key_env_var: str = ""
     base_url: str = ""
     default_parameters: Dict[str, Any] = field(default_factory=dict)
+    timeout_seconds: int = 60
+    rate_limit_per_minute: int = 100
     default: bool = False
 
     @property
@@ -47,6 +49,8 @@ class LLMConfig:
             "api_key_env_var": self.api_key_env_var,
             "base_url": self.base_url,
             "default_parameters": self.default_parameters,
+            "timeout_seconds": self.timeout_seconds,
+            "rate_limit_per_minute": self.rate_limit_per_minute,
             "default": self.default,
         }
 
@@ -60,6 +64,8 @@ class LLMConfig:
             api_key_env_var=data.get("api_key_env_var", ""),
             base_url=data.get("base_url", data.get("api_base", "")),
             default_parameters=data.get("default_parameters", {}),
+            timeout_seconds=data.get("timeout_seconds", 60),
+            rate_limit_per_minute=data.get("rate_limit_per_minute", 100),
             default=data.get("default", False),
         )
 
