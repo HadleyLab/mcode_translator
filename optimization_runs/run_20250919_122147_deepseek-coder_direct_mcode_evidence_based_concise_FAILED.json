@@ -1,9 +1,0 @@
-{
-  "combination": {
-    "prompt": "direct_mcode_evidence_based_concise",
-    "model": "deepseek-coder"
-  },
-  "success": false,
-  "error": "All 5 trials failed: [\"'DocumentSection' object has no attribute 'title'\", \"'DocumentSection' object has no attribute 'title'\", \"'DocumentSection' object has no attribute 'title'\"]...",
-  "timestamp": "2025-09-19T12:21:47.210695"
-}
