@@ -107,6 +107,62 @@ class McodeSummarizer:
             return ""
         return date_str.split("T")[0] if "T" in date_str else date_str
 
+    def _format_mcode_display(self, element_name: str, system: str, code: str) -> str:
+        """Format mCODE elements consistently with comprehensive coding system support."""
+        if not system:
+            return f"{element_name}: {code}" if element_name else f"{code}"
+
+        system_lower = system.lower()
+        if "snomed" in system_lower:
+            clean_system = "SNOMED"
+        elif "loinc" in system_lower:
+            clean_system = "LOINC"
+        elif "rxnorm" in system_lower:
+            clean_system = "RxNorm"
+        elif "icd" in system_lower:
+            clean_system = "ICD"
+        elif "cpt" in system_lower or "hcpcs" in system_lower:
+            clean_system = "CPT"
+        elif "ndc" in system_lower:
+            clean_system = "NDC"
+        elif "cvx" in system_lower:
+            clean_system = "CVX"
+        elif "unii" in system_lower:
+            clean_system = "UNII"
+        elif "cas" in system_lower:
+            clean_system = "CAS"
+        elif "pubchem" in system_lower:
+            clean_system = "PubChem"
+        elif "chebi" in system_lower:
+            clean_system = "ChEBI"
+        elif "mesh" in system_lower:
+            clean_system = "MeSH"
+        elif "omim" in system_lower:
+            clean_system = "OMIM"
+        elif "hgnc" in system_lower:
+            clean_system = "HGNC"
+        elif "ensembl" in system_lower:
+            clean_system = "Ensembl"
+        elif "clinvar" in system_lower:
+            clean_system = "ClinVar"
+        elif "cosmic" in system_lower:
+            clean_system = "COSMIC"
+        elif "civic" in system_lower:
+            clean_system = "CIViC"
+        elif "oncokb" in system_lower:
+            clean_system = "OncoKB"
+        elif "2.16.840.1.113883.6.238" in system:
+            # US Core Race and Ethnicity coding system (CDC OID)
+            clean_system = "CDC-RACE"
+        else:
+            # Extract the last part of the URL or use the system as-is
+            clean_system = system.split("/")[-1].split(":")[-1].upper()
+
+        if element_name:
+            return f"(mCODE: {element_name}, {clean_system}:{code})"
+        else:
+            return f"{clean_system}:{code}"
+
     def _create_abstracted_sentence(
         self,
         subject: str,
@@ -324,7 +380,52 @@ class McodeSummarizer:
                 'date_qualifier': ''
             })
 
-        # Add other elements as needed - simplified for lean approach
+        # Process clinical data from other resources
+        for entry in patient_data.get("entry", []):
+            resource = entry.get("resource", {})
+            resource_type = resource.get("resourceType")
+
+            if resource_type == "Condition":
+                # Extract cancer condition
+                code_info = resource.get("code", {}).get("coding", [{}])[0]
+                display = code_info.get("display", "")
+                system = code_info.get("system", "")
+                code = code_info.get("code", "")
+                onset_date = resource.get("onsetDateTime", "")
+
+                if display:
+                    codes = f"{self._format_mcode_display('', system, code)}" if system and code else ""
+                    date_qualifier = f" documented on {self._format_date_simple(onset_date)}" if onset_date and include_dates else ""
+
+                    elements.append({
+                        'element_name': 'CancerCondition',
+                        'value': display,
+                        'codes': codes,
+                        'date_qualifier': date_qualifier
+                    })
+
+            elif resource_type == "Observation":
+                # Extract TNM staging
+                code_info = resource.get("code", {}).get("coding", [{}])[0]
+                display = code_info.get("display", "")
+                value_info = resource.get("valueCodeableConcept", {})
+                value_coding = value_info.get("coding", [{}])[0] if value_info else {}
+                value_display = value_coding.get("display", "")
+                value_system = value_coding.get("system", "")
+                value_code = value_coding.get("code", "")
+                effective_date = resource.get("effectiveDateTime", "")
+
+                if value_display and "T4" in value_display:
+                    codes = f"{self._format_mcode_display('', value_system, value_code)}" if value_system and value_code else ""
+                    date_qualifier = f" documented on {self._format_date_simple(effective_date)}" if effective_date and include_dates else ""
+
+                    elements.append({
+                        'element_name': 'TNMStageGroup',
+                        'value': value_display,
+                        'codes': codes,
+                        'date_qualifier': date_qualifier
+                    })
+
         return elements
 
     def _extract_trial_elements(self, trial_data: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -378,7 +479,9 @@ class McodeSummarizer:
         if nct_id == "Unknown":
             raise ValueError("Trial data missing NCT ID.")
 
-        sentences = self._generate_sentences_from_elements(prioritized, nct_id)
+        # Use NCT ID as subject instead of generic "Trial"
+        subject = nct_id if nct_id != "Unknown" else "Trial"
+        sentences = self._generate_sentences_from_elements(prioritized, subject)
         return " ".join(sentences)
 
     def create_patient_summary(self, patient_data: Dict[str, Any], include_dates: bool = None) -> str:
@@ -393,5 +496,13 @@ class McodeSummarizer:
         elements = self._extract_patient_elements(patient_data, include_dates)
         prioritized = self._group_elements_by_priority(elements, "Patient")
 
-        sentences = self._generate_sentences_from_elements(prioritized, "Patient")
+        # Use patient's name as subject instead of generic "Patient"
+        patient_name = ""
+        for element in prioritized:
+            if element.get('element_name') == 'Patient':
+                patient_name = element.get('value', '').split(' (ID:')[0]  # Extract name without ID
+                break
+
+        subject = patient_name if patient_name else "Patient"
+        sentences = self._generate_sentences_from_elements(prioritized, subject)
         return " ".join(sentences)
