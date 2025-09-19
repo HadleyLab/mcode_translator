@@ -99,11 +99,11 @@ class WorkerPool:
         start_time = time.time()
 
         try:
-            self.logger.debug(f"⚡ Executing task {task.id}")
+            self.logger.info(f"⚡ Worker {threading.current_thread().name} executing task {task.id}")
             result = task.func(*task.args, **task.kwargs)
             duration = time.time() - start_time
 
-            self.logger.debug(f"✅ Task {task.id} completed in {duration:.2f}s")
+            self.logger.info(f"✅ Worker {threading.current_thread().name} completed task {task.id} in {duration:.2f}s")
             return TaskResult(
                 task_id=task.id,
                 success=True,
@@ -113,7 +113,7 @@ class WorkerPool:
 
         except Exception as e:
             duration = time.time() - start_time
-            self.logger.error(f"❌ Task {task.id} failed after {duration:.2f}s: {e}")
+            self.logger.error(f"❌ Worker {threading.current_thread().name} failed task {task.id} after {duration:.2f}s: {e}")
             return TaskResult(
                 task_id=task.id,
                 success=False,
@@ -162,9 +162,11 @@ class TaskQueue:
 
         with self.worker_pool:
             self.logger.info(f"📋 Submitting {len(tasks)} tasks for concurrent execution")
+            self.logger.info(f"🔧 Worker pool status: {self.worker_pool.max_workers} workers available")
 
             # Submit all tasks
             futures = self.worker_pool.submit_tasks(tasks)
+            self.logger.info(f"✅ Submitted {len(futures)} tasks to worker pool")
 
             # Collect results as they complete
             results = []
