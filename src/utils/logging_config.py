@@ -69,12 +69,16 @@ def setup_logging(level: Optional[str] = None) -> None:
     else:
         formatter = logging.Formatter(logging_config["format"])
 
-    # Create console handler
+    # Create console handler with immediate flushing
     console_handler = colorlog.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
     console_handler.setLevel(
         getattr(logging, logging_config["handlers"]["console"]["level"])
     )
+    # Force immediate output by setting stream to unbuffered
+    console_handler.stream = sys.stdout
+    # Set handler to flush after each log message
+    console_handler.terminator = "\n"
 
     # Configure root logger
     root_logger.addHandler(console_handler)
@@ -86,8 +90,8 @@ def setup_logging(level: Optional[str] = None) -> None:
         logger.setLevel(getattr(logging, logger_config["level"]))
         logger.propagate = logger_config.get("propagate", True)
 
-    # Prevent propagation to avoid duplicates
-    logging.getLogger().propagate = False
+    # Ensure propagation is enabled for proper message flow
+    logging.getLogger().propagate = True
 
     _logging_configured = True
 
