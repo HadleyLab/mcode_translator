@@ -34,6 +34,23 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
         super().__init__(config, memory_storage)
         self.summarizer = McodeSummarizer()
 
+    def extract_patient_id(self, patient: Dict[str, Any]) -> str:
+        """Extract patient ID from patient data."""
+        try:
+            # Try to extract from Patient resource
+            for entry in patient.get("entry", []):
+                resource = entry.get("resource", {})
+                if resource.get("resourceType") == "Patient":
+                    patient_id = resource.get("id")
+                    if patient_id:
+                        return str(patient_id)
+        except Exception as e:
+            self.logger.warning(f"Error extracting patient ID: {e}")
+
+        # Fallback to hash-based ID
+        import hashlib
+        return f"patient_{hashlib.md5(str(patient).encode('utf-8')).hexdigest()[:8]}"
+
     def execute(self, **kwargs) -> WorkflowResult:
         """
         Execute the patients summarization workflow.
@@ -70,6 +87,38 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
 
             for patient in patients_data:
                 try:
+                    # Convert patient_bundle format to FHIR bundle format if needed
+                    if "patient_bundle" in patient:
+                        # Convert from custom format to FHIR bundle
+                        patient = self._convert_patient_bundle_to_fhir(patient)
+                        self.logger.info(f"Converted bundle has {len(patient.get('entry', []))} entries")
+                        for i, entry in enumerate(patient.get('entry', [])):
+                            resource_type = entry.get('resource', {}).get('resourceType')
+                            self.logger.info(f"Entry {i}: {resource_type}")
+                            if resource_type == "Patient":
+                                patient_res = entry['resource']
+                                self.logger.info(f"Patient resource: name={patient_res.get('name')}, gender={patient_res.get('gender')}, birthDate={patient_res.get('birthDate')}")
+
+                    # Debug: Check if patient has entry
+                    if "entry" not in patient:
+                        self.logger.error(f"Patient data missing 'entry' key: {list(patient.keys())}")
+                        raise ValueError("Patient data is missing 'entry' key")
+
+                    # Debug: Check Patient resource structure
+                    patient_resource = None
+                    for entry in patient.get("entry", []):
+                        if entry.get("resource", {}).get("resourceType") == "Patient":
+                            patient_resource = entry["resource"]
+                            break
+
+                    if patient_resource:
+                        self.logger.debug(f"Patient resource keys: {list(patient_resource.keys())}")
+                        self.logger.debug(f"Patient name: {patient_resource.get('name')}")
+                        self.logger.debug(f"Patient gender: {patient_resource.get('gender')}")
+                        self.logger.debug(f"Patient birthDate: {patient_resource.get('birthDate')}")
+                    else:
+                        self.logger.error("No Patient resource found in converted bundle")
+
                     patient_id = self.extract_patient_id(patient)
 
                     # Generate natural language summary
@@ -175,3 +224,167 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
             )
         else:
             return result
+
+    def _convert_patient_bundle_to_fhir(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert custom patient_bundle format to FHIR bundle format."""
+        patient_bundle = patient_data.get("patient_bundle", [])
+
+        # Create FHIR bundle
+        fhir_bundle = {
+            "resourceType": "Bundle",
+            "type": "collection",
+            "entry": []
+        }
+
+        for item in patient_bundle:
+            if item.get("resource_type") == "Patient":
+                # Convert Patient format
+                entry = {
+                    "resource": {
+                        "resourceType": "Patient",
+                        "id": item.get("id"),
+                        "name": [item.get("name", {})],
+                        "gender": item.get("gender") or "unknown",
+                        "birthDate": item.get("birth_date") or "1900-01-01",
+                    }
+                }
+                # Add extensions if present
+                if "race" in item:
+                    entry["resource"]["extension"] = entry["resource"].get("extension", [])
+                    entry["resource"]["extension"].append({
+                        "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race",
+                        "extension": [{
+                            "url": "text",
+                            "valueString": item["race"]
+                        }]
+                    })
+                if "ethnicity" in item:
+                    entry["resource"]["extension"] = entry["resource"].get("extension", [])
+                    entry["resource"]["extension"].append({
+                        "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
+                        "extension": [{
+                            "url": "text",
+                            "valueString": item["ethnicity"]
+                        }]
+                    })
+                fhir_bundle["entry"].append(entry)
+
+            elif item.get("resource_type") in ["Observation", "Condition", "Procedure", "MedicationStatement", "MedicationRequest"]:
+                # Use clinical_data directly for other resources
+                if "clinical_data" in item:
+                    entry = {
+                        "resource": item["clinical_data"]
+                    }
+                    # Add mCODE profiles for cancer-related observations
+                    if item["resource_type"] == "Observation":
+                        resource = entry["resource"]
+                        code_display = resource.get("code", {}).get("coding", [{}])[0].get("display", "")
+
+                        # Add appropriate mCODE profiles based on content
+                        if "estrogen receptor" in code_display.lower():
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
+                                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tumor-marker-test"
+                            )
+                        elif "progesterone receptor" in code_display.lower():
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
+                                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tumor-marker-test"
+                            )
+                        elif "her2" in code_display.lower():
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
+                                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tumor-marker-test"
+                            )
+                        elif "tumor" in code_display.lower() and "stage" in code_display.lower():
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
+                                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-stage-group"
+                            )
+                        elif "cause of death" in code_display.lower():
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
+                                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cause-of-death"
+                            )
+
+                    elif item["resource_type"] == "Condition":
+                        resource = entry["resource"]
+                        code_display = resource.get("code", {}).get("coding", [{}])[0].get("display", "")
+
+                        # Add mCODE primary cancer condition profile
+                        if "cancer" in code_display.lower() or "neoplasm" in code_display.lower():
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
+                                "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition"
+                            )
+
+                    fhir_bundle["entry"].append(entry)
+
+        return fhir_bundle
+
+    def _extract_demographics(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract patient demographics from FHIR bundle for CORE Memory storage."""
+        demographics = {}
+
+        # Find Patient resource
+        for entry in patient_data.get("entry", []):
+            resource = entry.get("resource", {})
+            if resource.get("resourceType") == "Patient":
+                patient_resource = resource
+
+                # Extract basic demographics
+                demographics["patient_id"] = patient_resource.get("id", "")
+                demographics["gender"] = patient_resource.get("gender", "")
+                demographics["birth_date"] = patient_resource.get("birthDate", "")
+
+                # Extract name
+                name_data = patient_resource.get("name", [{}])[0]
+                if name_data:
+                    demographics["first_name"] = " ".join(name_data.get("given", []))
+                    demographics["last_name"] = name_data.get("family", "")
+                    demographics["full_name"] = f"{demographics['first_name']} {demographics['last_name']}".strip()
+
+                break
+
+        return demographics
+
+    def _convert_to_mappings_format(self, summary) -> List[Dict[str, Any]]:
+        """Convert natural language summary to mCODE mappings format for CORE Memory."""
+        # Handle different summary formats
+        if isinstance(summary, list):
+            summary_text = " ".join(str(s) for s in summary)
+        else:
+            summary_text = str(summary)
+
+        # This is a simplified conversion - in a real implementation, you might use
+        # NLP or LLM to extract structured mCODE elements from the summary
+        mappings = []
+
+        # Extract basic patient information
+        if "Patient" in summary_text:
+            mappings.append({
+                "element_type": "Patient",
+                "code": "",
+                "display": "Patient",
+                "system": "",
+                "confidence_score": 1.0,
+                "evidence_text": "Patient resource found in FHIR bundle"
+            })
+
+        # Extract cancer conditions
+        if "cancer" in summary_text.lower() or "neoplasm" in summary_text.lower():
+            mappings.append({
+                "element_type": "CancerCondition",
+                "code": "",
+                "display": "Malignant neoplasm",
+                "system": "SNOMED",
+                "confidence_score": 0.8,
+                "evidence_text": "Cancer condition mentioned in clinical summary"
+            })
+
+        # Extract procedures/treatments
+        if "chemotherapy" in summary_text.lower() or "treatment" in summary_text.lower():
+            mappings.append({
+                "element_type": "CancerTreatment",
+                "code": "",
+                "display": "Chemotherapy",
+                "system": "",
+                "confidence_score": 0.7,
+                "evidence_text": "Treatment mentioned in clinical summary"
+            })
+
+        return mappings

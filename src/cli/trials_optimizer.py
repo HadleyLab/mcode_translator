@@ -106,7 +106,7 @@ Examples:
 
     parser.add_argument(
         "--save-mcode-elements",
-        help="Save all processed mCODE elements to JSON file for analysis"
+        help="Save all processed mCODE elements to JSON file for analysis (includes biological analysis report)"
     )
 
     return parser

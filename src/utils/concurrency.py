@@ -1,13 +1,15 @@
 """
-Pure async concurrency utilities for mCODE translator.
+Concurrency utilities for mCODE translator.
 
-Provides a lean, high-performance async task queue with controlled concurrency.
+Provides both async and thread-based concurrency with controlled parallelism.
 """
 
 import asyncio
 from typing import Any, Callable, List, Optional
 from dataclasses import dataclass
 import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, Future
 
 from src.utils.logging_config import get_logger
 
@@ -16,11 +18,12 @@ logger = get_logger(__name__)
 
 @dataclass
 class Task:
-    """Async task representation."""
+    """Task representation for both async and thread-based execution."""
     id: str
     func: Callable
     args: tuple = ()
     kwargs: dict = None
+    priority: int = 0
 
     def __post_init__(self):
         if self.kwargs is None:
@@ -189,3 +192,184 @@ def create_async_queue_from_args(args, component_type: str = "custom") -> AsyncQ
 
     queue_name = f"{component_type.title()}AsyncQueue"
     return AsyncQueue(max_concurrent=max_concurrent, name=queue_name)
+
+
+# Thread-based concurrency classes for backward compatibility
+
+class WorkerPool:
+    """
+    Thread-based worker pool for backward compatibility.
+
+    Uses ThreadPoolExecutor for concurrent task execution.
+    """
+
+    def __init__(self, max_workers: int = 1, name: str = "WorkerPool"):
+        self.max_workers = max_workers
+        self.name = name
+        self.logger = get_logger(f"{name}")
+        self.executor: Optional[ThreadPoolExecutor] = None
+        self._running = False
+        self._lock = threading.Lock()
+
+    def start(self):
+        """Start the worker pool."""
+        with self._lock:
+            if not self._running:
+                self.executor = ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix=self.name)
+                self._running = True
+                self.logger.info(f"🚀 {self.name}: Started with {self.max_workers} workers")
+
+    def stop(self):
+        """Stop the worker pool."""
+        with self._lock:
+            if self._running:
+                if self.executor:
+                    self.executor.shutdown(wait=True)
+                    self.executor = None
+                self._running = False
+                self.logger.info(f"🛑 {self.name}: Stopped")
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
+
+    def submit_task(self, task: Task) -> Future:
+        """Submit a single task for execution."""
+        if not self._running or not self.executor:
+            raise RuntimeError(f"Worker pool {self.name} is not running")
+
+        def task_wrapper():
+            start_time = time.time()
+            self.logger.info(f"⚡ {self.name}: STARTED {task.id}")
+
+            try:
+                result = task.func(*task.args, **task.kwargs)
+                duration = time.time() - start_time
+                self.logger.info(f"✅ {self.name}: COMPLETED {task.id} ({duration:.2f}s)")
+                return TaskResult(
+                    task_id=task.id,
+                    success=True,
+                    result=result,
+                    duration=duration
+                )
+            except Exception as e:
+                duration = time.time() - start_time
+                self.logger.error(f"❌ {self.name}: FAILED {task.id} ({duration:.2f}s): {e}")
+                return TaskResult(
+                    task_id=task.id,
+                    success=False,
+                    error=e,
+                    duration=duration
+                )
+
+        return self.executor.submit(task_wrapper)
+
+    def submit_tasks(self, tasks: List[Task]) -> List[Future]:
+        """Submit multiple tasks for execution."""
+        return [self.submit_task(task) for task in tasks]
+
+
+class TaskQueue:
+    """
+    Thread-based task queue for backward compatibility.
+
+    Wraps WorkerPool for queue-based task execution.
+    """
+
+    def __init__(self, max_workers: int = 1, name: str = "TaskQueue"):
+        self.worker_pool = WorkerPool(max_workers=max_workers, name=name)
+        self.logger = get_logger(f"{name}")
+
+    def execute_task(self, task: Task) -> TaskResult:
+        """Execute a single task."""
+        with self.worker_pool:
+            future = self.worker_pool.submit_task(task)
+            return future.result()
+
+    def execute_tasks(
+        self,
+        tasks: List[Task],
+        progress_callback: Optional[Callable] = None
+    ) -> List[TaskResult]:
+        """Execute multiple tasks with optional progress callback."""
+        if not tasks:
+            return []
+
+        self.logger.info(f"🚀 {self.worker_pool.name}: Processing {len(tasks)} tasks")
+
+        with self.worker_pool:
+            futures = self.worker_pool.submit_tasks(tasks)
+            results = []
+
+            for i, future in enumerate(futures):
+                result = future.result()
+                results.append(result)
+
+                if progress_callback:
+                    progress_callback(i + 1, len(tasks), result)
+
+            successful = sum(1 for r in results if r.success)
+            self.logger.info(f"🎉 {self.worker_pool.name}: Completed {successful}/{len(tasks)} tasks")
+
+            return results
+
+
+def run_concurrent(
+    func: Callable,
+    items: List[Any],
+    max_workers: int = 4,
+    task_prefix: str = "task"
+) -> List[TaskResult]:
+    """
+    Run a function concurrently on a list of items.
+
+    Args:
+        func: Function to run on each item
+        items: List of items to process
+        max_workers: Maximum number of concurrent workers
+        task_prefix: Prefix for task IDs
+
+    Returns:
+        List of TaskResult objects
+    """
+    tasks = [
+        create_task(f"{task_prefix}_{i}", func, item)
+        for i, item in enumerate(items)
+    ]
+
+    queue = TaskQueue(max_workers=max_workers, name=f"{task_prefix.title()}Queue")
+    return queue.execute_tasks(tasks)
+
+
+# Global worker pools for backward compatibility
+
+_fetcher_pool = None
+_processor_pool = None
+_optimizer_pool = None
+
+
+def get_fetcher_pool() -> WorkerPool:
+    """Get global fetcher worker pool (singleton)."""
+    global _fetcher_pool
+    if _fetcher_pool is None:
+        _fetcher_pool = WorkerPool(max_workers=4, name="FetcherPool")
+    return _fetcher_pool
+
+
+def get_processor_pool() -> WorkerPool:
+    """Get global processor worker pool (singleton)."""
+    global _processor_pool
+    if _processor_pool is None:
+        _processor_pool = WorkerPool(max_workers=8, name="ProcessorPool")
+    return _processor_pool
+
+
+def get_optimizer_pool() -> WorkerPool:
+    """Get global optimizer worker pool (singleton)."""
+    global _optimizer_pool
+    if _optimizer_pool is None:
+        _optimizer_pool = WorkerPool(max_workers=2, name="OptimizerPool")
+    return _optimizer_pool

@@ -7,8 +7,7 @@
     "retry_delay_seconds": 1,
     "default_spaces": {
       "clinical_trials": "Clinical Trials",
-      "patients": "Patients",
-      "research": "Research"
+      "patients": "Patients"
     },
     "storage_settings": {
       "batch_size": 10,

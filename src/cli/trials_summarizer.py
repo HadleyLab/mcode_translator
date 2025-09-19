@@ -58,6 +58,13 @@ Input/Output:
     McodeCLI.add_memory_args(parser)
     McodeCLI.add_processor_args(parser)
 
+    # Add dry run argument
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Run summarization without storing results in CORE Memory",
+    )
+
     # I/O arguments
     parser.add_argument(
         "--in",

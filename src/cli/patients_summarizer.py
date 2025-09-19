@@ -149,7 +149,7 @@ def main() -> None:
     # Prepare workflow parameters
     workflow_kwargs = {
         "patients_data": mcode_patients,
-        "store_in_memory": args.ingest and not args.dry_run,
+        "store_in_memory": args.ingest,
         "workers": args.workers,
     }
 

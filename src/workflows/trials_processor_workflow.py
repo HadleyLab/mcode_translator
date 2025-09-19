@@ -5,6 +5,7 @@ This workflow handles processing clinical trial data with mCODE mapping
 and stores the resulting summaries to CORE Memory.
 """
 
+import asyncio
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -13,6 +14,7 @@ from src.services.summarizer import McodeSummarizer
 from src.shared.models import enhance_trial_with_mcode_results
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.api_manager import APIManager
+from src.utils.concurrency import AsyncQueue, create_task
 from src.utils.logging_config import get_logger
 
 from .base_workflow import TrialsProcessorWorkflow, WorkflowResult
@@ -105,86 +107,59 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                 f"🔬 Processing {len(trials_data)} trials with mCODE pipeline"
             )
 
-            if workers > 0:
-                # Use concurrent processing
-                self.logger.info(
-                    f"⚡ Using concurrent processing with {workers} workers"
-                )
-                import asyncio
-                import concurrent.futures
-                from functools import partial
+            # Use fully async processing with controlled concurrency
+            effective_workers = max(1, workers)  # Ensure at least 1 worker
 
-                async def process_concurrent():
-                    # Create a thread pool for CPU-bound LLM processing
-                    with concurrent.futures.ThreadPoolExecutor(
-                        max_workers=workers
-                    ) as executor:
-                        loop = asyncio.get_event_loop()
+            self.logger.info(
+                f"⚡ Using fully async processing with {effective_workers} concurrent task{'s' if effective_workers > 1 else ''}"
+            )
 
-                        # Create tasks for concurrent processing
-                        tasks = []
-                        for i, trial in enumerate(trials_data):
-                            task = loop.run_in_executor(
-                                executor,
-                                partial(
-                                    self._process_single_trial_sync,
-                                    trial,
-                                    model,
-                                    prompt,
-                                    i + 1,
-                                    store_in_memory,
-                                ),
-                            )
-                            tasks.append(task)
+            async def process_async():
+                # Create semaphore for concurrency control
+                semaphore = asyncio.Semaphore(effective_workers)
 
-                        # Wait for all tasks to complete
-                        results = await asyncio.gather(*tasks, return_exceptions=True)
+                async def process_trial_async(trial: Dict[str, Any], index: int):
+                    async with semaphore:
+                        return await self._process_single_trial_async(
+                            trial, model, prompt, index, store_in_memory
+                        )
 
-                        # Process results
-                        processed_trials = []
-                        successful_count = 0
-                        failed_count = 0
+                # Create async tasks for concurrent processing
+                tasks = [
+                    process_trial_async(trial, i + 1)
+                    for i, trial in enumerate(trials_data)
+                ]
 
-                        for result in results:
-                            if isinstance(result, Exception):
-                                self.logger.error(
-                                    f"Task failed with exception: {result}"
-                                )
-                                failed_count += 1
-                                # Add error trial
-                                error_trial = {"McodeProcessingError": str(result)}
-                                processed_trials.append(error_trial)
-                            else:
-                                trial_result, success = result
-                                processed_trials.append(trial_result)
-                                if success:
-                                    successful_count += 1
-                                else:
-                                    failed_count += 1
+                # Wait for all tasks to complete
+                results = await asyncio.gather(*tasks, return_exceptions=True)
 
-                        return processed_trials, successful_count, failed_count
-
-                processed_trials, successful_count, failed_count = asyncio.run(
-                    process_concurrent()
-                )
-
-            else:
-                # Use sequential processing
-                self.logger.info("📝 Using sequential processing")
+                # Process results
                 processed_trials = []
                 successful_count = 0
                 failed_count = 0
 
-                for i, trial in enumerate(trials_data):
-                    result = self._process_single_trial_sync(
-                        trial, model, prompt, i + 1, store_in_memory
-                    )
-                    trial_result, success = result
-                    processed_trials.append(trial_result)
-                    if success:
-                        successful_count += 1
-                    else:
+                for i, result in enumerate(results):
+                    if isinstance(result, Exception):
+                        self.logger.error(
+                            f"Task {i+1} failed with exception: {result}"
+                        )
                         failed_count += 1
+                        # Add error trial
+                        error_trial = {"McodeProcessingError": str(result)}
+                        processed_trials.append(error_trial)
+                    else:
+                        trial_result, success = result
+                        processed_trials.append(trial_result)
+                        if success:
+                            successful_count += 1
+                        else:
+                            failed_count += 1
+
+                return processed_trials, successful_count, failed_count
+
+            processed_trials, successful_count, failed_count = asyncio.run(
+                process_async()
+            )
 
             # Calculate success rate
             total_count = len(trials_data)
@@ -242,6 +217,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
     ) -> None:
         """Cache processed trial result."""
         trial_id = self._extract_trial_id(processed_trial)
+        import hashlib
         cache_key_data = {
             "function": "processed_trial",
             "trial_id": trial_id,
@@ -281,6 +257,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
     ) -> Dict[str, Any]:
         """Extract trial mCODE elements with caching."""
         trial_id = self._extract_trial_id(trial)
+        import hashlib
         cache_key_data = {
             "function": "mcode_extraction",
             "trial_id": trial_id,
@@ -305,6 +282,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         self, trial_id: str, mcode_elements: Dict[str, Any], trial_data: Dict[str, Any]
     ) -> str:
         """Generate natural language summary with caching."""
+        import hashlib
         cache_key_data = {
             "function": "natural_language_summary",
             "trial_id": trial_id,
@@ -333,6 +311,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         try:
             return trial["protocolSection"]["identificationModule"]["nctId"]
         except (KeyError, TypeError):
+            import hashlib
             return f"unknown_trial_{hashlib.md5(str(trial).encode('utf-8')).hexdigest()[:8]}"
 
     def _extract_trial_mcode_elements(self, trial: Dict[str, Any]) -> Dict[str, Any]:
@@ -916,7 +895,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
 
         return f"(mCODE: {element_name}; {clean_system}:{code})"
 
-    def _process_single_trial_sync(
+    def _process_single_trial_wrapper(
         self,
         trial: Dict[str, Any],
         model: str,
@@ -925,7 +904,34 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         store_in_memory: bool = False,
     ) -> tuple:
         """
-        Process a single trial synchronously for concurrent processing.
+        Synchronous wrapper for async trial processing.
+
+        Args:
+            trial: Trial data to process
+            model: LLM model to use
+            prompt: Prompt template to use
+            index: Trial index for logging
+
+        Returns:
+            tuple: (trial_result, success)
+        """
+        import asyncio
+
+        async def process_async():
+            return await self._process_single_trial_async(trial, model, prompt, index, store_in_memory)
+
+        return asyncio.run(process_async())
+
+    async def _process_single_trial_async(
+        self,
+        trial: Dict[str, Any],
+        model: str,
+        prompt: str,
+        index: int,
+        store_in_memory: bool = False,
+    ) -> tuple:
+        """
+        Process a single trial asynchronously for pipeline compatibility.
 
         Args:
             trial: Trial data to process
@@ -952,7 +958,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             mcode_success = False
             try:
                 # Use new ultra-lean pipeline interface
-                result = self.pipeline.process(trial)
+                result = await self.pipeline.process(trial)
                 # Add mCODE results to trial using standardized utility
                 enhanced_trial = enhance_trial_with_mcode_results(trial, result)
                 mcode_success = True

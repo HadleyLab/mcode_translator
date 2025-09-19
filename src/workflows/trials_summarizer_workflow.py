@@ -161,3 +161,62 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
             )
         else:
             return result
+
+    def _extract_trial_id(self, trial: Dict[str, Any]) -> str:
+        """Extract trial ID from trial data."""
+        # Try different possible locations for trial ID
+        if "protocolSection" in trial:
+            protocol = trial["protocolSection"]
+            if "identificationModule" in protocol:
+                return protocol["identificationModule"].get("nctId", "unknown")
+
+        # Check for direct trial_id field
+        if "trial_id" in trial:
+            return trial["trial_id"]
+
+        # Check for nctId field
+        if "nctId" in trial:
+            return trial["nctId"]
+
+        return "unknown"
+
+    def _extract_trial_metadata(self, trial: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract trial metadata for CORE Memory storage."""
+        metadata = {}
+
+        # Extract basic trial information
+        if "protocolSection" in trial:
+            protocol = trial["protocolSection"]
+
+            # Identification
+            if "identificationModule" in protocol:
+                ident = protocol["identificationModule"]
+                metadata["nct_id"] = ident.get("nctId")
+                metadata["brief_title"] = ident.get("briefTitle")
+                metadata["official_title"] = ident.get("officialTitle")
+
+            # Status
+            if "statusModule" in protocol:
+                status = protocol["statusModule"]
+                metadata["overall_status"] = status.get("overallStatus")
+                metadata["start_date"] = status.get("startDateStruct", {}).get("date")
+                metadata["completion_date"] = status.get("completionDateStruct", {}).get("date")
+
+            # Conditions
+            if "conditionsModule" in protocol:
+                conditions = protocol["conditionsModule"]
+                metadata["conditions"] = conditions.get("conditions", [])
+
+            # Eligibility
+            if "eligibilityModule" in protocol:
+                eligibility = protocol["eligibilityModule"]
+                metadata["minimum_age"] = eligibility.get("minimumAge")
+                metadata["maximum_age"] = eligibility.get("maximumAge")
+                metadata["gender"] = eligibility.get("sex")
+                metadata["healthy_volunteers"] = eligibility.get("healthyVolunteers")
+
+        # Add processing timestamp
+        from datetime import datetime
+        metadata["processed_at"] = datetime.utcnow().isoformat()
+
+        return metadata

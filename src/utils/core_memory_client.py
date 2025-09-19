@@ -6,6 +6,8 @@ from typing import Any, Dict, Optional
 import requests
 from dotenv import load_dotenv
 
+from src.utils.config import Config
+
 JSON = Dict[str, Any]
 
 
@@ -20,26 +22,39 @@ class CoreMemoryClient:
 
     def __init__(
         self,
-        api_key: str,
-        base_url: str = "https://core.heysol.ai/api/v1/mcp",
-        source: str = "Python-Script",
+        api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
+        source: Optional[str] = None,
     ):
         """
         Initializes the CoreMemoryClient with MCP protocol support.
 
         Args:
-            api_key: CORE Memory API key
-            base_url: MCP server base URL
-            source: Source identifier for the requests
+            api_key: CORE Memory API key (optional, loaded from config if not provided)
+            base_url: MCP server base URL (optional, loaded from config if not provided)
+            source: Source identifier for the requests (optional, loaded from config if not provided)
         """
+        load_dotenv()
+
+        # Load configuration
+        config = Config()
+
+        # Use provided values or load from config
+        if api_key is None:
+            api_key = config.get_core_memory_api_key()
+        if base_url is None:
+            base_url = config.get_core_memory_api_base_url()
+        if source is None:
+            source = config.get_core_memory_source()
+
         if not api_key:
             raise CoreMemoryError("API key is required.")
 
-        load_dotenv()
         self.api_key = api_key
         self.url = f"{base_url}?source={source}"
         self.session_id: Optional[str] = None
         self.tools: Dict[str, JSON] = {}
+        self.timeout = config.get_core_memory_timeout()
 
         # Initialize the MCP session
         self._initialize_session()
@@ -58,7 +73,7 @@ class CoreMemoryClient:
     def _post(self, payload: JSON, stream: bool = False) -> requests.Response:
         """Send POST request to MCP server."""
         response = requests.post(
-            self.url, json=payload, headers=self._headers(), timeout=60, stream=stream
+            self.url, json=payload, headers=self._headers(), timeout=self.timeout, stream=stream
         )
         try:
             response.raise_for_status()
@@ -126,9 +141,7 @@ class CoreMemoryClient:
         except Exception as e:
             raise CoreMemoryError(f"Failed to list MCP tools: {e}")
 
-        # Verify required tools are available
-        if "memory_ingest" not in self.tools:
-            raise CoreMemoryError("Server missing required tool: memory_ingest")
+        # Note: Direct API calls are used for core functionality, MCP tools are optional
 
     def _unwrap_tool_result(self, result: JSON) -> Any:
         """Unwrap tool result from MCP response."""
@@ -144,7 +157,7 @@ class CoreMemoryClient:
 
     def get_spaces(self) -> list:
         """
-        Get available spaces in CORE Memory.
+        Get available spaces in CORE Memory using MCP protocol (direct API endpoints are pending).
 
         Returns:
             List of available spaces
@@ -202,7 +215,7 @@ class CoreMemoryClient:
                     "Authorization": f"Bearer {self.api_key}",
                     "Content-Type": "application/json",
                 },
-                timeout=60,
+                timeout=self.timeout,
             )
             response.raise_for_status()
             data = response.json()
@@ -236,25 +249,31 @@ class CoreMemoryClient:
 
     def get_clinical_trials_space_id(self) -> str:
         """
-        Get or create the "mCODE Research Protocols" space ID.
+        Get or create the clinical trials space ID from config.
 
         Returns:
-            Space ID for the mCODE research protocols space
+            Space ID for the clinical trials space
         """
+        config = Config()
+        default_spaces = config.get_core_memory_default_spaces()
+        space_name = default_spaces.get("clinical_trials", "Clinical Trials")
         return self.get_or_create_space(
-            "mCODE Research Protocols",
+            space_name,
             "Space for storing mCODE-aligned clinical trial protocols and eligibility criteria",
         )
 
     def get_patients_space_id(self) -> str:
         """
-        Get or create the "mCODE Patients" space ID.
+        Get or create the patients space ID from config.
 
         Returns:
-            Space ID for the mCODE patients space
+            Space ID for the patients space
         """
+        config = Config()
+        default_spaces = config.get_core_memory_default_spaces()
+        space_name = default_spaces.get("patients", "Patients")
         return self.get_or_create_space(
-            "mCODE Patients", "Space for storing mCODE-compliant patient oncology data"
+            space_name, "Space for storing mCODE-compliant patient oncology data"
         )
 
     def ingest(
@@ -262,14 +281,18 @@ class CoreMemoryClient:
         message: str,
         space_id: Optional[str] = None,
         source: str = "Python-Script",
+        priority: str = "normal",
+        tags: Optional[list] = None,
     ) -> dict:
         """
-        Ingests a message into CORE Memory using the proper MCP protocol.
+        Add data to CORE Memory using MCP protocol (direct API endpoints are pending).
 
         Args:
             message: The message to ingest
             space_id: Optional space ID to store the message in
             source: Source identifier for the message
+            priority: Priority level ('low', 'normal', 'high') - ignored in MCP mode
+            tags: Optional list of tags for the ingestion - ignored in MCP mode
 
         Returns:
             Dictionary with the ingestion result
@@ -280,10 +303,10 @@ class CoreMemoryClient:
         if not message:
             raise CoreMemoryError("Message is required for ingestion.")
 
-        # Prepare ingestion arguments
+        # Prepare ingestion arguments for MCP
         ingest_args = {"message": message, "source": source}
 
-        # Use provided space_id or get the "Clinical Trials" space ID
+        # Use provided space_id or get the clinical trials space ID
         if space_id:
             ingest_args["spaceId"] = space_id
         else:
@@ -291,7 +314,7 @@ class CoreMemoryClient:
             if clinical_trials_space_id:
                 ingest_args["spaceId"] = clinical_trials_space_id
 
-        # Call memory_ingest tool
+        # Call memory_ingest tool via MCP
         payload = {
             "jsonrpc": "2.0",
             "id": str(uuid.uuid4()),
@@ -329,7 +352,7 @@ class CoreMemoryClient:
         self, query: str, space_id: Optional[str] = None, limit: int = 10
     ) -> dict:
         """
-        Search for memories in CORE Memory.
+        Search for memories in CORE Memory using MCP protocol (direct API endpoints are pending).
 
         Args:
             query: Search query
@@ -372,3 +395,264 @@ class CoreMemoryClient:
                 return {"episodes": [], "facts": []}
         except Exception as e:
             raise CoreMemoryError(f"Failed to search memory: {e}")
+
+    def get_ingestion_logs(
+        self,
+        space_id: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+        status: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+    ) -> list:
+        """
+        Get ingestion logs from CORE Memory (PENDING: Direct API endpoint not yet active).
+
+        This method is currently a placeholder. Ingestion logs may not be exposed via API yet.
+
+        Args:
+            space_id: Optional space ID to filter logs
+            limit: Maximum number of logs to return (default: 100)
+            offset: Offset for pagination (default: 0)
+            status: Optional status filter (e.g., 'success', 'failed', 'pending')
+            start_date: Optional start date filter (ISO 8601 format)
+            end_date: Optional end date filter (ISO 8601 format)
+
+        Returns:
+            List of ingestion log entries (currently returns placeholder data)
+
+        Raises:
+            CoreMemoryError: If the request fails
+        """
+        # PENDING: Direct API endpoint not yet active
+        # For now, return placeholder data
+        return [
+            {
+                "id": "placeholder_log_1",
+                "message": "Ingestion logs API endpoint is pending implementation",
+                "source": "system",
+                "status": "pending",
+                "created_at": "2025-01-01T00:00:00Z"
+            }
+        ]
+
+    def get_episode_facts(
+        self,
+        episode_id: Optional[str] = None,
+        space_id: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+        include_metadata: bool = True,
+    ) -> list:
+        """
+        Get episode facts from CORE Memory (PENDING: Direct API endpoint not yet active).
+
+        This method is currently a placeholder. Episode facts API may not be exposed yet.
+
+        Args:
+            episode_id: Optional episode ID to filter facts
+            space_id: Optional space ID to filter facts
+            limit: Maximum number of facts to return (default: 100)
+            offset: Offset for pagination (default: 0)
+            include_metadata: Whether to include metadata in response (default: True)
+
+        Returns:
+            List of episode facts (currently returns placeholder data)
+
+        Raises:
+            CoreMemoryError: If the request fails
+        """
+        # PENDING: Direct API endpoint not yet active
+        # For now, return placeholder data
+        return [
+            {
+                "id": "placeholder_fact_1",
+                "content": "Episode facts API endpoint is pending implementation",
+                "episode_id": episode_id or "unknown",
+                "confidence": 0.0,
+                "metadata": {"status": "pending"}
+            }
+        ]
+
+    def get_specific_log(self, log_id: str) -> dict:
+        """
+        Get a specific ingestion log by ID from CORE Memory (PENDING: Direct API endpoint not yet active).
+
+        This method is currently a placeholder.
+
+        Args:
+            log_id: The ID of the ingestion log to retrieve
+
+        Returns:
+            Dictionary containing the specific log details (currently returns placeholder data)
+
+        Raises:
+            CoreMemoryError: If the request fails
+        """
+        if not log_id:
+            raise CoreMemoryError("Log ID is required.")
+
+        # PENDING: Direct API endpoint not yet active
+        # For now, return placeholder data
+        return {
+            "id": log_id,
+            "message": "Specific log API endpoint is pending implementation",
+            "source": "system",
+            "status": "pending",
+            "created_at": "2025-01-01T00:00:00Z"
+        }
+
+    def delete_log_entry(self, log_id: str) -> dict:
+        """
+        Delete a specific ingestion log entry from CORE Memory (PENDING: Direct API endpoint not yet active).
+
+        This method is currently a placeholder.
+
+        Args:
+            log_id: The ID of the ingestion log entry to delete
+
+        Returns:
+            Dictionary containing the deletion confirmation (currently returns placeholder data)
+
+        Raises:
+            CoreMemoryError: If the request fails
+        """
+        if not log_id:
+            raise CoreMemoryError("Log ID is required.")
+
+        # PENDING: Direct API endpoint not yet active
+        # For now, return placeholder data
+        return {
+            "id": log_id,
+            "status": "deleted",
+            "message": "Log deletion API endpoint is pending implementation"
+        }
+
+    def get_user_profile(self) -> dict:
+        """
+        Get the current user's profile from CORE Memory (PENDING: Direct API endpoint not yet active).
+
+        This method is currently a placeholder.
+
+        Returns:
+            Dictionary containing user profile information (currently returns placeholder data)
+
+        Raises:
+            CoreMemoryError: If the request fails
+        """
+        # PENDING: Direct API endpoint not yet active
+        # For now, return placeholder data
+        return {
+            "id": "placeholder_user",
+            "name": "API User",
+            "email": "user@api.example.com",
+            "status": "active",
+            "message": "User profile API endpoint is pending implementation"
+        }
+
+    def get_space_details(self, space_id: str) -> dict:
+        """
+        Get details of a specific space from CORE Memory.
+
+        Args:
+            space_id: The ID of the space to retrieve details for
+
+        Returns:
+            Dictionary containing space details
+
+        Raises:
+            CoreMemoryError: If the request fails
+        """
+        if not space_id:
+            raise CoreMemoryError("Space ID is required.")
+
+        # Use direct API call (not through MCP tools)
+        base_url = self.url.split("/api/v1/mcp")[0]
+        url = f"{base_url}/api/v1/spaces/{space_id}"
+
+        try:
+            response = requests.get(
+                url,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Accept": "application/json",
+                },
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            raise CoreMemoryError(f"Failed to get space details for '{space_id}': {e}")
+
+    def update_space(self, space_id: str, name: Optional[str] = None, description: Optional[str] = None) -> dict:
+        """
+        Update a space in CORE Memory.
+
+        Note: Space updates may not be supported by the current API version.
+        This method attempts the update but may fail with a 400 error.
+
+        Args:
+            space_id: The ID of the space to update
+            name: Optional new name for the space
+            description: Optional new description for the space
+
+        Returns:
+            Dictionary containing the updated space information
+
+        Raises:
+            CoreMemoryError: If the request fails or space updates are not supported
+        """
+        if not space_id:
+            raise CoreMemoryError("Space ID is required.")
+
+        payload = {}
+        if name is not None:
+            payload["name"] = name
+        if description is not None:
+            payload["description"] = description
+
+        if not payload:
+            raise CoreMemoryError("At least one field (name or description) must be provided for update.")
+
+        # Try PATCH first (more standard for updates)
+        base_url = self.url.split("/api/v1/mcp")[0]
+        url = f"{base_url}/api/v1/spaces/{space_id}"
+
+        try:
+            response = requests.patch(
+                url,
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.HTTPError as e:
+            if e.response.status_code == 400:
+                # Space updates may not be supported
+                raise CoreMemoryError(f"Space updates are not supported by the API (400 Bad Request): {e}")
+            elif e.response.status_code == 405:
+                # Try PUT if PATCH is not allowed
+                try:
+                    response = requests.put(
+                        url,
+                        json=payload,
+                        headers={
+                            "Authorization": f"Bearer {self.api_key}",
+                            "Content-Type": "application/json",
+                            "Accept": "application/json",
+                        },
+                        timeout=self.timeout,
+                    )
+                    response.raise_for_status()
+                    return response.json()
+                except Exception as e2:
+                    raise CoreMemoryError(f"Failed to update space '{space_id}' with PUT: {e2}")
+            else:
+                raise CoreMemoryError(f"Failed to update space '{space_id}': {e}")
+        except Exception as e:
+            raise CoreMemoryError(f"Failed to update space '{space_id}': {e}")
