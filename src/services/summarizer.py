@@ -12,9 +12,54 @@ from typing import Any, Dict, List
 class McodeSummarizer:
     """Lean mCODE summarizer using abstracted element configurations."""
 
-    def __init__(self, include_dates: bool = True):
-        """Initialize with abstracted element configurations."""
+    def __init__(self, include_dates: bool = True, detail_level: str = "full", include_mcode: bool = True):
+        """Initialize with abstracted element configurations and detail level switches.
+
+        Args:
+            include_dates: Whether to include dates in the summary. Defaults to True.
+            detail_level: Level of detail ("minimal", "standard", "full"). Defaults to "full".
+            include_mcode: Whether to include mCODE annotations. Defaults to True.
+        """
         self.include_dates = include_dates
+        self.detail_level = detail_level
+        self.include_mcode = include_mcode
+
+        # Validate detail level
+        if detail_level not in ["minimal", "standard", "full"]:
+            raise ValueError(f"Invalid detail_level: {detail_level}. Must be 'minimal', 'standard', or 'full'")
+
+        # Configure detail level settings
+        self._configure_detail_levels()
+
+    def _configure_detail_levels(self):
+        """Configure summarizer behavior based on detail level switches."""
+        # Detail level configurations
+        self.detail_configs = {
+            "minimal": {
+                "max_elements": 5,  # Only most critical elements
+                "include_codes": False,
+                "include_dates": False,
+                "include_mcode": False,
+                "priority_threshold": 7  # Only elements with priority <= 7
+            },
+            "standard": {
+                "max_elements": 15,
+                "include_codes": True,
+                "include_dates": self.include_dates,
+                "include_mcode": self.include_mcode,
+                "priority_threshold": 20
+            },
+            "full": {
+                "max_elements": None,  # No limit
+                "include_codes": True,
+                "include_dates": self.include_dates,
+                "include_mcode": self.include_mcode,
+                "priority_threshold": None  # No threshold
+            }
+        }
+
+        # Get current config
+        self.current_config = self.detail_configs[self.detail_level]
 
         # Abstracted mCODE element configurations - mCODE as subject, codes in predicate
         self.element_configs = {
@@ -70,7 +115,7 @@ class McodeSummarizer:
         codes: str = "",
         date_qualifier: str = ""
     ) -> str:
-        """Create a standardized sentence using the abstracted element configuration.
+        """Create a standardized sentence using the abstracted element configuration with detail level switches.
 
         Args:
             subject: The subject of the sentence (e.g., "Patient", "Trial")
@@ -80,7 +125,7 @@ class McodeSummarizer:
             date_qualifier: Optional date qualifier (e.g., " documented on 2020-01-01")
 
         Returns:
-            Formatted sentence string using the abstracted template
+            Formatted sentence string using the abstracted template, respecting detail level switches
         """
         if element_name not in self.element_configs:
             raise ValueError(f"mCODE element '{element_name}' is not configured. Only configured elements are supported.")
@@ -88,59 +133,86 @@ class McodeSummarizer:
         config = self.element_configs[element_name]
         template = config['template']
 
-        # Format the template with provided values
-        formatted_codes = f" ({codes})" if codes else ""
-        formatted_date = date_qualifier if date_qualifier else ""
+        # Apply detail level switches
+        include_codes = self.current_config["include_codes"]
+        include_dates = self.current_config["include_dates"]
+        include_mcode = self.current_config["include_mcode"]
+
+        # Format codes based on detail level
+        if include_codes and codes:
+            codes_part = f" ({codes})"
+        elif include_codes and not codes:
+            # For elements that should always have codes, provide defaults
+            if element_name in ['Age', 'Gender', 'BirthDate', 'Race', 'Ethnicity']:
+                if element_name == 'Age':
+                    codes_part = " (SNOMED:424144002)"
+                elif element_name == 'Gender':
+                    codes_part = " (SNOMED:407377005)"  # Other gender as default
+                elif element_name == 'BirthDate':
+                    codes_part = " (SNOMED:184099003)"  # Date of birth
+                elif element_name == 'Race':
+                    codes_part = " (CDC-RACE:UNK)"  # Unknown race
+                elif element_name == 'Ethnicity':
+                    codes_part = " (CDC-RACE:UNK)"  # Unknown ethnicity
+            else:
+                codes_part = ""
+        else:
+            codes_part = ""
+
+        # Format date qualifier based on detail level
+        formatted_date = date_qualifier if (include_dates and date_qualifier) else ""
+
+        # Format mCODE annotation based on detail level
+        if not include_mcode:
+            # Remove mCODE annotations from template by replacing with empty string
+            template = template.replace(' (mCODE: {element_name})', '')
+            template = template.replace('(mCODE: {element_name})', '')
+            template = template.replace(' (mCODE: {element_name}{date_qualifier})', '')
+            template = template.replace('(mCODE: {element_name}{date_qualifier})', '')
+            # Also handle the specific element names that appear in templates
+            template = template.replace(' (mCODE: Gender)', '')
+            template = template.replace('(mCODE: Gender)', '')
+            template = template.replace(' (mCODE: BirthDate)', '')
+            template = template.replace('(mCODE: BirthDate)', '')
+            template = template.replace(' (mCODE: Patient)', '')
+            template = template.replace('(mCODE: Patient)', '')
 
         try:
-            # Handle codes formatting - ensure codes are always included when available
-            if codes:
-                codes_part = f" ({codes})"
-            else:
-                # For elements that should always have codes, provide defaults
-                if element_name in ['Age', 'Gender', 'BirthDate', 'Race', 'Ethnicity']:
-                    if element_name == 'Age':
-                        codes_part = " (SNOMED:424144002)"
-                    elif element_name == 'Gender':
-                        codes_part = " (SNOMED:407377005)"  # Other gender as default
-                    elif element_name == 'BirthDate':
-                        codes_part = " (SNOMED:184099003)"  # Date of birth
-                    elif element_name == 'Race':
-                        codes_part = " (CDC-RACE:UNK)"  # Unknown race
-                    elif element_name == 'Ethnicity':
-                        codes_part = " (CDC-RACE:UNK)"  # Unknown ethnicity
-                else:
-                    codes_part = ""
-
             sentence = template.format(
                 subject=subject,
                 value=value,
                 codes=codes_part,
                 date_qualifier=formatted_date
             )
+
+            # Clean up any double spaces or formatting issues
+            sentence = " ".join(sentence.split())
             return sentence
+
         except KeyError as e:
             # Handle missing template variables
             print(f"Warning: Missing template variable {e} for element {element_name}")
-            if codes:
+            if include_codes and codes:
                 codes_part = f" ({codes})"
             else:
                 codes_part = ""
-            return f"{subject}'s {element_name.lower()} (mCODE: {element_name}{formatted_date}) is {value}{codes_part}."
+
+            mcode_part = f" (mCODE: {element_name}{formatted_date})" if include_mcode else ""
+            return f"{subject}'s {element_name.lower()}{mcode_part} is {value}{codes_part}."
 
     def _group_elements_by_priority(
         self,
         elements: List[Dict[str, Any]],
         subject_type: str = "Patient"
     ) -> List[Dict[str, Any]]:
-        """Group and sort mCODE elements by clinical priority for optimal NLP processing.
+        """Group and sort mCODE elements by clinical priority for optimal NLP processing, respecting detail level switches.
 
         Args:
             elements: List of element dictionaries with 'element_name', 'value', 'codes', 'date_qualifier'
             subject_type: Type of subject ("Patient" or "Trial") for priority ordering
 
         Returns:
-            Sorted list of elements by clinical priority
+            Sorted and filtered list of elements by clinical priority, respecting detail level constraints
         """
         # Sort elements by their configured priority
         sorted_elements = []
@@ -154,7 +226,24 @@ class McodeSummarizer:
         # Sort by priority (lower number = higher priority)
         sorted_elements.sort(key=lambda x: x['priority'])
 
-        return sorted_elements
+        # Apply detail level filters
+        filtered_elements = []
+
+        for element in sorted_elements:
+            priority = element.get('priority', 999)
+
+            # Check priority threshold
+            if self.current_config["priority_threshold"] is not None:
+                if priority > self.current_config["priority_threshold"]:
+                    continue
+
+            filtered_elements.append(element)
+
+        # Apply max elements limit
+        if self.current_config["max_elements"] is not None:
+            filtered_elements = filtered_elements[:self.current_config["max_elements"]]
+
+        return filtered_elements
 
     def _generate_sentences_from_elements(
         self,
