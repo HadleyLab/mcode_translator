@@ -65,11 +65,11 @@ class McodeSummarizer:
         self.element_configs = {
             # Patient elements
             'Patient': {'priority': 1, 'template': '{subject} is a Patient (mCODE: Patient).'},
-            'Age': {'priority': 2, 'template': "{subject}'s age (mCODE: Age) is {value}{codes}."},
-            'Gender': {'priority': 3, 'template': "{subject}'s gender (mCODE: Gender) is {value}{codes}."},
-            'BirthDate': {'priority': 4, 'template': "{subject}'s birth date (mCODE: BirthDate) is {value}{codes}."},
-            'Race': {'priority': 5, 'template': "{subject}'s race (mCODE: Race) is {value}{codes}."},
-            'Ethnicity': {'priority': 6, 'template': "{subject}'s ethnicity (mCODE: Ethnicity) is {value}{codes}."},
+            'Age': {'priority': 2, 'template': "{subject}'s age is {value}{codes}."},
+            'Gender': {'priority': 3, 'template': "{subject}'s gender is {value}{codes}."},
+            'BirthDate': {'priority': 4, 'template': "{subject}'s birth date is {value}{codes}."},
+            'Race': {'priority': 5, 'template': "{subject}'s race is {value}{codes}."},
+            'Ethnicity': {'priority': 6, 'template': "{subject}'s ethnicity is {value}{codes}."},
             'CancerCondition': {'priority': 7, 'template': "{subject}'s diagnosis (mCODE: CancerCondition{date_qualifier}) is {value}{codes}."},
             'TNMStageGroup': {'priority': 8, 'template': "{subject}'s tumor staging (mCODE: TNMStageGroup{date_qualifier}) is {value}{codes}."},
             'TumorMarkerTest': {'priority': 9, 'template': "{subject}'s tumor markers (mCODE: TumorMarkerTest{date_qualifier}) show {value}."},
