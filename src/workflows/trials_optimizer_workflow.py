@@ -120,10 +120,12 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             if cli_args:
                 task_queue = create_async_queue_from_args(cli_args, "optimizer")
                 workers = task_queue.max_concurrent
+                self.logger.info(f"✅ Using CLI-configured concurrency: {workers} workers")
             else:
                 # Fallback to default async queue
                 task_queue = AsyncQueue(max_concurrent=1, name="OptimizerAsyncQueue")
                 workers = task_queue.max_concurrent
+                self.logger.warning("⚠️ No CLI args provided, falling back to 1 worker")
 
             self.logger.info(f"🤖 Using async queue with {workers} max concurrent tasks")
 

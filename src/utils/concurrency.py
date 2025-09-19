@@ -56,79 +56,100 @@ class AsyncQueue:
         timeout: Optional[float] = None,
         progress_callback: Optional[Callable] = None
     ) -> List[TaskResult]:
-        """Execute tasks with controlled concurrency."""
+        """Execute tasks with controlled concurrency using a worker pool approach."""
         if not tasks:
             return []
 
         self.logger.info(f"🚀 {self.name}: Processing {len(tasks)} tasks (max {self.max_concurrent} concurrent)")
 
-        async def execute_task(task: Task) -> TaskResult:
-            async with self.semaphore:
-                start_time = time.time()
+        async def worker(worker_id: int, task_queue: asyncio.Queue):
+            """Worker function that processes tasks from the queue."""
+            while True:
                 try:
-                    self.logger.debug(f"⚡ {self.name}: Executing {task.id}")
+                    # Get task from queue
+                    task = await task_queue.get()
 
-                    # Run sync function in thread pool - combine args and kwargs
-                    loop = asyncio.get_event_loop()
-                    # Create a wrapper function that handles both args and kwargs
-                    def task_wrapper():
-                        return task.func(*task.args, **task.kwargs)
+                    # Sentinel value to stop worker
+                    if task is None:
+                        task_queue.task_done()
+                        break
 
-                    result = await loop.run_in_executor(None, task_wrapper)
+                    start_time = time.time()
+                    self.logger.info(f"⚡ {self.name}: WORKER-{worker_id} STARTED {task.id}")
 
-                    duration = time.time() - start_time
-                    self.logger.debug(f"✅ {self.name}: Completed {task.id} ({duration:.2f}s)")
+                    try:
+                        # Run sync function in thread pool
+                        loop = asyncio.get_event_loop()
+                        def task_wrapper():
+                            return task.func(*task.args, **task.kwargs)
 
-                    return TaskResult(
-                        task_id=task.id,
-                        success=True,
-                        result=result,
-                        duration=duration
-                    )
+                        result = await loop.run_in_executor(None, task_wrapper)
+
+                        duration = time.time() - start_time
+                        self.logger.info(f"✅ {self.name}: WORKER-{worker_id} COMPLETED {task.id} ({duration:.2f}s)")
+
+                        task_results.append(TaskResult(
+                            task_id=task.id,
+                            success=True,
+                            result=result,
+                            duration=duration
+                        ))
+
+                    except Exception as e:
+                        duration = time.time() - start_time
+                        self.logger.error(f"❌ {self.name}: WORKER-{worker_id} FAILED {task.id} ({duration:.2f}s): {e}")
+                        task_results.append(TaskResult(
+                            task_id=task.id,
+                            success=False,
+                            error=e,
+                            duration=duration
+                        ))
+
+                    finally:
+                        task_queue.task_done()
+
+                        if progress_callback:
+                            progress_callback(len(task_results), len(tasks), task_results[-1])
 
                 except Exception as e:
-                    duration = time.time() - start_time
-                    self.logger.error(f"❌ {self.name}: Failed {task.id} ({duration:.2f}s): {e}")
-                    return TaskResult(
-                        task_id=task.id,
-                        success=False,
-                        error=e,
-                        duration=duration
-                    )
+                    self.logger.error(f"❌ {self.name}: WORKER-{worker_id} error: {e}")
 
-        # Execute with timeout if specified
+        # Create task queue and results list
+        task_queue = asyncio.Queue()
+        task_results = []
+
+        # Add all tasks to queue
+        for task in tasks:
+            await task_queue.put(task)
+
+        # Add sentinel values to stop workers
+        for _ in range(self.max_concurrent):
+            await task_queue.put(None)
+
+        # Start workers
+        workers = []
+        for i in range(self.max_concurrent):
+            worker_task = asyncio.create_task(worker(i + 1, task_queue))
+            workers.append(worker_task)
+
+        # Wait for all workers to complete
         if timeout:
             try:
-                results = await asyncio.wait_for(
-                    asyncio.gather(*[execute_task(task) for task in tasks], return_exceptions=True),
-                    timeout=timeout
-                )
+                await asyncio.wait_for(asyncio.gather(*workers, return_exceptions=True), timeout=timeout)
             except asyncio.TimeoutError:
                 self.logger.error(f"⏰ {self.name}: Timeout after {timeout}s")
+                # Cancel remaining tasks
+                for w in workers:
+                    if not w.done():
+                        w.cancel()
                 return []
         else:
-            results = await asyncio.gather(*[execute_task(task) for task in tasks], return_exceptions=True)
+            await asyncio.gather(*workers, return_exceptions=True)
 
-        # Process results
-        processed_results = []
-        for i, result in enumerate(results):
-            if isinstance(result, Exception):
-                processed_results.append(TaskResult(
-                    task_id=tasks[i].id,
-                    success=False,
-                    error=result,
-                    duration=0.0
-                ))
-            else:
-                processed_results.append(result)
-
-            if progress_callback:
-                progress_callback(len(processed_results), len(tasks), processed_results[-1])
-
-        successful = sum(1 for r in results if not isinstance(r, Exception) and r.success)
+        successful = sum(1 for r in task_results if r.success)
         self.logger.info(f"🎉 {self.name}: Completed {successful}/{len(tasks)} tasks")
 
-        return processed_results
+        return task_results
 
     async def execute_task(self, task: Task, timeout: Optional[float] = None) -> TaskResult:
         """Execute single task."""
