@@ -112,7 +112,7 @@
       "optimized_model": "deepseek-coder",
       "optimized_prompt": "direct_mcode_evidence_based_concise",
       "optimization_score": 1.0,
-      "last_optimized": "2025-09-19T10:15:27.084010"
+      "last_optimized": "2025-09-19T10:25:42.567980"
     }
   }
 }

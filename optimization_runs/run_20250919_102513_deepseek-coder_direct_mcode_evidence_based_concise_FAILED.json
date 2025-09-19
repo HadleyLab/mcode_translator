@@ -1,0 +1,9 @@
+{
+  "combination": {
+    "prompt": "direct_mcode_evidence_based_concise",
+    "model": "deepseek-coder"
+  },
+  "success": false,
+  "error": "All 5 trials failed: [\"BaseEventLoop.run_in_executor() got an unexpected keyword argument 'combination'\", \"BaseEventLoop.run_in_executor() got an unexpected keyword argument 'combination'\", \"BaseEventLoop.run_in_executor() got an unexpected keyword argument 'combination'\"]...",
+  "timestamp": "2025-09-19T10:25:13.788132"
+}

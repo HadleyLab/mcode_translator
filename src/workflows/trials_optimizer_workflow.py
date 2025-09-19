@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional
 
 from src.pipeline import McodePipeline
 from src.utils.logging_config import get_logger
-from src.utils.concurrency import TaskQueue, create_task, get_optimizer_pool, create_task_queue_from_args
+from src.utils.concurrency import AsyncQueue, create_task, create_async_queue_from_args
 from src.utils.metrics import BenchmarkMetrics, PerformanceMetrics
 
 from .base_workflow import BaseWorkflow, WorkflowResult
@@ -33,7 +33,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         """Optimizer workflows use 'optimization' space."""
         return "optimization"
 
-    def execute(self, **kwargs) -> WorkflowResult:
+    async def execute(self, **kwargs) -> WorkflowResult:
         """
         Execute the optimization workflow with cross validation.
 
@@ -118,14 +118,14 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             # Get concurrency configuration from CLI args
             cli_args = kwargs.get("cli_args")
             if cli_args:
-                task_queue = create_task_queue_from_args(cli_args, "optimizer")
-                workers = task_queue.worker_pool.max_workers
+                task_queue = create_async_queue_from_args(cli_args, "optimizer")
+                workers = task_queue.max_concurrent
             else:
-                # Fallback to default optimizer pool
-                task_queue = TaskQueue(max_workers=get_optimizer_pool().max_workers, name="OptimizerQueue")
-                workers = task_queue.worker_pool.max_workers
+                # Fallback to default async queue
+                task_queue = AsyncQueue(max_concurrent=1, name="OptimizerAsyncQueue")
+                workers = task_queue.max_concurrent
 
-            self.logger.info(f"🤖 Using {workers} concurrent workers for optimization")
+            self.logger.info(f"🤖 Using async queue with {workers} max concurrent tasks")
 
             # Create tasks for fully asynchronous execution
             # Break down to individual trial processing for maximum parallelism
@@ -183,7 +183,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                     combo_name = combinations[combo_idx]['model'] + " + " + combinations[combo_idx]['prompt'] if combo_idx < len(combinations) else "unknown"
                     self.logger.warning(f"❌ Failed trial {completed}/{total}: {combo_name} - {result.error}")
 
-            task_results = task_queue.execute_tasks(tasks, progress_callback=progress_callback)
+            task_results = await task_queue.execute_tasks(tasks, progress_callback=progress_callback)
 
             # Create directory for saving individual runs
             runs_dir = Path("optimization_runs")
