@@ -76,8 +76,8 @@
         "token_usage"
       ],
       "optimized_prompt": "direct_mcode_evidence_based_concise",
-      "optimization_score": 0.9800000000000001,
-      "last_optimized": "2025-09-18T18:33:18.059713"
+      "optimization_score": 1.0,
+      "last_optimized": "2025-09-19T09:38:21.502441"
     }
   }
 }
