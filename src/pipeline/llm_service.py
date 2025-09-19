@@ -47,6 +47,8 @@ class LLMService:
         # Optimization: Connection pooling and reuse
         self._client_cache: Dict[str, Any] = {}
         self._last_client_use: Dict[str, float] = {}
+        self._async_client_cache: Dict[str, Any] = {}
+        self._last_async_client_use: Dict[str, float] = {}
 
         # Optimization: Performance monitoring
         self._performance_stats = {
@@ -58,9 +60,9 @@ class LLMService:
             "error_count": 0
         }
 
-    def map_to_mcode(self, clinical_text: str) -> List[McodeElement]:
+    async def map_to_mcode(self, clinical_text: str) -> List[McodeElement]:
         """
-        Map clinical text to mCODE elements using existing infrastructure.
+        Map clinical text to mCODE elements using async infrastructure.
 
         Args:
             clinical_text: Clinical trial text to process
@@ -109,9 +111,9 @@ class LLMService:
                 self._update_performance_stats(0.0, cache_hit=True, tokens_used=0, error=False)
                 return [McodeElement(**elem) for elem in cached_result.get("mcode_elements", [])]
 
-            # Make LLM call using existing infrastructure
-            self.logger.debug(f"🔍 CACHE MISS → 🚀 API CALL: {self.model_name}")
-            response_json = self._call_llm_api(prompt, llm_config)
+            # Make async LLM call using existing infrastructure
+            self.logger.debug(f"🔍 CACHE MISS → 🚀 ASYNC API CALL: {self.model_name}")
+            response_json = await self._call_llm_api_async(prompt, llm_config)
 
             # Parse response using existing models
             mcode_elements = self._parse_llm_response(response_json)
@@ -122,7 +124,7 @@ class LLMService:
             self.logger.debug(f"💾 CACHE SAVED: {self.model_name}")
 
             # Periodic cleanup of old clients
-            self._cleanup_old_clients()
+            await self._cleanup_old_async_clients()
 
             return mcode_elements
 
@@ -130,9 +132,9 @@ class LLMService:
             self.logger.error(f"❌ LLM mapping failed for {self.model_name}: {str(e)}")
             return []
 
-    def _call_llm_api(self, prompt: str, llm_config) -> Dict[str, Any]:
+    async def _call_llm_api_async(self, prompt: str, llm_config) -> Dict[str, Any]:
         """
-        Make optimized LLM API call with connection reuse and performance monitoring.
+        Make optimized async LLM API call with connection reuse and performance monitoring.
 
         Args:
             prompt: Formatted prompt
@@ -142,6 +144,7 @@ class LLMService:
             Parsed JSON response
         """
         import openai
+        import asyncio
 
         tokens_used = 0
         error_occurred = False
@@ -164,11 +167,11 @@ class LLMService:
             temperature = self.config.get_temperature(self.model_name)
             max_tokens = self.config.get_max_tokens(self.model_name)
 
-            # Use cached client for connection reuse (optimization)
-            client = self._get_cached_client(self.model_name)
+            # Use cached async client for connection reuse (optimization)
+            client = await self._get_cached_async_client(self.model_name)
 
-            # Make API call with aggressive rate limiting handling
-            response = self._make_api_call_with_rate_limiting(client, llm_config, prompt, temperature, max_tokens)
+            # Make async API call with aggressive rate limiting handling
+            response = await self._make_async_api_call_with_rate_limiting(client, llm_config, prompt, temperature, max_tokens)
 
             # Extract token usage using existing utility
             from src.utils.token_tracker import extract_token_usage_from_response
@@ -276,12 +279,12 @@ class LLMService:
                 request_time = time.time() - start_time
                 self._update_performance_stats(request_time, cache_hit=False, tokens_used=tokens_used, error=error_occurred)
 
-    def _make_api_call_with_rate_limiting(self, client, llm_config, prompt: str, temperature: float, max_tokens: int):
+    async def _make_async_api_call_with_rate_limiting(self, client, llm_config, prompt: str, temperature: float, max_tokens: int):
         """
-        Make API call with aggressive rate limiting and exponential backoff retry logic.
+        Make async API call with aggressive rate limiting and exponential backoff retry logic.
 
         Args:
-            client: OpenAI client instance
+            client: AsyncOpenAI client instance
             llm_config: LLM configuration
             prompt: Formatted prompt
             temperature: Temperature parameter
@@ -295,6 +298,7 @@ class LLMService:
         """
         import random
         import openai
+        import asyncio
 
         start_time = time.time()
         # Aggressive retry configuration for rate limiting
@@ -325,19 +329,35 @@ class LLMService:
                 else:
                     self.logger.warning(f"🔄 RETRY {attempt}/{max_retries}: {llm_config.model_identifier}")
 
-                response = client.chat.completions.create(**call_params)
+                response = await client.chat.completions.create(**call_params)
                 api_time = time.time() - start_time
                 self.logger.info(f"✅ API RESPONSE: {llm_config.model_identifier} ({api_time:.2f}s)")
                 return response
 
             except Exception as e:
-                # Check if this is a rate limit error by examining the error message/code
+                # Check error type by examining the error message/code
                 error_str = str(e).lower()
+
+                # Check for quota errors first (these should be flagged and model skipped)
+                is_quota_error = (
+                    'insufficient_quota' in error_str or
+                    'quota exceeded' in error_str or
+                    'billing' in error_str or
+                    'check your plan' in error_str
+                )
+
+                if is_quota_error:
+                    # Quota errors should be flagged and the model should be skipped
+                    self.logger.error(f"💰 QUOTA ERROR for {llm_config.model_identifier}: {str(e)}")
+                    self.logger.error(f"  This model has exceeded its quota and will be skipped")
+                    self.logger.error(f"  Consider upgrading your plan or using a different model")
+                    raise ValueError(f"Model {llm_config.model_identifier} has exceeded its quota") from e
+
+                # Check for rate limiting errors (these should be retried)
                 is_rate_limit = (
                     'rate limit' in error_str or
                     '429' in error_str or
-                    'too many requests' in error_str or
-                    'quota exceeded' in error_str
+                    'too many requests' in error_str
                 )
 
                 if is_rate_limit:
@@ -390,7 +410,7 @@ class LLMService:
                     total_delay = delay + jitter
 
                     self.logger.info(f"⏳ Waiting {total_delay:.2f}s before retry {attempt + 1}/{max_retries}")
-                    time.sleep(total_delay)
+                    await asyncio.sleep(total_delay)
                     continue  # Continue to next retry attempt
 
                 # If not a rate limit error, handle as regular API error
@@ -405,7 +425,7 @@ class LLMService:
 
                     self.logger.warning(f"⚠️ API error on attempt {attempt + 1}: {str(e)}")
                     self.logger.info(f"⏳ Waiting {total_delay:.2f}s before retry")
-                    time.sleep(total_delay)
+                    await asyncio.sleep(total_delay)
 
 
     def _parse_llm_response(self, response_json: Dict[str, Any]) -> List[McodeElement]:
@@ -488,6 +508,54 @@ class LLMService:
 
         except Exception as e:
             self.logger.error(f"Failed to create client for {model_name}: {e}")
+            raise
+
+    async def _get_cached_async_client(self, model_name: str):
+        """
+        Get cached async OpenAI client with connection reuse for performance optimization.
+
+        Args:
+            model_name: Name of the model to get client for
+
+        Returns:
+            Cached async OpenAI client instance
+        """
+        import openai
+
+        cache_key = f"async_{model_name}_{self.config.get_base_url(model_name)}"
+        current_time = time.time()
+
+        # Check if we have a cached async client and it's still fresh (< 5 minutes old)
+        if (cache_key in self._async_client_cache and
+            cache_key in self._last_async_client_use and
+            current_time - self._last_async_client_use[cache_key] < 300):  # 5 minutes
+
+            self.logger.debug(f"Reusing cached async client for {model_name}")
+            self._last_async_client_use[cache_key] = current_time
+            return self._async_client_cache[cache_key]
+
+        # Create new async client
+        try:
+            api_key = self.config.get_api_key(model_name)
+            base_url = self.config.get_base_url(model_name)
+
+            client = openai.AsyncOpenAI(
+                base_url=base_url,
+                api_key=api_key,
+                # Disable built-in retries since we handle them at application level
+                max_retries=0,
+                timeout=self.config.get_timeout(model_name)
+            )
+
+            # Cache the async client
+            self._async_client_cache[cache_key] = client
+            self._last_async_client_use[cache_key] = current_time
+
+            self.logger.debug(f"Created new cached async client for {model_name}")
+            return client
+
+        except Exception as e:
+            self.logger.error(f"Failed to create async client for {model_name}: {e}")
             raise
 
 
@@ -619,6 +687,38 @@ class LLMService:
 
         if cleanup_count > 0:
             self.logger.info(f"Cleaned up {cleanup_count} old cached clients")
+
+        return cleanup_count
+
+    async def _cleanup_old_async_clients(self, max_age_seconds: int = 600) -> int:
+        """
+        Clean up old cached async clients to prevent memory leaks.
+
+        Args:
+            max_age_seconds: Maximum age for cached clients (default: 10 minutes)
+
+        Returns:
+            Number of clients cleaned up
+        """
+        current_time = time.time()
+        cleanup_count = 0
+
+        # Find old async clients
+        old_clients = []
+        for cache_key, last_use in self._last_async_client_use.items():
+            if current_time - last_use > max_age_seconds:
+                old_clients.append(cache_key)
+
+        # Remove old async clients
+        for cache_key in old_clients:
+            if cache_key in self._async_client_cache:
+                del self._async_client_cache[cache_key]
+            if cache_key in self._last_async_client_use:
+                del self._last_async_client_use[cache_key]
+            cleanup_count += 1
+
+        if cleanup_count > 0:
+            self.logger.info(f"Cleaned up {cleanup_count} old cached async clients")
 
         return cleanup_count
 

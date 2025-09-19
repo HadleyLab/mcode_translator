@@ -151,7 +151,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                     for trial_idx, trial in enumerate(val_trials):
                         task = create_task(
                             task_id=f"trial_{task_id}",
-                            func=self._test_single_trial,
+                            func=self._test_single_trial_async,
                             combination=combo,
                             trial=trial,
                             fold=fold,
@@ -345,7 +345,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
         return combinations
 
-    def _test_single_trial(
+    async def _test_single_trial(
         self, combination: Dict[str, str], trial: Dict[str, Any], fold: int, combo_idx: int
     ) -> Dict[str, Any]:
         """Test a single trial with a specific prompt×model combination."""
@@ -360,8 +360,8 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             # Initialize pipeline with this combination
             pipeline = McodePipeline(prompt_name=prompt_name, model_name=model_name)
 
-            # Process single trial
-            result = pipeline.process(trial)
+            # Process single trial asynchronously
+            result = await pipeline.process(trial)
 
             # Calculate quality metrics
             predicted = [elem.model_dump() for elem in result.mcode_mappings]
@@ -417,6 +417,13 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 "performance_metrics": perf_metrics.to_dict(),
                 "timestamp": datetime.now().isoformat(),
             }
+
+    def _test_single_trial_async(
+        self, combination: Dict[str, str], trial: Dict[str, Any], fold: int, combo_idx: int
+    ) -> Dict[str, Any]:
+        """Async wrapper for _test_single_trial to work with task queue."""
+        import asyncio
+        return asyncio.run(self._test_single_trial(combination, trial, fold, combo_idx))
 
     def _save_optimal_config(
         self, best_result: Dict[str, Any], output_path: str
