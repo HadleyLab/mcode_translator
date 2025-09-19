@@ -1,0 +1,254 @@
+[
+  {
+    "task_id": "2063197e-6f74-43b7-966f-0e70dd4e272a",
+    "trial_id": "NCT01026116",
+    "gold_config": "direct_mcode_minimal_gpt-4o-mini",
+    "comp_config": "direct_mcode_improved_gpt-4o-mini",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "CancerDiseaseStatus=\"active\"",
+      "CancerRelatedMedication=\"EC-wP\"",
+      "CancerRelatedMedication=\"EP-wP\"",
+      "GenomicVariant=\"ER+\"",
+      "TNMClinicalStageGroup=\"I-III\""
+    ],
+    "false_negative_examples": [
+      "mCODE Trial Title=\"mCODE-001\"",
+      "Condition=\"C50\"",
+      "Study Design Primary Purpose=\"TREATMENT\"",
+      "mCODE Age Group=\"Z00.129\"",
+      "mCODE Drug=\"C0004057\""
+    ]
+  },
+  {
+    "task_id": "956aaa7a-b627-40e5-8eea-1ca5c27e9662",
+    "trial_id": "NCT06650748",
+    "gold_config": "direct_mcode_optimization_gpt-4o-mini",
+    "comp_config": "direct_mcode_improved_gpt-4o-mini",
+    "true_positive_examples": [
+      "GenomicVariant=\"CDK4/6\"",
+      "CancerDiseaseStatus=\"active\"",
+      "CancerCondition=\"C50.919\""
+    ],
+    "false_positive_examples": [
+      "CancerDiseaseStatus=\"recurrence risk\"",
+      "GenomicVariant=\"1000130\"",
+      "CancerRelatedMedication=\"C02.4\"",
+      "CancerRelatedMedication=\"C02.2\"",
+      "CancerRelatedMedication=\"C0017168\""
+    ],
+    "false_negative_examples": [
+      "Biomarker=\"Ki-67\"",
+      "CancerCondition=\"C50.9\"",
+      "LaboratoryTestResult=\"AST\"",
+      "LaboratoryTestResult=\"Creatinine\"",
+      "CancerRiskAssessment=\"EPclin\""
+    ]
+  },
+  {
+    "task_id": "b3053202-7bdd-46df-b968-e47289516748",
+    "trial_id": "NCT06650748",
+    "gold_config": "direct_mcode_structured_gpt-4o-mini",
+    "comp_config": "direct_mcode_gpt-4o-mini",
+    "true_positive_examples": [
+      "CancerCondition=\"C50.9\"",
+      "CancerCondition=\"C50\"",
+      "CancerCondition=\"C50.919\"",
+      "CancerDiseaseStatus=\"active\""
+    ],
+    "false_positive_examples": [
+      "CancerBiomarker=\"1000072\"",
+      "Patient=\"age\"",
+      "Observation=\"Hb\"",
+      "Observation=\"1000021\"",
+      "MedicationStatement=\"C123457\""
+    ],
+    "false_negative_examples": [
+      "Biomarker=\"Ki-67\"",
+      "CancerRiskAssessment=\"high\"",
+      "GenomicVariant=\"HGNC:12345\"",
+      "LaboratoryTest=\"INR\"",
+      "LaboratoryTest=\"Creatinine\""
+    ]
+  },
+  {
+    "task_id": "3c109a65-bf1d-4e24-ba03-eefb7ab99d57",
+    "trial_id": "NCT00109785",
+    "gold_config": "direct_mcode_improved_gpt-4o-mini",
+    "comp_config": "direct_mcode_gpt-4o-mini",
+    "true_positive_examples": [
+      "CancerCondition=\"254837001\"",
+      "CancerCondition=\"C50.9\"",
+      "CancerDiseaseStatus=\"stable\""
+    ],
+    "false_positive_examples": [
+      "ClinicalTrialDesign=\"NA\"",
+      "Observation=\"IUdR\"",
+      "ClinicalTrialDesign=\"DIAGNOSTIC\"",
+      "Procedure=\"Chemotherapy\"",
+      "PatientCharacteristic=\"age\""
+    ],
+    "false_negative_examples": [
+      "CancerDiseaseStatus=\"active\"",
+      "CancerRelatedProcedure=\"CPT-78815\"",
+      "CancerRelatedMedication=\"C01\"",
+      "TNMClinicalStageGroup=\"T3N2M0\"",
+      "ECOGPerformanceStatus=\"2\""
+    ]
+  },
+  {
+    "task_id": "304663d2-6f91-498c-9c46-d4a26c75e516",
+    "trial_id": "NCT00109785",
+    "gold_config": "direct_mcode_evidence_based_gpt-4o-mini",
+    "comp_config": "direct_mcode_optimization_gpt-4o-mini",
+    "true_positive_examples": [
+      "CancerCondition=\"C50.9\"",
+      "CancerCondition=\"C50\"",
+      "HealthyVolunteerStatus=\"false\""
+    ],
+    "false_positive_examples": [
+      "ContraceptionRequirement=\"effective_contraception\"",
+      "SurgicalProcedure=\"SurgicalResection\"",
+      "ClinicalTrial=\"NCTXXXXXXX\"",
+      "MaskingInfo=\"NONE\"",
+      "PerformanceStatus=\"80-100\""
+    ],
+    "false_negative_examples": [
+      "PatientReproductiveStatus=\"not pregnant\"",
+      "ResearchStudyMasking=\"NONE\"",
+      "PatientAge=\"120\"",
+      "ResearchStudyPurpose=\"DIAGNOSTIC\"",
+      "ResearchStudy=\"NCT00109785\""
+    ]
+  },
+  {
+    "task_id": "1d0d1ad3-24a2-4747-a79a-0cd1c9c54647",
+    "trial_id": "NCT01922921",
+    "gold_config": "direct_mcode_gpt-4o-mini",
+    "comp_config": "direct_mcode_simple_gpt-4o-mini",
+    "true_positive_examples": [
+      "CancerDiseaseStatus=\"active\"",
+      "CancerDiseaseStatus=\"stage IV\"",
+      "ClinicalTrial=\"NCT01922921\"",
+      "CancerCondition=\"C50.919\"",
+      "GenomicVariant=\"HER2\""
+    ],
+    "false_positive_examples": [
+      "PerformanceStatus=\"2\"",
+      "Intervention=\"HER2 ICD Peptide-Based Vaccine\"",
+      "OutcomeMeasureDenominator=\"2\"",
+      "OutcomeMeasure=\"2\"",
+      "Intervention=\"polysaccharide-K\""
+    ],
+    "false_negative_examples": [
+      "CancerTreatment=\"HER2Vaccine\"",
+      "CancerTreatment=\"Vaccine Therapy\"",
+      "Observation=\"Hgb\"",
+      "OutcomeMeasureClassCategory=\"Category-001\"",
+      "PatientCharacteristic=\"Sex\""
+    ]
+  },
+  {
+    "task_id": "3295dbd5-963b-4bad-9ec0-244d3bbaec40",
+    "trial_id": "NCT01026116",
+    "gold_config": "direct_mcode_comprehensive_gpt-4o-mini",
+    "comp_config": "direct_mcode_gpt-4o-mini",
+    "true_positive_examples": [
+      "CancerCondition=\"254837001\"",
+      "CancerDiseaseStatus=\"active\"",
+      "CancerCondition=\"C50.9\"",
+      "CancerCondition=\"C50.919\""
+    ],
+    "false_positive_examples": [
+      "PerformanceStatus=\"0-1\"",
+      "ClinicalTrialDesign=\"PARALLEL\"",
+      "ClinicalTrialDesign=\"NONE\"",
+      "ClinicalTrialDesign=\"TREATMENT\"",
+      "Age=\"age-40\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedMedication=\"C0004238\"",
+      "CancerRelatedMedication=\"EC-wP\"",
+      "CancerRelatedMedication=\"EP-wP\"",
+      "TNMClinicalStageGroup=\"I-III\"",
+      "CancerRelatedMedication=\"C0012004\""
+    ]
+  },
+  {
+    "task_id": "aaa8d569-e85a-4a0c-ab09-40de5e4f294c",
+    "trial_id": "NCT01922921",
+    "gold_config": "direct_mcode_simple_gpt-4o-mini",
+    "comp_config": "direct_mcode_improved_gpt-4o-mini",
+    "true_positive_examples": [
+      "GenomicVariant=\"HER2\"",
+      "CancerDiseaseStatus=\"active\"",
+      "CancerCondition=\"C50.919\""
+    ],
+    "false_positive_examples": [
+      "CancerRelatedMedication=\"C9295\"",
+      "CancerRelatedMedication=\"C0012004\"",
+      "CancerRelatedMedication=\"C1000005\"",
+      "TNMClinicalStageGroup=\"IV\"",
+      "CancerRelatedMedication=\"C1000007\""
+    ],
+    "false_negative_examples": [
+      "PerformanceStatus=\"2\"",
+      "CancerDiseaseStatus=\"stage IV\"",
+      "Intervention=\"HER2 ICD Peptide-Based Vaccine\"",
+      "OutcomeMeasureDenominator=\"2\"",
+      "OutcomeMeasure=\"2\""
+    ]
+  },
+  {
+    "task_id": "b8f78cf6-dcdb-4036-8ffa-b9382bee1136",
+    "trial_id": "NCT00616135",
+    "gold_config": "direct_mcode_evidence_based_concise_gpt-4o-mini",
+    "comp_config": "direct_mcode_gpt-4o-mini",
+    "true_positive_examples": [
+      "StudyDesign=\"SINGLE_GROUP\"",
+      "StudyDesign=\"NON_RANDOMIZED\"",
+      "CancerCondition=\"254837001\"",
+      "CancerCondition=\"C50.9\"",
+      "StudyDesign=\"NONE\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"healthyVolunteers\"",
+      "Procedure=\"10040\"",
+      "Study=\"NCT00616135\"",
+      "Observation=\"LA6576-8\"",
+      "CancerDiseaseStatus=\"active\""
+    ],
+    "false_negative_examples": [
+      "PatientDemographics=\"age\"",
+      "CancerCondition=\"789012\"",
+      "StudyDesign=\"false\"",
+      "CancerCondition|TNMStage=\"T2N0M0\"",
+      "CancerTreatment=\"123456\""
+    ]
+  },
+  {
+    "task_id": "4b730493-7676-4496-b561-43dd8599ba01",
+    "trial_id": "NCT00616135",
+    "gold_config": "direct_mcode_evidence_based_with_codes_gpt-4o-mini",
+    "comp_config": "direct_mcode_optimization_gpt-4o-mini",
+    "true_positive_examples": [
+      "StudyDesign=\"SINGLE_GROUP\"",
+      "StudyDesign=\"NONE\"",
+      "StudyDesign=\"TREATMENT\""
+    ],
+    "false_positive_examples": [
+      "CancerDiseaseStatus=\"no evidence of disease\"",
+      "EligibilityCriteria=\"inclusion\"",
+      "ClinicalTrial=\"NCT00616135\"",
+      "CancerTreatment=\"C4-1\"",
+      "CosmeticSequelae=\"Type I\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"372130007\"",
+      "CancerCondition=\"254837009\"",
+      "PatientDemographics=\"248153007\"",
+      "PatientDemographics=\"184099003\"",
+      "CancerCondition=\"432469009\""
+    ]
+  }
+]

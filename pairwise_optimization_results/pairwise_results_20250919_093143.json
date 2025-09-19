@@ -1,0 +1,236 @@
+{
+  "metadata": {
+    "timestamp": "2025-09-19T09:31:43.739528",
+    "total_tasks": 1,
+    "successful_tasks": 1
+  },
+  "results": [
+    {
+      "task_id": "65aeb54e-76c7-496b-b4a8-7cb29868ec89",
+      "trial_id": "NCT01922921",
+      "gold_config": "direct_mcode_deepseek-coder",
+      "comp_config": "direct_mcode_simple_deepseek-coder",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.25,
+        "mapping_precision": 0.41379310344827586,
+        "mapping_recall": 0.3870967741935484,
+        "mapping_f1_score": 0.39999999999999997,
+        "mapping_true_positives": 12,
+        "mapping_false_positives": 17,
+        "mapping_false_negatives": 19,
+        "gold_mappings_count": 51,
+        "comp_mappings_count": 45,
+        "gold_avg_confidence": 0.9068627450980392,
+        "comp_avg_confidence": 0.9377777777777778,
+        "true_positive_examples": [
+          "CancerRelatedMedication=\"L01XC07\"",
+          "CancerRelatedMedication=\"L03AX\"",
+          "CancerRelatedProcedure=\"96372\"",
+          "CancerCondition=\"C4872\"",
+          "CancerRelatedMedication=\"L01XC03\""
+        ],
+        "false_positive_examples": [
+          "CancerRelatedMedication=\"1161282\"",
+          "CancerRelatedProcedure=\"763187009\"",
+          "TNMClinicalStageGroup=\"21908-9\"",
+          "CancerRelatedMedication=\"L04AA06\"",
+          "CancerDiseaseStatus=\"254292007\""
+        ],
+        "false_negative_examples": [
+          "CancerRelatedProcedure=\"763223007\"",
+          "CancerRelatedProcedure=\"LP421985-9\"",
+          "CancerDiseaseStatus=\"271840007\"",
+          "CancerCondition=\"92546004\"",
+          "CancerDiseaseStatus=\"LA6675-6\""
+        ],
+        "gold_compliance_score": 0.3333333333333333,
+        "comp_compliance_score": 0.3333333333333333
+      },
+      "status": "Success",
+      "duration_ms": 1740152.9111862183
+    }
+  ],
+  "analysis": {
+    "summary": {
+      "total_comparisons": 1,
+      "successful_comparisons": 1,
+      "success_rate": 1.0,
+      "unique_config_pairs": 1
+    },
+    "configuration_analysis": {
+      "direct_mcode_deepseek-coder_vs_direct_mcode_simple_deepseek-coder": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.25,
+          "median": 0.25,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.41379310344827586,
+          "median": 0.41379310344827586,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.3870967741935484,
+          "median": 0.3870967741935484,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.39999999999999997,
+          "median": 0.39999999999999997,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 12,
+          "median": 12,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 17,
+          "median": 17,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 19,
+          "median": 19,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 51,
+          "median": 51,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 45,
+          "median": 45,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0.9068627450980392,
+          "median": 0.9068627450980392,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.9377777777777778,
+          "median": 0.9377777777777778,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        }
+      }
+    },
+    "overall_metrics": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.25,
+        "median": 0.25,
+        "stdev": 0,
+        "min": 0.25,
+        "max": 0.25
+      },
+      "mapping_precision": {
+        "mean": 0.41379310344827586,
+        "median": 0.41379310344827586,
+        "stdev": 0,
+        "min": 0.41379310344827586,
+        "max": 0.41379310344827586
+      },
+      "mapping_recall": {
+        "mean": 0.3870967741935484,
+        "median": 0.3870967741935484,
+        "stdev": 0,
+        "min": 0.3870967741935484,
+        "max": 0.3870967741935484
+      },
+      "mapping_f1_score": {
+        "mean": 0.39999999999999997,
+        "median": 0.39999999999999997,
+        "stdev": 0,
+        "min": 0.39999999999999997,
+        "max": 0.39999999999999997
+      },
+      "mapping_true_positives": {
+        "mean": 12,
+        "median": 12,
+        "stdev": 0,
+        "min": 12,
+        "max": 12
+      },
+      "mapping_false_positives": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "min": 17,
+        "max": 17
+      },
+      "mapping_false_negatives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "min": 19,
+        "max": 19
+      },
+      "gold_mappings_count": {
+        "mean": 51,
+        "median": 51,
+        "stdev": 0,
+        "min": 51,
+        "max": 51
+      },
+      "comp_mappings_count": {
+        "mean": 45,
+        "median": 45,
+        "stdev": 0,
+        "min": 45,
+        "max": 45
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9068627450980392,
+        "median": 0.9068627450980392,
+        "stdev": 0,
+        "min": 0.9068627450980392,
+        "max": 0.9068627450980392
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9377777777777778,
+        "median": 0.9377777777777778,
+        "stdev": 0,
+        "min": 0.9377777777777778,
+        "max": 0.9377777777777778
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "min": 0.3333333333333333,
+        "max": 0.3333333333333333
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "min": 0.3333333333333333,
+        "max": 0.3333333333333333
+      }
+    }
+  }
+}

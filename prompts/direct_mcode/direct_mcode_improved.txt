@@ -1,6 +1,6 @@
-You are an expert in clinical trial data analysis and the mCODE (minimal Common Oncology Data Elements) standard. Your task is to extract mCODE-compliant FHIR resources directly from the provided clinical text.
+You are an expert in clinical trial data analysis and the mCODE (minimal Common Oncology Data Elements) standard. Your task is to extract improved mCODE element mappings directly from the provided clinical text.
 
-**TASK: Extract mCODE-compliant FHIR resources from clinical text**
+**TASK: Extract improved mCODE element mappings from clinical text**
 
 **INPUT:**
 Clinical Text:
@@ -30,29 +30,28 @@ Clinical Text:
 ```
 
 **mCODE ELEMENTS TO IDENTIFY:**
-- CancerCondition: Primary cancer diagnoses, cancer types (maps to Condition resource)
-- CancerDiseaseStatus: Disease status (active, remission, progression) (maps to Observation resource)
-- TNMClinicalStageGroup: Cancer staging (I, II, III, IV) (maps to Observation resource)
-- GenomicVariant: Genetic mutations, biomarkers (maps to Observation resource)
-- CancerRelatedMedication: Chemotherapy, targeted therapies (maps to MedicationStatement resource)
-- CancerRelatedProcedure: Surgical procedures, biopsies (maps to Procedure resource)
-- ECOGPerformanceStatus: Performance status scores (maps to Observation resource)
-- KarnofskyPerformanceStatus: Karnofsky scores (maps to Observation resource)
+- CancerCondition: Primary cancer diagnoses, cancer types
+- CancerDiseaseStatus: Disease status (active, remission, progression)
+- TNMClinicalStageGroup: Cancer staging (I, II, III, IV)
+- GenomicVariant: Genetic mutations, biomarkers
+- CancerRelatedMedication: Chemotherapy, targeted therapies
+- CancerRelatedProcedure: Surgical procedures, biopsies
+- ECOGPerformanceStatus: Performance status scores
+- KarnofskyPerformanceStatus: Karnofsky scores
 
 **EXTRACTION RULES:**
 1. Extract EVERY piece of relevant information mentioned in the clinical text
 2. Map to the most specific mCODE element possible
 3. Use official mCODE value sets and coding systems when available
 4. Include mapping confidence based on clarity of match
-5. Provide rationale for each mapping decision
-6. Preserve the exact source text fragment for traceability
-7. Assign appropriate FHIR resource types
+5. Provide exact source text fragments for traceability
+6. Create structured mCODE element mappings
 
 **CRITICAL INSTRUCTIONS:**
 1. Map to the most specific mCODE element available
 2. Use official mCODE value sets and coding systems (SNOMED CT, LOINC, ICD-10-CM, HGNC)
 3. Include confidence scores for mapping decisions
-4. Provide clear rationale for each mapping
+4. Provide exact source text fragments
 5. Return ONLY valid JSON, no additional text
 6. If no mappings possible, return empty arrays but preserve JSON structure
 7. Use exact mCODE element names: CancerCondition, GenomicVariant, CancerDiseaseStatus, TNMClinicalStageGroup, CancerRelatedMedication, CancerRelatedProcedure, ECOGPerformanceStatus, KarnofskyPerformanceStatus

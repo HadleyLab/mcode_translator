@@ -256,18 +256,45 @@ def main() -> None:
                         if "McodeResults" in item_dict and item_dict["McodeResults"]:
                             mcode_results = item_dict["McodeResults"]
 
-                            # Convert McodeElement objects to dictionaries
-                            if (
-                                "mcode_mappings" in mcode_results
-                                and mcode_results["mcode_mappings"]
-                            ):
-                                mappings = []
-                                for mapping in mcode_results["mcode_mappings"]:
-                                    if hasattr(mapping, "__dict__"):
-                                        mappings.append(mapping.__dict__)
-                                    else:
-                                        mappings.append(mapping)
-                                mcode_results["mcode_mappings"] = mappings
+                            # Validate mCODE results structure
+                            if not isinstance(mcode_results, dict):
+                                logger.warning(
+                                    f"Invalid McodeResults format for trial {trial_id}: expected dict, got {type(mcode_results)}"
+                                )
+                                logger.warning("This may indicate malformed JSON from LLM. Check the prompt configuration.")
+                                mcode_results = {"error": "Invalid McodeResults format", "note": "Check prompt configuration"}
+
+                            elif "mcode_mappings" not in mcode_results:
+                                logger.warning(
+                                    f"Missing mcode_mappings in McodeResults for trial {trial_id}"
+                                )
+                                logger.warning("LLM response may not contain expected mcode_mappings structure. Check the prompt configuration.")
+                                mcode_results = {"error": "Missing mcode_mappings", "note": "Check prompt configuration"}
+
+                            elif not isinstance(mcode_results.get("mcode_mappings"), list):
+                                logger.warning(
+                                    f"Invalid mcode_mappings format for trial {trial_id}: expected list, got {type(mcode_results.get('mcode_mappings'))}"
+                                )
+                                logger.warning("LLM response structure is incorrect. Check the prompt configuration.")
+                                mcode_results = {"error": "Invalid mcode_mappings format", "note": "Check prompt configuration"}
+
+                            else:
+                                # Convert McodeElement objects to dictionaries
+                                if mcode_results["mcode_mappings"]:
+                                    mappings = []
+                                    for mapping in mcode_results["mcode_mappings"]:
+                                        if hasattr(mapping, "__dict__"):
+                                            mappings.append(mapping.__dict__)
+                                        else:
+                                            mappings.append(mapping)
+                                    mcode_results["mcode_mappings"] = mappings
+
+                                # Check if mappings are empty after processing
+                                if not mcode_results["mcode_mappings"]:
+                                    logger.warning(
+                                        f"No valid mCODE mappings found for trial {trial_id} after processing"
+                                    )
+                                    logger.warning("This may indicate LLM generated invalid McodeElement structures. Check the prompt configuration.")
 
                             # Create output structure with mCODE data and original trial
                             output_item = {
@@ -281,10 +308,12 @@ def main() -> None:
                             logger.warning(
                                 f"No McodeResults found for trial {trial_id}"
                             )
+                            logger.warning("This may indicate LLM processing failed completely. Check API configuration and prompt.")
                             output_item = {
                                 "trial_id": trial_id,
                                 "mcode_elements": {
-                                    "note": "No mCODE mappings generated"
+                                    "note": "No mCODE mappings generated",
+                                    "error": "Missing McodeResults"
                                 },
                                 "original_trial_data": item_dict,
                             }

@@ -361,8 +361,8 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
             # Get token usage from global tracker
             from src.utils.token_tracker import global_token_tracker
-            token_usage = global_token_tracker.get_usage_summary()
-            tokens_used = token_usage.get("total_tokens", 0) if token_usage else 0
+            token_usage = global_token_tracker.get_total_usage()
+            tokens_used = token_usage.total_tokens if token_usage else 0
 
             # Stop performance tracking
             perf_metrics.stop_tracking(tokens_used=tokens_used, elements_processed=num_elements)

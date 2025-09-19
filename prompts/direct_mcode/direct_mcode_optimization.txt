@@ -1,4 +1,4 @@
-Extract mCODE FHIR resources from clinical text. Return JSON with mcode_mappings array.
+Extract structured mCODE element mappings from clinical text. Return JSON with mcode_mappings array.
 
 Clinical text: {clinical_text}
 
@@ -28,3 +28,4 @@ Clinical text: {clinical_text}
 2. Ensure all JSON is valid and parseable
 3. Properly escape any special characters within string values
 4. Do not include any text outside of the JSON structure
+5. Use exact mCODE element names: CancerCondition, GenomicVariant, CancerDiseaseStatus, TNMClinicalStageGroup, CancerRelatedMedication, CancerRelatedProcedure, ECOGPerformanceStatus, KarnofskyPerformanceStatus
