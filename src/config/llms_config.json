@@ -1,6 +1,6 @@
 {
   "models": {
-    "default": "gpt-4-turbo",
+    "default": "deepseek-coder",
     "available": {
       "deepseek-coder": {
         "provider": "deepseek",
@@ -109,10 +109,10 @@
         "cost"
       ],
       "sample_size": 10,
-      "optimized_model": "gpt-4-turbo",
+      "optimized_model": "deepseek-coder",
       "optimized_prompt": "direct_mcode_evidence_based_concise",
       "optimization_score": 1.0,
-      "last_optimized": "2025-09-19T09:40:56.902694"
+      "last_optimized": "2025-09-19T10:15:27.084010"
     }
   }
 }
