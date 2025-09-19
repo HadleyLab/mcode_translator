@@ -60,6 +60,65 @@ class LLMService:
             "error_count": 0
         }
 
+        # Track if we're in an async context for proper cleanup
+        self._cleanup_scheduled = False
+
+    def __del__(self):
+        """
+        Destructor to clean up async clients when the service is destroyed.
+        This helps prevent "Task exception was never retrieved" errors.
+        """
+        try:
+            # Try to close any remaining async clients synchronously
+            # This is a best-effort cleanup since we can't await in __del__
+            import asyncio
+
+            # Check if we have an active event loop
+            try:
+                loop = asyncio.get_running_loop()
+                if loop and not loop.is_closed():
+                    # Schedule cleanup for the running loop
+                    if not self._cleanup_scheduled and self._async_client_cache:
+                        loop.create_task(self._cleanup_async_clients_silently())
+                        self._cleanup_scheduled = True
+                        self.logger.debug("Scheduled async client cleanup in destructor")
+                else:
+                    self.logger.warning("Event loop closed, async clients may not be properly cleaned up")
+            except RuntimeError:
+                # No running event loop
+                if self._async_client_cache:
+                    self.logger.warning(f"LLMService destroyed with {len(self._async_client_cache)} uncleaned async clients")
+                    self.logger.warning("This may cause 'Task exception was never retrieved' errors")
+
+        except Exception as e:
+            # Don't let cleanup errors break the destructor
+            try:
+                self.logger.warning(f"Error in LLMService destructor: {e}")
+            except:
+                pass  # Logger might not be available
+
+    async def _cleanup_async_clients_silently(self):
+        """
+        Silently clean up async clients without logging errors.
+        Used by destructor to avoid issues during shutdown.
+        """
+        try:
+            await self.cleanup_async_clients()
+        except Exception:
+            # Silently ignore cleanup errors during shutdown
+            pass
+
+    async def __aenter__(self):
+        """Async context manager entry."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit - clean up resources."""
+        try:
+            await self.cleanup_async_clients()
+        except Exception as e:
+            self.logger.warning(f"Error during async context cleanup: {e}")
+
     async def map_to_mcode(self, clinical_text: str) -> List[McodeElement]:
         """
         Map clinical text to mCODE elements using async infrastructure.
@@ -709,10 +768,19 @@ class LLMService:
             if current_time - last_use > max_age_seconds:
                 old_clients.append(cache_key)
 
-        # Remove old async clients
+        # Close and remove old async clients
         for cache_key in old_clients:
             if cache_key in self._async_client_cache:
-                del self._async_client_cache[cache_key]
+                try:
+                    client = self._async_client_cache[cache_key]
+                    # Close the client properly
+                    await client.aclose()
+                    self.logger.debug(f"Closed async client for {cache_key}")
+                except Exception as e:
+                    self.logger.warning(f"Error closing async client {cache_key}: {e}")
+                finally:
+                    del self._async_client_cache[cache_key]
+
             if cache_key in self._last_async_client_use:
                 del self._last_async_client_use[cache_key]
             cleanup_count += 1
@@ -721,6 +789,36 @@ class LLMService:
             self.logger.info(f"Cleaned up {cleanup_count} old cached async clients")
 
         return cleanup_count
+
+    async def cleanup_async_clients(self) -> None:
+        """
+        Clean up all cached async clients when shutting down.
+        This should be called when the application is shutting down to prevent
+        "Task exception was never retrieved" errors.
+        """
+        self.logger.info("🧹 Cleaning up async clients...")
+
+        # Close all cached async clients
+        close_tasks = []
+        for cache_key, client in self._async_client_cache.items():
+            try:
+                close_tasks.append(client.aclose())
+                self.logger.debug(f"Scheduled close for async client {cache_key}")
+            except Exception as e:
+                self.logger.warning(f"Error scheduling close for async client {cache_key}: {e}")
+
+        # Wait for all clients to close
+        if close_tasks:
+            try:
+                await asyncio.gather(*close_tasks, return_exceptions=True)
+                self.logger.info(f"✅ Closed {len(close_tasks)} async clients")
+            except Exception as e:
+                self.logger.warning(f"Error during async client cleanup: {e}")
+
+        # Clear the caches
+        self._async_client_cache.clear()
+        self._last_async_client_use.clear()
+        self.logger.info("🧹 Async client cleanup complete")
 
     def _update_performance_stats(self, request_time: float, cache_hit: bool, tokens_used: int, error: bool):
         """
