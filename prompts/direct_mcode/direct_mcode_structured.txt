@@ -1,12 +1,12 @@
-Analyze the clinical trial protocol and extract structured mCODE FHIR resources:
+Analyze the clinical trial protocol and extract structured mCODE element mappings:
 
 {clinical_text}
 
 Follow these steps:
 1. Identify all cancer-related entities
 2. Categorize into appropriate mCODE elements
-3. Map to FHIR resource types
-4. Extract numerical values and biomarker mentions
+3. Extract numerical values and biomarker mentions
+4. Create structured mCODE element mappings
 5. Return structured JSON output with mcode_mappings array
 
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
@@ -35,3 +35,4 @@ Follow these steps:
 2. Ensure all JSON is valid and parseable
 3. Properly escape any special characters within string values
 4. Do not include any text outside of the JSON structure
+5. Use exact mCODE element names: CancerCondition, GenomicVariant, CancerDiseaseStatus, TNMClinicalStageGroup, CancerRelatedMedication, CancerRelatedProcedure, ECOGPerformanceStatus, KarnofskyPerformanceStatus

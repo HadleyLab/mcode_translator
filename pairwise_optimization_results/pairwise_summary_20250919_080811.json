@@ -1,0 +1,903 @@
+{
+  "summary": {
+    "total_comparisons": 10,
+    "successful_comparisons": 10,
+    "success_rate": 1.0,
+    "unique_config_pairs": 10
+  },
+  "configuration_analysis": {
+    "direct_mcode_minimal_gpt-4o-mini_vs_direct_mcode_improved_gpt-4o-mini": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 14,
+        "median": 14,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 14,
+        "median": 14,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 14,
+        "median": 14,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 15,
+        "median": 15,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8464285714285715,
+        "median": 0.8464285714285715,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8566666666666669,
+        "median": 0.8566666666666669,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_optimization_gpt-4o-mini_vs_direct_mcode_improved_gpt-4o-mini": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.07692307692307693,
+        "median": 0.07692307692307693,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.2,
+        "median": 0.2,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.1111111111111111,
+        "median": 0.1111111111111111,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.14285714285714285,
+        "median": 0.14285714285714285,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 3,
+        "median": 3,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 12,
+        "median": 12,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 31,
+        "median": 31,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 20,
+        "median": 20,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8564516129032258,
+        "median": 0.8564516129032258,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8450000000000001,
+        "median": 0.8450000000000001,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_structured_gpt-4o-mini_vs_direct_mcode_gpt-4o-mini": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0784313725490196,
+        "median": 0.0784313725490196,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.13333333333333333,
+        "median": 0.13333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.16,
+        "median": 0.16,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.14545454545454545,
+        "median": 0.14545454545454545,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 4,
+        "median": 4,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 26,
+        "median": 26,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 21,
+        "median": 21,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 32,
+        "median": 32,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8750000000000001,
+        "median": 0.8750000000000001,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8984375000000001,
+        "median": 0.8984375000000001,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_improved_gpt-4o-mini_vs_direct_mcode_gpt-4o-mini": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.075,
+        "median": 0.075,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.10714285714285714,
+        "median": 0.10714285714285714,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.2,
+        "median": 0.2,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.13953488372093023,
+        "median": 0.13953488372093023,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 3,
+        "median": 3,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 25,
+        "median": 25,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 12,
+        "median": 12,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 29,
+        "median": 29,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.7000000000000001,
+        "median": 0.7000000000000001,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8586206896551725,
+        "median": 0.8586206896551725,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_gpt-4o-mini_vs_direct_mcode_optimization_gpt-4o-mini": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.06521739130434782,
+        "median": 0.06521739130434782,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.125,
+        "median": 0.125,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.12,
+        "median": 0.12,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.12244897959183673,
+        "median": 0.12244897959183673,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 3,
+        "median": 3,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 21,
+        "median": 21,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 22,
+        "median": 22,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 27,
+        "median": 27,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 25,
+        "median": 25,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 1.0,
+        "median": 1.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8359999999999999,
+        "median": 0.8359999999999999,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_gpt-4o-mini_vs_direct_mcode_simple_gpt-4o-mini": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.05555555555555555,
+        "median": 0.05555555555555555,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.11627906976744186,
+        "median": 0.11627906976744186,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.09615384615384616,
+        "median": 0.09615384615384616,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.10526315789473685,
+        "median": 0.10526315789473685,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 5,
+        "median": 5,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 38,
+        "median": 38,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 58,
+        "median": 58,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8620689655172408,
+        "median": 0.8620689655172408,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8808510638297867,
+        "median": 0.8808510638297867,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_comprehensive_gpt-4o-mini_vs_direct_mcode_gpt-4o-mini": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.14814814814814814,
+        "median": 0.14814814814814814,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.21052631578947367,
+        "median": 0.21052631578947367,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.2580645161290323,
+        "median": 0.2580645161290323,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 4,
+        "median": 4,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 15,
+        "median": 15,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 8,
+        "median": 8,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 13,
+        "median": 13,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 23,
+        "median": 23,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8538461538461539,
+        "median": 0.8538461538461539,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8999999999999998,
+        "median": 0.8999999999999998,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_simple_gpt-4o-mini_vs_direct_mcode_improved_gpt-4o-mini": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.046875,
+        "median": 0.046875,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.125,
+        "median": 0.125,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.06976744186046512,
+        "median": 0.06976744186046512,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.08955223880597014,
+        "median": 0.08955223880597014,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 3,
+        "median": 3,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 21,
+        "median": 21,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 40,
+        "median": 40,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 45,
+        "median": 45,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8808510638297867,
+        "median": 0.8808510638297867,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8455555555555553,
+        "median": 0.8455555555555553,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_concise_gpt-4o-mini_vs_direct_mcode_gpt-4o-mini": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.1935483870967742,
+        "median": 0.1935483870967742,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.2608695652173913,
+        "median": 0.2608695652173913,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.42857142857142855,
+        "median": 0.42857142857142855,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.3243243243243243,
+        "median": 0.3243243243243243,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 6,
+        "median": 6,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 8,
+        "median": 8,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 18,
+        "median": 18,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 31,
+        "median": 31,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9833333333333333,
+        "median": 0.9833333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8096774193548386,
+        "median": 0.8096774193548386,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_with_codes_gpt-4o-mini_vs_direct_mcode_optimization_gpt-4o-mini": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.11538461538461539,
+        "median": 0.11538461538461539,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.15,
+        "median": 0.15,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.20689655172413793,
+        "median": 0.20689655172413793,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 3,
+        "median": 3,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 6,
+        "median": 6,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 14,
+        "median": 14,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 25,
+        "median": 25,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9857142857142858,
+        "median": 0.9857142857142858,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8360000000000001,
+        "median": 0.8360000000000001,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    }
+  },
+  "overall_metrics": {
+    "mapping_jaccard_similarity": {
+      "mean": 0.08550835469615377,
+      "median": 0.07596153846153847,
+      "stdev": 0.05460597001995209,
+      "min": 0.0,
+      "max": 0.1935483870967742
+    },
+    "mapping_precision": {
+      "mean": 0.14281511412504974,
+      "median": 0.12916666666666665,
+      "stdev": 0.07066421627165435,
+      "min": 0.0,
+      "max": 0.2608695652173913
+    },
+    "mapping_recall": {
+      "mean": 0.18522704943635176,
+      "median": 0.14,
+      "stdev": 0.13713895235096688,
+      "min": 0.0,
+      "max": 0.42857142857142855
+    },
+    "mapping_f1_score": {
+      "mean": 0.15343963405026567,
+      "median": 0.14119601328903653,
+      "stdev": 0.09084870958284276,
+      "min": 0,
+      "max": 0.3243243243243243
+    },
+    "mapping_true_positives": {
+      "mean": 3.4,
+      "median": 3.0,
+      "stdev": 1.5776212754932308,
+      "min": 0,
+      "max": 6
+    },
+    "mapping_false_positives": {
+      "mean": 20.6,
+      "median": 19.0,
+      "stdev": 7.647802879839993,
+      "min": 12,
+      "max": 38
+    },
+    "mapping_false_negatives": {
+      "mean": 20.2,
+      "median": 17.5,
+      "stdev": 13.878840809744242,
+      "min": 6,
+      "max": 47
+    },
+    "gold_mappings_count": {
+      "mean": 26.7,
+      "median": 22.5,
+      "stdev": 15.246493221575758,
+      "min": 13,
+      "max": 58
+    },
+    "comp_mappings_count": {
+      "mean": 29.2,
+      "median": 27.0,
+      "stdev": 10.206751578135806,
+      "min": 15,
+      "max": 47
+    },
+    "gold_avg_confidence": {
+      "mean": 0.8843693986572598,
+      "median": 0.8685344827586204,
+      "stdev": 0.08892894096017719,
+      "min": 0.7000000000000001,
+      "max": 1.0
+    },
+    "comp_avg_confidence": {
+      "mean": 0.856680889506202,
+      "median": 0.8511111111111112,
+      "stdev": 0.028931069478675058,
+      "min": 0.8096774193548386,
+      "max": 0.8999999999999998
+    },
+    "gold_compliance_score": {
+      "mean": 0.4333333333333333,
+      "median": 0.3333333333333333,
+      "stdev": 0.2249828525701843,
+      "min": 0.0,
+      "max": 0.6666666666666666
+    },
+    "comp_compliance_score": {
+      "mean": 0.4333333333333333,
+      "median": 0.3333333333333333,
+      "stdev": 0.16101529717988264,
+      "min": 0.3333333333333333,
+      "max": 0.6666666666666666
+    }
+  }
+}

@@ -1,0 +1,1333 @@
+{
+  "metadata": {
+    "timestamp": "2025-09-19T09:03:52.789073",
+    "total_tasks": 10,
+    "successful_tasks": 10
+  },
+  "results": [
+    {
+      "task_id": "c0513b49-4869-4cb3-9e4a-38487a6283d6",
+      "trial_id": "NCT01026116",
+      "gold_config": "direct_mcode_comprehensive_gpt-4-turbo",
+      "comp_config": "direct_mcode_gpt-4-turbo",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.043478260869565216,
+        "mapping_precision": 0.07692307692307693,
+        "mapping_recall": 0.09090909090909091,
+        "mapping_f1_score": 0.08333333333333334,
+        "mapping_true_positives": 1,
+        "mapping_false_positives": 12,
+        "mapping_false_negatives": 10,
+        "gold_mappings_count": 11,
+        "comp_mappings_count": 15,
+        "gold_avg_confidence": 0.9727272727272727,
+        "comp_avg_confidence": 0.9533333333333334,
+        "true_positive_examples": [
+          "CancerCondition=\"C50\""
+        ],
+        "false_positive_examples": [
+          "CancerRelatedMedication=\"J9264\"",
+          "CancerCondition=\"C50.9\"",
+          "TNMClinicalStageGroup=\"Not available\"",
+          "CancerCondition=\"126906006\"",
+          "CancerRelatedProcedure=\"387713003\""
+        ],
+        "false_negative_examples": [
+          "CancerRelatedProcedure=\"261352009\"",
+          "GenomicVariant=\"HGNC:3430\"",
+          "CancerCondition=\"443237-9\"",
+          "GenomicVariant=\"HGNC:3467\"",
+          "ECOGPerformanceStatus=\"89243-0\""
+        ],
+        "gold_compliance_score": 0.3333333333333333,
+        "comp_compliance_score": 0.3333333333333333
+      },
+      "status": "Success",
+      "duration_ms": 55777.235984802246
+    },
+    {
+      "task_id": "980c9dad-1523-4987-ae70-23dba968b98c",
+      "trial_id": "NCT00109785",
+      "gold_config": "direct_mcode_improved_gpt-4-turbo",
+      "comp_config": "direct_mcode_gpt-4-turbo",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.22727272727272727,
+        "mapping_precision": 0.29411764705882354,
+        "mapping_recall": 0.5,
+        "mapping_f1_score": 0.37037037037037035,
+        "mapping_true_positives": 5,
+        "mapping_false_positives": 12,
+        "mapping_false_negatives": 5,
+        "gold_mappings_count": 11,
+        "comp_mappings_count": 18,
+        "gold_avg_confidence": 0.8772727272727273,
+        "comp_avg_confidence": 0.8416666666666669,
+        "true_positive_examples": [
+          "CancerRelatedProcedure=\"P5-09.3\"",
+          "KarnofskyPerformanceStatus=\"Not available\"",
+          "TNMClinicalStageGroup=\"Not available\"",
+          "CancerCondition=\"254837009\"",
+          "CancerRelatedProcedure=\"3E0234Z\""
+        ],
+        "false_positive_examples": [
+          "CancerRelatedMedication=\"Not specified\"",
+          "CancerRelatedProcedure=\"BQ01ZZZ\"",
+          "CancerCondition=\"C50.9\"",
+          "CancerDiseaseStatus=\"268910001\"",
+          "CancerRelatedMedication=\"A9552\""
+        ],
+        "false_negative_examples": [
+          "CancerCondition=\"C50.919\"",
+          "CancerRelatedMedication=\"not available\"",
+          "CancerCondition=\"C50\"",
+          "CancerRelatedProcedure=\"3E03305\"",
+          "CancerRelatedProcedure=\"not available\""
+        ],
+        "gold_compliance_score": 0.3333333333333333,
+        "comp_compliance_score": 0.3333333333333333
+      },
+      "status": "Success",
+      "duration_ms": 64480.2610874176
+    },
+    {
+      "task_id": "648f2de7-af9d-4e48-8df7-5f174426f616",
+      "trial_id": "NCT06650748",
+      "gold_config": "direct_mcode_optimization_gpt-4-turbo",
+      "comp_config": "direct_mcode_improved_gpt-4-turbo",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.08333333333333333,
+        "mapping_precision": 0.15789473684210525,
+        "mapping_recall": 0.15,
+        "mapping_f1_score": 0.15384615384615385,
+        "mapping_true_positives": 3,
+        "mapping_false_positives": 16,
+        "mapping_false_negatives": 17,
+        "gold_mappings_count": 23,
+        "comp_mappings_count": 21,
+        "gold_avg_confidence": 0.8782608695652173,
+        "comp_avg_confidence": 0.9476190476190477,
+        "true_positive_examples": [
+          "CancerCondition=\"254837009\"",
+          "CancerCondition=\"C50.9\"",
+          "GenomicVariant=\"HGNC:3467\""
+        ],
+        "false_positive_examples": [
+          "CancerRelatedMedication=\"1790095\"",
+          "CancerCondition=\"128700001\"",
+          "GenomicVariant=\"HGNC:1731\"",
+          "CancerRelatedMedication=\"1305106\"",
+          "GenomicVariant=\"HGNC:4886\""
+        ],
+        "false_negative_examples": [
+          "CancerRelatedMedication=\"N/A\"",
+          "CancerDiseaseStatus=\"CCR\"",
+          "CancerRelatedMedication=\"ribociclib\"",
+          "CancerRelatedMedication=\"abemaciclib\"",
+          "CancerCondition=\"HER2-\""
+        ],
+        "gold_compliance_score": 0.3333333333333333,
+        "comp_compliance_score": 0.3333333333333333
+      },
+      "status": "Success",
+      "duration_ms": 82485.70418357849
+    },
+    {
+      "task_id": "ee116a73-38db-4bd9-b389-66b47a878129",
+      "trial_id": "NCT01026116",
+      "gold_config": "direct_mcode_minimal_gpt-4-turbo",
+      "comp_config": "direct_mcode_improved_gpt-4-turbo",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.10526315789473684,
+        "mapping_precision": 0.16666666666666666,
+        "mapping_recall": 0.2222222222222222,
+        "mapping_f1_score": 0.1904761904761905,
+        "mapping_true_positives": 2,
+        "mapping_false_positives": 10,
+        "mapping_false_negatives": 7,
+        "gold_mappings_count": 12,
+        "comp_mappings_count": 14,
+        "gold_avg_confidence": 0.9583333333333334,
+        "comp_avg_confidence": 0.9500000000000001,
+        "true_positive_examples": [
+          "CancerCondition=\"C50\"",
+          "CancerRelatedMedication=\"unknown\""
+        ],
+        "false_positive_examples": [
+          "CancerRelatedProcedure=\"261352009\"",
+          "CancerRelatedProcedure=\"387713003\"",
+          "GenomicVariant=\"HGNC:3430\"",
+          "CancerCondition=\"443237-9\"",
+          "TNMClinicalStageGroup=\"cC0c1Dx\""
+        ],
+        "false_negative_examples": [
+          "CancerRelatedProcedure=\"396487001\"",
+          "CancerRelatedMedication=\"18075008\"",
+          "ECOGPerformanceStatus=\"Not Provided\"",
+          "GenomicVariant=\"Not Provided\"",
+          "TNMClinicalStageGroup=\"Not Provided\""
+        ],
+        "gold_compliance_score": 0.3333333333333333,
+        "comp_compliance_score": 0.3333333333333333
+      },
+      "status": "Success",
+      "duration_ms": 85517.43006706238
+    },
+    {
+      "task_id": "dcca5f93-84b0-4736-a53e-563d813c6f5d",
+      "trial_id": "NCT06650748",
+      "gold_config": "direct_mcode_structured_gpt-4-turbo",
+      "comp_config": "direct_mcode_gpt-4-turbo",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.26666666666666666,
+        "mapping_precision": 0.4,
+        "mapping_recall": 0.4444444444444444,
+        "mapping_f1_score": 0.4210526315789474,
+        "mapping_true_positives": 8,
+        "mapping_false_positives": 12,
+        "mapping_false_negatives": 10,
+        "gold_mappings_count": 21,
+        "comp_mappings_count": 22,
+        "gold_avg_confidence": 0.9523809523809522,
+        "comp_avg_confidence": 0.9636363636363636,
+        "true_positive_examples": [
+          "CancerRelatedMedication=\"N/A\"",
+          "CancerCondition=\"C50.9\"",
+          "CancerCondition=\"HER2-\"",
+          "GenomicVariant=\"Ki-67\"",
+          "GenomicVariant=\"EPclin\""
+        ],
+        "false_positive_examples": [
+          "CancerCondition=\"128700001\"",
+          "CancerRelatedMedication=\"Palbociclib\"",
+          "TNMClinicalStageGroup=\"T2N1M0\"",
+          "CancerRelatedMedication=\"Abemaciclib\"",
+          "CancerRelatedMedication=\"Letrozole\""
+        ],
+        "false_negative_examples": [
+          "CancerRelatedMedication=\"ribociclib\"",
+          "CancerRelatedMedication=\"abemaciclib\"",
+          "GenomicVariant=\"HGNC:3468\"",
+          "TNMClinicalStageGroup=\"cT2N1M0\"",
+          "CancerRelatedMedication=\"palbociclib\""
+        ],
+        "gold_compliance_score": 0.3333333333333333,
+        "comp_compliance_score": 0.3333333333333333
+      },
+      "status": "Success",
+      "duration_ms": 104686.77687644958
+    },
+    {
+      "task_id": "8a911bb0-097f-45a9-aa68-0621672bf913",
+      "trial_id": "NCT00616135",
+      "gold_config": "direct_mcode_evidence_based_concise_gpt-4-turbo",
+      "comp_config": "direct_mcode_gpt-4-turbo",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.10344827586206896,
+        "mapping_precision": 0.21428571428571427,
+        "mapping_recall": 0.16666666666666666,
+        "mapping_f1_score": 0.1875,
+        "mapping_true_positives": 3,
+        "mapping_false_positives": 11,
+        "mapping_false_negatives": 15,
+        "gold_mappings_count": 22,
+        "comp_mappings_count": 18,
+        "gold_avg_confidence": 0.9454545454545453,
+        "comp_avg_confidence": 0.9500000000000001,
+        "true_positive_examples": [
+          "CancerTreatment=\"108290001\"",
+          "CancerCondition=\"254837009\"",
+          "CancerCondition=\"126906006\""
+        ],
+        "false_positive_examples": [
+          "CancerRelatedProcedure=\"396487001\"",
+          "TNMClinicalStageGroup=\"T2N0M0\"",
+          "CancerRelatedProcedure=\"387607004\"",
+          "CancerCondition=\"109838007\"",
+          "CancerRelatedProcedure=\"424361007\""
+        ],
+        "false_negative_examples": [
+          "TNMStage=\"396087000\"",
+          "CancerTreatment=\"180030006\"",
+          "CancerTreatment=\"387713003\"",
+          "CancerCondition=\"408643008\"",
+          "ResearchStudy=\"Not Applicable\""
+        ],
+        "gold_compliance_score": 0.6666666666666666,
+        "comp_compliance_score": 0.6666666666666666
+      },
+      "status": "Success",
+      "duration_ms": 49626.821756362915
+    },
+    {
+      "task_id": "73df5ce7-9dc4-4b29-8c43-7fc785780436",
+      "trial_id": "NCT00109785",
+      "gold_config": "direct_mcode_evidence_based_gpt-4-turbo",
+      "comp_config": "direct_mcode_optimization_gpt-4-turbo",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.03125,
+        "mapping_precision": 0.1,
+        "mapping_recall": 0.043478260869565216,
+        "mapping_f1_score": 0.06060606060606061,
+        "mapping_true_positives": 1,
+        "mapping_false_positives": 9,
+        "mapping_false_negatives": 22,
+        "gold_mappings_count": 25,
+        "comp_mappings_count": 12,
+        "gold_avg_confidence": 1.0,
+        "comp_avg_confidence": 0.8816666666666667,
+        "true_positive_examples": [
+          "CancerCondition=\"C50.9\""
+        ],
+        "false_positive_examples": [
+          "CancerRelatedProcedure=\"P5-09.3\"",
+          "KarnofskyPerformanceStatus=\"Not available\"",
+          "CancerRelatedMedication=\"C15422\"",
+          "CancerRelatedMedication=\"C18882\"",
+          "TNMClinicalStageGroup=\"Not available\""
+        ],
+        "false_negative_examples": [
+          "CancerTreatment=\"3E03305\"",
+          "Observation=\"LA26684-3\"",
+          "ResearchStudy=\"SINGLE_GROUP\"",
+          "DiagnosticProcedure=\"LP423345-7\"",
+          "ResearchStudy=\"NA\""
+        ],
+        "gold_compliance_score": 0.6666666666666666,
+        "comp_compliance_score": 0.3333333333333333
+      },
+      "status": "Success",
+      "duration_ms": 126213.04702758789
+    },
+    {
+      "task_id": "312831c0-2392-432c-8006-79571998461f",
+      "trial_id": "NCT01922921",
+      "gold_config": "direct_mcode_gpt-4-turbo",
+      "comp_config": "direct_mcode_simple_gpt-4-turbo",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.3611111111111111,
+        "mapping_precision": 0.5652173913043478,
+        "mapping_recall": 0.5,
+        "mapping_f1_score": 0.5306122448979592,
+        "mapping_true_positives": 13,
+        "mapping_false_positives": 10,
+        "mapping_false_negatives": 13,
+        "gold_mappings_count": 38,
+        "comp_mappings_count": 32,
+        "gold_avg_confidence": 0.9315789473684208,
+        "comp_avg_confidence": 0.9546874999999999,
+        "true_positive_examples": [
+          "CancerCondition=\"C50.9\"",
+          "GenomicVariant=\"37804\"",
+          "CancerDiseaseStatus=\"260415000\"",
+          "GenomicVariant=\"HGNC:3430\"",
+          "CancerRelatedMedication=\"C94392\""
+        ],
+        "false_positive_examples": [
+          "CancerRelatedMedication=\"C94600\"",
+          "CancerRelatedProcedure=\"C119276\"",
+          "CancerRelatedProcedure=\"C51948\"",
+          "CancerDiseaseStatus=\"268930004\"",
+          "CancerRelatedMedication=\"C106370\""
+        ],
+        "false_negative_examples": [
+          "CancerCondition=\"C50.919\"",
+          "CancerRelatedMedication=\"C94226\"",
+          "ResearchStudy=\"N/A\"",
+          "CancerDiseaseStatus=\"128877000\"",
+          "CancerRelatedMedication=\"C117494\""
+        ],
+        "gold_compliance_score": 0.3333333333333333,
+        "comp_compliance_score": 0.3333333333333333
+      },
+      "status": "Success",
+      "duration_ms": 137901.74531936646
+    },
+    {
+      "task_id": "cb9fc1a9-4c9e-4fd2-b1fe-094db23e4a03",
+      "trial_id": "NCT01922921",
+      "gold_config": "direct_mcode_simple_gpt-4-turbo",
+      "comp_config": "direct_mcode_improved_gpt-4-turbo",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.22580645161290322,
+        "mapping_precision": 0.4666666666666667,
+        "mapping_recall": 0.30434782608695654,
+        "mapping_f1_score": 0.3684210526315789,
+        "mapping_true_positives": 7,
+        "mapping_false_positives": 8,
+        "mapping_false_negatives": 16,
+        "gold_mappings_count": 32,
+        "comp_mappings_count": 30,
+        "gold_avg_confidence": 0.9546874999999999,
+        "comp_avg_confidence": 0.9316666666666665,
+        "true_positive_examples": [
+          "CancerCondition=\"C50.9\"",
+          "GenomicVariant=\"HGNC:3430\"",
+          "ECOGPerformanceStatus=\"89243-0\"",
+          "CancerRelatedMedication=\"C1647\"",
+          "CancerDiseaseStatus=\"260415000\""
+        ],
+        "false_positive_examples": [
+          "CancerRelatedMedication=\"C94226\"",
+          "CancerDiseaseStatus=\"128385000\"",
+          "CancerRelatedMedication=\"C94219\"",
+          "CancerDiseaseStatus=\"109006\"",
+          "CancerRelatedMedication=\"C106768\""
+        ],
+        "false_negative_examples": [
+          "CancerRelatedMedication=\"C94600\"",
+          "CancerRelatedProcedure=\"C119276\"",
+          "GenomicVariant=\"37804\"",
+          "CancerRelatedProcedure=\"C51948\"",
+          "CancerDiseaseStatus=\"268930004\""
+        ],
+        "gold_compliance_score": 0.3333333333333333,
+        "comp_compliance_score": 0.3333333333333333
+      },
+      "status": "Success",
+      "duration_ms": 184076.189994812
+    },
+    {
+      "task_id": "beaa5fe8-cd69-47fe-9111-3a13a7611559",
+      "trial_id": "NCT00616135",
+      "gold_config": "direct_mcode_evidence_based_with_codes_gpt-4-turbo",
+      "comp_config": "direct_mcode_optimization_gpt-4-turbo",
+      "metrics": {
+        "mapping_jaccard_similarity": 0.1111111111111111,
+        "mapping_precision": 0.14285714285714285,
+        "mapping_recall": 0.3333333333333333,
+        "mapping_f1_score": 0.2,
+        "mapping_true_positives": 2,
+        "mapping_false_positives": 12,
+        "mapping_false_negatives": 4,
+        "gold_mappings_count": 10,
+        "comp_mappings_count": 19,
+        "gold_avg_confidence": 1.0,
+        "comp_avg_confidence": 0.881578947368421,
+        "true_positive_examples": [
+          "CancerTreatment=\"108290001\"",
+          "CancerCondition=\"254837009\""
+        ],
+        "false_positive_examples": [
+          "TNMClinicalStageGroup=\"T2N0M0\"",
+          "CancerRelatedProcedure=\"387607004\"",
+          "CancerRelatedProcedure=\"392021009\"",
+          "CancerCondition=\"408643008\"",
+          "CancerRelatedProcedure=\"234262008\""
+        ],
+        "false_negative_examples": [
+          "CancerTreatment=\"396487001\"",
+          "PatientDemographics=\"184099003\"",
+          "CancerCondition=\"372130007\"",
+          "PatientDemographics=\"248153007\""
+        ],
+        "gold_compliance_score": 0.6666666666666666,
+        "comp_compliance_score": 0.6666666666666666
+      },
+      "status": "Success",
+      "duration_ms": 205303.55620384216
+    }
+  ],
+  "analysis": {
+    "summary": {
+      "total_comparisons": 10,
+      "successful_comparisons": 10,
+      "success_rate": 1.0,
+      "unique_config_pairs": 10
+    },
+    "configuration_analysis": {
+      "direct_mcode_comprehensive_gpt-4-turbo_vs_direct_mcode_gpt-4-turbo": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.043478260869565216,
+          "median": 0.043478260869565216,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.07692307692307693,
+          "median": 0.07692307692307693,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.09090909090909091,
+          "median": 0.09090909090909091,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.08333333333333334,
+          "median": 0.08333333333333334,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 1,
+          "median": 1,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 12,
+          "median": 12,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 10,
+          "median": 10,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 11,
+          "median": 11,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 15,
+          "median": 15,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0.9727272727272727,
+          "median": 0.9727272727272727,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.9533333333333334,
+          "median": 0.9533333333333334,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_improved_gpt-4-turbo_vs_direct_mcode_gpt-4-turbo": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.22727272727272727,
+          "median": 0.22727272727272727,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.29411764705882354,
+          "median": 0.29411764705882354,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.5,
+          "median": 0.5,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.37037037037037035,
+          "median": 0.37037037037037035,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 5,
+          "median": 5,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 12,
+          "median": 12,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 5,
+          "median": 5,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 11,
+          "median": 11,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 18,
+          "median": 18,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0.8772727272727273,
+          "median": 0.8772727272727273,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.8416666666666669,
+          "median": 0.8416666666666669,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_optimization_gpt-4-turbo_vs_direct_mcode_improved_gpt-4-turbo": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.08333333333333333,
+          "median": 0.08333333333333333,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.15789473684210525,
+          "median": 0.15789473684210525,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.15,
+          "median": 0.15,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.15384615384615385,
+          "median": 0.15384615384615385,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 3,
+          "median": 3,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 16,
+          "median": 16,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 17,
+          "median": 17,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 23,
+          "median": 23,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 21,
+          "median": 21,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0.8782608695652173,
+          "median": 0.8782608695652173,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.9476190476190477,
+          "median": 0.9476190476190477,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_minimal_gpt-4-turbo_vs_direct_mcode_improved_gpt-4-turbo": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.10526315789473684,
+          "median": 0.10526315789473684,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.16666666666666666,
+          "median": 0.16666666666666666,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.2222222222222222,
+          "median": 0.2222222222222222,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.1904761904761905,
+          "median": 0.1904761904761905,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 2,
+          "median": 2,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 10,
+          "median": 10,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 7,
+          "median": 7,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 12,
+          "median": 12,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 14,
+          "median": 14,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0.9583333333333334,
+          "median": 0.9583333333333334,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.9500000000000001,
+          "median": 0.9500000000000001,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_structured_gpt-4-turbo_vs_direct_mcode_gpt-4-turbo": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.26666666666666666,
+          "median": 0.26666666666666666,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.4,
+          "median": 0.4,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.4444444444444444,
+          "median": 0.4444444444444444,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.4210526315789474,
+          "median": 0.4210526315789474,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 8,
+          "median": 8,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 12,
+          "median": 12,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 10,
+          "median": 10,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 21,
+          "median": 21,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 22,
+          "median": 22,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0.9523809523809522,
+          "median": 0.9523809523809522,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.9636363636363636,
+          "median": 0.9636363636363636,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_evidence_based_concise_gpt-4-turbo_vs_direct_mcode_gpt-4-turbo": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.10344827586206896,
+          "median": 0.10344827586206896,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.21428571428571427,
+          "median": 0.21428571428571427,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.16666666666666666,
+          "median": 0.16666666666666666,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.1875,
+          "median": 0.1875,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 3,
+          "median": 3,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 11,
+          "median": 11,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 15,
+          "median": 15,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 22,
+          "median": 22,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 18,
+          "median": 18,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0.9454545454545453,
+          "median": 0.9454545454545453,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.9500000000000001,
+          "median": 0.9500000000000001,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.6666666666666666,
+          "median": 0.6666666666666666,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.6666666666666666,
+          "median": 0.6666666666666666,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_evidence_based_gpt-4-turbo_vs_direct_mcode_optimization_gpt-4-turbo": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.03125,
+          "median": 0.03125,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.1,
+          "median": 0.1,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.043478260869565216,
+          "median": 0.043478260869565216,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.06060606060606061,
+          "median": 0.06060606060606061,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 1,
+          "median": 1,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 9,
+          "median": 9,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 22,
+          "median": 22,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 25,
+          "median": 25,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 12,
+          "median": 12,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 1.0,
+          "median": 1.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.8816666666666667,
+          "median": 0.8816666666666667,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.6666666666666666,
+          "median": 0.6666666666666666,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_gpt-4-turbo_vs_direct_mcode_simple_gpt-4-turbo": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.3611111111111111,
+          "median": 0.3611111111111111,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.5652173913043478,
+          "median": 0.5652173913043478,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.5,
+          "median": 0.5,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.5306122448979592,
+          "median": 0.5306122448979592,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 13,
+          "median": 13,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 10,
+          "median": 10,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 13,
+          "median": 13,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 38,
+          "median": 38,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 32,
+          "median": 32,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0.9315789473684208,
+          "median": 0.9315789473684208,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.9546874999999999,
+          "median": 0.9546874999999999,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_simple_gpt-4-turbo_vs_direct_mcode_improved_gpt-4-turbo": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.22580645161290322,
+          "median": 0.22580645161290322,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.4666666666666667,
+          "median": 0.4666666666666667,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.30434782608695654,
+          "median": 0.30434782608695654,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.3684210526315789,
+          "median": 0.3684210526315789,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 7,
+          "median": 7,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 8,
+          "median": 8,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 16,
+          "median": 16,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 32,
+          "median": 32,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 30,
+          "median": 30,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0.9546874999999999,
+          "median": 0.9546874999999999,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.9316666666666665,
+          "median": 0.9316666666666665,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_evidence_based_with_codes_gpt-4-turbo_vs_direct_mcode_optimization_gpt-4-turbo": {
+        "mapping_jaccard_similarity": {
+          "mean": 0.1111111111111111,
+          "median": 0.1111111111111111,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0.14285714285714285,
+          "median": 0.14285714285714285,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0.3333333333333333,
+          "median": 0.3333333333333333,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0.2,
+          "median": 0.2,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 2,
+          "median": 2,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 12,
+          "median": 12,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 4,
+          "median": 4,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 10,
+          "median": 10,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 19,
+          "median": 19,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 1.0,
+          "median": 1.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0.881578947368421,
+          "median": 0.881578947368421,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.6666666666666666,
+          "median": 0.6666666666666666,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.6666666666666666,
+          "median": 0.6666666666666666,
+          "stdev": 0,
+          "count": 1
+        }
+      }
+    },
+    "overall_metrics": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.15587410957342238,
+        "median": 0.10818713450292397,
+        "stdev": 0.10807679100825203,
+        "min": 0.03125,
+        "max": 0.3611111111111111
+      },
+      "mapping_precision": {
+        "mean": 0.2584629042604544,
+        "median": 0.19047619047619047,
+        "stdev": 0.16689156653027887,
+        "min": 0.07692307692307693,
+        "max": 0.5652173913043478
+      },
+      "mapping_recall": {
+        "mean": 0.2755401844532279,
+        "median": 0.2632850241545894,
+        "stdev": 0.16728583584612478,
+        "min": 0.043478260869565216,
+        "max": 0.5
+      },
+      "mapping_f1_score": {
+        "mean": 0.2566218037740594,
+        "median": 0.19523809523809527,
+        "stdev": 0.15596262435501884,
+        "min": 0.06060606060606061,
+        "max": 0.5306122448979592
+      },
+      "mapping_true_positives": {
+        "mean": 4.5,
+        "median": 3.0,
+        "stdev": 3.8369548110737792,
+        "min": 1,
+        "max": 13
+      },
+      "mapping_false_positives": {
+        "mean": 11.2,
+        "median": 11.5,
+        "stdev": 2.2010098692292237,
+        "min": 8,
+        "max": 16
+      },
+      "mapping_false_negatives": {
+        "mean": 11.9,
+        "median": 11.5,
+        "stdev": 5.743595467030115,
+        "min": 4,
+        "max": 22
+      },
+      "gold_mappings_count": {
+        "mean": 20.5,
+        "median": 21.5,
+        "stdev": 9.606132300659707,
+        "min": 10,
+        "max": 38
+      },
+      "comp_mappings_count": {
+        "mean": 20.1,
+        "median": 18.5,
+        "stdev": 6.5226102477799826,
+        "min": 12,
+        "max": 32
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9470696148102469,
+        "median": 0.953534226190476,
+        "stdev": 0.04258781614749753,
+        "min": 0.8772727272727273,
+        "max": 1.0
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9255855191957166,
+        "median": 0.9488095238095239,
+        "stdev": 0.04174943977704944,
+        "min": 0.8416666666666669,
+        "max": 0.9636363636363636
+      },
+      "gold_compliance_score": {
+        "mean": 0.4333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.16101529717988264,
+        "min": 0.3333333333333333,
+        "max": 0.6666666666666666
+      },
+      "comp_compliance_score": {
+        "mean": 0.39999999999999997,
+        "median": 0.3333333333333333,
+        "stdev": 0.14054567378526128,
+        "min": 0.3333333333333333,
+        "max": 0.6666666666666666
+      }
+    }
+  }
+}
