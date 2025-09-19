@@ -133,6 +133,11 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             queue = asyncio.Queue()
             combo_results = {i: {"scores": [], "errors": [], "metrics": [], "mcode_elements": []} for i in range(len(combinations))}
 
+            # Shared progress tracking
+            total_tasks = len(combinations) * total_trials_processed
+            completed_tasks = {"count": 0}
+            progress_lock = asyncio.Lock()
+
             # Producer: put all tasks in the queue
             async def producer():
                 self.logger.info("🔄 Producer: Creating concurrent tasks...")
@@ -159,20 +164,33 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                             await queue.put(task_data)
                             task_id += 1
 
-                # Signal completion
-                await queue.put(None)
-                self.logger.info(f"✅ Producer: Created {task_id} tasks")
+                # Signal completion - put None for each worker
+                for _ in range(workers):
+                    await queue.put(None)
+                self.logger.info(f"✅ Producer: Created {task_id} tasks (total: {total_tasks})")
 
             # Consumer: process tasks from queue
             async def worker(worker_id: int):
                 self.logger.info(f"🤖 Worker {worker_id}: Starting...")
-                completed = 0
+                worker_completed = 0
+                quota_exceeded_models = set()  # Track models that have exceeded quota
 
                 while True:
                     task_data = await queue.get()
                     if task_data is None:
-                        await queue.put(None)  # Pass stop signal
                         break
+
+                    # Skip tasks for models that have exceeded quota
+                    model_name = task_data["combination"]["model"]
+                    if model_name in quota_exceeded_models:
+                        async with progress_lock:
+                            completed_tasks["count"] += 1
+                            total_completed = completed_tasks["count"]
+                            remaining = total_tasks - total_completed
+                        self.logger.warning(f"❌ Worker {worker_id}: Skipped {task_data['combination']['model']} + {task_data['combination']['prompt']} (NCT{task_data['trial'].get('protocolSection', {}).get('identificationModule', {}).get('nctId', 'UNKNOWN')}) - Model quota exceeded")
+                        self.logger.warning(f"📊 Progress: {total_completed}/{total_tasks} completed ({remaining} remaining)")
+                        combo_results[task_data["combo_idx"]]["errors"].append(f"Quota exceeded for {model_name}")
+                        continue
 
                     try:
                         # Process the task
@@ -193,23 +211,56 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                         combo_results[combo_idx]["metrics"].append(metrics)
                         combo_results[combo_idx]["mcode_elements"].extend(predicted_mcode)
 
-                        completed += 1
+                        worker_completed += 1
                         combo = combinations[combo_idx]
-                        self.logger.info(f"✅ Worker {worker_id}: Trial {completed} - {combo['model']} + {combo['prompt']} (score: {score:.3f})")
+
+                        # Update global progress
+                        async with progress_lock:
+                            completed_tasks["count"] += 1
+                            total_completed = completed_tasks["count"]
+                            remaining = total_tasks - total_completed
+
+                        # Get NCTid for logging
+                        nctid = task_data["trial"].get("protocolSection", {}).get("identificationModule", {}).get("nctId", "UNKNOWN")
+
+                        # Get interim metrics
+                        perf_data = result.get("performance_metrics", {})
+                        processing_time = perf_data.get("processing_time_seconds", 0)
+                        tokens_used = perf_data.get("tokens_used", 0)
+                        elements_found = metrics.get("element_count", 0)
+
+                        # Log progress with worker alignment, NCTid, and interim metrics
+                        self.logger.info(f"✅ Worker {worker_id}: Trial {worker_completed} - {combo['model']} + {combo['prompt']} (NCT{nctid}, score: {score:.3f}, {elements_found} elements, {processing_time:.1f}s, {tokens_used} tokens)")
+                        self.logger.info(f"📊 Progress: {total_completed}/{total_tasks} completed ({remaining} remaining)")
 
                     except Exception as e:
                         combo_idx = task_data["combo_idx"]
                         combo_name = combinations[combo_idx]['model'] + " + " + combinations[combo_idx]['prompt']
 
-                        # Handle quota exceptions specially - don't retry, just skip
-                        if "quota" in str(e).lower():
-                            self.logger.warning(f"❌ Worker {worker_id}: Skipped {combo_name} - Model quota exceeded")
-                            combo_results[combo_idx]["errors"].append(f"Quota exceeded for {combinations[combo_idx]['model']}")
-                        else:
-                            combo_results[combo_idx]["errors"].append(str(e))
-                            self.logger.exception(f"❌ Worker {worker_id}: Failed {combo_name} - {e}")
+                        # Get NCTid for logging
+                        nctid = task_data["trial"].get("protocolSection", {}).get("identificationModule", {}).get("nctId", "UNKNOWN")
 
-                self.logger.info(f"🏁 Worker {worker_id}: Finished processing {completed} tasks")
+                        # Handle quota exceptions specially - mark model as quota exceeded and skip
+                        if "quota" in str(e).lower():
+                            quota_exceeded_models.add(model_name)
+                            async with progress_lock:
+                                completed_tasks["count"] += 1
+                                total_completed = completed_tasks["count"]
+                                remaining = total_tasks - total_completed
+                            self.logger.warning(f"❌ Worker {worker_id}: Skipped {combo_name} (NCT{nctid}) - Model quota exceeded")
+                            self.logger.warning(f"📊 Progress: {total_completed}/{total_tasks} completed ({remaining} remaining)")
+                            combo_results[combo_idx]["errors"].append(f"Quota exceeded for {model_name}")
+                            continue
+                        else:
+                            async with progress_lock:
+                                completed_tasks["count"] += 1
+                                total_completed = completed_tasks["count"]
+                                remaining = total_tasks - total_completed
+                            combo_results[combo_idx]["errors"].append(str(e))
+                            self.logger.exception(f"❌ Worker {worker_id}: Failed {combo_name} (NCT{nctid}) - {e}")
+                            self.logger.error(f"📊 Progress: {total_completed}/{total_tasks} completed ({remaining} remaining)")
+
+                self.logger.info(f"🏁 Worker {worker_id}: Finished processing {worker_completed} tasks")
 
             # Start producer and workers
             producer_task = asyncio.create_task(producer())
@@ -665,6 +716,11 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             processing_time_std = tokens_std = cost_std = 0
             processing_times = tokens_list = costs_list = elements_per_second_list = tokens_per_second_list = []
 
+        # Analyze reliability and performance by model, prompt, and provider
+        model_analysis = self._analyze_by_category(all_results, "model")
+        prompt_analysis = self._analyze_by_category(all_results, "prompt")
+        provider_analysis = self._analyze_by_provider(all_results)
+
         summary = {
             "success": True,
             "total_runs": len(all_results),
@@ -721,10 +777,17 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                     "total_measurements": len(tokens_per_second_list)
                 }
             },
+            # Reliability and performance analysis
+            "model_analysis": model_analysis,
+            "prompt_analysis": prompt_analysis,
+            "provider_analysis": provider_analysis,
             "best_result": best_result,
             "all_results": all_results,
             "summary_timestamp": datetime.now().isoformat()
         }
+
+        # Log reliability and performance rankings
+        self._log_reliability_analysis(model_analysis, prompt_analysis, provider_analysis, all_results)
 
         self.logger.info(f"📊 Benchmark Summary:")
         self.logger.info(f"   📁 Total runs: {len(all_results)}")
@@ -745,6 +808,47 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             self.logger.info(f"   🏆 Best: {combo.get('model')} + {combo.get('prompt')} (score: {best_score:.3f})")
 
         return summary
+
+    def _summarize_errors(self, all_results: List[Dict]) -> Dict[str, int]:
+        """Summarize error types across all results with strict categorization."""
+        error_counts = {
+            "json_parsing": 0,
+            "quota_exceeded": 0,
+            "rate_limit": 0,
+            "auth_error": 0,
+            "api_error": 0,
+            "network_error": 0,
+            "timeout": 0,
+            "model_error": 0,
+            "other": 0
+        }
+
+        for result in all_results:
+            errors = result.get("errors", [])
+            for error in errors:
+                error_str = str(error).lower()
+
+                # Strict error categorization matching the analysis
+                if "json" in error_str and ("parsing" in error_str or "decode" in error_str or "invalid json" in error_str or "expecting" in error_str):
+                    error_counts["json_parsing"] += 1
+                elif "quota" in error_str or "billing" in error_str or "plan" in error_str or "insufficient_quota" in error_str:
+                    error_counts["quota_exceeded"] += 1
+                elif "rate limit" in error_str or "429" in error_str or "too many requests" in error_str:
+                    error_counts["rate_limit"] += 1
+                elif "auth" in error_str or "unauthorized" in error_str or "forbidden" in error_str or "401" in error_str or "403" in error_str:
+                    error_counts["auth_error"] += 1
+                elif "timeout" in error_str or "timed out" in error_str:
+                    error_counts["timeout"] += 1
+                elif "connection" in error_str or "network" in error_str or "dns" in error_str:
+                    error_counts["network_error"] += 1
+                elif "api" in error_str and not any(x in error_str for x in ["json", "quota", "rate", "auth", "timeout", "connection"]):
+                    error_counts["api_error"] += 1
+                elif "model" in error_str and ("not found" in error_str or "does not exist" in error_str):
+                    error_counts["model_error"] += 1
+                else:
+                    error_counts["other"] += 1
+
+        return error_counts
 
     def _save_all_mcode_elements(
         self, combo_results: Dict[int, Dict], combinations: List[Dict[str, str]], output_path: str
@@ -780,3 +884,335 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         except Exception as e:
             self.logger.error(f"Failed to save all mCODE elements: {e}")
             raise
+
+    def _analyze_by_category(self, all_results: List[Dict], category_key: str) -> Dict[str, Any]:
+        """Analyze results by a specific category (model or prompt) with comprehensive error tracking."""
+        category_stats = {}
+
+        for result in all_results:
+            combo = result.get("combination", {})
+            category_value = combo.get(category_key)
+
+            if not category_value:
+                continue
+
+            if category_value not in category_stats:
+                category_stats[category_value] = {
+                    "runs": 0,
+                    "successful_runs": 0,
+                    "failed_runs": 0,
+                    "total_score": 0,
+                    "scores": [],
+                    "processing_times": [],
+                    "token_usage": [],
+                    "costs": [],
+                    "errors": [],
+                    "error_types": {
+                        "json_parsing": 0,
+                        "quota_exceeded": 0,
+                        "rate_limit": 0,
+                        "auth_error": 0,
+                        "api_error": 0,
+                        "network_error": 0,
+                        "timeout": 0,
+                        "model_error": 0,
+                        "other": 0
+                    },
+                    "error_patterns": [],  # Store actual error messages for pattern analysis
+                    "combinations_tested": set()  # Track which combinations this category was part of
+                }
+
+            stats = category_stats[category_value]
+            stats["runs"] += 1
+
+            # Track combination
+            combo_key = f"{combo.get('model', 'unknown')}+{combo.get('prompt', 'unknown')}"
+            stats["combinations_tested"].add(combo_key)
+
+            if result.get("success"):
+                stats["successful_runs"] += 1
+                stats["total_score"] += result.get("cv_average_score", 0)
+                stats["scores"].append(result.get("cv_average_score", 0))
+
+                # Performance metrics
+                perf = result.get("performance_metrics", {})
+                if perf:
+                    stats["processing_times"].append(perf.get("processing_time_seconds", 0))
+                    stats["token_usage"].append(perf.get("tokens_used", 0))
+                    stats["costs"].append(perf.get("estimated_cost_usd", 0))
+            else:
+                stats["failed_runs"] += 1
+
+            # Errors - strict categorization
+            errors = result.get("errors", [])
+            stats["errors"].extend(errors)
+
+            for error in errors:
+                error_str = str(error).lower()
+                stats["error_patterns"].append(str(error))  # Store full error for pattern analysis
+
+                # Strict error categorization
+                if "json" in error_str and ("parsing" in error_str or "decode" in error_str or "invalid json" in error_str or "expecting" in error_str):
+                    stats["error_types"]["json_parsing"] += 1
+                elif "quota" in error_str or "billing" in error_str or "plan" in error_str or "insufficient_quota" in error_str:
+                    stats["error_types"]["quota_exceeded"] += 1
+                elif "rate limit" in error_str or "429" in error_str or "too many requests" in error_str:
+                    stats["error_types"]["rate_limit"] += 1
+                elif "auth" in error_str or "unauthorized" in error_str or "forbidden" in error_str or "401" in error_str or "403" in error_str:
+                    stats["error_types"]["auth_error"] += 1
+                elif "timeout" in error_str or "timed out" in error_str:
+                    stats["error_types"]["timeout"] += 1
+                elif "connection" in error_str or "network" in error_str or "dns" in error_str:
+                    stats["error_types"]["network_error"] += 1
+                elif "api" in error_str and not any(x in error_str for x in ["json", "quota", "rate", "auth", "timeout", "connection"]):
+                    stats["error_types"]["api_error"] += 1
+                elif "model" in error_str and ("not found" in error_str or "does not exist" in error_str):
+                    stats["error_types"]["model_error"] += 1
+                else:
+                    stats["error_types"]["other"] += 1
+
+        # Calculate final statistics
+        for category_value, stats in category_stats.items():
+            stats["combinations_tested"] = list(stats["combinations_tested"])
+            stats["error_count"] = len(stats["errors"])
+
+            if stats["successful_runs"] > 0:
+                stats["avg_score"] = stats["total_score"] / stats["successful_runs"]
+                stats["success_rate"] = stats["successful_runs"] / stats["runs"]
+                stats["failure_rate"] = stats["failed_runs"] / stats["runs"]
+                stats["avg_processing_time"] = sum(stats["processing_times"]) / len(stats["processing_times"]) if stats["processing_times"] else 0
+                stats["avg_tokens"] = sum(stats["token_usage"]) / len(stats["token_usage"]) if stats["token_usage"] else 0
+                stats["avg_cost"] = sum(stats["costs"]) / len(stats["costs"]) if stats["costs"] else 0
+            else:
+                stats["avg_score"] = 0
+                stats["success_rate"] = 0
+                stats["failure_rate"] = 1.0
+                stats["avg_processing_time"] = 0
+                stats["avg_tokens"] = 0
+                stats["avg_cost"] = 0
+
+        return category_stats
+
+    def _analyze_by_provider(self, all_results: List[Dict]) -> Dict[str, Any]:
+        """Analyze results by provider (OpenAI, DeepSeek, etc.)."""
+        provider_mapping = {
+            "gpt-4-turbo": "OpenAI",
+            "gpt-4o": "OpenAI",
+            "gpt-4o-mini": "OpenAI",
+            "gpt-3.5-turbo": "OpenAI",
+            "deepseek-coder": "DeepSeek",
+            "deepseek-chat": "DeepSeek",
+            "deepseek-reasoner": "DeepSeek",
+            "claude-3": "Anthropic",
+            "llama-3": "Meta"
+        }
+
+        provider_stats = {}
+
+        for result in all_results:
+            combo = result.get("combination", {})
+            model = combo.get("model", "")
+            provider = provider_mapping.get(model, "Unknown")
+
+            if provider not in provider_stats:
+                provider_stats[provider] = {
+                    "models": set(),
+                    "runs": 0,
+                    "successful_runs": 0,
+                    "total_score": 0,
+                    "scores": [],
+                    "processing_times": [],
+                    "token_usage": [],
+                    "costs": [],
+                    "errors": []
+                }
+
+            stats = provider_stats[provider]
+            stats["models"].add(model)
+            stats["runs"] += 1
+
+            if result.get("success"):
+                stats["successful_runs"] += 1
+                stats["total_score"] += result.get("cv_average_score", 0)
+                stats["scores"].append(result.get("cv_average_score", 0))
+
+                # Performance metrics
+                perf = result.get("performance_metrics", {})
+                if perf:
+                    stats["processing_times"].append(perf.get("processing_time_seconds", 0))
+                    stats["token_usage"].append(perf.get("tokens_used", 0))
+                    stats["costs"].append(perf.get("estimated_cost_usd", 0))
+
+            # Errors
+            stats["errors"].extend(result.get("errors", []))
+
+        # Calculate averages
+        for provider, stats in provider_stats.items():
+            stats["models"] = list(stats["models"])
+            if stats["successful_runs"] > 0:
+                stats["avg_score"] = stats["total_score"] / stats["successful_runs"]
+                stats["success_rate"] = stats["successful_runs"] / stats["runs"]
+                stats["avg_processing_time"] = sum(stats["processing_times"]) / len(stats["processing_times"]) if stats["processing_times"] else 0
+                stats["avg_tokens"] = sum(stats["token_usage"]) / len(stats["token_usage"]) if stats["token_usage"] else 0
+                stats["avg_cost"] = sum(stats["costs"]) / len(stats["costs"]) if stats["costs"] else 0
+                stats["error_count"] = len(stats["errors"])
+
+        return provider_stats
+
+    def _log_reliability_analysis(self, model_analysis: Dict, prompt_analysis: Dict, provider_analysis: Dict, all_results: List[Dict]) -> None:
+        """Log detailed reliability and performance analysis."""
+        self.logger.info("🔍 RELIABILITY & PERFORMANCE ANALYSIS:")
+
+        # Provider analysis
+        self.logger.info("🏢 PROVIDER RANKINGS:")
+        sorted_providers = sorted(provider_analysis.items(),
+                                key=lambda x: (x[1].get("success_rate", 0), -x[1].get("avg_score", 0)),
+                                reverse=True)
+        for provider, stats in sorted_providers:
+            success_rate = stats.get("success_rate", 0) * 100
+            avg_score = stats.get("avg_score", 0)
+            avg_time = stats.get("avg_processing_time", 0)
+            avg_cost = stats.get("avg_cost", 0)
+            models = stats.get("models", [])
+            self.logger.info(f"   🏆 {provider}: {success_rate:.1f}% success, score: {avg_score:.3f}, {avg_time:.1f}s, ${avg_cost:.4f} (models: {', '.join(models)})")
+
+        # Model analysis
+        self.logger.info("🤖 MODEL RANKINGS:")
+        sorted_models = sorted(model_analysis.items(),
+                             key=lambda x: (x[1].get("success_rate", 0), -x[1].get("avg_score", 0)),
+                             reverse=True)
+        for model, stats in sorted_models:
+            success_rate = stats.get("success_rate", 0) * 100
+            avg_score = stats.get("avg_score", 0)
+            avg_time = stats.get("avg_processing_time", 0)
+            avg_cost = stats.get("avg_cost", 0)
+            runs = stats.get("runs", 0)
+            self.logger.info(f"   🏆 {model}: {success_rate:.1f}% success ({runs} runs), score: {avg_score:.3f}, {avg_time:.1f}s, ${avg_cost:.4f}")
+
+        # Prompt analysis
+        self.logger.info("📝 PROMPT RANKINGS:")
+        sorted_prompts = sorted(prompt_analysis.items(),
+                              key=lambda x: (x[1].get("success_rate", 0), -x[1].get("avg_score", 0)),
+                              reverse=True)
+        for prompt, stats in sorted_prompts:
+            success_rate = stats.get("success_rate", 0) * 100
+            avg_score = stats.get("avg_score", 0)
+            avg_time = stats.get("avg_processing_time", 0)
+            runs = stats.get("runs", 0)
+            self.logger.info(f"   🏆 {prompt}: {success_rate:.1f}% success ({runs} runs), score: {avg_score:.3f}, {avg_time:.1f}s")
+
+        # Performance insights
+        self.logger.info("⚡ PERFORMANCE INSIGHTS:")
+        if sorted_providers:
+            fastest_provider = min(sorted_providers, key=lambda x: x[1].get("avg_processing_time", float('inf')))
+            slowest_provider = max(sorted_providers, key=lambda x: x[1].get("avg_processing_time", 0))
+            self.logger.info(f"   🏃‍♂️ Fastest provider: {fastest_provider[0]} ({fastest_provider[1].get('avg_processing_time', 0):.1f}s avg)")
+            self.logger.info(f"   🐌 Slowest provider: {slowest_provider[0]} ({slowest_provider[1].get('avg_processing_time', 0):.1f}s avg)")
+
+        if sorted_models:
+            cheapest_model = min(sorted_models, key=lambda x: x[1].get("avg_cost", float('inf')))
+            most_expensive_model = max(sorted_models, key=lambda x: x[1].get("avg_cost", 0))
+            self.logger.info(f"   💰 Cheapest model: {cheapest_model[0]} (${cheapest_model[1].get('avg_cost', 0):.4f} avg)")
+            self.logger.info(f"   💸 Most expensive model: {most_expensive_model[0]} (${most_expensive_model[1].get('avg_cost', 0):.4f} avg)")
+
+        # Comprehensive error analysis
+        self.logger.info("🔍 COMPREHENSIVE ERROR ANALYSIS:")
+
+        # Overall error summary
+        error_summary = self._summarize_errors(all_results)
+        total_errors = sum(error_summary.values())
+        if total_errors > 0:
+            self.logger.info("   📈 Overall Error Distribution:")
+            for error_type, count in sorted(error_summary.items(), key=lambda x: x[1], reverse=True):
+                if count > 0:
+                    percentage = (count / total_errors) * 100
+                    self.logger.info(f"      {error_type}: {count} ({percentage:.1f}%)")
+
+        # Model reliability analysis
+        self.logger.info("   🤖 Model Reliability:")
+        model_reliability = []
+        for model, stats in model_analysis.items():
+            runs = stats.get("runs", 0)
+            success_rate = stats.get("success_rate", 0) * 100
+            error_count = stats.get("error_count", 0)
+            primary_error = None
+            if error_count > 0:
+                error_types = stats.get("error_types", {})
+                primary_error = max(error_types.items(), key=lambda x: x[1]) if error_types else None
+
+            model_reliability.append((model, success_rate, error_count, primary_error, runs))
+
+        # Sort by success rate (ascending - worst first) then by error count
+        model_reliability.sort(key=lambda x: (x[1], -x[2]))
+
+        for model, success_rate, error_count, primary_error, runs in model_reliability:
+            status = "✅" if success_rate >= 90 else "⚠️" if success_rate >= 50 else "❌"
+            error_info = f" ({primary_error[0]}: {primary_error[1]})" if primary_error and primary_error[1] > 0 else ""
+            self.logger.info(f"      {status} {model}: {success_rate:.1f}% success ({runs} runs){error_info}")
+
+        # Prompt reliability analysis
+        self.logger.info("   📝 Prompt Reliability:")
+        prompt_reliability = []
+        for prompt, stats in prompt_analysis.items():
+            runs = stats.get("runs", 0)
+            success_rate = stats.get("success_rate", 0) * 100
+            error_count = stats.get("error_count", 0)
+            prompt_reliability.append((prompt, success_rate, error_count, runs))
+
+        prompt_reliability.sort(key=lambda x: (x[1], -x[2]))  # Same sorting as models
+
+        for prompt, success_rate, error_count, runs in prompt_reliability:
+            status = "✅" if success_rate >= 90 else "⚠️" if success_rate >= 50 else "❌"
+            self.logger.info(f"      {status} {prompt}: {success_rate:.1f}% success ({runs} runs)")
+
+        # Provider reliability analysis
+        self.logger.info("   🏢 Provider Reliability:")
+        provider_reliability = []
+        for provider, stats in provider_analysis.items():
+            runs = stats.get("runs", 0)
+            success_rate = stats.get("success_rate", 0) * 100
+            error_count = stats.get("error_count", 0)
+            models = stats.get("models", [])
+            provider_reliability.append((provider, success_rate, error_count, runs, models))
+
+        provider_reliability.sort(key=lambda x: (x[1], -x[2]))
+
+        for provider, success_rate, error_count, runs, models in provider_reliability:
+            status = "✅" if success_rate >= 90 else "⚠️" if success_rate >= 50 else "❌"
+            self.logger.info(f"      {status} {provider}: {success_rate:.1f}% success ({runs} runs, {len(models)} models)")
+
+        # Error pattern analysis
+        self.logger.info("   🔍 Error Patterns:")
+        error_patterns = {}
+        for result in all_results:
+            errors = result.get("errors", [])
+            for error in errors:
+                error_str = str(error)
+                # Group similar errors
+                if "json" in error_str.lower() and "parsing" in error_str.lower():
+                    pattern = "JSON parsing failures"
+                elif "quota" in error_str.lower():
+                    pattern = "Quota exceeded"
+                elif "rate limit" in error_str.lower() or "429" in error_str:
+                    pattern = "Rate limiting"
+                elif "auth" in error_str.lower() or "401" in error_str or "403" in error_str:
+                    pattern = "Authentication errors"
+                elif "timeout" in error_str.lower():
+                    pattern = "Timeout errors"
+                elif "connection" in error_str.lower():
+                    pattern = "Connection errors"
+                else:
+                    pattern = "Other errors"
+
+                error_patterns[pattern] = error_patterns.get(pattern, 0) + 1
+
+        for pattern, count in sorted(error_patterns.items(), key=lambda x: x[1], reverse=True):
+            self.logger.info(f"      {pattern}: {count} occurrences")
+
+        # Reliability insights
+        if sorted_providers:
+            most_reliable_provider = max(sorted_providers, key=lambda x: x[1].get("success_rate", 0))
+            least_reliable_provider = min(sorted_providers, key=lambda x: x[1].get("success_rate", 0))
+            self.logger.info(f"   🛡️ Most reliable provider: {most_reliable_provider[0]} ({most_reliable_provider[1].get('success_rate', 0)*100:.1f}% success)")
+            if least_reliable_provider[1].get("success_rate", 1) < 1.0:
+                self.logger.info(f"   ⚠️ Least reliable provider: {least_reliable_provider[0]} ({least_reliable_provider[1].get('success_rate', 0)*100:.1f}% success)")
