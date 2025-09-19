@@ -1,0 +1,6503 @@
+{
+  "summary": {
+    "total_comparisons": 100,
+    "successful_comparisons": 100,
+    "success_rate": 1.0,
+    "unique_config_pairs": 80
+  },
+  "configuration_analysis": {
+    "direct_mcode_gpt-4o_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.023255813953488372,
+        "median": 0.023255813953488372,
+        "stdev": 0.03288868749704872,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.038461538461538464,
+        "median": 0.038461538461538464,
+        "stdev": 0.05439282932204212,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.05263157894736842,
+        "median": 0.05263157894736842,
+        "stdev": 0.07443229275647868,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.044444444444444446,
+        "median": 0.044444444444444446,
+        "stdev": 0.0628539361054709,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1.0,
+        "stdev": 1.4142135623730951,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 35.5,
+        "median": 35.5,
+        "stdev": 16.263455967290593,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 8.5,
+        "median": 8.5,
+        "stdev": 12.020815280171307,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 11.5,
+        "median": 11.5,
+        "stdev": 16.263455967290593,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.45108695652173914,
+        "median": 0.45108695652173914,
+        "stdev": 0.6379332917226461,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_deepseek-chat_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.28125,
+        "median": 0.28125,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.47368421052631576,
+        "median": 0.47368421052631576,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.4090909090909091,
+        "median": 0.4090909090909091,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.43902439024390244,
+        "median": 0.43902439024390244,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 9,
+        "median": 9,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 10,
+        "median": 10,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 13,
+        "median": 13,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9107142857142857,
+        "median": 0.9107142857142857,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_gpt-4-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.10526315789473684,
+        "median": 0.10526315789473684,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.14285714285714285,
+        "median": 0.14285714285714285,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.2857142857142857,
+        "median": 0.2857142857142857,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.19047619047619047,
+        "median": 0.19047619047619047,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 4,
+        "median": 4,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 10,
+        "median": 10,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9764705882352942,
+        "median": 0.9764705882352942,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_deepseek-coder_vs_direct_mcode_deepseek-chat": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.176056338028169,
+        "median": 0.176056338028169,
+        "stdev": 0.24898126098117868,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.25510204081632654,
+        "median": 0.25510204081632654,
+        "stdev": 0.36076876591150386,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.26595744680851063,
+        "median": 0.26595744680851063,
+        "stdev": 0.37612062829071674,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.2604166666666667,
+        "median": 0.2604166666666667,
+        "stdev": 0.3682847818679935,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 12.5,
+        "median": 12.5,
+        "stdev": 17.67766952966369,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 12,
+        "median": 12.0,
+        "stdev": 16.97056274847714,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 24,
+        "median": 24.0,
+        "stdev": 2.8284271247461903,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 27,
+        "median": 27.0,
+        "stdev": 38.18376618407357,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.4175925925925926,
+        "median": 0.4175925925925926,
+        "stdev": 0.5905651079909869,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      }
+    },
+    "direct_mcode_simple_deepseek-coder_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.07894736842105263,
+        "median": 0.07894736842105263,
+        "stdev": 0.11164843913471803,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.1276595744680851,
+        "median": 0.1276595744680851,
+        "stdev": 0.18053790157954402,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.14634146341463414,
+        "median": 0.14634146341463414,
+        "stdev": 0.2069580822985017,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.13636363636363635,
+        "median": 0.13636363636363635,
+        "stdev": 0.1928473039599675,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 6,
+        "median": 6.0,
+        "stdev": 8.48528137423857,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 30.5,
+        "median": 30.5,
+        "stdev": 6.363961030678928,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 14.5,
+        "median": 14.5,
+        "stdev": 20.506096654409877,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 26.5,
+        "median": 26.5,
+        "stdev": 37.476659402887016,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.43254716981132074,
+        "median": 0.43254716981132074,
+        "stdev": 0.6117140739132679,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_gpt-3.5-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.030303030303030304,
+        "median": 0.030303030303030304,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0425531914893617,
+        "median": 0.0425531914893617,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.09523809523809523,
+        "median": 0.09523809523809523,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.0588235294117647,
+        "median": 0.0588235294117647,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 2,
+        "median": 2,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 45,
+        "median": 45,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 55,
+        "median": 55,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.7354545454545455,
+        "median": 0.7354545454545455,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_simple_deepseek-chat_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.11904761904761904,
+        "median": 0.11904761904761904,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.2631578947368421,
+        "median": 0.2631578947368421,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.17857142857142858,
+        "median": 0.17857142857142858,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.2127659574468085,
+        "median": 0.2127659574468085,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 5,
+        "median": 5,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 14,
+        "median": 14,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 23,
+        "median": 23,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9352941176470588,
+        "median": 0.9352941176470588,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_simple_gpt-4-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.10256410256410256,
+        "median": 0.10256410256410256,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.14285714285714285,
+        "median": 0.14285714285714285,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.26666666666666666,
+        "median": 0.26666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.18604651162790697,
+        "median": 0.18604651162790697,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 4,
+        "median": 4,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 11,
+        "median": 11,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_gpt-4o-mini_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_claude-3_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_deepseek-reasoner_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_simple_deepseek-reasoner_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_simple_gpt-4o_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.023255813953488372,
+        "median": 0.023255813953488372,
+        "stdev": 0.03288868749704872,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.038461538461538464,
+        "median": 0.038461538461538464,
+        "stdev": 0.05439282932204212,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.05263157894736842,
+        "median": 0.05263157894736842,
+        "stdev": 0.07443229275647868,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.044444444444444446,
+        "median": 0.044444444444444446,
+        "stdev": 0.0628539361054709,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1.0,
+        "stdev": 1.4142135623730951,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 35.5,
+        "median": 35.5,
+        "stdev": 16.263455967290593,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 8.5,
+        "median": 8.5,
+        "stdev": 12.020815280171307,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 11.5,
+        "median": 11.5,
+        "stdev": 16.263455967290593,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.44565217391304346,
+        "median": 0.44565217391304346,
+        "stdev": 0.6302473484488793,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_simple_gpt-4o-mini_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_simple_claude-3_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_comprehensive_deepseek-chat_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.06896551724137931,
+        "median": 0.06896551724137931,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.10526315789473684,
+        "median": 0.10526315789473684,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.12903225806451615,
+        "median": 0.12903225806451615,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 2,
+        "median": 2,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 10,
+        "median": 10,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9029411764705882,
+        "median": 0.9029411764705882,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_simple_gpt-3.5-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0136986301369863,
+        "median": 0.0136986301369863,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.037037037037037035,
+        "median": 0.037037037037037035,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.027027027027027025,
+        "median": 0.027027027027027025,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 46,
+        "median": 46,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 26,
+        "median": 26,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 50,
+        "median": 50,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.358,
+        "median": 0.358,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_comprehensive_deepseek-coder_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.017857142857142856,
+        "median": 0.017857142857142856,
+        "stdev": 0.025253813613805267,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0.030089650263257342,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.09090909090909091,
+        "median": 0.09090909090909091,
+        "stdev": 0.128564869306645,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.034482758620689655,
+        "median": 0.034482758620689655,
+        "stdev": 0.04876598490941707,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1.0,
+        "stdev": 1.4142135623730951,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 35.5,
+        "median": 35.5,
+        "stdev": 13.435028842544403,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 4.5,
+        "median": 4.5,
+        "stdev": 6.363961030678928,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 7,
+        "median": 7.0,
+        "stdev": 9.899494936611665,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.4571428571428572,
+        "median": 0.4571428571428572,
+        "stdev": 0.646497628513415,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_comprehensive_deepseek-reasoner_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_comprehensive_gpt-4-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.02702702702702703,
+        "median": 0.02702702702702703,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.03571428571428571,
+        "median": 0.03571428571428571,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.1,
+        "median": 0.1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.05263157894736841,
+        "median": 0.05263157894736841,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 27,
+        "median": 27,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 9,
+        "median": 9,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 13,
+        "median": 13,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9423076923076923,
+        "median": 0.9423076923076923,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_comprehensive_gpt-4o-mini_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_comprehensive_claude-3_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_comprehensive_gpt-4o_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.02488425925925926,
+        "median": 0.02488425925925926,
+        "stdev": 0.009002516890106508,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.02986906710310966,
+        "median": 0.02986906710310966,
+        "stdev": 0.01215158952939239,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.13392857142857142,
+        "median": 0.13392857142857142,
+        "stdev": 0.012626906806902628,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.04848484848484849,
+        "median": 0.04848484848484849,
+        "stdev": 0.017141982574219342,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1.0,
+        "stdev": 0.0,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 35.5,
+        "median": 35.5,
+        "stdev": 14.849242404917497,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 6.5,
+        "median": 6.5,
+        "stdev": 0.7071067811865476,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 10.5,
+        "median": 10.5,
+        "stdev": 2.1213203435596424,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8604166666666666,
+        "median": 0.8604166666666666,
+        "stdev": 0.061871843353822925,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_minimal_deepseek-coder_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.023809523809523808,
+        "median": 0.023809523809523808,
+        "stdev": 0.03367175148507369,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.0425531914893617,
+        "median": 0.0425531914893617,
+        "stdev": 0.060179300526514684,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.04878048780487805,
+        "median": 0.04878048780487805,
+        "stdev": 0.06898602743283391,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.045454545454545456,
+        "median": 0.045454545454545456,
+        "stdev": 0.0642824346533225,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 2,
+        "median": 2.0,
+        "stdev": 2.8284271247461903,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 34.5,
+        "median": 34.5,
+        "stdev": 12.020815280171307,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 18.5,
+        "median": 18.5,
+        "stdev": 26.16295090390226,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 21.5,
+        "median": 21.5,
+        "stdev": 30.405591591021544,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.39476744186046514,
+        "median": 0.39476744186046514,
+        "stdev": 0.558285470262402,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.4714045207910317,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_comprehensive_gpt-3.5-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.016666666666666666,
+        "median": 0.016666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.07142857142857142,
+        "median": 0.07142857142857142,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.032786885245901634,
+        "median": 0.032786885245901634,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 46,
+        "median": 46,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 13,
+        "median": 13,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 59,
+        "median": 59,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.6728813559322034,
+        "median": 0.6728813559322034,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_minimal_gpt-4-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.06521739130434782,
+        "median": 0.06521739130434782,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.10714285714285714,
+        "median": 0.10714285714285714,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.14285714285714285,
+        "median": 0.14285714285714285,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.12244897959183672,
+        "median": 0.12244897959183672,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 3,
+        "median": 3,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 25,
+        "median": 25,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 18,
+        "median": 18,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 23,
+        "median": 23,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9456521739130435,
+        "median": 0.9456521739130435,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_minimal_deepseek-reasoner_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9,
+        "median": 0.9,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_minimal_gpt-4o_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.010869565217391304,
+        "median": 0.010869565217391304,
+        "stdev": 0.015371886547533641,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.019230769230769232,
+        "median": 0.019230769230769232,
+        "stdev": 0.02719641466102106,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.023809523809523808,
+        "median": 0.023809523809523808,
+        "stdev": 0.03367175148507369,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0.030089650263257342,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 0.5,
+        "median": 0.5,
+        "stdev": 0.7071067811865476,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 36,
+        "median": 36.0,
+        "stdev": 15.556349186104045,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 10,
+        "median": 10.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 12.5,
+        "median": 12.5,
+        "stdev": 17.67766952966369,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.445,
+        "median": 0.445,
+        "stdev": 0.6293250352560273,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_minimal_deepseek-chat_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.06060606060606061,
+        "median": 0.06060606060606061,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.10526315789473684,
+        "median": 0.10526315789473684,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.125,
+        "median": 0.125,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.11428571428571428,
+        "median": 0.11428571428571428,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 2,
+        "median": 2,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 14,
+        "median": 14,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 21,
+        "median": 21,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8500000000000001,
+        "median": 0.8500000000000001,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_minimal_gpt-4o-mini_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_minimal_claude-3_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_minimal_gpt-3.5-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.010638297872340425,
+        "median": 0.010638297872340425,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.020833333333333332,
+        "median": 0.020833333333333332,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.021052631578947368,
+        "median": 0.021052631578947368,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 46,
+        "median": 46,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 80,
+        "median": 80,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_structured_deepseek-coder_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.03076923076923077,
+        "median": 0.03076923076923077,
+        "stdev": 0.0435142634576337,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.0425531914893617,
+        "median": 0.0425531914893617,
+        "stdev": 0.060179300526514684,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.09090909090909091,
+        "median": 0.09090909090909091,
+        "stdev": 0.128564869306645,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.05797101449275362,
+        "median": 0.05797101449275362,
+        "stdev": 0.08198339492017942,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 2,
+        "median": 2.0,
+        "stdev": 2.8284271247461903,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 34.5,
+        "median": 34.5,
+        "stdev": 12.020815280171307,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 9,
+        "median": 9.0,
+        "stdev": 12.727922061357855,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 21.5,
+        "median": 21.5,
+        "stdev": 30.405591591021544,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.4488372093023256,
+        "median": 0.4488372093023256,
+        "stdev": 0.6347516686930404,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_structured_deepseek-reasoner_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_structured_deepseek-chat_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.17857142857142858,
+        "median": 0.17857142857142858,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.2631578947368421,
+        "median": 0.2631578947368421,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.35714285714285715,
+        "median": 0.35714285714285715,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.30303030303030304,
+        "median": 0.30303030303030304,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 5,
+        "median": 5,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 14,
+        "median": 14,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 9,
+        "median": 9,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9657894736842106,
+        "median": 0.9657894736842106,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_structured_gpt-4o_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.015151515151515152,
+        "median": 0.015151515151515152,
+        "stdev": 0.021427478217774167,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.019230769230769232,
+        "median": 0.019230769230769232,
+        "stdev": 0.02719641466102106,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.0625,
+        "median": 0.0625,
+        "stdev": 0.08838834764831845,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.029411764705882353,
+        "median": 0.029411764705882353,
+        "stdev": 0.04159451654038515,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 0.5,
+        "median": 0.5,
+        "stdev": 0.7071067811865476,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 36,
+        "median": 36.0,
+        "stdev": 15.556349186104045,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 3.5,
+        "median": 3.5,
+        "stdev": 4.949747468305833,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 6.5,
+        "median": 6.5,
+        "stdev": 9.192388155425117,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.45576923076923076,
+        "median": 0.45576923076923076,
+        "stdev": 0.6445550274661991,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.4714045207910317,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_structured_gpt-4-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.07894736842105263,
+        "median": 0.07894736842105263,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.10714285714285714,
+        "median": 0.10714285714285714,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.23076923076923078,
+        "median": 0.23076923076923078,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.14634146341463414,
+        "median": 0.14634146341463414,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 3,
+        "median": 3,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 25,
+        "median": 25,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 10,
+        "median": 10,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 15,
+        "median": 15,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 1.0,
+        "median": 1.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_structured_gpt-4o-mini_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_structured_gpt-3.5-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0196078431372549,
+        "median": 0.0196078431372549,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.2,
+        "median": 0.2,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.03846153846153846,
+        "median": 0.03846153846153846,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 46,
+        "median": 46,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 4,
+        "median": 4,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 20,
+        "median": 20,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_optimization_deepseek-coder_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.043478260869565216,
+        "median": 0.043478260869565216,
+        "stdev": 0.061487546190134565,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.06382978723404255,
+        "median": 0.06382978723404255,
+        "stdev": 0.09026895078977201,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.10714285714285714,
+        "median": 0.10714285714285714,
+        "stdev": 0.1515228816828316,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.08,
+        "median": 0.08,
+        "stdev": 0.1131370849898476,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 3,
+        "median": 3.0,
+        "stdev": 4.242640687119285,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 33.5,
+        "median": 33.5,
+        "stdev": 10.606601717798213,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 11,
+        "median": 11.0,
+        "stdev": 15.556349186104045,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 21,
+        "median": 21.0,
+        "stdev": 29.698484809834994,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.3922619047619048,
+        "median": 0.3922619047619048,
+        "stdev": 0.5547421057165891,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_structured_claude-3_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_optimization_deepseek-reasoner_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_optimization_deepseek-chat_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.10344827586206896,
+        "median": 0.10344827586206896,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.15789473684210525,
+        "median": 0.15789473684210525,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.23076923076923078,
+        "median": 0.23076923076923078,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.18749999999999997,
+        "median": 0.18749999999999997,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 3,
+        "median": 3,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 16,
+        "median": 16,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 10,
+        "median": 10,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 21,
+        "median": 21,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8547619047619047,
+        "median": 0.8547619047619047,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_optimization_gpt-4o_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.014285714285714285,
+        "median": 0.014285714285714285,
+        "stdev": 0.020203050891044214,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.019230769230769232,
+        "median": 0.019230769230769232,
+        "stdev": 0.02719641466102106,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.05,
+        "median": 0.05,
+        "stdev": 0.07071067811865475,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.027777777777777776,
+        "median": 0.027777777777777776,
+        "stdev": 0.039283710065919304,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 0.5,
+        "median": 0.5,
+        "stdev": 0.7071067811865476,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 36,
+        "median": 36.0,
+        "stdev": 15.556349186104045,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 4.5,
+        "median": 4.5,
+        "stdev": 6.363961030678928,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 6.5,
+        "median": 6.5,
+        "stdev": 9.192388155425117,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.44999999999999996,
+        "median": 0.44999999999999996,
+        "stdev": 0.6363961030678927,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.4714045207910317,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_optimization_gpt-4-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.043478260869565216,
+        "median": 0.043478260869565216,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.07142857142857142,
+        "median": 0.07142857142857142,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.1,
+        "median": 0.1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.08333333333333333,
+        "median": 0.08333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 2,
+        "median": 2,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 26,
+        "median": 26,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 18,
+        "median": 18,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 22,
+        "median": 22,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.865909090909091,
+        "median": 0.865909090909091,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_optimization_gpt-4o-mini_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_optimization_claude-3_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_optimization_gpt-3.5-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.017857142857142856,
+        "median": 0.017857142857142856,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.1,
+        "median": 0.1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.03508771929824561,
+        "median": 0.03508771929824561,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 46,
+        "median": 46,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 9,
+        "median": 9,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 14,
+        "median": 14,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_improved_deepseek-coder_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.017543859649122806,
+        "median": 0.017543859649122806,
+        "stdev": 0.02481076425215956,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0.030089650263257342,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.08333333333333333,
+        "median": 0.08333333333333333,
+        "stdev": 0.11785113019775792,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.03389830508474576,
+        "median": 0.03389830508474576,
+        "stdev": 0.04793944279230831,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1.0,
+        "stdev": 1.4142135623730951,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 35.5,
+        "median": 35.5,
+        "stdev": 13.435028842544403,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 5,
+        "median": 5.0,
+        "stdev": 7.0710678118654755,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 7,
+        "median": 7.0,
+        "stdev": 9.899494936611665,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.46785714285714286,
+        "median": 0.46785714285714286,
+        "stdev": 0.661649916681698,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_improved_deepseek-chat_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.06896551724137931,
+        "median": 0.06896551724137931,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.10526315789473684,
+        "median": 0.10526315789473684,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.12903225806451615,
+        "median": 0.12903225806451615,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 2,
+        "median": 2,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 10,
+        "median": 10,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 17,
+        "median": 17,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9147058823529413,
+        "median": 0.9147058823529413,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_improved_deepseek-reasoner_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_improved_gpt-4o_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.014285714285714285,
+        "median": 0.014285714285714285,
+        "stdev": 0.020203050891044214,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.019230769230769232,
+        "median": 0.019230769230769232,
+        "stdev": 0.02719641466102106,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.05,
+        "median": 0.05,
+        "stdev": 0.07071067811865475,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.027777777777777776,
+        "median": 0.027777777777777776,
+        "stdev": 0.039283710065919304,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 0.5,
+        "median": 0.5,
+        "stdev": 0.7071067811865476,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 36,
+        "median": 36.0,
+        "stdev": 15.556349186104045,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 4.5,
+        "median": 4.5,
+        "stdev": 6.363961030678928,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 6.5,
+        "median": 6.5,
+        "stdev": 9.192388155425117,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.4403846153846154,
+        "median": 0.4403846153846154,
+        "stdev": 0.6227978957373822,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_improved_gpt-4o-mini_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_improved_gpt-4-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.02564102564102564,
+        "median": 0.02564102564102564,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.03571428571428571,
+        "median": 0.03571428571428571,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.08333333333333333,
+        "median": 0.08333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.05,
+        "median": 0.05,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 27,
+        "median": 27,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 11,
+        "median": 11,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 14,
+        "median": 14,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9249999999999999,
+        "median": 0.9249999999999999,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_deepseek-coder_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.029850746268656716,
+        "median": 0.029850746268656716,
+        "stdev": 0.04221533022009239,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.0425531914893617,
+        "median": 0.0425531914893617,
+        "stdev": 0.060179300526514684,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.08333333333333333,
+        "median": 0.08333333333333333,
+        "stdev": 0.11785113019775792,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.056338028169014086,
+        "median": 0.056338028169014086,
+        "stdev": 0.07967400351397719,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 2,
+        "median": 2.0,
+        "stdev": 2.8284271247461903,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 34.5,
+        "median": 34.5,
+        "stdev": 12.020815280171307,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 10,
+        "median": 10.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 22,
+        "median": 22.0,
+        "stdev": 31.11269837220809,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.4977272727272727,
+        "median": 0.4977272727272727,
+        "stdev": 0.7038926594538814,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_improved_claude-3_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_improved_gpt-3.5-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.01818181818181818,
+        "median": 0.01818181818181818,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.1111111111111111,
+        "median": 0.1111111111111111,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.03571428571428571,
+        "median": 0.03571428571428571,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 46,
+        "median": 46,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 8,
+        "median": 8,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 40,
+        "median": 40,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.8150000000000001,
+        "median": 0.8150000000000001,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_deepseek-chat_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.12121212121212122,
+        "median": 0.12121212121212122,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.21052631578947367,
+        "median": 0.21052631578947367,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.2222222222222222,
+        "median": 0.2222222222222222,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.21621621621621623,
+        "median": 0.21621621621621623,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 4,
+        "median": 4,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 15,
+        "median": 15,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 14,
+        "median": 14,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 1.0,
+        "median": 1.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_deepseek-reasoner_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_gpt-4o_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.04285714285714286,
+        "median": 0.04285714285714286,
+        "stdev": 0.060609152673132646,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.057692307692307696,
+        "median": 0.057692307692307696,
+        "stdev": 0.08158924398306318,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.125,
+        "median": 0.125,
+        "stdev": 0.1767766952966369,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.07894736842105263,
+        "median": 0.07894736842105263,
+        "stdev": 0.11164843913471803,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 1.5,
+        "median": 1.5,
+        "stdev": 2.1213203435596424,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 35,
+        "median": 35.0,
+        "stdev": 16.97056274847714,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 4.5,
+        "median": 4.5,
+        "stdev": 6.363961030678928,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 9.5,
+        "median": 9.5,
+        "stdev": 13.435028842544403,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.4947368421052632,
+        "median": 0.4947368421052632,
+        "stdev": 0.6996635519108997,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_evidence_based_gpt-4-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.1,
+        "median": 0.1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.17857142857142858,
+        "median": 0.17857142857142858,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.18518518518518517,
+        "median": 0.18518518518518517,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.18181818181818182,
+        "median": 0.18181818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 5,
+        "median": 5,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 23,
+        "median": 23,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 22,
+        "median": 22,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 32,
+        "median": 32,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 1.0,
+        "median": 1.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_gpt-4o-mini_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_claude-3_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_gpt-3.5-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.011363636363636364,
+        "median": 0.011363636363636364,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.023809523809523808,
+        "median": 0.023809523809523808,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.022471910112359546,
+        "median": 0.022471910112359546,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 46,
+        "median": 46,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 41,
+        "median": 41,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 102,
+        "median": 102,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9705882352941176,
+        "median": 0.9705882352941176,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_concise_deepseek-coder_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.038098693759071114,
+        "median": 0.038098693759071114,
+        "stdev": 0.0005131398992645508,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.040507364975450086,
+        "median": 0.040507364975450086,
+        "stdev": 0.0028932356022362805,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.625,
+        "median": 0.625,
+        "stdev": 0.5303300858899106,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.0734006734006734,
+        "median": 0.0734006734006734,
+        "stdev": 0.000952332365234407,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 1.5,
+        "median": 1.5,
+        "stdev": 0.7071067811865476,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 35,
+        "median": 35.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 3,
+        "median": 3.0,
+        "stdev": 4.242640687119285,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 8.5,
+        "median": 8.5,
+        "stdev": 10.606601717798213,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 1.0,
+        "median": 1.0,
+        "stdev": 0.0,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_evidence_based_concise_deepseek-chat_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.041666666666666664,
+        "median": 0.041666666666666664,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.05263157894736842,
+        "median": 0.05263157894736842,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.08,
+        "median": 0.08,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 18,
+        "median": 18,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 5,
+        "median": 5,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 8,
+        "median": 8,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 1.0,
+        "median": 1.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_concise_deepseek-reasoner_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_concise_gpt-4-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.02564102564102564,
+        "median": 0.02564102564102564,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.03571428571428571,
+        "median": 0.03571428571428571,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.08333333333333333,
+        "median": 0.08333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.05,
+        "median": 0.05,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 27,
+        "median": 27,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 11,
+        "median": 11,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 16,
+        "median": 16,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9875,
+        "median": 0.9875,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_concise_gpt-4o_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.013157894736842105,
+        "median": 0.013157894736842105,
+        "stdev": 0.01860807318911967,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.019230769230769232,
+        "median": 0.019230769230769232,
+        "stdev": 0.02719641466102106,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.038461538461538464,
+        "median": 0.038461538461538464,
+        "stdev": 0.05439282932204212,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.025641025641025644,
+        "median": 0.025641025641025644,
+        "stdev": 0.03626188621469475,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 0.5,
+        "median": 0.5,
+        "stdev": 0.7071067811865476,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 36,
+        "median": 36.0,
+        "stdev": 15.556349186104045,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 6,
+        "median": 6.0,
+        "stdev": 8.48528137423857,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 8,
+        "median": 8.0,
+        "stdev": 11.313708498984761,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.496875,
+        "median": 0.496875,
+        "stdev": 0.7026873638041317,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.4714045207910317,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_evidence_based_concise_gpt-4o-mini_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_with_codes_deepseek-coder_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.009615384615384616,
+        "median": 0.009615384615384616,
+        "stdev": 0.01359820733051053,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.010638297872340425,
+        "median": 0.010638297872340425,
+        "stdev": 0.015044825131628671,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.08333333333333333,
+        "median": 0.08333333333333333,
+        "stdev": 0.11785113019775792,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.018867924528301886,
+        "median": 0.018867924528301886,
+        "stdev": 0.02668327476175651,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 0.5,
+        "median": 0.5,
+        "stdev": 0.7071067811865476,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 36,
+        "median": 36.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 2.5,
+        "median": 2.5,
+        "stdev": 3.5355339059327378,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 10,
+        "median": 10.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.4925,
+        "median": 0.4925,
+        "stdev": 0.6965001794687493,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.16666666666666666,
+        "median": 0.16666666666666666,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_evidence_based_concise_claude-3_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_concise_gpt-3.5-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.017543859649122806,
+        "median": 0.017543859649122806,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.09090909090909091,
+        "median": 0.09090909090909091,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.034482758620689655,
+        "median": 0.034482758620689655,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 46,
+        "median": 46,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 10,
+        "median": 10,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 41,
+        "median": 41,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 1.0,
+        "median": 1.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_with_codes_deepseek-chat_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.04,
+        "median": 0.04,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.05263157894736842,
+        "median": 0.05263157894736842,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.14285714285714285,
+        "median": 0.14285714285714285,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.07692307692307693,
+        "median": 0.07692307692307693,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 18,
+        "median": 18,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 6,
+        "median": 6,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 11,
+        "median": 11,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.990909090909091,
+        "median": 0.990909090909091,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 1.0,
+        "median": 1.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_with_codes_deepseek-reasoner_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 47,
+        "median": 47,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_with_codes_gpt-4-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.024390243902439025,
+        "median": 0.024390243902439025,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.03571428571428571,
+        "median": 0.03571428571428571,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.07142857142857142,
+        "median": 0.07142857142857142,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.047619047619047616,
+        "median": 0.047619047619047616,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 27,
+        "median": 27,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 13,
+        "median": 13,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 21,
+        "median": 21,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 1.0,
+        "median": 1.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_with_codes_gpt-4o-mini_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 19,
+        "median": 19,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 24,
+        "median": 24,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8770833333333333,
+        "median": 0.8770833333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_with_codes_gpt-4o_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.02488425925925926,
+        "median": 0.02488425925925926,
+        "stdev": 0.009002516890106508,
+        "count": 2
+      },
+      "mapping_precision": {
+        "mean": 0.02986906710310966,
+        "median": 0.02986906710310966,
+        "stdev": 0.01215158952939239,
+        "count": 2
+      },
+      "mapping_recall": {
+        "mean": 0.13392857142857142,
+        "median": 0.13392857142857142,
+        "stdev": 0.012626906806902628,
+        "count": 2
+      },
+      "mapping_f1_score": {
+        "mean": 0.04848484848484849,
+        "median": 0.04848484848484849,
+        "stdev": 0.017141982574219342,
+        "count": 2
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1.0,
+        "stdev": 0.0,
+        "count": 2
+      },
+      "mapping_false_positives": {
+        "mean": 35.5,
+        "median": 35.5,
+        "stdev": 14.849242404917497,
+        "count": 2
+      },
+      "mapping_false_negatives": {
+        "mean": 6.5,
+        "median": 6.5,
+        "stdev": 0.7071067811865476,
+        "count": 2
+      },
+      "gold_mappings_count": {
+        "mean": 13.5,
+        "median": 13.5,
+        "stdev": 0.7071067811865476,
+        "count": 2
+      },
+      "comp_mappings_count": {
+        "mean": 41,
+        "median": 41.0,
+        "stdev": 14.142135623730951,
+        "count": 2
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9848901098901099,
+        "median": 0.9848901098901099,
+        "stdev": 0.01126708607385162,
+        "count": 2
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8725806451612903,
+        "median": 0.8725806451612903,
+        "stdev": 0.03193385463423118,
+        "count": 2
+      },
+      "gold_compliance_score": {
+        "mean": 0.5,
+        "median": 0.5,
+        "stdev": 0.23570226039551584,
+        "count": 2
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0.0,
+        "count": 2
+      }
+    },
+    "direct_mcode_evidence_based_with_codes_claude-3_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 28,
+        "median": 28,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 34,
+        "median": 34,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.9617647058823531,
+        "median": 0.9617647058823531,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      }
+    },
+    "direct_mcode_evidence_based_with_codes_gpt-3.5-turbo_vs_direct_mcode_deepseek-coder": {
+      "mapping_jaccard_similarity": {
+        "mean": 0.017241379310344827,
+        "median": 0.017241379310344827,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_precision": {
+        "mean": 0.02127659574468085,
+        "median": 0.02127659574468085,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_recall": {
+        "mean": 0.08333333333333333,
+        "median": 0.08333333333333333,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_f1_score": {
+        "mean": 0.03389830508474576,
+        "median": 0.03389830508474576,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_true_positives": {
+        "mean": 1,
+        "median": 1,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_positives": {
+        "mean": 46,
+        "median": 46,
+        "stdev": 0,
+        "count": 1
+      },
+      "mapping_false_negatives": {
+        "mean": 11,
+        "median": 11,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_mappings_count": {
+        "mean": 35,
+        "median": 35,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_mappings_count": {
+        "mean": 66,
+        "median": 66,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_avg_confidence": {
+        "mean": 0.9799999999999999,
+        "median": 0.9799999999999999,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_avg_confidence": {
+        "mean": 0.8681818181818182,
+        "median": 0.8681818181818182,
+        "stdev": 0,
+        "count": 1
+      },
+      "gold_compliance_score": {
+        "mean": 0.6666666666666666,
+        "median": 0.6666666666666666,
+        "stdev": 0,
+        "count": 1
+      },
+      "comp_compliance_score": {
+        "mean": 0.3333333333333333,
+        "median": 0.3333333333333333,
+        "stdev": 0,
+        "count": 1
+      }
+    }
+  },
+  "overall_metrics": {
+    "mapping_jaccard_similarity": {
+      "mean": 0.03200833598205859,
+      "median": 0.015182648401826484,
+      "stdev": 0.05545113346909122,
+      "min": 0.0,
+      "max": 0.352112676056338
+    },
+    "mapping_precision": {
+      "mean": 0.04833287772857441,
+      "median": 0.02127659574468085,
+      "stdev": 0.08740679096799375,
+      "min": 0.0,
+      "max": 0.5102040816326531
+    },
+    "mapping_recall": {
+      "mean": 0.09244505236165644,
+      "median": 0.042328042328042326,
+      "stdev": 0.139425172066122,
+      "min": 0,
+      "max": 1.0
+    },
+    "mapping_f1_score": {
+      "mean": 0.057261009490746785,
+      "median": 0.02990695613646433,
+      "stdev": 0.0901414428783911,
+      "min": 0,
+      "max": 0.5208333333333334
+    },
+    "mapping_true_positives": {
+      "mean": 1.49,
+      "median": 1.0,
+      "stdev": 3.076450138478674,
+      "min": 0,
+      "max": 25
+    },
+    "mapping_false_positives": {
+      "mean": 31.67,
+      "median": 27.0,
+      "stdev": 12.116484305242668,
+      "min": 0,
+      "max": 47
+    },
+    "mapping_false_negatives": {
+      "mean": 7.66,
+      "median": 5.5,
+      "stdev": 9.791998382517857,
+      "min": 0,
+      "max": 47
+    },
+    "gold_mappings_count": {
+      "mean": 14.47,
+      "median": 11.5,
+      "stdev": 19.174612318786462,
+      "min": 0,
+      "max": 102
+    },
+    "comp_mappings_count": {
+      "mean": 40.92,
+      "median": 34.0,
+      "stdev": 15.862209712700718,
+      "min": 0,
+      "max": 66
+    },
+    "gold_avg_confidence": {
+      "mean": 0.47323710797218915,
+      "median": 0.7041679506933745,
+      "stdev": 0.46347564741063785,
+      "min": 0,
+      "max": 1.0
+    },
+    "comp_avg_confidence": {
+      "mean": 0.8813384684926431,
+      "median": 0.8770833333333333,
+      "stdev": 0.09714976033991386,
+      "min": 0,
+      "max": 0.9617647058823531
+    },
+    "gold_compliance_score": {
+      "mean": 0.22,
+      "median": 0.3333333333333333,
+      "stdev": 0.23792971639516422,
+      "min": 0.0,
+      "max": 1.0
+    },
+    "comp_compliance_score": {
+      "mean": 0.39666666666666667,
+      "median": 0.3333333333333333,
+      "stdev": 0.13970467488263535,
+      "min": 0.0,
+      "max": 0.6666666666666666
+    }
+  }
+}

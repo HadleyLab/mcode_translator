@@ -1,0 +1,1172 @@
+{
+  "metadata": {
+    "timestamp": "2025-09-18T21:11:59.687920",
+    "total_tasks": 10,
+    "successful_tasks": 10
+  },
+  "results": [
+    {
+      "task_id": "383c6c52-1fd7-4ff2-8da1-633aefad8557",
+      "trial_id": "NCT04092816",
+      "gold_config": "direct_mcode_structured_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "metrics": {
+        "mapping_jaccard_similarity": 0,
+        "mapping_precision": 0,
+        "mapping_recall": 0,
+        "mapping_f1_score": 0,
+        "mapping_true_positives": 0,
+        "mapping_false_positives": 0,
+        "mapping_false_negatives": 0,
+        "gold_mappings_count": 0,
+        "comp_mappings_count": 0,
+        "gold_avg_confidence": 0,
+        "comp_avg_confidence": 0,
+        "true_positive_examples": [],
+        "false_positive_examples": [],
+        "false_negative_examples": [],
+        "gold_compliance_score": 0.0,
+        "comp_compliance_score": 0.0
+      },
+      "status": "Success",
+      "duration_ms": 12.832880020141602
+    },
+    {
+      "task_id": "49f01fa4-b1fd-47e4-aff0-d84bbb2bd042",
+      "trial_id": "NCT04092816",
+      "gold_config": "direct_mcode_simple_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "metrics": {
+        "mapping_jaccard_similarity": 0,
+        "mapping_precision": 0,
+        "mapping_recall": 0,
+        "mapping_f1_score": 0,
+        "mapping_true_positives": 0,
+        "mapping_false_positives": 0,
+        "mapping_false_negatives": 0,
+        "gold_mappings_count": 0,
+        "comp_mappings_count": 0,
+        "gold_avg_confidence": 0,
+        "comp_avg_confidence": 0,
+        "true_positive_examples": [],
+        "false_positive_examples": [],
+        "false_negative_examples": [],
+        "gold_compliance_score": 0.0,
+        "comp_compliance_score": 0.0
+      },
+      "status": "Success",
+      "duration_ms": 13.99683952331543
+    },
+    {
+      "task_id": "31b9548f-9981-4d2b-b3f4-bb5fa7fe36fb",
+      "trial_id": "NCT04092816",
+      "gold_config": "direct_mcode_improved_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "metrics": {
+        "mapping_jaccard_similarity": 0,
+        "mapping_precision": 0,
+        "mapping_recall": 0,
+        "mapping_f1_score": 0,
+        "mapping_true_positives": 0,
+        "mapping_false_positives": 0,
+        "mapping_false_negatives": 0,
+        "gold_mappings_count": 0,
+        "comp_mappings_count": 0,
+        "gold_avg_confidence": 0,
+        "comp_avg_confidence": 0,
+        "true_positive_examples": [],
+        "false_positive_examples": [],
+        "false_negative_examples": [],
+        "gold_compliance_score": 0.0,
+        "comp_compliance_score": 0.0
+      },
+      "status": "Success",
+      "duration_ms": 13.077020645141602
+    },
+    {
+      "task_id": "aaf3af8b-140a-402f-a12b-2524138a64ae",
+      "trial_id": "NCT04092816",
+      "gold_config": "direct_mcode_minimal_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "metrics": {
+        "mapping_jaccard_similarity": 0,
+        "mapping_precision": 0,
+        "mapping_recall": 0,
+        "mapping_f1_score": 0,
+        "mapping_true_positives": 0,
+        "mapping_false_positives": 0,
+        "mapping_false_negatives": 0,
+        "gold_mappings_count": 0,
+        "comp_mappings_count": 0,
+        "gold_avg_confidence": 0,
+        "comp_avg_confidence": 0,
+        "true_positive_examples": [],
+        "false_positive_examples": [],
+        "false_negative_examples": [],
+        "gold_compliance_score": 0.0,
+        "comp_compliance_score": 0.0
+      },
+      "status": "Success",
+      "duration_ms": 13.688802719116211
+    },
+    {
+      "task_id": "70eae432-a90f-41fa-84a6-89a825936053",
+      "trial_id": "NCT04092816",
+      "gold_config": "direct_mcode_optimization_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "metrics": {
+        "mapping_jaccard_similarity": 0,
+        "mapping_precision": 0,
+        "mapping_recall": 0,
+        "mapping_f1_score": 0,
+        "mapping_true_positives": 0,
+        "mapping_false_positives": 0,
+        "mapping_false_negatives": 0,
+        "gold_mappings_count": 0,
+        "comp_mappings_count": 0,
+        "gold_avg_confidence": 0,
+        "comp_avg_confidence": 0,
+        "true_positive_examples": [],
+        "false_positive_examples": [],
+        "false_negative_examples": [],
+        "gold_compliance_score": 0.0,
+        "comp_compliance_score": 0.0
+      },
+      "status": "Success",
+      "duration_ms": 13.681888580322266
+    },
+    {
+      "task_id": "cd2c9d1d-7a86-4ae4-9251-394900080d0d",
+      "trial_id": "NCT04092816",
+      "gold_config": "direct_mcode_evidence_based_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "metrics": {
+        "mapping_jaccard_similarity": 0,
+        "mapping_precision": 0,
+        "mapping_recall": 0,
+        "mapping_f1_score": 0,
+        "mapping_true_positives": 0,
+        "mapping_false_positives": 0,
+        "mapping_false_negatives": 0,
+        "gold_mappings_count": 0,
+        "comp_mappings_count": 0,
+        "gold_avg_confidence": 0,
+        "comp_avg_confidence": 0,
+        "true_positive_examples": [],
+        "false_positive_examples": [],
+        "false_negative_examples": [],
+        "gold_compliance_score": 0.0,
+        "comp_compliance_score": 0.0
+      },
+      "status": "Success",
+      "duration_ms": 13.581991195678711
+    },
+    {
+      "task_id": "bb36a8bf-66d1-4ad1-a7af-71910d31ff69",
+      "trial_id": "NCT04092816",
+      "gold_config": "direct_mcode_comprehensive_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "metrics": {
+        "mapping_jaccard_similarity": 0,
+        "mapping_precision": 0,
+        "mapping_recall": 0,
+        "mapping_f1_score": 0,
+        "mapping_true_positives": 0,
+        "mapping_false_positives": 0,
+        "mapping_false_negatives": 0,
+        "gold_mappings_count": 0,
+        "comp_mappings_count": 0,
+        "gold_avg_confidence": 0,
+        "comp_avg_confidence": 0,
+        "true_positive_examples": [],
+        "false_positive_examples": [],
+        "false_negative_examples": [],
+        "gold_compliance_score": 0.0,
+        "comp_compliance_score": 0.0
+      },
+      "status": "Success",
+      "duration_ms": 17.818927764892578
+    },
+    {
+      "task_id": "d2bddae3-7038-4a96-b9ae-ca650bfc1ff0",
+      "trial_id": "NCT04092816",
+      "gold_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "comp_config": "direct_mcode_simple_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "metrics": {
+        "mapping_jaccard_similarity": 0,
+        "mapping_precision": 0,
+        "mapping_recall": 0,
+        "mapping_f1_score": 0,
+        "mapping_true_positives": 0,
+        "mapping_false_positives": 0,
+        "mapping_false_negatives": 0,
+        "gold_mappings_count": 0,
+        "comp_mappings_count": 0,
+        "gold_avg_confidence": 0,
+        "comp_avg_confidence": 0,
+        "true_positive_examples": [],
+        "false_positive_examples": [],
+        "false_negative_examples": [],
+        "gold_compliance_score": 0.0,
+        "comp_compliance_score": 0.0
+      },
+      "status": "Success",
+      "duration_ms": 18.846988677978516
+    },
+    {
+      "task_id": "8d67df96-9c1f-48ad-a1fe-956f8d6b6bf3",
+      "trial_id": "NCT04092816",
+      "gold_config": "direct_mcode_evidence_based_with_codes_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "metrics": {
+        "mapping_jaccard_similarity": 0,
+        "mapping_precision": 0,
+        "mapping_recall": 0,
+        "mapping_f1_score": 0,
+        "mapping_true_positives": 0,
+        "mapping_false_positives": 0,
+        "mapping_false_negatives": 0,
+        "gold_mappings_count": 0,
+        "comp_mappings_count": 0,
+        "gold_avg_confidence": 0,
+        "comp_avg_confidence": 0,
+        "true_positive_examples": [],
+        "false_positive_examples": [],
+        "false_negative_examples": [],
+        "gold_compliance_score": 0.0,
+        "comp_compliance_score": 0.0
+      },
+      "status": "Success",
+      "duration_ms": 5.450010299682617
+    },
+    {
+      "task_id": "9a42073b-b421-4a2f-be01-0255629cbd2c",
+      "trial_id": "NCT04092816",
+      "gold_config": "direct_mcode_evidence_based_concise_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+      "metrics": {
+        "mapping_jaccard_similarity": 0,
+        "mapping_precision": 0,
+        "mapping_recall": 0,
+        "mapping_f1_score": 0,
+        "mapping_true_positives": 0,
+        "mapping_false_positives": 0,
+        "mapping_false_negatives": 0,
+        "gold_mappings_count": 0,
+        "comp_mappings_count": 0,
+        "gold_avg_confidence": 0,
+        "comp_avg_confidence": 0,
+        "true_positive_examples": [],
+        "false_positive_examples": [],
+        "false_negative_examples": [],
+        "gold_compliance_score": 0.0,
+        "comp_compliance_score": 0.0
+      },
+      "status": "Success",
+      "duration_ms": 6.375789642333984
+    }
+  ],
+  "analysis": {
+    "summary": {
+      "total_comparisons": 10,
+      "successful_comparisons": 10,
+      "success_rate": 1.0,
+      "unique_config_pairs": 10
+    },
+    "configuration_analysis": {
+      "direct_mcode_structured_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o_vs_direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o": {
+        "mapping_jaccard_similarity": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_simple_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o_vs_direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o": {
+        "mapping_jaccard_similarity": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_improved_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o_vs_direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o": {
+        "mapping_jaccard_similarity": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_minimal_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o_vs_direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o": {
+        "mapping_jaccard_similarity": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_optimization_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o_vs_direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o": {
+        "mapping_jaccard_similarity": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_evidence_based_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o_vs_direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o": {
+        "mapping_jaccard_similarity": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_comprehensive_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o_vs_direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o": {
+        "mapping_jaccard_similarity": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o_vs_direct_mcode_simple_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o": {
+        "mapping_jaccard_similarity": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_evidence_based_with_codes_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o_vs_direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o": {
+        "mapping_jaccard_similarity": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        }
+      },
+      "direct_mcode_evidence_based_concise_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o_vs_direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o": {
+        "mapping_jaccard_similarity": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_precision": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_recall": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_f1_score": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_true_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_positives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "mapping_false_negatives": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_mappings_count": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_avg_confidence": {
+          "mean": 0,
+          "median": 0,
+          "stdev": 0,
+          "count": 1
+        },
+        "gold_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        },
+        "comp_compliance_score": {
+          "mean": 0.0,
+          "median": 0.0,
+          "stdev": 0,
+          "count": 1
+        }
+      }
+    },
+    "overall_metrics": {
+      "mapping_jaccard_similarity": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "mapping_precision": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "mapping_recall": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "mapping_f1_score": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "mapping_true_positives": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "mapping_false_positives": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "mapping_false_negatives": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "gold_mappings_count": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "comp_mappings_count": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "gold_avg_confidence": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "comp_avg_confidence": {
+        "mean": 0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "gold_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "comp_compliance_score": {
+        "mean": 0.0,
+        "median": 0.0,
+        "stdev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      }
+    }
+  }
+}

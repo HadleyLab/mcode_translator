@@ -1,0 +1,92 @@
+[
+  {
+    "task_id": "0d502470-9791-4814-87bc-d06e5e90d152",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "comp_config": "direct_mcode_simple_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "9ead31da-a4d8-4180-842c-1ba4ad22464c",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_comprehensive_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "a1c3e39b-5c56-43f5-85f7-18a149830027",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_improved_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "e358006a-4a47-4fb6-9f18-b552f4695846",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_evidence_based_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "6d6350d4-1eda-43e1-9577-11e57d016faa",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_optimization_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "2ff4ef18-f0d6-41a0-a1f4-fdb2d61548c9",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_simple_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "35486260-057f-4cfc-9fce-153054d2cf85",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_minimal_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "90b70a7d-3d7a-423c-867e-4c4951fdc084",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_evidence_based_concise_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "bc1c7165-046d-4438-a866-b8a8322141dc",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_structured_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "19ac866e-6232-4765-9e5f-08bc006363fd",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_evidence_based_with_codes_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder,deepseek-chat,gpt-4-turbo,gpt-4o",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": []
+  }
+]

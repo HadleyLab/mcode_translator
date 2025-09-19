@@ -81,7 +81,11 @@ Examples:
         "--prompts", help="Comma-separated list of prompt templates to test"
     )
 
-    parser.add_argument("--models", help="Comma-separated list of LLM models to test")
+    parser.add_argument(
+        "--models",
+        type=lambda s: [item.strip() for item in s.split(',')],
+        help="Comma-separated list of LLM models to test"
+    )
 
     parser.add_argument(
         "--list-prompts",
@@ -195,7 +199,7 @@ def main() -> None:
         workflow_kwargs["prompts"] = ["direct_mcode_evidence_based_concise"]
 
     if args.models:
-        workflow_kwargs["models"] = [m.strip() for m in args.models.split(",")]
+        workflow_kwargs["models"] = args.models
     else:
         workflow_kwargs["models"] = ["deepseek-coder"]
 

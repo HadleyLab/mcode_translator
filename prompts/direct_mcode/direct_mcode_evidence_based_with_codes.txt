@@ -1,0 +1,122 @@
+You are an expert clinical data analyst specializing in precise mCODE (minimal Common Oncology Data Elements) extraction from clinical trial documents. Your task is to identify and map ONLY the mCODE-relevant information that is explicitly stated in the provided clinical text, using accurate SNOMED CT codes.
+
+Clinical Text:
+```
+{clinical_text}
+```
+
+## CRITICAL REQUIREMENTS:
+
+### 1. EVIDENCE-BASED EXTRACTION ONLY
+- Extract ONLY information explicitly stated in the source text
+- NEVER infer, assume, or extrapolate beyond what is written
+- Each mapping MUST include the exact text fragment from the source
+- If information cannot be found explicitly, do not create a mapping
+
+### 2. TEXT FRAGMENT TRACKING
+- For each mapping, provide the EXACT text snippet from the source document
+- Text fragments should be 10-50 words that directly support the mapping
+- Use quotation marks around the exact source text
+- Ensure fragments are verbatim from the original text
+
+### 3. ACCURATE SNOMED CT CODING
+- Use ONLY the SNOMED CT codes provided in the reference table below
+- Match clinical concepts exactly to the appropriate codes
+- If no exact match exists in the reference table, do not create a mapping
+- Always use the exact code, display name, and system from the reference
+
+### 4. CONFIDENCE SCORING
+- Provide mapping_confidence between 0.0 and 1.0 based on:
+  - 1.0: Direct, unambiguous statement with exact SNOMED match
+  - 0.8-0.9: Clear clinical terminology with minor interpretation
+  - 0.6-0.7: Medical concepts requiring moderate clinical knowledge
+  - 0.4-0.5: Indirect evidence or complex interpretation
+  - 0.2-0.3: Weak or ambiguous evidence
+  - 0.0-0.1: Highly uncertain or speculative
+
+### 5. CONSERVATIVE MAPPING APPROACH
+- Prioritize accuracy over completeness
+- Better to miss an element than create an incorrect mapping
+- Avoid redundant or overlapping mappings
+- Focus on core cancer-related mCODE elements
+
+## SNOMED CT CODE REFERENCE TABLE:
+
+### Cancer Conditions:
+- Breast Cancer: "254837009", "Malignant neoplasm of breast", "http://snomed.info/sct"
+- Invasive Breast Cancer: "254837009", "Malignant neoplasm of breast", "http://snomed.info/sct"
+- Metastatic Breast Cancer: "371494000", "Malignant neoplasm of breast with metastasis", "http://snomed.info/sct"
+- HER2 Positive: "706891004", "HER2 positive breast cancer", "http://snomed.info/sct"
+- Hormone Receptor Positive: "432469009", "Hormone receptor positive malignant neoplasm of breast", "http://snomed.info/sct"
+- Triple Negative: "432468001", "Triple negative malignant neoplasm of breast", "http://snomed.info/sct"
+- Ductal Carcinoma: "372130007", "Ductal carcinoma in situ", "http://snomed.info/sct"
+- Lobular Carcinoma: "254840008", "Lobular carcinoma in situ", "http://snomed.info/sct"
+- BRCA1 Positive: "109355002", "BRCA1 gene mutation", "http://snomed.info/sct"
+- BRCA2 Positive: "109356001", "BRCA2 gene mutation", "http://snomed.info/sct"
+
+### Cancer Treatments:
+- Tamoxifen: "387136007", "Tamoxifen", "http://snomed.info/sct"
+- Anastrozole: "386876001", "Anastrozole", "http://snomed.info/sct"
+- Trastuzumab: "387018007", "Trastuzumab", "http://snomed.info/sct"
+- Chemotherapy: "367336001", "Chemotherapy", "http://snomed.info/sct"
+- Radiotherapy: "108290001", "Radiotherapy", "http://snomed.info/sct"
+- Surgery: "387713003", "Surgical procedure", "http://snomed.info/sct"
+- Lumpectomy: "396487001", "Lumpectomy of breast", "http://snomed.info/sct"
+
+### Patient Demographics:
+- Female: "248153007", "Female", "http://snomed.info/sct"
+- Male: "248152002", "Male", "http://snomed.info/sct"
+- Age 18+: "184099003", "Adult", "http://snomed.info/sct"
+- Postmenopausal: "289908002", "Postmenopausal state", "http://snomed.info/sct"
+
+### TNM Staging:
+- Stage IV: "399537006", "Stage IV", "http://snomed.info/sct"
+
+### Tumor Markers:
+- HER2 Positive: "371494000", "Human epidermal growth factor 2 positive", "http://snomed.info/sct"
+- HER2 Negative: "371495004", "Human epidermal growth factor 2 negative", "http://snomed.info/sct"
+- ER Positive: "371496003", "Estrogen receptor positive", "http://snomed.info/sct"
+- PR Positive: "371497007", "Progesterone receptor positive", "http://snomed.info/sct"
+
+## mCODE ELEMENT PRIORITIES:
+1. Primary cancer diagnosis and staging
+2. Tumor morphology and histology
+3. Treatment regimens and medications
+4. Patient demographics (age, sex)
+5. Study design elements (only if explicitly stated)
+
+**REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
+```json
+{{
+  "mcode_mappings": [
+    {{
+      "element_type": "CancerCondition|CancerTreatment|TNMStage|etc",
+      "code": "EXACT_SNOMED_CODE_FROM_REFERENCE",
+      "display": "EXACT_DISPLAY_FROM_REFERENCE",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 0.0,
+      "evidence_text": "EXACT quoted text from source supporting this mapping"
+    }}
+  ],
+  "metadata": {{
+    "extraction_method": "evidence_based_with_codes_llm",
+    "text_length": 123,
+    "resource_count": 10
+  }}
+}}
+```
+
+**CRITICAL INSTRUCTIONS:**
+1. Read the clinical text carefully
+2. Identify explicit mCODE-relevant information
+3. Map only what is clearly stated using ONLY codes from the reference table
+4. Provide exact source text fragments
+5. Assign realistic confidence scores (0.0-1.0)
+6. Generate concise, accurate mappings with REAL SNOMED codes
+7. **STRICT JSON COMPLIANCE**: Return ONLY valid JSON, no additional text
+8. **REQUIRED FIELDS**: Each mapping MUST include element_type, code, display, system, confidence_score, evidence_text
+9. **VALIDATION RULES**: confidence_score must be 0.0-1.0, evidence_text must be non-empty string, codes must match reference table exactly
+10. **ERROR PREVENTION**: If any required field is missing or code not in reference table, do not create the mapping
+11. Ensure all JSON is valid and parseable
+12. Properly escape any special characters within string values
+13. Do not include any text outside of the JSON structure

@@ -1,0 +1,1985 @@
+[
+  {
+    "task_id": "a75a3291-a745-40d4-b631-fd2804c65c4f",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\"",
+      "Procedure=\"387713003\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": [
+      "ResearchStudy=\"R-00317\"",
+      "MedicationStatement=\"387458008\"",
+      "ClinicalTrial=\"n/a\"",
+      "PatientCharacteristic=\"263495000\"",
+      "CancerDiseaseStatus=\"373066001\""
+    ]
+  },
+  {
+    "task_id": "c9c84cae-cd3f-4fbd-997a-6a619230daf6",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_deepseek-chat",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "Condition=\"I51.9\"",
+      "ResearchStudy=\"NCT00386685\""
+    ],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "Observation=\"LP998223-8\"",
+      "MedicationStatement=\"C94413\"",
+      "Observation=\"LP417571-6\"",
+      "Observation=\"21908-9\""
+    ],
+    "false_negative_examples": [
+      "GenomicVariant=\"LA14042-8\"",
+      "MedicationStatement=\"L01XC01\"",
+      "MedicationStatement=\"XRP9881\"",
+      "ResearchStudy=\"secondary\"",
+      "MedicationStatement=\"386872004\""
+    ]
+  },
+  {
+    "task_id": "2ee3ddf7-b379-4a97-bd48-28b4c600a9a0",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_gpt-4-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "GenomicVariant=\"HGNC:1100\"",
+      "GenomicVariant=\"HGNC:1101\"",
+      "CancerCondition=\"254837009\"",
+      "Procedure=\"396487001\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"21894-1\"",
+      "CancerCondition=\"C1290384\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"126906006\"",
+      "CancerCondition=\"109838007\"",
+      "CancerCondition=\"254582000\"",
+      "CancerRelatedRadiationProcedure=\"108290001\"",
+      "Observation=\"385669000\""
+    ]
+  },
+  {
+    "task_id": "a5e126c5-75ec-49cf-aaba-4eb4b0d0616c",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-chat",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\"",
+      "ECOGPerformanceStatus=\"LA9623-5\""
+    ],
+    "false_positive_examples": [
+      "CancerDiseaseStatus=\"LOINC_PLACEHOLDER\"",
+      "Observation=\"72107-6\"",
+      "Observation=\"77994-7\"",
+      "CancerRelatedSurgicalProcedure=\"446551000124108\"",
+      "GenomicVariant=\"LA26606-1\""
+    ],
+    "false_negative_examples": [
+      "Patient=\"305780008\"",
+      "Observation=\"72171-2\"",
+      "CancerDiseaseStatus=\"385633008\"",
+      "CancerRelatedComorbidities=\"72892002\"",
+      "CancerRelatedRadiationProcedure=\"LA28873-6\""
+    ]
+  },
+  {
+    "task_id": "4c00c7bd-9771-4642-9186-18b20c8633b6",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_simple_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.919\"",
+      "CancerCondition=\"C91110\"",
+      "CancerCondition=\"363346000\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\"",
+      "ECOGPerformanceStatus=\"LA9623-5\""
+    ],
+    "false_negative_examples": [
+      "Patient=\"72892002\"",
+      "ClinicalTrial=\"clinical-trial\"",
+      "GenomicVariant=\"LA26609-4\"",
+      "Patient=\"442083009\"",
+      "Patient=\"424144002\""
+    ]
+  },
+  {
+    "task_id": "0e19d621-bb3d-4cc9-be1c-c1517f1dba6d",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_gpt-3.5-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\"",
+      "Procedure=\"387713003\""
+    ],
+    "false_positive_examples": [
+      "Condition=\"E10.9\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\"",
+      "Observation=\"33728-7\"",
+      "Observation=\"2160-0\""
+    ],
+    "false_negative_examples": [
+      "Observation=\"unknown\"",
+      "StudyDesign=\"NA\"",
+      "Observation=\"1182471000000100\"",
+      "Finding=\"165889000\"",
+      "StudyDesign=\"OTHER\""
+    ]
+  },
+  {
+    "task_id": "bcc72bbb-650d-4ac6-abdd-b0fbdf7ecd98",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_simple_deepseek-chat",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "ResearchStudy=\"NCT00386685\"",
+      "GenomicVariant=\"HGNC:3430\""
+    ],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "Observation=\"LP998223-8\"",
+      "Condition=\"I51.9\"",
+      "MedicationStatement=\"C94413\"",
+      "Observation=\"LP417571-6\""
+    ],
+    "false_negative_examples": [
+      "ResearchStudy.primaryPurposeType=\"TREATMENT\"",
+      "ECOGPerformanceStatus=\"LA9622-7\"",
+      "Patient=\"LA10402-1\"",
+      "MedicationStatement=\"763158003\"",
+      "Comorbidity=\"I50.9\""
+    ]
+  },
+  {
+    "task_id": "e65d305b-c88a-4fc7-b26f-239ae2110d42",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_simple_gpt-4-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "GenomicVariant=\"HGNC:1100\"",
+      "GenomicVariant=\"HGNC:1101\"",
+      "CancerCondition=\"254837009\"",
+      "Procedure=\"396487001\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"21894-1\"",
+      "CancerCondition=\"C1290384\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"254982004\"",
+      "Observation=\"385432009\"",
+      "CancerRelatedRadiationProcedure=\"108290001\"",
+      "CancerCondition=\"93761005\"",
+      "CancerStageGroup=\"cM0\""
+    ]
+  },
+  {
+    "task_id": "0fcb2376-c9f0-4816-adb5-7350acae5e83",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_gpt-4o-mini",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "bca959c9-4cee-4f3f-955c-1c4d4d0691ff",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "79312ef3-da37-4677-b8aa-b0b389b2cab3",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_claude-3",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "7c5ebbda-84f5-4f86-b97b-e71dd5387b23",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_simple_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "a01d9818-9220-4584-a9cc-395477cdb920",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-chat",
+    "true_positive_examples": [],
+    "false_positive_examples": [],
+    "false_negative_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\""
+    ]
+  },
+  {
+    "task_id": "36addf07-cea1-4a6d-9f8b-f4741feec671",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_simple_deepseek-reasoner",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "e73296cb-d83a-4460-851a-7c30e54fe34a",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_deepseek-reasoner",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "1efbc33e-6d3d-4578-a49f-d7deb2f0cc6a",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_simple_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "0e9cffee-7da7-44cc-a62d-67d60fc91cce",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_simple_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "Patient=\"424144002\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": [
+      "StudyDesign=\"RANDOMIZED\"",
+      "Treatment=\"372897005\"",
+      "MedicationStatement=\"387207008\"",
+      "CancerCondition=\"399068003\"",
+      "ClinicalTrial=\"N/A\""
+    ]
+  },
+  {
+    "task_id": "603f16bd-4477-40d4-acc5-d5b6e3515710",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_simple_gpt-4o-mini",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "2b15f0d1-f5b1-4264-b4a9-1447dbb723e9",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_simple_gpt-3.5-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Condition=\"E10.9\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\"",
+      "Observation=\"33728-7\"",
+      "Observation=\"2160-0\""
+    ],
+    "false_negative_examples": [
+      "MedicalHistory=\"271681001\"",
+      "TumorSize=\"408732007\"",
+      "ObservationResult=\"unknown\"",
+      "StudyDesign=\"NA\"",
+      "ProcedureIntent=\"394701000\""
+    ]
+  },
+  {
+    "task_id": "4e90b696-8b5b-49bf-80ee-90138ec29235",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_comprehensive_deepseek-chat",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "GenomicVariant=\"HGNC:3430\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "Observation=\"LP998223-8\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedMedication=\"L01XC01\"",
+      "CancerCondition=\"C4872\"",
+      "CancerRelatedMedication=\"763875007\"",
+      "GenomicVariant=\"LA6576-8\"",
+      "CancerCondition=\"C9115000\""
+    ]
+  },
+  {
+    "task_id": "67306beb-e68f-408b-ae66-89635b720950",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_simple_claude-3",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "aa036d4e-fc35-41b2-a1b1-a26fc4230edf",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_comprehensive_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "d6760ae9-4a4d-4c21-a760-8863030437d8",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_comprehensive_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerDiseaseStatus=\"268910001\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\""
+    ],
+    "false_negative_examples": [
+      "TNMClinicalStageGroup=\"21908-9\"",
+      "GenomicVariant=\"C1706430\"",
+      "CancerCondition=\"C4872\"",
+      "GenomicVariant=\"C1706426\"",
+      "GenomicVariant=\"C1706428\""
+    ]
+  },
+  {
+    "task_id": "4e7cf3c0-5594-42cd-829e-8899b4812ccc",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_comprehensive_deepseek-reasoner",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "46b07e53-da73-472c-9ce9-665057778133",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_comprehensive_gpt-4-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"21894-1\"",
+      "CancerCondition=\"C1290384\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedProcedure=\"387713003\"",
+      "CancerRelatedProcedure=\"108290001\"",
+      "CancerRelatedProcedure=\"129286009\"",
+      "GenomicVariant=\"UO:0001699\"",
+      "CancerDiseaseStatus=\"260415000\""
+    ]
+  },
+  {
+    "task_id": "64d3267a-33f3-491d-8c29-dd210bd22e9f",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_comprehensive_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedProcedure=\"387713003\"",
+      "CancerRelatedMedication=\"367336001\"",
+      "CancerRelatedMedication=\"387207008\"",
+      "CancerDiseaseStatus=\"261665006\"",
+      "CancerRelatedProcedure=\"448385000\""
+    ]
+  },
+  {
+    "task_id": "eee658fc-9f48-41b7-935a-f276fe495b1e",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_comprehensive_gpt-4o-mini",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "cbe99094-11c3-4e91-b5f6-d611d7ac1f01",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_comprehensive_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"C4872\"",
+      "GenomicVariant=\"HER2\"",
+      "TNMClinicalStageGroup=\"C77.4\"",
+      "GenomicVariant=\"PR\"",
+      "GenomicVariant=\"ER\""
+    ]
+  },
+  {
+    "task_id": "a726b988-f605-46de-858a-3e21a34a8476",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_comprehensive_gpt-3.5-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Condition=\"E10.9\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\"",
+      "Observation=\"33728-7\"",
+      "Observation=\"2160-0\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedProcedure=\"387713003\"",
+      "ECOGPerformanceStatus=\"271674006\"",
+      "CancerCondition=\"NA\"",
+      "CancerRelatedProcedure=\"NA\"",
+      "CancerCondition=\"363346000\""
+    ]
+  },
+  {
+    "task_id": "9ba455b9-d6d0-4f47-bf55-8fa887a6ec16",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_comprehensive_claude-3",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "e8ed2bb7-d59d-4222-86ed-3da791d04831",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_minimal_deepseek-chat",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "GenomicVariant=\"HGNC:3430\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "Observation=\"LP998223-8\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": [
+      "TNMClinicalStageGroup=\"C80.1\"",
+      "CancerRelatedMedicationAdministration=\"386452007\"",
+      "GenomicVariant=\"LA6576-8\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\"",
+      "Comorbidity=\"I51.9\""
+    ]
+  },
+  {
+    "task_id": "679b165f-9dbc-43e4-9d70-3a34b866d052",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_minimal_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"C50.919\"",
+      "CancerCondition=\"C50.9\"",
+      "CancerRelatedComorbidities=\"72892002\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\""
+    ],
+    "false_negative_examples": [
+      "RadiotherapyCourseSummary=\"LA10428-4\"",
+      "CancerRelatedSurgicalProcedure=\"254837009\"",
+      "GenomicVariant=\"C1705169\"",
+      "Family member=\"72705000\"",
+      "Geographic location=\"77983-7\""
+    ]
+  },
+  {
+    "task_id": "5e8a2bfb-5dac-4703-bf22-6a7ad5e0b188",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_minimal_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "bb744252-b567-40a5-a28e-64a7d593288f",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_minimal_gpt-4-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "Condition=\"254837009\"",
+      "CancerCondition=\"254837009\"",
+      "Procedure=\"396487001\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"21894-1\"",
+      "CancerCondition=\"C1290384\""
+    ],
+    "false_negative_examples": [
+      "Procedure=\"443402002\"",
+      "Observation=\"44662000\"",
+      "Observation=\"405746006\"",
+      "Observation=\"252416005\"",
+      "Observation=\"161765003\""
+    ]
+  },
+  {
+    "task_id": "ffa49d21-8784-4ff2-ab62-710d80f9dd59",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_minimal_deepseek-reasoner",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\""
+    ],
+    "false_negative_examples": [
+      "PrimaryCancerCondition=\"254837009\""
+    ]
+  },
+  {
+    "task_id": "68e2c4b1-4f4c-45fa-b568-395a52711e6c",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_minimal_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "516d4f04-c55c-4ae6-b0a8-9301a2c8298f",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_minimal_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": [
+      "Primary Purpose=\"C70820\"",
+      "MedicationStatement=\"387517004\"",
+      "ClinicalStatus=\"261665006\"",
+      "PrimaryCancerCondition=\"254837009\"",
+      "Treatment=\"367336001\""
+    ]
+  },
+  {
+    "task_id": "83ee5d98-8e95-4269-b092-e9e91656974c",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_minimal_gpt-3.5-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "Observation=\"1975-2\""
+    ],
+    "false_positive_examples": [
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\"",
+      "Observation=\"33728-7\""
+    ],
+    "false_negative_examples": [
+      "Reporting Status=\"399423001\"",
+      "Region of Enrollment=\"21840-4\"",
+      "Denominator Value=\"NA\"",
+      "Outcome Measure Description=\"NA\"",
+      "Ethnicity=\"69409-1\""
+    ]
+  },
+  {
+    "task_id": "28e04bf7-64dc-45e9-95c0-76dad9d57334",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_minimal_claude-3",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "d5fea534-a557-46a5-bf22-5ea8e2dbb5ba",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_minimal_gpt-4o-mini",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "8e2757ae-81ed-4e01-b584-c63d1b2b6817",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_structured_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"C50.919\"",
+      "CancerCondition=\"363346000\"",
+      "CancerDiseaseStatus=\"385633008\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedSurgicalProcedure=\"77461000\"",
+      "Patient=\"116154003\"",
+      "Patient=\"LA19536-9\"",
+      "CancerDiseaseStatus=\"LOINC_PLACEHOLDER\"",
+      "CancerRelatedSurgicalProcedure=\"SNOMED_CT_PLACEHOLDER\""
+    ]
+  },
+  {
+    "task_id": "bb8d8644-8e77-4b13-b149-8b7c95f5fadf",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_structured_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "cdeb5713-e595-4003-90d5-d1ba4e929083",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_structured_deepseek-chat",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "GenomicVariant=\"HGNC:3430\"",
+      "MedicationStatement=\"763875007\""
+    ],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "Observation=\"LP998223-8\"",
+      "Condition=\"I51.9\"",
+      "MedicationStatement=\"C94413\"",
+      "Observation=\"LP417571-6\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedMedicationAdministration=\"76314003\"",
+      "GenomicVariant=\"LA14042-8\"",
+      "GenomicVariant=\"LA6576-8\"",
+      "CancerCondition=\"C50.919\"",
+      "CancerCondition=\"C50.9\""
+    ]
+  },
+  {
+    "task_id": "7bee7112-3fcf-4d3c-956d-7e544c12028e",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_structured_deepseek-reasoner",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "96b1814d-64a6-40e8-acbc-45b1c090baf7",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_structured_gpt-4-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "GenomicVariant=\"HGNC:1100\"",
+      "GenomicVariant=\"HGNC:1101\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"21894-1\"",
+      "CancerCondition=\"C1290384\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"126906006\"",
+      "BodySite=\"76752008\"",
+      "CancerCondition=\"254848004\"",
+      "CancerCondition=\"408643008\"",
+      "TumorMarkerTest=\"85319-2\""
+    ]
+  },
+  {
+    "task_id": "1307c94c-31a5-484f-b08d-0b2712c712cf",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_structured_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": [
+      "CancerTreatment=\"372864008\"",
+      "CancerTreatment=\"387207008\"",
+      "CancerCondition=\"313217004\"",
+      "CancerTreatment=\"372857005\"",
+      "CancerCondition=\"C0006826\""
+    ]
+  },
+  {
+    "task_id": "5c1f2724-ec4b-44c0-8d8f-e0ff73fadc4f",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_structured_gpt-4o-mini",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "c020d0d9-9913-40f5-9d9b-510047e7045a",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_structured_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "4f479ac2-4aa6-45fb-8eec-0f47b3d5bb09",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_structured_claude-3",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "69aec6a1-affe-449c-aac7-38043cf21d38",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_structured_gpt-3.5-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\"",
+      "Observation=\"33728-7\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"363346000\"",
+      "ImagingStudy=\"394914008\"",
+      "Device=\"700000000000\"",
+      "Procedure=\"367336001\""
+    ]
+  },
+  {
+    "task_id": "e289a26f-a897-4488-bb4c-2a5973493104",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_optimization_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "Patient=\"305780008\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C50.919\"",
+      "CancerCondition=\"363346000\"",
+      "Patient=\"F\""
+    ],
+    "false_positive_examples": [
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\"",
+      "ECOGPerformanceStatus=\"LA9623-5\""
+    ],
+    "false_negative_examples": [
+      "Patient=\"413350009\"",
+      "Patient=\"72892002\"",
+      "Patient=\"442083009\"",
+      "CancerCondition=\"108370007\"",
+      "CancerDiseaseStatus=\"281647001\""
+    ]
+  },
+  {
+    "task_id": "fdb02b5a-e393-453b-ace8-761ba0a764f4",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_optimization_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "a4f2d60b-31dd-44ad-b549-aa05a834095d",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_optimization_deepseek-chat",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"C50.911\"",
+      "GenomicVariant=\"HGNC:3430\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "Observation=\"LP998223-8\"",
+      "ResearchStudy=\"research-study\"",
+      "Condition=\"I51.9\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedMedicationAdministration=\"76388\"",
+      "MedicationStatement=\"XRP9881\"",
+      "CancerRelatedMedicationContraindication=\"LA14006-8\"",
+      "CancerCondition=\"C50.919\"",
+      "CancerCondition=\"C1266163\""
+    ]
+  },
+  {
+    "task_id": "d79e0d9c-b885-46ba-83e2-4e755104af82",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_optimization_gpt-4-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\"",
+      "Procedure=\"396487001\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"21894-1\"",
+      "CancerCondition=\"C1290384\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"126906006\"",
+      "Observation=\"85337-4\"",
+      "CancerCondition=\"109838007\"",
+      "Observation=\"48694002\"",
+      "Observation=\"405746006\""
+    ]
+  },
+  {
+    "task_id": "50751c9a-9a96-48ab-a8b9-898f814b8f94",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_optimization_deepseek-reasoner",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "81acfabb-4bf7-42a5-86e3-50a921565b84",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_optimization_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": [
+      "ClinicalTrial=\"NCT00000000\"",
+      "CancerCondition=\"433581000124108\"",
+      "CancerCondition=\"373150008\"",
+      "CancerTreatment=\"372876000\"",
+      "CancerDiseaseStatus=\"373930000\""
+    ]
+  },
+  {
+    "task_id": "81f9e53e-7caa-4cf5-97ed-703bd2c7bb16",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_optimization_gpt-4o-mini",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "cc69077d-12c2-4ccd-8428-8ba6980fe0e5",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_optimization_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "3238ce14-b3bd-47f2-94cd-78f02bb2daff",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_optimization_claude-3",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "98860541-73a1-491c-a268-d9e3a445a288",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_optimization_gpt-3.5-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\"",
+      "Observation=\"33728-7\""
+    ],
+    "false_negative_examples": [
+      "OutcomeMeasure=\"NA\"",
+      "Device=\"123456789\"",
+      "ECOGPerformanceStatus=\"255428009\"",
+      "Observation=\"123456789\"",
+      "PatientAge=\"424144002\""
+    ]
+  },
+  {
+    "task_id": "e5916d20-6a4e-4e27-80fe-cb152bd09f08",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_improved_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerDiseaseStatus=\"268910001\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\""
+    ],
+    "false_negative_examples": [
+      "TNMClinicalStageGroup=\"21908-9\"",
+      "GenomicVariant=\"C0205726\"",
+      "GenomicVariant=\"C3665328\"",
+      "GenomicVariant=\"C0205728\"",
+      "GenomicVariant=\"C0205727\""
+    ]
+  },
+  {
+    "task_id": "f8b5e4d4-2952-4f28-bc04-b63e36e2a743",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_improved_deepseek-chat",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "GenomicVariant=\"HGNC:3430\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "Observation=\"LP998223-8\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": [
+      "GenomicVariant=\"70650003\"",
+      "CancerRelatedMedication=\"763875007\"",
+      "TNMClinicalStageGroup=\"LA26831-3\"",
+      "CancerRelatedProcedure=\"252416005\"",
+      "CancerRelatedMedication=\"763140\""
+    ]
+  },
+  {
+    "task_id": "c6191583-590c-4c37-bc70-b0d3e10500ae",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_improved_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "0e439284-cfa9-4028-af16-f5d88481f70e",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_improved_gpt-4-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"21894-1\"",
+      "CancerCondition=\"C1290384\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedProcedure=\"387713003\"",
+      "CancerRelatedProcedure=\"108290001\"",
+      "CancerRelatedProcedure=\"129286009\"",
+      "CancerDiseaseStatus=\"260415000\"",
+      "CancerRelatedProcedure=\"443402002\""
+    ]
+  },
+  {
+    "task_id": "dabafda0-ce49-4e4c-9099-08904aa06f31",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_improved_deepseek-reasoner",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "08dec9da-894d-460a-a81f-843e97a17294",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_improved_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedProcedure=\"387713003\"",
+      "CancerRelatedMedication=\"367336001\"",
+      "CancerRelatedMedication=\"372756006\"",
+      "CancerRelatedProcedure=\"108290001\"",
+      "CancerCondition=\"128462008\""
+    ]
+  },
+  {
+    "task_id": "28b89bc3-6732-45a7-88be-306fca1ec82c",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_improved_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "462bf83c-85ab-4525-b4e9-24a07e2c7b2c",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_improved_gpt-3.5-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\"",
+      "Observation=\"33728-7\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedProcedure=\"387713003\"",
+      "ECOGPerformanceStatus=\"271674006\"",
+      "CancerCondition=\"NA\"",
+      "CancerRelatedProcedure=\"NA\"",
+      "CancerCondition=\"363346000\""
+    ]
+  },
+  {
+    "task_id": "7b0f7074-097d-4572-88ce-21f79a68cd04",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_improved_gpt-4o-mini",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "b2b09446-939c-4074-ab84-ab85dff39feb",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_evidence_based_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "Observation=\"72826-1\"",
+      "Patient=\"F\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\"",
+      "ECOGPerformanceStatus=\"LA9623-5\""
+    ],
+    "false_negative_examples": [
+      "Observation=\"21840-4\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"8302-2\"",
+      "ResearchStudy=\"clinical-research\"",
+      "ResearchStudy=\"parental-cancer\""
+    ]
+  },
+  {
+    "task_id": "389e5805-3ec4-4ce1-8e5a-e5cd3a830e6f",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_improved_claude-3",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "49d436e0-6ef7-4c05-8a71-2e1489a689b4",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_evidence_based_deepseek-chat",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "ResearchStudy=\"NCT00386685\"",
+      "GenomicVariant=\"HGNC:3430\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\""
+    ],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "Observation=\"LP998223-8\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\"",
+      "Observation=\"LP417571-6\""
+    ],
+    "false_negative_examples": [
+      "ResearchStudy=\"SINGLE_GROUP\"",
+      "CancerCondition=\"C4872\"",
+      "CancerCondition=\"C0006142\"",
+      "CancerRelatedMedication=\"trastuzumab\"",
+      "ResearchStudy=\"NONE\""
+    ]
+  },
+  {
+    "task_id": "1a2efb08-e6d2-46ae-9020-cfaa93916800",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_evidence_based_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "2bc786a6-c0d1-42e0-baf4-712edeee8c2c",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_evidence_based_gpt-4-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "GenomicVariant=\"HGNC:1100\"",
+      "ResearchStudy=\"NCT05417516\"",
+      "Condition=\"254837009\"",
+      "Procedure=\"396487001\"",
+      "GenomicVariant=\"HGNC:1101\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"21894-1\""
+    ],
+    "false_negative_examples": [
+      "ResearchStudy=\"primaryPurpose\"",
+      "Observation=\"77386006\"",
+      "ResearchStudy=\"allocation\"",
+      "Observation=\"252416005\"",
+      "ResearchStudy=\"maskingDescription\""
+    ]
+  },
+  {
+    "task_id": "6a50ddf6-5062-4453-9fda-7898a1cbe0cd",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_evidence_based_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"C50.9\"",
+      "ResearchStudy=\"NCT00286117\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": [
+      "CancerRelatedMedication=\"387517004\"",
+      "CancerCondition=\"C77.3\"",
+      "Biomarker=\"ER\"",
+      "CancerRelatedMedication=\"372906003\"",
+      "ResearchStudy=\"N/A\""
+    ]
+  },
+  {
+    "task_id": "0de3c9d3-56b5-485c-abfa-6b7d3d231478",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_evidence_based_deepseek-reasoner",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "5d98e3d2-3769-4ab4-8545-e32e3bec0f7d",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_evidence_based_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "b9ad20f4-13f5-414a-b15a-62238aa69718",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_evidence_based_gpt-4o-mini",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "60da4a51-d4a5-4ef9-a6ca-33680a429fb6",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_evidence_based_gpt-3.5-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Condition=\"E10.9\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\"",
+      "Observation=\"33728-7\"",
+      "Observation=\"2160-0\""
+    ],
+    "false_negative_examples": [
+      "OutcomeMeasureType=\"NA\"",
+      "OutcomeMeasureDescription=\"NA\"",
+      "OutcomeMeasureParamType=\"NA\"",
+      "OutcomeMeasureReportingStatus=\"NA\"",
+      "Observation=\"363406005\""
+    ]
+  },
+  {
+    "task_id": "c65a1ada-99e2-478a-985a-83d19699c165",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_evidence_based_claude-3",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "913c9157-0fd9-4315-b8af-175c39a7dcb8",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_evidence_based_concise_deepseek-chat",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "Observation=\"LP998223-8\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"108369006\"",
+      "PatientDemographics=\"424144002\"",
+      "CancerTreatment=\"387018007\"",
+      "CancerTreatment=\"763875007\"",
+      "CancerCondition=\"702971005\""
+    ]
+  },
+  {
+    "task_id": "8cb1d75f-b6d5-45c3-ac37-3bf31141197f",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_evidence_based_concise_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"363346000\"",
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\""
+    ],
+    "false_negative_examples": [
+      "PatientDemographics=\"372148003\"",
+      "PatientDemographics=\"424144002\"",
+      "PatientDemographics=\"184100006\"",
+      "TNMStage=\"399518008\"",
+      "PatientDemographics=\"248152002\""
+    ]
+  },
+  {
+    "task_id": "ea069a85-b8ea-4dc4-9c5a-cfb3b0a05d0c",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_evidence_based_concise_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "ded2e924-0b8c-4091-bac0-5e0ae6291dff",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_evidence_based_concise_gpt-4-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"21894-1\"",
+      "CancerCondition=\"C1290384\""
+    ],
+    "false_negative_examples": [
+      "PatientDemographics=\"397669002\"",
+      "ResearchSubject=\"Not Applicable\"",
+      "CancerTreatment=\"387713003\"",
+      "CancerTreatment=\"129286009\"",
+      "CancerTreatment=\"23426006\""
+    ]
+  },
+  {
+    "task_id": "bbb3e3de-19b7-49f3-8520-1d185852c85d",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_evidence_based_concise_deepseek-reasoner",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "6af6440d-88b7-42a6-b6ba-e6d8f35c4e68",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_evidence_based_concise_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": [
+      "PatientCharacteristic=\"365873007\"",
+      "CancerTreatment=\"372756006\"",
+      "StudyPurpose=\"N/A\"",
+      "CancerCondition=\"128462008\"",
+      "StudyDesign=\"N/A\""
+    ]
+  },
+  {
+    "task_id": "e848c31f-66de-4cca-a765-a7e30098365d",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_evidence_based_concise_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "ed975448-cafd-4459-9963-e0499db77df4",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_evidence_based_concise_gpt-4o-mini",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "8bc76b6b-1695-462d-9f25-c80bc0f39e3a",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_evidence_based_concise_gpt-3.5-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Condition=\"E10.9\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\"",
+      "Observation=\"33728-7\"",
+      "Observation=\"2160-0\""
+    ],
+    "false_negative_examples": [
+      "OutcomeMeasure=\"NA\"",
+      "Study=\"NA\"",
+      "CancerCondition=\"NA\"",
+      "StudyDesign=\"NA\"",
+      "StudyDesign=\"OTHER\""
+    ]
+  },
+  {
+    "task_id": "e5042b2e-59ca-473c-b1c5-cf3e78544154",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_evidence_based_concise_claude-3",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "9845fd8d-2b95-47f5-ab60-6f5745ef3eab",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_evidence_based_with_codes_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\""
+    ],
+    "false_negative_examples": [
+      "PatientDemographics=\"248153007\"",
+      "PatientDemographics=\"248152002\"",
+      "CancerCondition=\"371494000\"",
+      "TNMStage=\"399537006\"",
+      "PatientDemographics=\"184099003\""
+    ]
+  },
+  {
+    "task_id": "62e9cd37-ad02-4f03-9d32-bbfbd7686800",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_evidence_based_with_codes_deepseek-coder",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "47fff6fb-3264-4435-a81e-931878fad472",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_evidence_based_with_codes_deepseek-chat",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "Observation=\"LP998223-8\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": [
+      "CancerTreatment=\"387018007\"",
+      "PatientDemographic=\"184099003\"",
+      "CancerCondition=\"706891004\"",
+      "CancerTreatment=\"367336001\"",
+      "CancerCondition=\"371494000\""
+    ]
+  },
+  {
+    "task_id": "b8ab10ca-1fc7-4325-993f-c599b25c8bed",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_evidence_based_with_codes_deepseek-reasoner",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "AdverseEvent=\"419620001\"",
+      "Condition=\"E10.9\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "8c9de362-e2a5-4966-a7c6-8d76f34cbf73",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_evidence_based_with_codes_gpt-4-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"21894-1\"",
+      "CancerCondition=\"C1290384\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"109356001\"",
+      "TumorMarkers=\"371495004\"",
+      "CancerCondition=\"372130007\"",
+      "PatientDemographics=\"248153007\"",
+      "TumorMarkers=\"371496003\""
+    ]
+  },
+  {
+    "task_id": "864efc7c-3e66-4d6a-8428-1b217eb116aa",
+    "trial_id": "NCT00286117",
+    "gold_config": "direct_mcode_evidence_based_with_codes_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"366630004\"",
+      "CancerCondition=\"C0006142\"",
+      "Observation=\"LP212175-9\"",
+      "Observation=\"82810-3\"",
+      "CancerCondition=\"C1268991\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"432469009\"",
+      "PatientDemographics=\"248153007\"",
+      "PatientDemographics=\"289908002\"",
+      "CancerTreatment=\"387136007\"",
+      "CancerTreatment=\"386876001\""
+    ]
+  },
+  {
+    "task_id": "adf5ee84-ecd4-4e57-a2ca-58eae1fe64fe",
+    "trial_id": "NCT00386685",
+    "gold_config": "direct_mcode_evidence_based_with_codes_gpt-4o-mini",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "MedicationStatement=\"763140\"",
+      "CancerCondition=\"254837009\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerCondition=\"C50.911\"",
+      "MedicationStatement=\"C94413\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "67db5b78-1f5f-4b62-a911-8d950cf4625e",
+    "trial_id": "NCT04092816",
+    "gold_config": "direct_mcode_evidence_based_with_codes_gpt-4o",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Patient=\"305780008\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"72171-2\"",
+      "Patient=\"BG001\"",
+      "Observation=\"69453-9\""
+    ],
+    "false_negative_examples": [
+      "CancerCondition=\"432469009\"",
+      "CancerCondition=\"432468001\"",
+      "PatientDemographics=\"248153007\"",
+      "PatientDemographics=\"248152002\"",
+      "CancerCondition=\"371494000\""
+    ]
+  },
+  {
+    "task_id": "3584b8dc-9508-4d89-9999-736c15b94a4d",
+    "trial_id": "NCT05417516",
+    "gold_config": "direct_mcode_evidence_based_with_codes_claude-3",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [],
+    "false_positive_examples": [
+      "Patient=\"50\"",
+      "CancerCondition=\"254837009\"",
+      "CancerCondition=\"C0006142\"",
+      "ResearchStudy=\"research-study\"",
+      "CancerRelatedSurgicalProcedure=\"236627004\""
+    ],
+    "false_negative_examples": []
+  },
+  {
+    "task_id": "b2fabcc0-0077-4b3a-9e9b-f44880c29b17",
+    "trial_id": "NCT02438358",
+    "gold_config": "direct_mcode_evidence_based_with_codes_gpt-3.5-turbo",
+    "comp_config": "direct_mcode_deepseek-coder",
+    "true_positive_examples": [
+      "CancerCondition=\"254837009\""
+    ],
+    "false_positive_examples": [
+      "Condition=\"E10.9\"",
+      "ResearchStudy=\"research-study\"",
+      "Observation=\"8302-2\"",
+      "Observation=\"33728-7\"",
+      "Observation=\"2160-0\""
+    ],
+    "false_negative_examples": [
+      "StudyDesign=\"OTHER\"",
+      "StudyDesign=\"NA\"",
+      "PatientDemographics=\"248153007\"",
+      "Masking=\"NO\"",
+      "StudyDesign=\"260299005\""
+    ]
+  }
+]

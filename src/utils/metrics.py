@@ -1,5 +1,7 @@
 from collections import defaultdict
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Set, Optional
+import time
+from datetime import datetime
 
 from src.utils.logging_config import get_logger
 
@@ -144,3 +146,61 @@ class BenchmarkMetrics:
         fn = len(ground_truth_set - predicted_set)
 
         return BenchmarkMetrics(tp, fp, fn)
+
+
+class PerformanceMetrics:
+    """
+    Tracks performance metrics including time, tokens, and cost for optimization workflows.
+    """
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        """Reset all performance metrics"""
+        self.start_time = None
+        self.end_time = None
+        self.processing_time = 0.0
+        self.tokens_used = 0
+        self.estimated_cost = 0.0
+        self.elements_processed = 0
+
+    def start_tracking(self):
+        """Start performance tracking"""
+        self.start_time = time.time()
+
+    def stop_tracking(self, tokens_used: int = 0, elements_processed: int = 0):
+        """Stop performance tracking and record metrics"""
+        if self.start_time is None:
+            return
+
+        self.end_time = time.time()
+        self.processing_time = self.end_time - self.start_time
+        self.tokens_used = tokens_used
+        self.elements_processed = elements_processed
+
+        # Calculate estimated cost (rough approximation)
+        # OpenAI pricing: ~$0.01 per 1K tokens for GPT-4, ~$0.002 per 1K for GPT-3.5
+        cost_per_1k_tokens = 0.01  # Default to GPT-4 pricing
+        self.estimated_cost = (tokens_used / 1000) * cost_per_1k_tokens
+
+    def get_metrics(self) -> Dict[str, Any]:
+        """Get current performance metrics"""
+        return {
+            "processing_time_seconds": self.processing_time,
+            "tokens_used": self.tokens_used,
+            "estimated_cost_usd": self.estimated_cost,
+            "elements_processed": self.elements_processed,
+            "start_time": datetime.fromtimestamp(self.start_time).isoformat() if self.start_time else None,
+            "end_time": datetime.fromtimestamp(self.end_time).isoformat() if self.end_time else None,
+            # Derived metrics
+            "processing_time_per_element": self.processing_time / max(self.elements_processed, 1),
+            "tokens_per_element": self.tokens_used / max(self.elements_processed, 1),
+            "cost_per_element_usd": self.estimated_cost / max(self.elements_processed, 1),
+            "elements_per_second": self.elements_processed / max(self.processing_time, 0.001),
+            "tokens_per_second": self.tokens_used / max(self.processing_time, 0.001),
+        }
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for serialization"""
+        return self.get_metrics()
