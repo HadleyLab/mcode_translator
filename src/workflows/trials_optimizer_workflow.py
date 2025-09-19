@@ -129,15 +129,21 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
             # Create tasks for fully asynchronous execution
             # Break down to individual trial processing for maximum parallelism
+            self.logger.info("🔄 Creating concurrent tasks for all combinations...")
             tasks = []
             task_id = 0
 
+            # Pre-compute fold trials to avoid repeated list comprehensions
+            fold_trials = []
+            for fold in range(cv_folds):
+                val_indices = fold_indices[fold]
+                fold_trials.append([trials_data[i] for i in val_indices])
+
+            # Create all tasks efficiently
             for combo_idx, combo in enumerate(combinations):
                 self.logger.debug(f"📋 Creating tasks for combination {combo_idx + 1}: {combo['model']} + {combo['prompt']}")
                 for fold in range(cv_folds):
-                    # Get validation trials for this fold
-                    val_indices = fold_indices[fold]
-                    val_trials = [trials_data[i] for i in val_indices]
+                    val_trials = fold_trials[fold]
 
                     # Create individual tasks for each trial in this fold
                     for trial_idx, trial in enumerate(val_trials):
