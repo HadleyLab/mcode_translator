@@ -129,63 +129,89 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
             self.logger.info(f"🤖 Using async queue with {workers} max concurrent tasks")
 
-            # Create tasks for fully asynchronous execution
-            # Break down to individual trial processing for maximum parallelism
-            self.logger.info("🔄 Creating concurrent tasks for all combinations...")
-            tasks = []
-            task_id = 0
-
-            # Pre-compute fold trials to avoid repeated list comprehensions
-            fold_trials = []
-            for fold in range(cv_folds):
-                val_indices = fold_indices[fold]
-                fold_trials.append([trials_data[i] for i in val_indices])
-
-            # Create all tasks efficiently
-            for combo_idx, combo in enumerate(combinations):
-                self.logger.debug(f"📋 Creating tasks for combination {combo_idx + 1}: {combo['model']} + {combo['prompt']}")
-                for fold in range(cv_folds):
-                    val_trials = fold_trials[fold]
-
-                    # Create individual tasks for each trial in this fold
-                    for trial_idx, trial in enumerate(val_trials):
-                        task = create_task(
-                            task_id=f"trial_{task_id}",
-                            func=self._test_single_trial_async,
-                            combination=combo,
-                            trial=trial,
-                            fold=fold,
-                            combo_idx=combo_idx
-                        )
-                        tasks.append(task)
-                        task_id += 1
-
-            self.logger.info(f"✅ Created {len(tasks)} tasks for execution")
-            if len(tasks) != total_tasks:
-                self.logger.warning(f"⚠️  Task count mismatch: expected {total_tasks}, created {len(tasks)}")
-
-            # Track results by combination for aggregation
+            # Simple producer-consumer pattern
+            queue = asyncio.Queue()
             combo_results = {i: {"scores": [], "errors": [], "metrics": [], "mcode_elements": []} for i in range(len(combinations))}
 
-            def progress_callback(completed, total, result):
-                if result.success:
-                    combo_idx = result.result.get('combo_idx', 0)
-                    score = result.result.get('score', 0)
-                    metrics = result.result.get('quality_metrics', {})
-                    predicted_mcode = result.result.get('predicted_mcode', [])
-                    combo = combinations[combo_idx]
-                    combo_results[combo_idx]["scores"].append(score)
-                    combo_results[combo_idx]["metrics"].append(metrics)
-                    combo_results[combo_idx]["mcode_elements"].extend(predicted_mcode)
-                    fold = result.result.get('fold', 0)
-                    self.logger.info(f"✅ Trial {completed}/{total}: {combo['model']} + {combo['prompt']} (fold {fold}, score: {score:.3f}, elements: {len(predicted_mcode)})")
-                else:
-                    combo_idx = result.result.get('combo_idx', 0) if result.result else 0
-                    combo_results[combo_idx]["errors"].append(str(result.error))
-                    combo_name = combinations[combo_idx]['model'] + " + " + combinations[combo_idx]['prompt'] if combo_idx < len(combinations) else "unknown"
-                    self.logger.warning(f"❌ Failed trial {completed}/{total}: {combo_name} - {result.error}")
+            # Producer: put all tasks in the queue
+            async def producer():
+                self.logger.info("🔄 Producer: Creating concurrent tasks...")
+                task_id = 0
 
-            task_results = await task_queue.execute_tasks(tasks, progress_callback=progress_callback)
+                # Pre-compute fold trials
+                fold_trials = []
+                for fold in range(cv_folds):
+                    val_indices = fold_indices[fold]
+                    fold_trials.append([trials_data[i] for i in val_indices])
+
+                # Put all tasks in queue
+                for combo_idx, combo in enumerate(combinations):
+                    for fold in range(cv_folds):
+                        val_trials = fold_trials[fold]
+                        for trial_idx, trial in enumerate(val_trials):
+                            task_data = {
+                                "task_id": f"trial_{task_id}",
+                                "combination": combo,
+                                "trial": trial,
+                                "fold": fold,
+                                "combo_idx": combo_idx
+                            }
+                            await queue.put(task_data)
+                            task_id += 1
+
+                # Signal completion
+                await queue.put(None)
+                self.logger.info(f"✅ Producer: Created {task_id} tasks")
+
+            # Consumer: process tasks from queue
+            async def worker(worker_id: int):
+                self.logger.info(f"🤖 Worker {worker_id}: Starting...")
+                completed = 0
+
+                while True:
+                    task_data = await queue.get()
+                    if task_data is None:
+                        await queue.put(None)  # Pass stop signal
+                        break
+
+                    try:
+                        # Process the task
+                        result = await self._test_single_trial(
+                            task_data["combination"],
+                            task_data["trial"],
+                            task_data["fold"],
+                            task_data["combo_idx"]
+                        )
+
+                        # Store results
+                        combo_idx = result["combo_idx"]
+                        score = result.get("score", 0)
+                        metrics = result.get("quality_metrics", {})
+                        predicted_mcode = result.get("predicted_mcode", [])
+
+                        combo_results[combo_idx]["scores"].append(score)
+                        combo_results[combo_idx]["metrics"].append(metrics)
+                        combo_results[combo_idx]["mcode_elements"].extend(predicted_mcode)
+
+                        completed += 1
+                        combo = combinations[combo_idx]
+                        self.logger.info(f"✅ Worker {worker_id}: Trial {completed} - {combo['model']} + {combo['prompt']} (score: {score:.3f})")
+
+                    except Exception as e:
+                        combo_idx = task_data["combo_idx"]
+                        combo_results[combo_idx]["errors"].append(str(e))
+                        combo_name = combinations[combo_idx]['model'] + " + " + combinations[combo_idx]['prompt']
+                        self.logger.warning(f"❌ Worker {worker_id}: Failed {combo_name} - {e}")
+
+                self.logger.info(f"🏁 Worker {worker_id}: Finished processing {completed} tasks")
+
+            # Start producer and workers
+            producer_task = asyncio.create_task(producer())
+            worker_tasks = [asyncio.create_task(worker(i)) for i in range(workers)]
+
+            # Wait for completion
+            await asyncio.gather(producer_task, *worker_tasks)
+            self.logger.info("🎉 All workers completed")
 
             # Create directory for saving individual runs
             runs_dir = Path("optimization_runs")
@@ -418,12 +444,6 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 "timestamp": datetime.now().isoformat(),
             }
 
-    def _test_single_trial_async(
-        self, combination: Dict[str, str], trial: Dict[str, Any], fold: int, combo_idx: int
-    ) -> Dict[str, Any]:
-        """Async wrapper for _test_single_trial to work with task queue."""
-        import asyncio
-        return asyncio.run(self._test_single_trial(combination, trial, fold, combo_idx))
 
     def _save_optimal_config(
         self, best_result: Dict[str, Any], output_path: str
