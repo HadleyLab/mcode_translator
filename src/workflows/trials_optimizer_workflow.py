@@ -196,22 +196,20 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                         completed += 1
                         combo = combinations[combo_idx]
                         self.logger.info(f"✅ Worker {worker_id}: Trial {completed} - {combo['model']} + {combo['prompt']} (score: {score:.3f})")
-                        # DEBUG: Force immediate output for real-time visibility
-                        print(f"DEBUG - Worker {worker_id}: Trial {completed} - {combo['model']} + {combo['prompt']} (score: {score:.3f})", flush=True)
 
                     except Exception as e:
                         combo_idx = task_data["combo_idx"]
-                        combo_results[combo_idx]["errors"].append(str(e))
                         combo_name = combinations[combo_idx]['model'] + " + " + combinations[combo_idx]['prompt']
-                        self.logger.warning(f"❌ Worker {worker_id}: Failed {combo_name} - {e}")
-                        self.logger.warning(f"❌ Worker {worker_id}: Exception type: {type(e).__name__}")
-                        import traceback
-                        self.logger.warning(f"❌ Worker {worker_id}: Traceback: {traceback.format_exc()}")
-                        print(f"DEBUG - Worker {worker_id}: Failed {combo_name} - {e}", flush=True)
-                        print(f"DEBUG - Worker {worker_id}: Exception type: {type(e).__name__}", flush=True)
+
+                        # Handle quota exceptions specially - don't retry, just skip
+                        if "quota" in str(e).lower():
+                            self.logger.warning(f"❌ Worker {worker_id}: Skipped {combo_name} - Model quota exceeded")
+                            combo_results[combo_idx]["errors"].append(f"Quota exceeded for {combinations[combo_idx]['model']}")
+                        else:
+                            combo_results[combo_idx]["errors"].append(str(e))
+                            self.logger.exception(f"❌ Worker {worker_id}: Failed {combo_name} - {e}")
 
                 self.logger.info(f"🏁 Worker {worker_id}: Finished processing {completed} tasks")
-                print(f"DEBUG - Worker {worker_id}: Finished processing {completed} tasks", flush=True)
 
             # Start producer and workers
             producer_task = asyncio.create_task(producer())
