@@ -212,7 +212,7 @@ class TaskQueue:
 # Global worker pools for different component types
 FETCHER_POOL = WorkerPool(max_workers=4, name="FetcherPool")
 PROCESSOR_POOL = WorkerPool(max_workers=8, name="ProcessorPool")
-OPTIMIZER_POOL = WorkerPool(max_workers=2, name="OptimizerPool")
+OPTIMIZER_POOL = WorkerPool(max_workers=8, name="OptimizerPool")  # Increased from 2 to 8 for better parallelism
 
 
 def get_fetcher_pool() -> WorkerPool:
