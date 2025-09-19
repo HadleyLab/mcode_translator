@@ -174,8 +174,8 @@ class LLMService:
                 cleaned_content = response_content.strip()
 
                 # Handle deepseek-specific response formats
-                if self.model_name == "deepseek-coder":
-                    # DeepSeek might return JSON with extra formatting or prefixes
+                if self.model_name in ["deepseek-coder", "deepseek-reasoner"]:
+                    # DeepSeek models might return JSON with extra formatting or prefixes
                     if cleaned_content.startswith('```json'):
                         # Extract JSON from markdown code block
                         json_start = cleaned_content.find('{')
@@ -205,6 +205,21 @@ class LLMService:
                         self.logger.warning(f"DeepSeek response contains trailing commas, attempting cleanup: {cleaned_content[:100]}...")
                         cleaned_content = cleaned_content.replace(',}', '}').replace(',]', ']')
 
+                    # Additional cleanup for deepseek-reasoner which may produce more verbose output
+                    if self.model_name == "deepseek-reasoner":
+                        # Remove any reasoning/thinking content that might precede JSON
+                        json_start = cleaned_content.find('{')
+                        if json_start > 0:
+                            # Look for common reasoning markers
+                            reasoning_markers = ["Let me think", "First,", "The task is", "I need to", "Looking at"]
+                            for marker in reasoning_markers:
+                                marker_pos = cleaned_content.find(marker)
+                                if marker_pos != -1 and marker_pos < json_start:
+                                    # Remove reasoning content before JSON
+                                    cleaned_content = cleaned_content[json_start:]
+                                    self.logger.info(f"Removed reasoning content from deepseek-reasoner response")
+                                    break
+
                 # Handle general markdown-wrapped JSON responses
                 elif cleaned_content.startswith('```json') and cleaned_content.endswith('```'):
                     # Extract JSON from markdown code block
@@ -227,7 +242,7 @@ class LLMService:
                 # Provide detailed error information for debugging
                 error_msg = f"JSON parsing failed for model {self.model_name}"
                 self.logger.error(f"❌ JSON parsing error for {self.model_name}: {str(e)}")
-                self.logger.error(f"  Response preview: {response_content[:300]}...")
+                self.logger.error(f"  Response preview: {response_content[:500]}...")
 
                 # Check for common issues
                 if "Expecting ',' delimiter" in str(e):
@@ -246,7 +261,8 @@ class LLMService:
                     self.logger.error(f"  Model {self.model_name} returned plain text instead of JSON")
                     self.logger.error("  This model may not support structured JSON output properly")
 
-                raise ValueError(f"Model {self.model_name} returned invalid JSON: {str(e)} | Response: {response_content[:200]}...") from e
+
+                raise ValueError(f"Model {self.model_name} returned invalid JSON: {str(e)} | Response: {response_content[:300]}...") from e
 
         except Exception as e:
             self.logger.error(f"💥 LLM API call failed for {self.model_name}: {str(e)}")

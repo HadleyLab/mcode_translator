@@ -1,0 +1,9 @@
+{
+  "combination": {
+    "prompt": "direct_mcode_evidence_based_concise",
+    "model": "gpt-4o"
+  },
+  "success": false,
+  "error": "All 5 trials failed: ['Quota exceeded for gpt-4o', 'Quota exceeded for gpt-4o', 'Quota exceeded for gpt-4o']...",
+  "timestamp": "2025-09-19T13:17:18.783445"
+}

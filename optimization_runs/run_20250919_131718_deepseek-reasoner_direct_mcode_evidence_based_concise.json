@@ -1,0 +1,213 @@
+{
+  "combination": {
+    "prompt": "direct_mcode_evidence_based_concise",
+    "model": "deepseek-reasoner"
+  },
+  "success": true,
+  "cv_average_score": 1.0,
+  "cv_std_score": 0.0,
+  "fold_scores": [
+    1.0,
+    1.0
+  ],
+  "cv_folds": 3,
+  "total_trials": 2,
+  "total_elements": 23,
+  "errors": [
+    "Model deepseek-reasoner returned invalid JSON: Expecting value: line 22 column 17 (char 790) | Response: {\n  \"mcode_mappings\": [\n    {\n      \"element_type\": \"CancerCondition\",\n      \"code\": \"254837009\",\n      \"display\": \"Malignant neoplasm of breast\",\n      \"system\": \"http://snomed.info/sct\",\n      \"conf...",
+    "Model deepseek-reasoner returned invalid JSON: Expecting value: line 56 column 26 (char 1890) | Response: {\n  \"mcode_mappings\": [\n    {\n      \"element_type\": \"CancerCondition\",\n      \"code\": \"372137005\",\n      \"display\": \"Adenocarcinoma of breast\",\n      \"system\": \"http://snomed.info/sct\",\n      \"confiden...",
+    "Model deepseek-reasoner returned invalid JSON: Expecting ',' delimiter: line 88 column 30 (char 2755) | Response: {\n  \"mcode_mappings\": [\n    {\n      \"element_type\": \"CancerCondition\",\n      \"code\": \"254837009\",\n      \"display\": \"Breast cancer, HR-positive HER2-negative\",\n      \"system\": \"http://snomed.info/sct\",..."
+  ],
+  "timestamp": "2025-09-19T13:17:18.783229",
+  "metrics": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0
+  },
+  "predicted_mcode": [
+    {
+      "element_type": "CancerCondition",
+      "code": "254837009",
+      "display": "Ductal carcinoma of breast",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "Carcinoma, Ductal, Breast"
+    },
+    {
+      "element_type": "CancerTreatment",
+      "code": "387713003",
+      "display": "Mastectomy",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "Mastectomy"
+    },
+    {
+      "element_type": "CancerTreatment",
+      "code": "433375000",
+      "display": "Lumpectomy",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "Lumpectomy"
+    },
+    {
+      "element_type": "CancerCondition",
+      "code": "254837009",
+      "display": "Malignant neoplasm of breast",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "Females with a history of T2N0M0 breast carcinoma (tumor ≤3 cm in largest dimension)"
+    },
+    {
+      "element_type": "TNMStage",
+      "code": "277132007",
+      "display": "Stage IIA breast cancer",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "Females with a history of T2N0M0 breast carcinoma (tumor ≤3 cm in largest dimension)"
+    },
+    {
+      "element_type": "CancerTreatment",
+      "code": "234261006",
+      "display": "Segmental mastectomy",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "Surgical or endoscopic segmental mastectomy or quadrantectomy (lumpectomy)"
+    },
+    {
+      "element_type": "CancerTreatment",
+      "code": "387132004",
+      "display": "Anti-estrogen therapy",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "patients on anti-estrogen adjuvant therapy are NOT excluded"
+    },
+    {
+      "element_type": "Demographic",
+      "code": "248152002",
+      "display": "Female",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "Females"
+    },
+    {
+      "element_type": "CancerTreatment",
+      "code": "387713003",
+      "display": "Lumpectomy of breast",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 0.8,
+      "evidence_text": "post segmental mastectomy or quadrantectomy (lumpectomy)"
+    },
+    {
+      "element_type": "CancerRelatedSurgicalProcedure",
+      "code": "387713003",
+      "display": "Partial mastectomy",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "Post Segmental Breast ResecTion (Lumpectomy)"
+    },
+    {
+      "element_type": "Radiotherapy",
+      "code": "367336001",
+      "display": "Radiotherapy",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "With Or Without Radiation ThErapy"
+    },
+    {
+      "element_type": "ClinicalTrialPhase",
+      "code": "424876005",
+      "display": "Phase IV clinical trial",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "A Phase IV Post Market Study"
+    },
+    {
+      "element_type": "CancerCondition",
+      "code": "254837009",
+      "display": "Breast cancer",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "Conditions: Breast Cancer"
+    },
+    {
+      "element_type": "CancerCondition",
+      "code": "432713000",
+      "display": "Locally advanced malignant neoplasm of breast",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "DISEASE CHARACTERISTICS: Histologically confirmed locally advanced breast carcinoma Stage T3 T4, N2 or N3 disease"
+    },
+    {
+      "element_type": "TNMStage",
+      "code": "444256004",
+      "display": "TNM stage grouping",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "DISEASE CHARACTERISTICS: Histologically confirmed locally advanced breast carcinoma Stage T3 T4, N2 or N3 disease"
+    },
+    {
+      "element_type": "PatientAge",
+      "code": "424144002",
+      "display": "Age 18 years or older",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "PATIENT CHARACTERISTICS: Age: 18 and over Sex: Male or female"
+    },
+    {
+      "element_type": "PatientSex",
+      "code": "248153007",
+      "display": "Male",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "PATIENT CHARACTERISTICS: Age: 18 and over Sex: Male or female"
+    },
+    {
+      "element_type": "PatientSex",
+      "code": "248152002",
+      "display": "Female",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "PATIENT CHARACTERISTICS: Age: 18 and over Sex: Male or female"
+    },
+    {
+      "element_type": "CancerCondition",
+      "code": "254837009",
+      "display": "Malignant neoplasm of breast",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "patients with locally advanced breast cancer who will undergo chemotherapy"
+    },
+    {
+      "element_type": "CancerTreatment",
+      "code": "367336001",
+      "display": "Chemotherapy",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "chemotherapy administered for an individual patient"
+    },
+    {
+      "element_type": "CancerTreatment",
+      "code": "265868000",
+      "display": "Resection of tumor",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "surgical resection of the tumor"
+    },
+    {
+      "element_type": "CancerTreatment",
+      "code": "169317000",
+      "display": "Radiotherapy",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "radiation therapy"
+    },
+    {
+      "element_type": "CancerCondition",
+      "code": "254837009",
+      "display": "Locally advanced breast cancer",
+      "system": "http://snomed.info/sct",
+      "confidence_score": 1.0,
+      "evidence_text": "PET Scans in Patients With Locally Advanced Breast Cancer"
+    }
+  ]
+}

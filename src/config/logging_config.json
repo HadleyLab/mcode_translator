@@ -29,7 +29,7 @@
       "propagate": true
     },
     "src.pipeline": {
-      "level": "DEBUG",
+      "level": "WARNING",
       "propagate": true
     },
     "src.pipeline.llm_service": {
