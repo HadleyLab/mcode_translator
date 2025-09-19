@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from src.shared.models import McodeElement
 from src.utils.api_manager import APIManager
-from src.utils.concurrency import TaskQueue, create_task
 from src.utils.config import Config
 from src.utils.llm_loader import llm_loader
 from src.utils.logging_config import get_logger
@@ -491,75 +490,6 @@ class LLMService:
             self.logger.error(f"Failed to create client for {model_name}: {e}")
             raise
 
-    def map_to_mcode_batch(self, clinical_texts: List[str], max_workers: int = 4) -> List[List[McodeElement]]:
-        """
-        Batch process multiple clinical texts concurrently for improved performance.
-
-        Args:
-            clinical_texts: List of clinical trial texts to process
-            max_workers: Maximum number of concurrent workers
-
-        Returns:
-            List of lists containing McodeElement instances for each text
-        """
-        self.logger.info(f"Batch processing {len(clinical_texts)} texts with {max_workers} workers")
-
-        # Prepare batch tasks
-        batch_tasks = []
-        for i, clinical_text in enumerate(clinical_texts):
-            task = create_task(
-                task_id=f"batch_llm_{i}",
-                func=self._process_single_text_batch,
-                clinical_text=clinical_text,
-                task_index=i
-            )
-            batch_tasks.append(task)
-
-        # Execute batch processing
-        task_queue = TaskQueue(max_workers=max_workers, name="LLMBatchProcessor")
-
-        def progress_callback(completed, total, result):
-            if result.success:
-                self.logger.info(f"Completed batch task {result.task_id}")
-            else:
-                self.logger.error(f"Failed batch task {result.task_id}: {result.error}")
-
-        task_results = task_queue.execute_tasks(batch_tasks, progress_callback=progress_callback)
-
-        # Process results and maintain order
-        results = [[] for _ in clinical_texts]  # Initialize with empty lists
-        successful_tasks = 0
-        failed_tasks = 0
-
-        for result in task_results:
-            task_index = int(result.task_id.split('_')[-1])
-            if result.success and result.result:
-                results[task_index] = result.result
-                successful_tasks += 1
-            else:
-                failed_tasks += 1
-                self.logger.warning(f"Batch task {result.task_id} failed: {result.error}")
-
-        self.logger.info(f"Batch processing complete: {successful_tasks} successful, {failed_tasks} failed")
-        return results
-
-    def _process_single_text_batch(self, clinical_text: str, task_index: int) -> List[McodeElement]:
-        """
-        Process a single clinical text for batch processing.
-
-        Args:
-            clinical_text: Clinical trial text to process
-            task_index: Index of this task in the batch
-
-        Returns:
-            List of McodeElement instances
-        """
-        try:
-            # Reuse the existing map_to_mcode logic but with optimizations
-            return self.map_to_mcode(clinical_text)
-        except Exception as e:
-            self.logger.error(f"Batch processing failed for task {task_index}: {e}")
-            return []
 
     def _enhanced_cache_key(self, clinical_text: str) -> Dict[str, Any]:
         """

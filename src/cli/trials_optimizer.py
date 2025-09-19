@@ -8,6 +8,7 @@ configuration files only - no CORE Memory storage required.
 """
 
 import argparse
+import asyncio
 import sys
 import time
 from pathlib import Path
@@ -63,6 +64,12 @@ Examples:
 
     # Concurrency arguments
     McodeCLI.add_concurrency_args(parser)
+
+    parser.add_argument(
+        "--async-queue",
+        action="store_true",
+        help="Use async task queue instead of threaded (experimental)"
+    )
 
     # Required arguments for file-based optimization
     parser.add_argument(
@@ -245,7 +252,7 @@ def main() -> None:
     # Initialize and execute workflow (disable CORE Memory - optimizer saves to local files only)
     try:
         workflow = TrialsOptimizerWorkflow(config, memory_storage=False)
-        result = workflow.execute(**workflow_kwargs)
+        result = asyncio.run(workflow.execute(**workflow_kwargs))
 
         if result.success:
             print("✅ Optimization completed successfully!")
