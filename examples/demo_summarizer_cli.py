@@ -40,7 +40,7 @@ def demo_minimal_summary():
     print("📝 Minimal Detail Level Summary Demo")
     print("=" * 60)
 
-    # Sample patient data
+    # Sample patient data with meaningful clinical context
     patient_data = {
         "entry": [{
             "resource": {
@@ -49,6 +49,37 @@ def demo_minimal_summary():
                 "name": [{"given": ["John"], "family": "Doe"}],
                 "gender": "male",
                 "birthDate": "1978-03-15"
+            }
+        }, {
+            "resource": {
+                "resourceType": "Condition",
+                "id": "breast-cancer-condition",
+                "code": {
+                    "coding": [{
+                        "system": "http://snomed.info/sct",
+                        "code": "254837009",
+                        "display": "Malignant neoplasm of breast disorder"
+                    }]
+                },
+                "onsetDateTime": "2000-10-18"
+            }
+        }, {
+            "resource": {
+                "resourceType": "Observation",
+                "id": "tnm-t-stage",
+                "code": {
+                    "coding": [{
+                        "display": "Tumor stage T4"
+                    }]
+                },
+                "valueCodeableConcept": {
+                    "coding": [{
+                        "system": "http://snomed.info/sct",
+                        "code": "65565005",
+                        "display": "T4 category (finding)"
+                    }]
+                },
+                "effectiveDateTime": "2000-10-18"
             }
         }]
     }
@@ -67,7 +98,7 @@ def demo_standard_summary():
     print("📋 Standard Detail Level Summary Demo")
     print("=" * 60)
 
-    # Sample patient data
+    # Sample patient data with meaningful clinical context
     patient_data = {
         "entry": [{
             "resource": {
@@ -76,6 +107,37 @@ def demo_standard_summary():
                 "name": [{"given": ["John"], "family": "Doe"}],
                 "gender": "male",
                 "birthDate": "1978-03-15"
+            }
+        }, {
+            "resource": {
+                "resourceType": "Condition",
+                "id": "breast-cancer-condition",
+                "code": {
+                    "coding": [{
+                        "system": "http://snomed.info/sct",
+                        "code": "254837009",
+                        "display": "Malignant neoplasm of breast disorder"
+                    }]
+                },
+                "onsetDateTime": "2000-10-18"
+            }
+        }, {
+            "resource": {
+                "resourceType": "Observation",
+                "id": "tnm-t-stage",
+                "code": {
+                    "coding": [{
+                        "display": "Tumor stage T4"
+                    }]
+                },
+                "valueCodeableConcept": {
+                    "coding": [{
+                        "system": "http://snomed.info/sct",
+                        "code": "65565005",
+                        "display": "T4 category (finding)"
+                    }]
+                },
+                "effectiveDateTime": "2000-10-18"
             }
         }]
     }
@@ -94,7 +156,7 @@ def demo_detail_levels():
     print("🎛️ Detail Level Switches Demonstration")
     print("=" * 60)
 
-    # Sample patient data for testing
+    # Sample patient data with meaningful clinical context
     patient_data = {
         "entry": [{
             "resource": {
@@ -103,6 +165,37 @@ def demo_detail_levels():
                 "name": [{"given": ["John"], "family": "Doe"}],
                 "gender": "male",
                 "birthDate": "1978-03-15"
+            }
+        }, {
+            "resource": {
+                "resourceType": "Condition",
+                "id": "breast-cancer-condition",
+                "code": {
+                    "coding": [{
+                        "system": "http://snomed.info/sct",
+                        "code": "254837009",
+                        "display": "Malignant neoplasm of breast disorder"
+                    }]
+                },
+                "onsetDateTime": "2000-10-18"
+            }
+        }, {
+            "resource": {
+                "resourceType": "Observation",
+                "id": "tnm-t-stage",
+                "code": {
+                    "coding": [{
+                        "display": "Tumor stage T4"
+                    }]
+                },
+                "valueCodeableConcept": {
+                    "coding": [{
+                        "system": "http://snomed.info/sct",
+                        "code": "65565005",
+                        "display": "T4 category (finding)"
+                    }]
+                },
+                "effectiveDateTime": "2000-10-18"
             }
         }]
     }
@@ -147,6 +240,41 @@ def demo_detail_levels():
     print("\n✅ Detail level switches demo complete!")
 
 
+def demo_trial_summary():
+    """Create a trial summary with NCT ID as subject."""
+    print("🧪 Clinical Trial Summary Demo")
+    print("=" * 60)
+
+    # Sample trial data
+    trial_data = {
+        "protocolSection": {
+            "identificationModule": {
+                "nctId": "NCT03633331",
+                "briefTitle": "Palbociclib and Letrozole in Advanced Breast Cancer"
+            },
+            "statusModule": {
+                "overallStatus": "COMPLETED"
+            },
+            "designModule": {
+                "studyType": "INTERVENTIONAL",
+                "phases": ["PHASE 2"],
+                "primaryPurpose": "TREATMENT"
+            },
+            "conditionsModule": {
+                "conditions": ["Breast Cancer"]
+            }
+        }
+    }
+
+    # Create trial summary
+    summarizer = McodeSummarizer(detail_level="standard", include_mcode=True)
+    summary = summarizer.create_trial_summary(trial_data)
+
+    print(f"📏 Trial summary ({len(summary)} chars):")
+    print(summary)
+    print("\n✅ Trial summary demo complete!")
+
+
 def demo_performance():
     """Show performance improvements."""
     print("⚡ Performance Comparison Demo")
@@ -184,19 +312,53 @@ def demo_performance():
 
 
 def main():
-    """Main demo function."""
+    """Main demo function with command line argument support."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="mCODE Summarizer Abstracted Demo")
+    parser.add_argument("--config", action="store_true", help="Show element configuration only")
+    parser.add_argument("--minimal", action="store_true", help="Show minimal summary only")
+    parser.add_argument("--standard", action="store_true", help="Show standard summary only")
+    parser.add_argument("--trial", action="store_true", help="Show trial summary only")
+    parser.add_argument("--all", action="store_true", help="Show all detail level combinations")
+
+    args = parser.parse_args()
+
     print("🚀 mCODE Summarizer Abstracted Demo")
     print("=" * 60)
     print("This demo shows the abstracted mCODE summarizer with exact syntactic structure")
     print("applied to ALL mCODE elements for optimal NLP and KG ingestion.")
     print()
 
-    # Run all demos
+    # Handle specific flags
+    if args.config:
+        demo_element_config()
+        return
+
+    if args.minimal:
+        demo_minimal_summary()
+        return
+
+    if args.standard:
+        demo_standard_summary()
+        return
+        
+    if args.trial:
+        demo_trial_summary()
+        return
+
+    if args.all:
+        demo_detail_levels()
+        return
+
+    # Default: Run all demos
     demo_element_config()
     print()
     demo_minimal_summary()
     print()
     demo_standard_summary()
+    print()
+    demo_trial_summary()
     print()
     demo_detail_levels()
     print()
