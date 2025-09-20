@@ -151,3 +151,29 @@ examples/data/workflow_*/
 
 # ZIP files (large data archives)
 *.zip
+
+# Work product and generated data files
+breast_cancer_*.ndjson
+breast_cancer_*.md
+large_breast_cancer_dataset.ndjson
+matched_breast_cancer_patients.ndjson
+optimized_breast_cancer_mcode.ndjson
+scaled_breast_cancer_mcode.ndjson
+lung_cancer_trials.ndjson
+memory_enabled_trials.ndjson
+optimization_trials.ndjson
+patient_matched.ndjson
+patient_summary.md
+patients_summary.md
+trial_*.ndjson
+trial_summary_*.md
+trials_summary.md
+test_*.ndjson
+test_*.md
+
+# Optimization runs and analysis results
+optimization_runs/
+inter_rater_analysis_results/
+
+# Temporary test files
+test_inter_rater_*.py

@@ -111,8 +111,8 @@
       "sample_size": 10,
       "optimized_model": "deepseek-coder",
       "optimized_prompt": "direct_mcode_evidence_based_concise",
-      "optimization_score": 1.0,
-      "last_optimized": "2025-09-19T20:36:57.647247"
+      "optimization_score": 0.9199999999999999,
+      "last_optimized": "2025-09-20T10:34:59.736013"
     }
   }
 }

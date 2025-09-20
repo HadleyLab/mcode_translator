@@ -330,6 +330,14 @@ def main():
         action="store_true",
         help="List available prompt templates and exit"
     )
+    trials_optimizer_parser.add_argument(
+        "--prompts", help="Comma-separated list of prompt templates to test"
+    )
+    trials_optimizer_parser.add_argument(
+        "--models",
+        type=lambda s: [item.strip() for item in s.split(',')],
+        help="Comma-separated list of LLM models to test"
+    )
     McodeCLI.add_core_args(trials_optimizer_parser)
     McodeCLI.add_optimizer_args(trials_optimizer_parser)
 
