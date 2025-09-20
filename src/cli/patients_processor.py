@@ -88,9 +88,8 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
             sys.exit(1)
 
         try:
-            with open(trials_path, "r", encoding="utf-8") as f:
-                trials_data = json.loads(f.read().strip())
-            trials_criteria = extract_mcode_criteria_from_trials(trials_data)
+            trials_list = load_ndjson_data(trials_path, "trials")
+            trials_criteria = extract_mcode_criteria_from_trials(trials_list)
             logger.info(f"📋 Extracted mCODE criteria from {len(trials_criteria)} trial elements")
         except Exception as e:
             logger.error(f"Failed to load trials file: {e}")

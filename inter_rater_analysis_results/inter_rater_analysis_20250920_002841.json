@@ -1,0 +1,88 @@
+{
+  "trial_analyses": {
+    "cached_trial": {
+      "num_raters": 3,
+      "presence_agreement": {
+        "percentage_agreement": 0.08333333333333333,
+        "cohens_kappa": 0.0,
+        "fleiss_kappa": 0.18266253869969032,
+        "total_items": 12,
+        "agreed_items": 1,
+        "disagreed_items": 11
+      },
+      "values_agreement": {
+        "overall_values_agreement": 0.2498198416879276,
+        "element_type_agreements": {
+          "CancerCondition": 0.1032258064516129,
+          "CancerTreatment": 0.0345821325648415,
+          "PatientSex": 1.0,
+          "PatientDemographics": 0.1111111111111111,
+          "TNMStage": 0.25,
+          "AdverseEvent": 0.0
+        }
+      },
+      "confidence_agreement": {
+        "overall_confidence_agreement": 0.0,
+        "element_type_stats": {}
+      },
+      "rater_ids": [
+        "deepseek-coder_direct_mcode_evidence_based_concise",
+        "deepseek-chat_direct_mcode_evidence_based_concise",
+        "deepseek-coder_direct_mcode_evidence_based"
+      ]
+    }
+  },
+  "overall_metrics": {
+    "presence_agreement": {
+      "percentage_agreement": 0.08333333333333333,
+      "cohens_kappa": 0.0,
+      "fleiss_kappa": 0.18266253869969032,
+      "total_items": 0,
+      "agreed_items": 0,
+      "disagreed_items": 0
+    },
+    "values_agreement": {
+      "percentage_agreement": 0.2498198416879276,
+      "cohens_kappa": 0.0,
+      "fleiss_kappa": 0.0,
+      "total_items": 0,
+      "agreed_items": 0,
+      "disagreed_items": 0
+    },
+    "confidence_agreement": {
+      "percentage_agreement": 0.0,
+      "cohens_kappa": 0.0,
+      "fleiss_kappa": 0.0,
+      "total_items": 0,
+      "agreed_items": 0,
+      "disagreed_items": 0
+    }
+  },
+  "rater_performance": {
+    "deepseek-coder_direct_mcode_evidence_based_concise": {
+      "trials_processed": 1,
+      "success_rate": 1.0,
+      "avg_elements": 52.0,
+      "avg_execution_time": 0.0,
+      "errors": []
+    },
+    "deepseek-chat_direct_mcode_evidence_based_concise": {
+      "trials_processed": 1,
+      "success_rate": 1.0,
+      "avg_elements": 44.0,
+      "avg_execution_time": 0.0,
+      "errors": []
+    },
+    "deepseek-coder_direct_mcode_evidence_based": {
+      "trials_processed": 1,
+      "success_rate": 1.0,
+      "avg_elements": 48.0,
+      "avg_execution_time": 0.0,
+      "errors": []
+    }
+  },
+  "element_reliability": {},
+  "num_raters": 3,
+  "num_trials": 1,
+  "analysis_timestamp": "2025-09-20T00:28:41.377891"
+}
