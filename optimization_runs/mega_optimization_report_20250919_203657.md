@@ -1,0 +1,169 @@
+# mCODE Translation Optimization - Mega Report
+**Generated:** 2025-09-19 20:36:57
+
+## Executive Summary
+
+This report aggregates all optimization runs across the mCODE translation system, providing comprehensive insights into model performance, reliability, and biological accuracy.
+
+### Overall Statistics
+- **Total Runs:** 3
+- **Successful Runs:** 3 (100.0%)
+- **Failed Runs:** 0 (0.0%)
+- **Average Score:** 0.967
+- **Average Elements:** 48.0
+- **Time Range:** 2025-09-19 20:36:57.642592 to 2025-09-19 20:36:57.645975
+
+## Provider Performance Rankings
+
+| Provider | Runs | Success Rate | Avg Score | Best Model |
+|----------|------|-------------|-----------|------------|
+| DeepSeek | 3 | 100.0% | 0.967 | deepseek-coder |
+
+## Model Performance Rankings
+
+| Model | Runs | Success Rate | Avg Score |
+|-------|------|-------------|-----------|
+| deepseek-chat | 1 | 100.0% | 0.900 |
+| deepseek-coder | 2 | 100.0% | 1.000 |
+
+## Error Analysis
+
+No errors recorded in successful runs.
+
+## Biological Analysis
+
+## Trial Data Biology Overview
+- **Total Trials:** 3
+- **Primary Conditions:** 0 unique
+- **Intervention Types:** 5 types
+
+## mCODE Generation Analysis
+
+| Combination | Elements | Conditions | Treatments | Avg Confidence | Quality Score |
+|-------------|----------|------------|------------|----------------|---------------|
+| deepseek-coder_direct_mcode_evidence_based_concise | 52 | 20 | 25 | 0.98 | 2.38 |
+| deepseek-chat_direct_mcode_evidence_based_concise | 44 | 16 | 19 | 0.99 | 2.48 |
+| gpt-4o_direct_mcode_evidence_based_concise | 0 | 0 | 0 | 0.00 | 0.00 |
+| gpt-4o-mini_direct_mcode_evidence_based_concise | 0 | 0 | 0 | 0.00 | 0.00 |
+| deepseek-coder_direct_mcode_evidence_based | 48 | 7 | 0 | 1.00 | 1.81 |
+
+## Comparative Analysis
+
+### Model Performance
+- **deepseek-coder**: 50.0 avg elements, 1.00 avg confidence, 2.11 quality
+- **deepseek-chat**: 44.0 avg elements, 0.99 avg confidence, 2.48 quality
+- **gpt-4o**: 0.0 avg elements, 0.00 avg confidence, 0.00 quality
+- **gpt-4o-mini**: 0.0 avg elements, 0.00 avg confidence, 0.00 quality
+
+### Best Performers
+- **Most Elements:** deepseek-coder_direct_mcode_evidence_based_concise (52 elements)
+- **Highest Quality:** deepseek-coder_direct_mcode_evidence_based (1.00 avg confidence)
+- **Best Condition Coverage:** deepseek-coder_direct_mcode_evidence_based_concise (20 conditions)
+- **Best Treatment Coverage:** deepseek-coder_direct_mcode_evidence_based_concise (25 treatments)
+
+## Detailed Element Analysis
+
+### deepseek-coder_direct_mcode_evidence_based_concise
+- **Total Elements:** 52
+- **Element Types:**
+  - CancerTreatment: 25
+  - CancerCondition: 20
+  - PatientDemographics: 3
+  - TNMStage: 2
+  - Patient: 1
+  - PatientSex: 1
+- **Biological Categories:**
+  - Cancer Conditions: 20
+  - Treatments: 25
+  - Patient Characteristics: 4
+  - Tumor Staging: 2
+  - Other: 1
+- **Top Conditions:**
+  - Malignant neoplasm of breast: 8
+  - HER2-positive breast cancer: 3
+  - HER2 positive breast cancer: 2
+  - Stage IV breast cancer: 2
+  - Invasive breast cancer: 1
+- **Top Treatments:**
+  - Chemotherapy: 6
+  - Cyclophosphamide: 6
+  - Doxorubicin: 3
+  - T-cell immunotherapy: 2
+  - Cancer vaccine therapy: 2
+
+### deepseek-chat_direct_mcode_evidence_based_concise
+- **Total Elements:** 44
+- **Element Types:**
+  - CancerTreatment: 19
+  - CancerCondition: 16
+  - PatientDemographics: 4
+  - TNMStage: 3
+  - PatientSex: 1
+  - AdverseEvent: 1
+- **Biological Categories:**
+  - Cancer Conditions: 16
+  - Treatments: 19
+  - Patient Characteristics: 4
+  - Tumor Staging: 3
+  - Other: 2
+- **Top Conditions:**
+  - Malignant neoplasm of breast: 6
+  - HER2 positive breast cancer: 2
+  - HER2-positive breast cancer: 2
+  - Invasive breast cancer: 1
+  - Ductal carcinoma in situ of breast: 1
+- **Top Treatments:**
+  - Chemotherapy: 6
+  - Cyclophosphamide: 3
+  - Doxorubicin: 1
+  - Adjuvant chemotherapy: 1
+  - Trastuzumab therapy: 1
+
+### gpt-4o_direct_mcode_evidence_based_concise
+- **Total Elements:** 0
+- **Biological Categories:**
+
+### gpt-4o-mini_direct_mcode_evidence_based_concise
+- **Total Elements:** 0
+- **Biological Categories:**
+
+### deepseek-coder_direct_mcode_evidence_based
+- **Total Elements:** 48
+- **Element Types:**
+  - ResearchStudy: 27
+  - CancerCondition: 7
+  - CancerRelatedMedication: 5
+  - CancerRelatedMedicationAdministration: 4
+  - AdverseEvent: 3
+  - TumorSize: 1
+  - LaboratoryResult: 1
+- **Biological Categories:**
+  - Cancer Conditions: 7
+  - Other: 41
+- **Top Conditions:**
+  - Malignant neoplasm of breast: 3
+  - Infiltrating duct carcinoma of breast: 1
+  - Carcinoma in situ of breast: 1
+  - Early Breast Cancer: 1
+  - Breast Cancer: 1
+
+## Recommendations
+
+1. **Recommended Configuration:** deepseek-coder + direct mcode evidence based
+   - Highest quality mCODE mappings with best evidence support
+2. **High Volume Option:** deepseek-coder + direct + mcode + evidence + based + concise
+   - Generates the most comprehensive mCODE elements
+
+---
+*Report generated by mCODE Translation Optimizer*
+
+## Recommendations
+
+1. **Primary Recommendation:** Use DeepSeek models (100.0% success rate)
+
+2. **Best Model:** deepseek-chat (100.0% success rate)
+
+4. **Continuous Optimization:** This mega report updates after each optimization session
+
+---
+*Generated by mCODE Translation Optimizer*

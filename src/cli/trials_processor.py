@@ -17,6 +17,7 @@ import argparse
 import os
 import sys
 from pathlib import Path
+from typing import Optional
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
@@ -85,10 +86,11 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> None:
+def main(args: Optional[argparse.Namespace] = None) -> None:
     """Main entry point for trials processor CLI."""
-    parser = create_parser()
-    args = parser.parse_args()
+    if args is None:
+        parser = create_parser()
+        args = parser.parse_args()
 
     # Setup logging
     McodeCLI.setup_logging(args)

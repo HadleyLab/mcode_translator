@@ -18,6 +18,7 @@ import json
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
+import argparse
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
@@ -116,10 +117,11 @@ def save_summaries(summaries: List[Dict], output_file: Optional[str]) -> None:
         sys.stdout.flush()
 
 
-def main() -> None:
+def main(args: Optional[argparse.Namespace] = None) -> None:
     """Main entry point for patients summarizer CLI."""
-    parser = create_parser()
-    args = parser.parse_args()
+    if args is None:
+        parser = create_parser()
+        args = parser.parse_args()
 
     # Setup logging
     McodeCLI.setup_logging(args)

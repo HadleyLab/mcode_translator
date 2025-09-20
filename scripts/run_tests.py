@@ -10,6 +10,7 @@ import sys
 import subprocess
 import argparse
 from pathlib import Path
+from typing import Optional
 
 
 def run_command(cmd, cwd=None, env=None):
@@ -152,21 +153,13 @@ def run_linting(args):
     return success
 
 
-def main():
-    """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="Test runner for mcode_translator project",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python scripts/run_tests.py unit                    # Run unit tests
-  python scripts/run_tests.py integration --live      # Run integration tests with live data
-  python scripts/run_tests.py performance             # Run performance tests
-  python scripts/run_tests.py all --coverage          # Run all tests with coverage
-  python scripts/run_tests.py coverage                # Generate coverage report
-  python scripts/run_tests.py lint                    # Run linting checks
-        """
-    )
+def create_parser(parser: Optional[argparse.ArgumentParser] = None) -> argparse.ArgumentParser:
+    """Create the argument parser for test runner."""
+    if parser is None:
+        parser = argparse.ArgumentParser(
+            description="Test runner for mcode_translator project",
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+        )
 
     parser.add_argument(
         "suite",
@@ -197,8 +190,14 @@ Examples:
         action="store_true",
         help="Stop on first failure"
     )
+    return parser
 
-    args = parser.parse_args()
+
+def main(args: Optional[argparse.Namespace] = None) -> None:
+    """Main entry point."""
+    if args is None:
+        parser = create_parser()
+        args = parser.parse_args()
 
     # Check if we're in the right directory
     if not Path("src").exists():
