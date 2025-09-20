@@ -116,10 +116,11 @@ def save_summaries(summaries: List[Dict], output_file: Optional[str]) -> None:
         sys.stdout.flush()
 
 
-def main() -> None:
+def main(args: Optional[argparse.Namespace] = None) -> None:
     """Main entry point for trials summarizer CLI."""
-    parser = create_parser()
-    args = parser.parse_args()
+    if args is None:
+        parser = create_parser()
+        args = parser.parse_args()
 
     # Setup logging
     McodeCLI.setup_logging(args)

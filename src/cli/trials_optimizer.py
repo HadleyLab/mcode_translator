@@ -12,6 +12,7 @@ import asyncio
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -112,10 +113,11 @@ Examples:
     return parser
 
 
-def main() -> None:
+def main(args: Optional[argparse.Namespace] = None) -> None:
     """Main entry point for trials optimizer CLI."""
-    parser = create_parser()
-    args = parser.parse_args()
+    if args is None:
+        parser = create_parser()
+        args = parser.parse_args()
 
     # Setup logging
     McodeCLI.setup_logging(args)

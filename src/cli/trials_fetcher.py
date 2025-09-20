@@ -9,6 +9,7 @@ ClinicalTrials.gov without any processing or core memory storage.
 import argparse
 import sys
 from pathlib import Path
+from typing import Optional
 
 from src.shared.cli_utils import McodeCLI
 from src.utils.config import Config
@@ -73,10 +74,11 @@ Examples:
     return parser
 
 
-def main() -> None:
+def main(args: Optional[argparse.Namespace] = None) -> None:
     """Main entry point for trials fetcher CLI."""
-    parser = create_parser()
-    args = parser.parse_args()
+    if args is None:
+        parser = create_parser()
+        args = parser.parse_args()
 
     # Setup logging
     McodeCLI.setup_logging(args)

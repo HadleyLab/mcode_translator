@@ -14,6 +14,7 @@ Usage:
 import argparse
 import sys
 from pathlib import Path
+from typing import Optional
 
 from src.utils.data_downloader import (
     download_synthetic_patient_archives_concurrent,
@@ -167,10 +168,11 @@ def list_available_archives():
     print(f"📦 Downloaded: {len(existing_archives)}")
 
 
-def main() -> None:
+def main(args: Optional[argparse.Namespace] = None) -> None:
     """Main entry point for data downloader CLI."""
-    parser = create_parser()
-    args = parser.parse_args()
+    if args is None:
+        parser = create_parser()
+        args = parser.parse_args()
 
     # Setup logging
     if args.verbose:
