@@ -431,6 +431,56 @@ class BenchmarkResult(BaseModel):
     error_message: Optional[str] = Field(None, description="Error message if failed")
 
 
+class WorkflowInput(BaseModel):
+    """Base class for workflow input validation."""
+
+    model: Optional[str] = Field(None, description="LLM model to use")
+    prompt: Optional[str] = Field(None, description="Prompt template to use")
+    workers: int = Field(1, ge=1, description="Number of concurrent workers")
+    store_in_memory: bool = Field(False, description="Whether to store results in CORE memory")
+
+    model_config = {"extra": "allow"}
+
+
+class TrialsProcessorInput(WorkflowInput):
+    """Input validation for trials processor workflow."""
+
+    trials_data: List[Dict[str, Any]] = Field(..., description="List of trial data to process")
+    trials_criteria: Optional[Dict[str, Any]] = Field(None, description="Trial eligibility criteria")
+
+
+class PatientsProcessorInput(WorkflowInput):
+    """Input validation for patients processor workflow."""
+
+    patients_data: List[Dict[str, Any]] = Field(..., description="List of patient data to process")
+    trials_criteria: Optional[Dict[str, Any]] = Field(None, description="Trial eligibility criteria")
+
+
+class TrialsSummarizerInput(WorkflowInput):
+    """Input validation for trials summarizer workflow."""
+
+    trials_data: List[Dict[str, Any]] = Field(..., description="List of trial data to summarize")
+
+
+class PatientsSummarizerInput(WorkflowInput):
+    """Input validation for patients summarizer workflow."""
+
+    patients_data: List[Dict[str, Any]] = Field(..., description="List of patient data to summarize")
+
+
+class ProcessingMetadata(BaseModel):
+    """Metadata for processing operations."""
+
+    total_count: int = Field(..., description="Total items processed")
+    successful: int = Field(..., description="Number of successful operations")
+    failed: int = Field(..., description="Number of failed operations")
+    success_rate: float = Field(..., ge=0.0, le=1.0, description="Success rate")
+    model_used: Optional[str] = Field(None, description="Model used for processing")
+    prompt_used: Optional[str] = Field(None, description="Prompt used for processing")
+    stored_in_memory: bool = Field(False, description="Whether results were stored in CORE memory")
+    duration_seconds: Optional[float] = Field(None, description="Processing duration")
+
+
 def create_mcode_results_structure(pipeline_result) -> Dict[str, Any]:
     """
     Create standardized McodeResults structure from pipeline result.

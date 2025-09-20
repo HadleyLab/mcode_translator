@@ -93,19 +93,20 @@ def trials_data():
     return sample_trials
 
 
-@patch('src.pipeline.pipeline.McodePipeline.process_batch')
-def test_sequential_processing(mock_process, trials_data):
+def test_sequential_processing(trials_data):
     """Test sequential processing for baseline comparison."""
-    mock_process.return_value = [PipelineResult(
-        mcode_mappings=[McodeElement(element_type="Test", code="test")],
-        validation_results=ValidationResult(compliance_score=1.0),
-        metadata=ProcessingMetadata(engine_type="test"),
-        original_data={}
-    ) for _ in trials_data]
+    import asyncio
     pipeline = McodePipeline()
 
+    async def process_sequential():
+        results = []
+        for trial in trials_data:
+            result = await pipeline.process(trial)
+            results.append(result)
+        return results
+
     start_time = time.time()
-    results = pipeline.process_batch(trials_data)
+    results = asyncio.run(process_sequential())
     sequential_time = time.time() - start_time
 
     assert len(results) == len(trials_data), "Should process all trials"
@@ -114,20 +115,17 @@ def test_sequential_processing(mock_process, trials_data):
     assert all(len(r.mcode_mappings) > 0 for r in results), "Each result should have mappings"
 
 
-@patch('src.pipeline.pipeline.McodePipeline.process_batch_parallel')
-def test_parallel_processing(mock_parallel, trials_data):
+def test_parallel_processing(trials_data):
     """Test parallel processing with validation pipeline."""
-    max_workers = 2  # Reduced
-    mock_parallel.return_value = [PipelineResult(
-        mcode_mappings=[McodeElement(element_type="Test", code="parallel_test")],
-        validation_results=ValidationResult(compliance_score=1.0),
-        metadata=ProcessingMetadata(engine_type="test"),
-        original_data={}
-    ) for _ in trials_data]
+    import asyncio
     pipeline = McodePipeline()
 
+    async def process_trials():
+        tasks = [pipeline.process(trial) for trial in trials_data]
+        return await asyncio.gather(*tasks)
+
     start_time = time.time()
-    results = pipeline.process_batch_parallel(trials_data, max_workers=max_workers)
+    results = asyncio.run(process_trials())
     parallel_time = time.time() - start_time
 
     assert len(results) == len(trials_data), "Should process all trials"
@@ -136,19 +134,28 @@ def test_parallel_processing(mock_parallel, trials_data):
     assert all(len(r.mcode_mappings) > 0 for r in results), "Each result should have mappings"
 
 
-@patch('src.pipeline.pipeline.McodePipeline.validate_batch_parallel')
-def test_parallel_validation_only(mock_validate, trials_data):
+def test_parallel_validation_only(trials_data):
     """Test parallel validation without full processing."""
-    max_workers = 2  # Reduced
-    mock_validate.return_value = [True] * len(trials_data)
-    pipeline = McodePipeline()
+    import asyncio
+    from src.shared.models import ClinicalTrialData
+
+    async def validate_trials():
+        validation_results = []
+        for trial in trials_data:
+            try:
+                # Validate using ClinicalTrialData model
+                ClinicalTrialData(**trial)
+                validation_results.append(True)
+            except Exception:
+                validation_results.append(False)
+        return validation_results
 
     start_time = time.time()
-    validation_results = pipeline.validate_batch_parallel(trials_data, max_workers=max_workers)
+    validation_results = asyncio.run(validate_trials())
     validation_time = time.time() - start_time
 
     assert len(validation_results) == len(trials_data), "Should validate all trials"
     assert validation_time >= 0, "Validation time should be non-negative"
     assert isinstance(validation_results, list), "Should return list of validation results"
-    assert all(validation_results), "All trials should validate successfully in mock"
+    assert all(validation_results), "All trials should validate successfully"
 

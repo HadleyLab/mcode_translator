@@ -8,14 +8,20 @@ ensuring consistent interfaces, error handling, and CORE memory integration.
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
-from src.shared.models import WorkflowResult
+from src.shared.models import (
+    WorkflowResult,
+    WorkflowInput,
+    ProcessingMetadata,
+    TrialsProcessorInput,
+    PatientsProcessorInput,
+    TrialsSummarizerInput,
+    PatientsSummarizerInput,
+)
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
-
-# WorkflowResult is now imported from shared.models
 
 
 class WorkflowError(Exception):
@@ -132,10 +138,10 @@ class BaseWorkflow(ABC):
     @abstractmethod
     def execute(self, **kwargs) -> WorkflowResult:
         """
-        Execute the workflow.
+        Execute the workflow with validated inputs.
 
         Args:
-            **kwargs: Workflow-specific parameters
+            **kwargs: Workflow-specific parameters (will be validated by subclasses)
 
         Returns:
             WorkflowResult: Standardized result structure
@@ -158,27 +164,33 @@ class BaseWorkflow(ABC):
     def _create_result(
         self,
         success: bool,
-        data: Optional[Dict[str, Any]] = None,
+        data: Optional[Union[Dict[str, Any], List[Any]]] = None,
         error_message: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[Union[Dict[str, Any], ProcessingMetadata]] = None,
     ) -> WorkflowResult:
         """
-        Create a standardized workflow result.
+        Create a standardized workflow result with proper typing.
 
         Args:
             success: Whether the workflow succeeded
-            data: Result data
+            data: Result data (dict or list)
             error_message: Error message if failed
-            metadata: Additional metadata
+            metadata: Additional metadata (dict or ProcessingMetadata model)
 
         Returns:
             WorkflowResult: Standardized result
         """
+        # Convert ProcessingMetadata to dict if needed
+        if isinstance(metadata, ProcessingMetadata):
+            metadata_dict = metadata.model_dump()
+        else:
+            metadata_dict = metadata or {}
+
         return WorkflowResult(
             success=success,
             data=data or {},
             error_message=error_message,
-            metadata=metadata or {},
+            metadata=metadata_dict,
         )
 
     def _handle_error(self, error: Exception, context: str = "") -> WorkflowResult:

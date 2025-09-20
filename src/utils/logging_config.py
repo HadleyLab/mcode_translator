@@ -27,26 +27,11 @@ def setup_logging(level: Optional[str] = None) -> None:
     try:
         with open(config_path, "r") as f:
             logging_config = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError, KeyError):
-        # Fallback to basic configuration if config file is missing or invalid
-        logging_config = {
-            "default_level": "INFO",
-            "format": "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(name)s:%(lineno)d%(reset)s %(message)s",
-            "colored_output": True,
-            "handlers": {
-                "console": {
-                    "level": "DEBUG",
-                    "colors": {
-                        "DEBUG": "cyan",
-                        "INFO": "green",
-                        "WARNING": "yellow",
-                        "ERROR": "red",
-                        "CRITICAL": "red,bg_white",
-                    },
-                }
-            },
-            "loggers": {},
-        }
+    except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+        raise RuntimeError(
+            f"Logging configuration file not found or invalid: {config_path}. "
+            f"Error: {e}. Please ensure the logging configuration file exists and is valid."
+        ) from e
 
     # Use provided level or default from config
     if level is None:
@@ -114,15 +99,6 @@ def get_logger(name: str = None) -> logging.Logger:
     logger.propagate = True
 
     return logger
-
-
-class Loggable:
-    """
-    Base class that provides a logger instance to subclasses.
-    """
-
-    def __init__(self):
-        self.logger = get_logger(self.__class__.__name__)
 
 
 class Loggable:

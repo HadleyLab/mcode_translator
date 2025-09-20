@@ -94,18 +94,22 @@ class McodePipeline:
             validation_results=ValidationResult(
                 compliance_score=self._calculate_compliance_score(all_elements)
             ),
-            metadata=ProcessingMetadata(
-                engine_type="LLM",
-                entities_count=0,
-                mapped_count=len(all_elements),
-                model_used=self.model_name,
-                prompt_used=self.prompt_name,
-            ),
+            metadata={
+                "engine_type": "LLM",
+                "total_count": 1,
+                "successful": 1,
+                "failed": 0,
+                "success_rate": 1.0,
+                "entities_count": 0,
+                "mapped_count": len(all_elements),
+                "model_used": self.model_name,
+                "prompt_used": self.prompt_name,
+            },
             original_data=trial_data,
             error=None
         )
 
-    def process_batch(self, trials_data: List[Dict[str, Any]]) -> List[PipelineResult]:
+    async def process_batch(self, trials_data: List[Dict[str, Any]]) -> List[PipelineResult]:
         """
         Process multiple trials efficiently.
 
@@ -117,7 +121,7 @@ class McodePipeline:
         """
         results = []
         for trial_data in trials_data:
-            result = self.process(trial_data)
+            result = await self.process(trial_data)
             results.append(result)
 
         self.logger.info(f"Batch processing completed: {len(results)} trials")
