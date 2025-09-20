@@ -307,7 +307,8 @@ class TestIntegration:
         assert len(result.data) == 3
         assert mock_get_full_study.call_count == 3
 
-    def test_optimizer_concurrency_integration(self):
+    @pytest.mark.asyncio
+    async def test_optimizer_concurrency_integration(self):
         """Test optimizer workflow with concurrent processing."""
         from src.workflows.trials_optimizer_workflow import TrialsOptimizerWorkflow
         from src.utils.config import Config
@@ -324,7 +325,7 @@ class TestIntegration:
         workflow = TrialsOptimizerWorkflow(config, memory_storage=False)
 
         # Test concurrent optimization
-        result = workflow.execute(
+        result = await workflow.execute(
             trials_data=trial_data,
             cv_folds=2,
             prompts=["direct_mcode_evidence_based_concise"],

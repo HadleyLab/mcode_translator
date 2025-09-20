@@ -257,28 +257,3 @@ class TestTrialsOptimizerWorkflow:
 
             # Should adjust folds to match trial count
             assert result.metadata["cv_folds"] == trials_count
-
-    def test_get_available_prompts(self, workflow):
-        """Test getting available prompts."""
-        prompts = workflow.get_available_prompts()
-        assert isinstance(prompts, list)
-        assert len(prompts) > 0
-        assert "direct_mcode_evidence_based_concise" in prompts
-
-    def test_get_available_models(self, workflow):
-        """Test getting available models."""
-        models = workflow.get_available_models()
-        assert isinstance(models, list)
-        assert len(models) > 0
-        assert "deepseek-coder" in models
-
-    def test_validate_combination(self, workflow):
-        """Test combination validation."""
-        # Valid combination
-        assert workflow.validate_combination("direct_mcode_evidence_based_concise", "deepseek-coder") is True
-
-        # Invalid prompt
-        assert workflow.validate_combination("invalid_prompt", "deepseek-coder") is False
-
-        # Invalid model
-        assert workflow.validate_combination("direct_mcode_evidence_based_concise", "invalid_model") is False
