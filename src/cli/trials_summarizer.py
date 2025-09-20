@@ -14,6 +14,8 @@ from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
+
+logger = get_logger(__name__)
 from src.workflows.trials_summarizer_workflow import TrialsSummarizerWorkflow
 
 
