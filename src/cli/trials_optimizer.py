@@ -126,9 +126,8 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     config = McodeCLI.create_config(args)
 
     # Handle list commands (no CORE Memory needed for these)
-    workflow = TrialsOptimizerWorkflow(config, memory_storage=False)
-
     if args.list_prompts:
+        workflow = TrialsOptimizerWorkflow(config, memory_storage=False)
         prompts = workflow.get_available_prompts()
         print("📝 Available prompt templates:")
         for prompt in prompts:
@@ -136,6 +135,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         return
 
     if args.list_models:
+        workflow = TrialsOptimizerWorkflow(config, memory_storage=False)
         models = workflow.get_available_models()
         print("🤖 Available models:")
         for model in models:
@@ -151,12 +151,16 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         print("❌ --cv-folds is required for optimization")
         sys.exit(1)
 
+    # Create workflow for optimization (disable CORE Memory - optimizer saves to local files only)
+    workflow = TrialsOptimizerWorkflow(config, memory_storage=False)
+
     # Load trial data from file (required)
     trials_path = Path(args.trials_file)
     if not trials_path.exists():
         print(f"❌ Trials file not found: {trials_path}")
         sys.exit(1)
 
+    trials_data = []  # Initialize to avoid UnboundLocalError
     try:
         import json
 
@@ -251,9 +255,8 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     print("👀 Watching for new run results in real-time...")
 
 
-    # Initialize and execute workflow (disable CORE Memory - optimizer saves to local files only)
+    # Initialize and execute workflow
     try:
-        workflow = TrialsOptimizerWorkflow(config, memory_storage=False)
         result = asyncio.run(workflow.execute(**workflow_kwargs))
 
         if result.success:
