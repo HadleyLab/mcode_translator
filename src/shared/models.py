@@ -468,17 +468,6 @@ class PatientsSummarizerInput(WorkflowInput):
     patients_data: List[Dict[str, Any]] = Field(..., description="List of patient data to summarize")
 
 
-class ProcessingMetadata(BaseModel):
-    """Metadata for processing operations."""
-
-    total_count: int = Field(..., description="Total items processed")
-    successful: int = Field(..., description="Number of successful operations")
-    failed: int = Field(..., description="Number of failed operations")
-    success_rate: float = Field(..., ge=0.0, le=1.0, description="Success rate")
-    model_used: Optional[str] = Field(None, description="Model used for processing")
-    prompt_used: Optional[str] = Field(None, description="Prompt used for processing")
-    stored_in_memory: bool = Field(False, description="Whether results were stored in CORE memory")
-    duration_seconds: Optional[float] = Field(None, description="Processing duration")
 
 
 def create_mcode_results_structure(pipeline_result) -> Dict[str, Any]:
