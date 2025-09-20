@@ -9,17 +9,12 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from src.utils.api_manager import APIManager
 from src.utils.concurrency import TaskQueue, create_task
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
 
 # Get logger instance
 logger = get_logger(__name__)
-
-# Initialize API manager and cache
-api_manager = APIManager()
-clinical_trials_cache = api_manager.get_cache("clinical_trials")
 
 
 class ClinicalTrialsAPIError(Exception):

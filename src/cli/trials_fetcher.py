@@ -2,13 +2,11 @@
 """
 Trials Fetcher - Fetch clinical trials from ClinicalTrials.gov.
 
-A command-line interface for fetching raw clinical trial data from
-ClinicalTrials.gov without any processing or core memory storage.
+A streamlined command-line interface for fetching raw clinical trial data.
 """
 
 import argparse
 import sys
-from pathlib import Path
 from typing import Optional
 
 from src.shared.cli_utils import McodeCLI
@@ -17,59 +15,42 @@ from src.workflows.trials_fetcher_workflow import TrialsFetcherWorkflow
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """Create the argument parser for trials fetcher."""
+    """Create streamlined argument parser for trials fetcher."""
     parser = argparse.ArgumentParser(
         description="Fetch clinical trials from ClinicalTrials.gov",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Fetch trials by condition
-  python -m src.cli.trials_fetcher --condition "breast cancer" -o trials.ndjson
-
-  # Fetch specific trial by NCT ID
-  python -m src.cli.trials_fetcher --nct-id NCT12345678 -o trial.ndjson
-
-  # Fetch multiple trials
-  python -m src.cli.trials_fetcher --nct-ids NCT12345678,NCT87654321 -o trials.ndjson
-
-  # Verbose output with custom config
-  python -m src.cli.trials_fetcher --condition "lung cancer" --verbose --config custom.json
+  python -m src.cli.trials_fetcher --condition "breast cancer" --out trials.ndjson
+  python -m src.cli.trials_fetcher --nct-id NCT12345678 --out trial.ndjson
         """,
     )
 
-    # Add shared arguments
+    # Core arguments
     McodeCLI.add_core_args(parser)
+    McodeCLI.add_concurrency_args(parser)
 
-    # Fetcher-specific arguments
-    fetcher_group = parser.add_argument_group("fetch options")
-    fetcher_group.add_argument(
-        "--condition", help="Medical condition to search for (e.g., 'breast cancer')"
+    # Fetch options
+    parser.add_argument(
+        "--condition", help="Medical condition to search for"
     )
-
-    fetcher_group.add_argument(
-        "--nct-id", help="Specific NCT ID to fetch (e.g., NCT12345678)"
+    parser.add_argument(
+        "--nct-id", help="Specific NCT ID to fetch"
     )
-
-    fetcher_group.add_argument(
+    parser.add_argument(
         "--nct-ids", help="Comma-separated list of NCT IDs to fetch"
     )
-
-    fetcher_group.add_argument(
+    parser.add_argument(
         "--limit",
         type=int,
         default=10,
         help="Maximum number of trials to fetch (default: 10)",
     )
-
-    # I/O arguments
     parser.add_argument(
         "--out",
         dest="output_file",
-        help="Output file for trial data (NDJSON format). If not specified, writes to stdout",
+        help="Output file for trial data (NDJSON format)"
     )
-
-    # Concurrency arguments
-    McodeCLI.add_concurrency_args(parser)
 
     return parser
 
@@ -80,10 +61,8 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         parser = create_parser()
         args = parser.parse_args()
 
-    # Setup logging
+    # Setup logging and configuration
     McodeCLI.setup_logging(args)
-
-    # Create configuration
     config = McodeCLI.create_config(args)
 
     # Validate arguments
@@ -91,11 +70,10 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         parser.error("Must specify one of: --condition, --nct-id, or --nct-ids")
 
     # Prepare workflow parameters
-    workflow_kwargs = {}
+    workflow_kwargs = {"cli_args": args}
 
     if args.condition:
-        workflow_kwargs["condition"] = args.condition
-        workflow_kwargs["limit"] = args.limit
+        workflow_kwargs.update({"condition": args.condition, "limit": args.limit})
     elif args.nct_id:
         workflow_kwargs["nct_id"] = args.nct_id
     elif args.nct_ids:
@@ -104,46 +82,17 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     if args.output_file:
         workflow_kwargs["output_path"] = args.output_file
 
-    # Pass CLI arguments for concurrency configuration
-    workflow_kwargs["cli_args"] = args
-
-    # Execute workflow with concurrency support
+    # Execute workflow
     try:
-        # Disable CORE memory for fetching operations unless explicitly requested
         workflow = TrialsFetcherWorkflow(config, memory_storage=False)
-        # Set CLI args for concurrency configuration
-        if hasattr(workflow, '_set_cli_args'):
-            workflow._set_cli_args(args)
         result = workflow.execute(**workflow_kwargs)
 
-        # Print results (common for both concurrent and sequential)
-        if result.success:
-            print("✅ Trials fetch completed successfully!")
-
-            # Print summary
-            metadata = result.metadata
-            if metadata:
-                total_fetched = metadata.get("total_fetched", 0)
-                print(f"📊 Total trials fetched: {total_fetched}")
-
-                if args.output_file:
-                    print(f"💾 Results saved to: {args.output_file}")
-                else:
-                    print("📤 Results written to stdout")
-
-                # Print additional details
-                fetch_type = metadata.get("fetch_type")
-                if fetch_type:
-                    print(f"🔍 Fetch type: {fetch_type}")
-
-                # Print additional metadata
-                if "duration_seconds" in metadata:
-                    duration = metadata.get("duration_seconds", 0)
-                    print(f"⏱️  Duration: {duration:.2f}s")
-
-        else:
+        if not result.success:
             print(f"❌ Trials fetch failed: {result.error_message}")
             sys.exit(1)
+
+        print("✅ Trials fetch completed successfully!")
+        print_fetch_summary(result.metadata, args.output_file)
 
     except KeyboardInterrupt:
         print("\n⏹️  Operation cancelled by user")
@@ -152,9 +101,28 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         print(f"❌ Unexpected error: {e}")
         if args.verbose:
             import traceback
-
             traceback.print_exc()
         sys.exit(1)
+
+
+def print_fetch_summary(metadata, output_file):
+    """Print fetch operation summary."""
+    if not metadata:
+        return
+
+    total_fetched = metadata.get("total_fetched", 0)
+    print(f"📊 Total trials fetched: {total_fetched}")
+
+    if output_file:
+        print(f"💾 Results saved to: {output_file}")
+    else:
+        print("📤 Results written to stdout")
+
+    if fetch_type := metadata.get("fetch_type"):
+        print(f"🔍 Fetch type: {fetch_type}")
+
+    if duration := metadata.get("duration_seconds"):
+        print(f"⏱️  Duration: {duration:.2f}s")
 
 
 if __name__ == "__main__":

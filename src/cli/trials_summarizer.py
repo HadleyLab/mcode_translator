@@ -2,21 +2,12 @@
 """
 Trials Summarizer - Generate natural language summaries from mCODE trial data.
 
-A command-line interface for generating comprehensive natural language summaries
-from processed mCODE trial data. Takes mCODE-mapped trial data as input and
-produces human-readable summaries for CORE Memory storage.
-
-Features:
-- Generate comprehensive trial summaries from mCODE data
-- Support for stdin/stdout I/O streams
-- Concurrent processing with worker threads
-- CORE Memory storage integration
+A streamlined command-line interface for generating summaries from mCODE trial data.
 """
 
 import argparse
 import json
 import sys
-from pathlib import Path
 from typing import Dict, List, Optional
 
 from src.shared.cli_utils import McodeCLI
@@ -27,55 +18,32 @@ from src.workflows.trials_summarizer_workflow import TrialsSummarizerWorkflow
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """Create the argument parser for trials summarizer."""
+    """Create streamlined argument parser for trials summarizer."""
     parser = argparse.ArgumentParser(
         description="Generate natural language summaries from mCODE trial data",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Summarize from file and store in CORE Memory
   python -m src.cli.trials_summarizer --in mcode_trials.ndjson --ingest
-
-  # Summarize from stdin, output to stdout
-  cat mcode_trials.ndjson | python -m src.cli.trials_summarizer
-
-  # Summarize from file, save summaries to file
-  python -m src.cli.trials_summarizer --in mcode_trials.ndjson --out trial_summaries.ndjson
-
-  # Preview summaries without storing
-  python -m src.cli.trials_summarizer --in mcode_trials.ndjson --verbose
-
-Input/Output:
-  Input: NDJSON format with mCODE trial data (one trial per line)
-  Output: NDJSON format with natural language summaries (one summary per line)
-  If --in not specified: reads from stdin
-  If --out not specified: writes to stdout
+  python -m src.cli.trials_summarizer --in mcode_trials.ndjson --out summaries.ndjson
         """,
     )
 
-    # Add shared arguments
+    # Core arguments
     McodeCLI.add_core_args(parser)
     McodeCLI.add_memory_args(parser)
     McodeCLI.add_processor_args(parser)
-
-    # Add dry run argument
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Run summarization without storing results in CORE Memory",
-    )
 
     # I/O arguments
     parser.add_argument(
         "--in",
         dest="input_file",
-        help="Input file with mCODE trial data (NDJSON format). If not specified, reads from stdin",
+        help="Input file with mCODE trial data (NDJSON format)"
     )
-
     parser.add_argument(
         "--out",
         dest="output_file",
-        help="Output file for summaries (NDJSON format). If not specified, writes to stdout",
+        help="Output file for summaries (NDJSON format)"
     )
 
     return parser
@@ -122,28 +90,24 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         parser = create_parser()
         args = parser.parse_args()
 
-    # Setup logging
+    # Setup logging and configuration
     McodeCLI.setup_logging(args)
-    global logger
     logger = get_logger(__name__)
-
-    # Create configuration
     config = McodeCLI.create_config(args)
 
     # Load mCODE trial data
     try:
         logger.info("Loading mCODE trial data...")
         mcode_trials = load_mcode_trials(args.input_file)
+        if not mcode_trials:
+            logger.error("No valid mCODE trial data found")
+            sys.exit(1)
         logger.info(f"Loaded {len(mcode_trials)} mCODE trial records")
     except Exception as e:
         logger.error(f"Failed to load mCODE trial data: {e}")
         sys.exit(1)
 
-    if not mcode_trials:
-        logger.error("No valid mCODE trial data found")
-        sys.exit(1)
-
-    # Initialize core memory storage if needed
+    # Initialize memory storage if requested
     memory_storage = None
     if args.ingest:
         try:
@@ -151,96 +115,48 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
             logger.info(f"🧠 Initialized CORE Memory storage (source: {args.memory_source})")
         except Exception as e:
             logger.error(f"Failed to initialize CORE Memory: {e}")
-            logger.info("Check your COREAI_API_KEY environment variable and core_memory_config.json")
             sys.exit(1)
 
-    # Prepare workflow parameters
-    workflow_kwargs = {
-        "model": args.model,
-        "prompt": args.prompt,
-        "store_in_memory": args.ingest and not args.dry_run,
-        "workers": args.workers,
-    }
-
-    # Convert mCODE data back to trial format for summarization
+    # Prepare trial data for summarization
     trial_data = []
     for mcode_trial in mcode_trials:
-        # Extract the original trial data from mCODE format
-        if "original_trial_data" in mcode_trial:
-            trial_data.append(mcode_trial["original_trial_data"])
-        elif "trial_data" in mcode_trial:
-            trial_data.append(mcode_trial["trial_data"])
-        else:
-            logger.warning("Trial missing original data, using mCODE data as fallback")
-            trial_data.append(mcode_trial)
+        trial_data.append(
+            mcode_trial.get("original_trial_data") or
+            mcode_trial.get("trial_data") or
+            mcode_trial
+        )
 
-    workflow_kwargs["trials_data"] = trial_data
-
-    # Initialize and execute workflow
+    # Execute workflow
     try:
-        logger.info("Initializing trials summarizer workflow...")
-        workflow = TrialsSummarizerWorkflow(config, memory_storage)
-
         logger.info("Generating natural language summaries...")
-        result = workflow.execute(**workflow_kwargs)
+        workflow = TrialsSummarizerWorkflow(config, memory_storage)
+        result = workflow.execute(
+            trials_data=trial_data,
+            model=args.model,
+            prompt=args.prompt,
+            store_in_memory=args.ingest,
+            workers=args.workers
+        )
 
-        if result.success:
-            logger.info("✅ Trial summarization completed successfully!")
-
-            # Extract and save summaries
-            summaries = []
-            if result.data:
-                for trial_result in result.data:
-                    if isinstance(trial_result, dict) and "McodeResults" in trial_result:
-                        mcode_results = trial_result["McodeResults"]
-                        if "natural_language_summary" in mcode_results:
-                            # Extract trial ID
-                            trial_id = "unknown"
-                            if "protocolSection" in trial_result:
-                                protocol = trial_result["protocolSection"]
-                                if "identificationModule" in protocol:
-                                    trial_id = protocol["identificationModule"].get("nctId", "unknown")
-
-                            summary = {
-                                "trial_id": trial_id,
-                                "summary": mcode_results["natural_language_summary"],
-                                "mcode_elements": mcode_results.get("mcode_mappings", []),
-                            }
-                            summaries.append(summary)
-
-            # Save summaries
-            if summaries:
-                save_summaries(summaries, args.output_file)
-                logger.info(f"💾 Saved {len(summaries)} trial summaries")
-
-                if args.output_file:
-                    logger.info(f"📁 Output saved to: {args.output_file}")
-                else:
-                    logger.info("📤 Output written to stdout")
-
-            # Print summary
-            metadata = result.metadata
-            if metadata:
-                total_trials = metadata.get("total_trials", 0)
-                successful = metadata.get("successful", 0)
-                failed = metadata.get("failed", 0)
-                success_rate = metadata.get("success_rate", 0)
-
-                logger.info(f"📊 Total trials: {total_trials}")
-                logger.info(f"✅ Successful: {successful}")
-                logger.info(f"❌ Failed: {failed}")
-                logger.info(f"📈 Success rate: {success_rate:.1f}%")
-
-                if args.ingest:
-                    stored = metadata.get("stored_in_memory", False)
-                    if stored:
-                        logger.info("🧠 Summaries stored in CORE Memory")
-                    else:
-                        logger.info("💾 Summaries NOT stored (dry run or error)")
-
-        else:
+        if not result.success:
             logger.error(f"Trial summarization failed: {result.error_message}")
             sys.exit(1)
+
+        logger.info("✅ Trial summarization completed successfully!")
+
+        # Extract and save summaries
+        summaries = extract_summaries(result.data)
+        if summaries:
+            save_summaries(summaries, args.output_file)
+            logger.info(f"💾 Saved {len(summaries)} trial summaries")
+
+            if args.output_file:
+                logger.info(f"📁 Output saved to: {args.output_file}")
+            else:
+                logger.info("📤 Output written to stdout")
+
+        # Print summary
+        print_processing_summary(result.metadata, args.ingest, logger)
 
     except KeyboardInterrupt:
         logger.info("Operation cancelled by user")
@@ -251,6 +167,58 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
             import traceback
             traceback.print_exc()
         sys.exit(1)
+
+
+def extract_summaries(data) -> List[Dict]:
+    """Extract summaries from workflow results."""
+    summaries = []
+    if not data:
+        return summaries
+
+    for trial_result in data:
+        if not (isinstance(trial_result, dict) and "McodeResults" in trial_result):
+            continue
+
+        mcode_results = trial_result["McodeResults"]
+        if "natural_language_summary" not in mcode_results:
+            continue
+
+        # Extract trial ID
+        trial_id = "unknown"
+        if protocol := trial_result.get("protocolSection"):
+            if ident := protocol.get("identificationModule"):
+                trial_id = ident.get("nctId", "unknown")
+
+        summaries.append({
+            "trial_id": trial_id,
+            "summary": mcode_results["natural_language_summary"],
+            "mcode_elements": mcode_results.get("mcode_mappings", []),
+        })
+
+    return summaries
+
+
+def print_processing_summary(metadata, ingested, logger):
+    """Print processing summary."""
+    if not metadata:
+        return
+
+    total = metadata.get("total_trials", 0)
+    successful = metadata.get("successful", 0)
+    failed = metadata.get("failed", 0)
+    success_rate = metadata.get("success_rate", 0)
+
+    logger.info(f"📊 Total trials: {total}")
+    logger.info(f"✅ Successful: {successful}")
+    logger.info(f"❌ Failed: {failed}")
+    logger.info(f"📈 Success rate: {success_rate:.1f}%")
+
+    if ingested:
+        stored = metadata.get("stored_in_memory", False)
+        status = "🧠 Stored in CORE Memory" if stored else "💾 Storage failed"
+        logger.info(status)
+    else:
+        logger.info("💾 Storage disabled")
 
 
 if __name__ == "__main__":

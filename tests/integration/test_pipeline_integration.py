@@ -36,11 +36,11 @@ class TestPipelineIntegration:
         """Create dependency container for integration tests."""
         return DependencyContainer()
 
-    def test_mcode_pipeline_with_real_trial_data(self, sample_trial_data, container):
+    async def test_mcode_pipeline_with_real_trial_data(self, sample_trial_data, container):
         """Test McodePipeline processing real trial data."""
         pipeline = container.create_clinical_trial_pipeline()
 
-        result = pipeline.process(sample_trial_data)
+        result = await pipeline.process(sample_trial_data)
 
         assert result is not None
         assert result.error is None
@@ -66,7 +66,7 @@ class TestPipelineIntegration:
         assert len(summary) > 0
 
     @patch('src.utils.core_memory_client.CoreMemoryClient.ingest')
-    def test_pipeline_with_memory_storage(self, mock_ingest, sample_trial_data, container):
+    async def test_pipeline_with_memory_storage(self, mock_ingest, sample_trial_data, container):
         """Test pipeline with memory storage integration."""
         mock_ingest.return_value = {"status": "success"}
 
@@ -74,7 +74,7 @@ class TestPipelineIntegration:
         storage = container.create_memory_storage()
 
         # Process trial
-        result = pipeline.process(sample_trial_data)
+        result = await pipeline.process(sample_trial_data)
 
         # Store result
         trial_id = sample_trial_data['protocolSection']['identificationModule']['nctId']

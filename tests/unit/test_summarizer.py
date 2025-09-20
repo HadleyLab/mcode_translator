@@ -37,22 +37,25 @@ class TestMcodeSummarizer:
         result_invalid = summarizer._format_date_simple("invalid")
         assert result_invalid == "invalid"
 
-    def test_create_mcode_sentence(self):
-        """Test creating mCODE sentence."""
+    def test_create_abstracted_sentence(self):
+        """Test creating abstracted mCODE sentence using new interface."""
         summarizer = McodeSummarizer()
 
-        result = summarizer._create_mcode_sentence(
-            "PrimaryCancerCondition",
-            "http://snomed.info/sct",
-            "254837009",
-            "Malignant neoplasm of breast"
+        result = summarizer._create_abstracted_sentence(
+            subject="Patient",
+            element_name="CancerCondition",
+            value="Malignant neoplasm of breast",
+            codes="SNOMED:254837009",
+            date_qualifier=" documented on 2023-01-01"
         )
 
-        assert "PrimaryCancerCondition" in result
-        assert "254837009" in result
+        assert "Patient's diagnosis" in result
+        assert "Malignant neoplasm of breast" in result
+        assert "SNOMED:254837009" in result
+        assert "(mCODE: CancerCondition documented on 2023-01-01)" in result
 
-    def test_create_patient_demographics_sentence(self):
-        """Test creating patient demographics sentence."""
+    def test_extract_patient_elements(self):
+        """Test extracting patient elements using new abstracted interface."""
         summarizer = McodeSummarizer()
 
         patient_data = {
@@ -70,25 +73,47 @@ class TestMcodeSummarizer:
             ]
         }
 
-        result = summarizer._create_patient_demographics_sentence(patient_data)
+        elements = summarizer._extract_patient_elements(patient_data, include_dates=True)
 
-        assert isinstance(result, dict)
-        assert "demographics_sentence" in result
-        assert "Jane Doe" in result["demographics_sentence"]
-        assert "Patient" in result["demographics_sentence"]
-        assert "mCODE" in result["demographics_sentence"]
+        assert isinstance(elements, list)
+        assert len(elements) >= 1
 
-    def test_create_trial_subject_predicate_sentence(self):
-        """Test creating trial subject predicate sentence."""
+        # Check for Patient element
+        patient_element = next((e for e in elements if e.get('element_name') == 'Patient'), None)
+        assert patient_element is not None
+        assert "Jane Doe" in patient_element['value']
+        assert "ID: 12345" in patient_element['value']
+
+    def test_extract_trial_elements(self):
+        """Test extracting trial elements using new abstracted interface."""
         summarizer = McodeSummarizer()
 
-        result = summarizer._create_trial_subject_predicate_sentence(
-            "Trial eligibility", "TrialEligibility", "Age >= 18 years"
-        )
+        trial_data = {
+            "protocolSection": {
+                "identificationModule": {
+                    "nctId": "NCT12345678",
+                    "briefTitle": "Test Trial"
+                },
+                "statusModule": {
+                    "overallStatus": "Recruiting"
+                }
+            }
+        }
 
-        assert "Trial eligibility" in result
-        assert "Age >= 18 years" in result
-        assert "(mCODE: TrialEligibility)" in result
+        elements = summarizer._extract_trial_elements(trial_data)
+
+        assert isinstance(elements, list)
+        assert len(elements) >= 1
+
+        # Check for Trial element
+        trial_element = next((e for e in elements if e.get('element_name') == 'Trial'), None)
+        assert trial_element is not None
+        assert "Clinical Trial" in trial_element['value']
+
+        # Check for TrialTitle element
+        title_element = next((e for e in elements if e.get('element_name') == 'TrialTitle'), None)
+        assert title_element is not None
+        assert "Test Trial" in title_element['value']
 
     def test_create_patient_summary(self):
         """Test creating patient summary."""
@@ -155,48 +180,40 @@ class TestMcodeSummarizer:
         assert isinstance(result, str)
         assert "NCT12345678" in result
         assert "Test Trial" in result
-        assert "Breast Cancer" in result
+        # The new implementation focuses on core trial elements, not conditions
+        assert "Clinical Trial" in result
 
-    def test_check_trial_data_completeness_complete(self):
-        """Test checking complete trial data."""
+    def test_group_elements_by_priority(self):
+        """Test grouping elements by clinical priority."""
         summarizer = McodeSummarizer()
 
-        trial_data = {
-            "nct_id": "NCT12345678",
-            "title": "Complete Trial",
-            "eligibility": {"criteria": "Age >= 18"},
-            "conditions": ["Cancer"]
-        }
+        elements = [
+            {'element_name': 'TrialTitle', 'value': 'Test Trial', 'priority': 16},
+            {'element_name': 'Trial', 'value': 'Clinical Trial', 'priority': 15},
+            {'element_name': 'TrialStatus', 'value': 'recruiting', 'priority': 19}
+        ]
 
-        result = summarizer._check_trial_data_completeness(trial_data)
+        grouped = summarizer._group_elements_by_priority(elements, "Trial")
 
-        assert "complete" in result.lower()
-
-    def test_check_trial_data_completeness_incomplete(self):
-        """Test checking incomplete trial data."""
-        summarizer = McodeSummarizer()
-
-        trial_data = {
-            "nct_id": "NCT12345678"
-            # Missing title, eligibility, conditions
-        }
-
-        result = summarizer._check_trial_data_completeness(trial_data)
-
-        assert "incomplete" in result.lower() or "missing" in result.lower()
+        assert isinstance(grouped, list)
+        assert len(grouped) == 3
+        # Should be sorted by priority (lower number = higher priority)
+        assert grouped[0]['element_name'] == 'Trial'
+        assert grouped[1]['element_name'] == 'TrialTitle'
+        assert grouped[2]['element_name'] == 'TrialStatus'
 
     def test_create_patient_summary_empty_data(self):
         """Test creating patient summary with empty data."""
         summarizer = McodeSummarizer()
 
-        with pytest.raises(ValueError, match="Patient data is missing or not in the expected format"):
+        with pytest.raises(ValueError, match="Patient data missing required format"):
             summarizer.create_patient_summary({})
 
     def test_create_trial_summary_empty_data(self):
         """Test creating trial summary with empty data."""
         summarizer = McodeSummarizer()
 
-        with pytest.raises(ValueError, match="Trial data is missing or not in the expected format"):
+        with pytest.raises(ValueError, match="Trial data missing required format"):
             summarizer.create_trial_summary({})
 
     def test_format_mcode_display_edge_cases(self):

@@ -2,81 +2,60 @@
 """
 Patients Processor - Process patient data with mCODE mapping.
 
-A command-line interface for processing patient data with mCODE mapping
-and storing the resulting summaries to CORE Memory or saving as JSON/NDJSON files.
-
-Features:
-- Extract mCODE elements from FHIR patient bundles
-- Save processed data in JSON array format or NDJSON format
-- Optional CORE Memory storage (use --ingest to enable)
-- Trial eligibility filtering capabilities
-- Concurrent processing with worker threads
+A streamlined command-line interface for processing patient data with mCODE mapping.
 """
 
 import argparse
-import os
+import json
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import List, Dict, Any, Optional
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
+from src.utils.data_loader import load_ndjson_data, extract_patient_id
+from src.utils.logging_config import get_logger
 from src.workflows.patients_processor_workflow import PatientsProcessorWorkflow
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """Create the argument parser for patients processor."""
+    """Create streamlined argument parser for patients processor."""
     parser = argparse.ArgumentParser(
         description="Process patient data with mCODE mapping",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
- Examples:
-   # Process patients and save as NDJSON (recommended for large datasets)
-   python -m src.cli.patients_processor --in patients.json --out mcode_patients.ndjson
-
-   # Process patients and store in core memory
-   python -m src.cli.patients_processor --in patients.json --trials trials.ndjson --ingest
-
-   # Process patients with trial filtering
-   python -m src.cli.patients_processor --in patients.json --trials trials.ndjson --ingest
-
-   # Custom core memory settings
-   python -m src.cli.patients_processor --in patients.json --ingest --memory-source custom_source
-
- Input Formats:
-   JSON:  Standard JSON array format - [{"entry": [...], ...}]
-   NDJSON: Newline-delimited JSON - one JSON object per line
-
- Output Formats:
-   NDJSON: Newline-delimited JSON - one JSON object per line (recommended for streaming)
-         """,
+Examples:
+  python -m src.cli.patients_processor --in patients.ndjson --out mcode_patients.ndjson
+  python -m src.cli.patients_processor --in patients.ndjson --trials trials.ndjson --ingest
+        """,
     )
 
-    # Add shared arguments
+    # Core arguments
     McodeCLI.add_core_args(parser)
     McodeCLI.add_memory_args(parser)
     McodeCLI.add_processor_args(parser)
 
-    # Input arguments
+    # I/O arguments
     parser.add_argument(
         "--in",
         dest="input_file",
-        help="Input file with patient data (NDJSON format). If not specified, reads from stdin",
+        help="Input file with patient data (NDJSON format)"
     )
-
     parser.add_argument(
         "--out",
         dest="output_file",
-        help="Output file for mCODE data (NDJSON format). If not specified, writes to stdout",
+        help="Output file for mCODE data (NDJSON format)"
     )
-
     parser.add_argument(
         "--trials",
-        help="Path to NDJSON file containing trial data for eligibility filtering",
+        help="Path to NDJSON file containing trial data for eligibility filtering"
     )
 
     return parser
+
+
+# Data loading function removed - now using shared src.utils.data_loader.load_ndjson_data
 
 
 def main(args: Optional[argparse.Namespace] = None) -> None:
@@ -85,317 +64,176 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         parser = create_parser()
         args = parser.parse_args()
 
-    # Setup logging
+    # Setup logging and configuration
     McodeCLI.setup_logging(args)
-
-    # Create configuration
+    logger = get_logger(__name__)
     config = McodeCLI.create_config(args)
 
-    # Determine input file (positional or --in)
-    input_file = getattr(args, 'input_file', None)
-    if not input_file:
-        print("❌ No input file specified. Use --in argument")
+    # Validate and load input file
+    if not args.input_file:
+        logger.error("No input file specified")
         sys.exit(1)
 
-    patients_path = Path(input_file)
+    patients_path = Path(args.input_file)
     if not patients_path.exists():
-        print(f"❌ Patients file not found: {patients_path}")
+        logger.error(f"Patients file not found: {patients_path}")
         sys.exit(1)
 
+    # Load trials criteria if provided
     trials_criteria = None
     if args.trials:
         trials_path = Path(args.trials)
         if not trials_path.exists():
-            print(f"❌ Trials file not found: {trials_path}")
+            logger.error(f"Trials file not found: {trials_path}")
             sys.exit(1)
 
-        # Load trials data for criteria extraction
         try:
             with open(trials_path, "r", encoding="utf-8") as f:
-                trials_data = f.read().strip()
-
-            if not trials_data:
-                print(f"❌ Trials file is empty: {trials_path}")
-                sys.exit(1)
-
-            import json
-
-            trials_json = json.loads(trials_data)
-
-            # Extract mCODE criteria from trials
-            trials_criteria = extract_mcode_criteria_from_trials(trials_json)
-            print(
-                f"📋 Extracted mCODE criteria from {len(trials_criteria)} trial elements"
-            )
-
-        except json.JSONDecodeError as e:
-            print(f"❌ Invalid JSON in trials file: {e}")
-            sys.exit(1)
+                trials_data = json.loads(f.read().strip())
+            trials_criteria = extract_mcode_criteria_from_trials(trials_data)
+            logger.info(f"📋 Extracted mCODE criteria from {len(trials_criteria)} trial elements")
         except Exception as e:
-            print(f"❌ Failed to read trials file: {e}")
+            logger.error(f"Failed to load trials file: {e}")
             sys.exit(1)
 
-    # Load patients data from file or stdin
+    # Load patients data
     try:
-        import json
-
-        if args.input_file:
-            # Try to read as JSON array first, then fall back to NDJSON
-            patients_list = []
-            with open(patients_path, "r", encoding="utf-8") as f:
-                content = f.read().strip()
-
-            if not content:
-                print("❌ Patients file is empty")
-                sys.exit(1)
-
-            # Try to parse as JSON array first
-            try:
-                json_data = json.loads(content)
-                if isinstance(json_data, list):
-                    # JSON array format
-                    for patient_data in json_data:
-                        if isinstance(patient_data, dict) and "entry" in patient_data:
-                            # Single FHIR Bundle
-                            patients_list.append(patient_data)
-                        else:
-                            print(f"❌ Invalid patient data format in array. Expected FHIR Bundle.")
-                            continue
-                    print(f"📄 Read {len(patients_list)} patients from JSON array format")
-                elif isinstance(json_data, dict) and "entry" in json_data:
-                    # Single FHIR Bundle
-                    patients_list = [json_data]
-                    print("📄 Read single patient from JSON format")
-                else:
-                    print("❌ Invalid JSON format. Expected FHIR Bundle array or object.")
-                    sys.exit(1)
-            except json.JSONDecodeError:
-                # Fall back to NDJSON format
-                print("📄 JSON parsing failed, trying NDJSON format...")
-                for line in content.split('\n'):
-                    line = line.strip()
-                    if line:  # Skip empty lines
-                        patient_data = json.loads(line)
-                        # Handle different patient data formats
-                        if isinstance(patient_data, dict) and "entry" in patient_data:
-                            # Single FHIR Bundle
-                            patients_list.append(patient_data)
-                        else:
-                            print(f"❌ Invalid patient data format in line. Expected FHIR Bundle.")
-                            continue
-                print(f"📄 Read {len(patients_list)} patients from NDJSON format")
-        else:
-            # Read from stdin as NDJSON
-            patients_list = []
-            for line in sys.stdin:
-                line = line.strip()
-                if line:  # Skip empty lines
-                    patient_data = json.loads(line)
-                    # Handle different patient data formats
-                    if isinstance(patient_data, dict) and "entry" in patient_data:
-                        # Single FHIR Bundle
-                        patients_list.append(patient_data)
-                    else:
-                        print(f"❌ Invalid patient data format in line. Expected FHIR Bundle.")
-                        continue
-
+        patients_list = load_ndjson_data(patients_path, "patients")
         if not patients_list:
-            print("❌ No patient data provided")
+            logger.error("No patient data found in input file")
             sys.exit(1)
-
-        print(f"🔬 Processing {len(patients_list)} patient records...")
-
-        # Debug: Check patient data integrity
-        for i, patient in enumerate(patients_list):
-            entries = patient.get("entry", [])
-            print(f"Patient {i+1}: {len(entries)} entries")
-            for j, entry in enumerate(entries[:3]):  # Check first 3 entries
-                print(f"  Entry {j}: type={type(entry)}")
-                if isinstance(entry, dict):
-                    resource = entry.get("resource", {})
-                    print(f"    Resource: type={type(resource)}")
-                    if isinstance(resource, dict):
-                        resource_type = resource.get("resourceType", "Unknown")
-                        print(f"    ResourceType: {resource_type}")
-                        if resource_type == "Patient":
-                            name = resource.get("name", [])
-                            print(f"    Patient {i+1} name: {name}")
-                    else:
-                        print(f"    Resource content: {resource}")
-                else:
-                    print(f"    Entry content: {entry}")
-                if j >= 2:  # Only check first 3
-                    break
-
-    except json.JSONDecodeError as e:
-        print(f"❌ Invalid JSON in patients file: {e}")
-        sys.exit(1)
-    except Exception as e:
-        print(f"❌ Failed to read patients file: {e}")
+    except (json.JSONDecodeError, FileNotFoundError) as e:
+        logger.error(f"Failed to load patients file: {e}")
         sys.exit(1)
 
-    # Prepare workflow parameters
-    workflow_kwargs = {
-        "patients_data": patients_list,
-        "trials_criteria": trials_criteria,
-        "store_in_memory": args.ingest,
-        "cli_args": args,  # Pass CLI args for concurrency configuration
-    }
-
-    # Initialize core memory storage if requested
-    memory_storage = False  # Default to disabled
+    # Initialize memory storage if requested
+    memory_storage = None
     if args.ingest:
         try:
-            # Use centralized configuration
             memory_storage = McodeMemoryStorage(source=args.memory_source)
-            print(f"🧠 Initialized CORE Memory storage (source: {args.memory_source})")
+            logger.info(f"🧠 Initialized CORE Memory storage (source: {args.memory_source})")
         except Exception as e:
-            print(f"❌ Failed to initialize CORE Memory: {e}")
-            print(
-                "💡 Check your COREAI_API_KEY environment variable and core_memory_config.json"
-            )
+            logger.error(f"Failed to initialize CORE Memory: {e}")
             sys.exit(1)
 
-    # Initialize and execute workflow
+    # Execute workflow
     try:
+        logger.info(f"🔬 Processing {len(patients_list)} patients...")
         workflow = PatientsProcessorWorkflow(config, memory_storage)
-        result = workflow.execute(**workflow_kwargs)
+        result = workflow.execute(
+            patients_data=patients_list,
+            trials_criteria=trials_criteria,
+            store_in_memory=args.ingest,
+            workers=args.workers
+        )
 
-        if result.success:
-            print("✅ Patients processing completed successfully!")
-
-            # Save processed mCODE data to file or stdout
-            if result.data:
-                try:
-                    import json
-
-                    # Extract mCODE elements for output
-                    mcode_data = []
-                    for patient_bundle in result.data:
-                        if (
-                            isinstance(patient_bundle, dict)
-                            and "entry" in patient_bundle
-                        ):
-                            # Extract patient ID
-                            patient_id = "unknown"
-                            for entry in patient_bundle["entry"]:
-                                if (isinstance(entry, dict) and
-                                    "resource" in entry and
-                                    isinstance(entry["resource"], dict) and
-                                    entry["resource"].get("resourceType") == "Patient"):
-                                    patient_id = entry["resource"].get("id", "unknown")
-                                    break
-
-                            # Process each entry in the FHIR bundle
-                            mcode_entries = []
-                            for entry in patient_bundle["entry"]:
-                                if (
-                                    isinstance(entry, dict)
-                                    and "resource" in entry
-                                    and isinstance(entry["resource"], dict)
-                                ):
-                                    resource = entry["resource"]
-                                    resource_type = resource.get("resourceType")
-
-                                    # Extract mCODE-relevant information
-                                    if resource_type == "Patient":
-                                        name = (
-                                            resource.get("name", [{}])[0]
-                                            if resource.get("name")
-                                            else {}
-                                        )
-                                        mcode_entries.append(
-                                            {
-                                                "resource_type": "Patient",
-                                                "id": resource.get("id"),
-                                                "name": name,
-                                            }
-                                        )
-                                    elif resource_type in [
-                                        "Condition",
-                                        "Observation",
-                                        "MedicationStatement",
-                                        "Procedure",
-                                    ]:
-                                        # These contain clinical data that would be mCODE-mapped
-                                        mcode_entries.append(
-                                            {
-                                                "resource_type": resource_type,
-                                                "id": resource.get("id"),
-                                                "clinical_data": resource,
-                                            }
-                                        )
-
-                            # Create output structure with mCODE data and original patient
-                            output_item = {
-                                "patient_id": patient_id,
-                                "mcode_elements": mcode_entries,
-                                "original_patient_data": patient_bundle,  # Keep original for summarizer
-                            }
-                            mcode_data.append(output_item)
-
-                    # Output as NDJSON to file or stdout
-                    if args.output_file:
-                        with open(args.output_file, "w", encoding="utf-8") as f:
-                            for item in mcode_data:
-                                json.dump(item, f, ensure_ascii=False, default=str)
-                                f.write("\n")
-                        print(f"💾 mCODE data saved as NDJSON to: {args.output_file}")
-                    else:
-                        # Write to stdout
-                        for item in mcode_data:
-                            json.dump(item, sys.stdout, ensure_ascii=False, default=str)
-                            sys.stdout.write("\n")
-                        sys.stdout.flush()
-                        print("📤 mCODE data written to stdout")
-
-                except Exception as e:
-                    print(f"❌ Failed to save processed data: {e}")
-                    if args.verbose:
-                        import traceback
-                        traceback.print_exc()
-
-            # Print summary
-            metadata = result.metadata
-            if metadata:
-                total_patients = metadata.get("total_patients", 0)
-                successful = metadata.get("successful", 0)
-                failed = metadata.get("failed", 0)
-                success_rate = metadata.get("success_rate", 0)
-
-                print(f"📊 Total patients: {total_patients}")
-                print(f"✅ Successful: {successful}")
-                print(f"❌ Failed: {failed}")
-                print(f"📈 Success rate: {success_rate:.1f}%")
-
-                if trials_criteria:
-                    filtered = metadata.get("trial_criteria_applied", False)
-                    if filtered:
-                        print("🎯 Applied trial eligibility filtering")
-
-                if args.ingest:
-                    stored = metadata.get("stored_in_memory", False)
-                    if stored:
-                        print("🧠 mCODE summaries stored in CORE Memory")
-                    else:
-                        print("💾 mCODE summaries NOT stored (error)")
-                else:
-                    print("💾 mCODE summaries NOT stored (storage disabled)")
-
-        else:
-            print(f"❌ Patients processing failed: {result.error_message}")
+        if not result.success:
+            logger.error(f"Patients processing failed: {result.error_message}")
             sys.exit(1)
+
+        logger.info("✅ Patients processing completed successfully!")
+
+        # Save results
+        if result.data:
+            save_processed_data(result.data, args.output_file, logger)
+
+        # Print summary
+        print_processing_summary(result.metadata, args.ingest, trials_criteria, logger)
 
     except KeyboardInterrupt:
-        print("\n⏹️  Operation cancelled by user")
+        logger.info("Operation cancelled by user")
         sys.exit(130)
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        logger.error(f"Unexpected error: {e}")
         if args.verbose:
             import traceback
-
             traceback.print_exc()
         sys.exit(1)
+
+
+def save_processed_data(data: List[Any], output_file: Optional[str], logger) -> None:
+    """Save processed mCODE data to file or stdout."""
+    mcode_data = []
+    for patient_bundle in data:
+        if not (isinstance(patient_bundle, dict) and "entry" in patient_bundle):
+            continue
+
+        # Extract patient ID
+        patient_id = "unknown"
+        for entry in patient_bundle["entry"]:
+            if (isinstance(entry, dict) and
+                entry.get("resource", {}).get("resourceType") == "Patient"):
+                patient_id = entry["resource"].get("id", "unknown")
+                break
+
+        # Process entries
+        mcode_entries = []
+        for entry in patient_bundle["entry"]:
+            if not (isinstance(entry, dict) and "resource" in entry):
+                continue
+
+            resource = entry["resource"]
+            resource_type = resource.get("resourceType")
+
+            if resource_type == "Patient":
+                name = resource.get("name", [{}])[0] if resource.get("name") else {}
+                mcode_entries.append({
+                    "resource_type": "Patient",
+                    "id": resource.get("id"),
+                    "name": name,
+                })
+            elif resource_type in ["Condition", "Observation", "MedicationStatement", "Procedure"]:
+                mcode_entries.append({
+                    "resource_type": resource_type,
+                    "id": resource.get("id"),
+                    "clinical_data": resource,
+                })
+
+        mcode_data.append({
+            "patient_id": patient_id,
+            "mcode_elements": mcode_entries,
+            "original_patient_data": patient_bundle,
+        })
+
+    # Output as NDJSON
+    if output_file:
+        with open(output_file, "w", encoding="utf-8") as f:
+            for item in mcode_data:
+                json.dump(item, f, ensure_ascii=False, default=str)
+                f.write("\n")
+        logger.info(f"💾 mCODE data saved to: {output_file}")
+    else:
+        for item in mcode_data:
+            json.dump(item, sys.stdout, ensure_ascii=False, default=str)
+            sys.stdout.write("\n")
+        sys.stdout.flush()
+        logger.info("📤 mCODE data written to stdout")
+
+
+def print_processing_summary(metadata, ingested, trials_criteria, logger):
+    """Print processing summary."""
+    if not metadata:
+        return
+
+    total = metadata.get("total_patients", 0)
+    successful = metadata.get("successful", 0)
+    failed = metadata.get("failed", 0)
+    success_rate = metadata.get("success_rate", 0)
+
+    logger.info(f"📊 Total patients: {total}")
+    logger.info(f"✅ Successful: {successful}")
+    logger.info(f"❌ Failed: {failed}")
+    logger.info(f"📈 Success rate: {success_rate:.1f}%")
+
+    if trials_criteria:
+        logger.info("🎯 Applied trial eligibility filtering")
+
+    if ingested:
+        stored = metadata.get("stored_in_memory", False)
+        status = "🧠 Stored in CORE Memory" if stored else "💾 Storage failed"
+        logger.info(status)
+    else:
+        logger.info("💾 Storage disabled")
 
 
 def extract_mcode_criteria_from_trials(trials_data) -> dict:

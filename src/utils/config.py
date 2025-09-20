@@ -60,17 +60,25 @@ class Config:
 
     def get_timeout(self, model_name: str) -> int:
         """
-        Get timeout for a specific model, with a fallback to a default value.
+        Get timeout for a specific model.
 
         Args:
             model_name: The name of the model.
 
         Returns:
             The timeout in seconds.
+
+        Raises:
+            ConfigurationError: If timeout is not configured for the model.
         """
         model_config = self.get_llm_config(model_name)
-        # Fallback to a default of 60 seconds if not specified for the model
-        return getattr(model_config, 'timeout_seconds', 60) or 60
+        timeout = getattr(model_config, 'timeout_seconds', None)
+        if timeout is None:
+            raise ConfigurationError(
+                f"Timeout not configured for model '{model_name}'. "
+                "Configure timeout_seconds in the model configuration."
+            )
+        return timeout
 
     def get_clinical_trials_base_url(self) -> str:
         """Get clinical trials API base URL"""

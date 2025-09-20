@@ -315,89 +315,33 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             return f"unknown_trial_{hashlib.md5(str(trial).encode('utf-8')).hexdigest()[:8]}"
 
     def _extract_trial_mcode_elements(self, trial: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Extract comprehensive mCODE elements from clinical trial data.
-
-        This mirrors the patient mCODE extraction but focuses on trial-specific elements
-        that align with patient profiles for optimal matching.
-        """
+        """Extract mCODE elements from clinical trial data."""
         mcode_elements = {}
 
         try:
-            # Ensure trial is a dict
-            if not isinstance(trial, dict):
-                self.logger.error(
-                    f"Trial data is not a dict: {type(trial)}, value: {trial}"
-                )
-                return mcode_elements
-
             protocol_section = trial.get("protocolSection", {})
             if not isinstance(protocol_section, dict):
-                self.logger.error(
-                    f"Protocol section is not a dict: {type(protocol_section)}, value: {protocol_section}"
-                )
                 return mcode_elements
 
-            self.logger.debug(
-                f"Processing protocol section with keys: {list(protocol_section.keys())}"
-            )
+            # Extract all mCODE-relevant sections
+            extractors = [
+                ("identificationModule", self._extract_trial_identification),
+                ("eligibilityModule", self._extract_trial_eligibility_mcode),
+                ("conditionsModule", self._extract_trial_conditions_mcode),
+                ("armsInterventionsModule", self._extract_trial_interventions_mcode),
+                ("designModule", self._extract_trial_design_mcode),
+                ("statusModule", self._extract_trial_temporal_mcode),
+                ("sponsorCollaboratorsModule", self._extract_trial_sponsor_mcode),
+            ]
 
-            # Extract trial identification and basic info
-            identification = protocol_section.get("identificationModule", {})
-            if isinstance(identification, dict):
-                mcode_elements.update(
-                    self._extract_trial_identification(identification)
-                )
-
-            # Extract eligibility criteria in mCODE space
-            eligibility = protocol_section.get("eligibilityModule", {})
-            if isinstance(eligibility, dict):
-                mcode_elements.update(
-                    self._extract_trial_eligibility_mcode(eligibility)
-                )
-
-            # Extract conditions as mCODE CancerCondition
-            conditions = protocol_section.get("conditionsModule", {})
-            if isinstance(conditions, dict):
-                mcode_elements.update(self._extract_trial_conditions_mcode(conditions))
-
-            # Extract interventions as mCODE CancerRelatedMedicationStatement
-            interventions = protocol_section.get("armsInterventionsModule", {})
-            if isinstance(interventions, dict):
-                mcode_elements.update(
-                    self._extract_trial_interventions_mcode(interventions)
-                )
-
-            # Extract design and outcomes information
-            design = protocol_section.get("designModule", {})
-            if isinstance(design, dict):
-                mcode_elements.update(self._extract_trial_design_mcode(design))
-
-            # Extract temporal information
-            status = protocol_section.get("statusModule", {})
-            if isinstance(status, dict):
-                mcode_elements.update(self._extract_trial_temporal_mcode(status))
-
-            # Extract sponsor and organization information
-            sponsor = protocol_section.get("sponsorCollaboratorsModule", {})
-            if isinstance(sponsor, dict):
-                sponsor_elements = self._extract_trial_sponsor_mcode(sponsor)
-                mcode_elements.update(sponsor_elements)
-                self.logger.debug(
-                    f"Extracted sponsor elements: {list(sponsor_elements.keys())}"
-                )
+            for module_key, extractor_func in extractors:
+                module_data = protocol_section.get(module_key, {})
+                if isinstance(module_data, dict):
+                    mcode_elements.update(extractor_func(module_data))
 
         except Exception as e:
-            self.logger.error(
-                f"Error extracting comprehensive trial mCODE elements: {e}"
-            )
-            self.logger.debug(f"Trial data type: {type(trial)}")
-            if isinstance(trial, dict):
-                self.logger.debug(f"Trial keys: {list(trial.keys())}")
+            self.logger.error(f"Error extracting trial mCODE elements: {e}")
 
-        self.logger.debug(
-            f"Final mCODE elements extracted: {len(mcode_elements)} total elements"
-        )
         return mcode_elements
 
     def _extract_trial_identification(
