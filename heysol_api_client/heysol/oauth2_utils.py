@@ -23,7 +23,6 @@ from urllib3.util.retry import Retry
 from .config import HeySolConfig
 from .client import HeySolClient
 from .exceptions import HeySolError, AuthenticationError, ValidationError
-from .oauth2_interactive import InteractiveOAuth2Authenticator
 
 
 @dataclass
@@ -128,9 +127,6 @@ class OAuth2ClientManager:
                 config=self.config,
                 use_oauth2=True
             )
-
-            # If client supports session injection, it could use the optimized session
-            # For now, the session is available via get_optimized_session()
 
             self.logger.info("OAuth2 client created successfully with performance optimizations")
             return self.client
@@ -269,29 +265,16 @@ class OAuth2ClientManager:
                 # Cached as invalid, clear cache and re-authenticate
                 self.clear_auth_cache()
 
-        client = self.get_client()
-
+        # Use client's OAuth2 authentication method
         try:
-            # Check if already authenticated
-            if hasattr(client, 'oauth2_auth') and client.oauth2_auth:
-                try:
-                    # Try to get user info to verify authentication
-                    client.get_oauth2_user_info()
-                    self.logger.info("OAuth2 authentication already valid")
-                    self._cache_auth_status(scope, True)
-                    return True
-                except AuthenticationError:
-                    self.logger.info("OAuth2 authentication expired, re-authenticating...")
-                    self._cache_auth_status(scope, False)
-
-            # Perform interactive authorization
-            success = client.authorize_oauth2_interactive(scope=scope)
-            if not success:
-                raise AuthenticationError("Interactive OAuth2 authorization failed")
-
-            self.logger.info("OAuth2 authentication completed successfully")
-            self._cache_auth_status(scope, True)
-            return True
+            success = self.client.authorize_oauth2_interactive(scope=scope)
+            if success:
+                self._cache_auth_status(scope, True)
+                self.logger.info("OAuth2 authentication completed successfully")
+                return True
+            else:
+                self._cache_auth_status(scope, False)
+                raise AuthenticationError("OAuth2 authorization failed")
 
         except Exception as e:
             self._cache_auth_status(scope, False)
