@@ -18,13 +18,14 @@ import json
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
-import argparse
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
 from src.workflows.patients_summarizer_workflow import PatientsSummarizerWorkflow
+
+logger = get_logger(__name__)
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -125,8 +126,6 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
 
     # Setup logging
     McodeCLI.setup_logging(args)
-    global logger
-    logger = get_logger(__name__)
 
     # Create configuration
     config = McodeCLI.create_config(args)
