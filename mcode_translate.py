@@ -372,7 +372,12 @@ def main():
         dest="output_file",
         help="Output file for processed mCODE data"
     )
+    patients_processor_parser.add_argument(
+        "--trials",
+        help="Path to NDJSON file containing trial data for eligibility filtering"
+    )
     McodeCLI.add_core_args(patients_processor_parser)
+    McodeCLI.add_memory_args(patients_processor_parser)
     McodeCLI.add_processor_args(patients_processor_parser)
 
     patients_summarizer_parser = subparsers.add_parser(
@@ -388,8 +393,14 @@ def main():
         dest="output_file",
         help="Output file for summarized data"
     )
+    patients_summarizer_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Run summarization without storing results in CORE Memory",
+    )
     McodeCLI.add_core_args(patients_summarizer_parser)
     McodeCLI.add_memory_args(patients_summarizer_parser)
+    McodeCLI.add_processor_args(patients_summarizer_parser)
 
     # Data
     download_data_parser = subparsers.add_parser(

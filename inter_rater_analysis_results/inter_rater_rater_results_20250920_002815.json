@@ -1,0 +1,1186 @@
+{
+  "cached_trial": {
+    "deepseek-coder_direct_mcode_evidence_based_concise": {
+      "rater_id": "deepseek-coder_direct_mcode_evidence_based_concise",
+      "trial_id": "cached_trial",
+      "mcode_elements": [
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Conditions: Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "breast cancer patient treated with adjuvant chemotherapy"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "367336001",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "breast cancer patient treated with adjuvant chemotherapy"
+        },
+        {
+          "element_type": "Patient",
+          "code": "424144002",
+          "display": "Current chronological age (observable entity)",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "minimumAge: 18 Years"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "patients with early breast cancer"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387608008",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "adjuvant chemotherapy with AC (adriamycin-cyclophosphamide) or CAF (adriamycin-cyclophosphamide-5-fluorouracil) combinations"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387608008",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "during the adjuvant chemotherapy"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "108606009",
+          "display": "Doxorubicin",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "AC (adriamycin-cyclophosphamide) or CAF (adriamycin-cyclophosphamide-5-fluorouracil) combinations"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387460002",
+          "display": "Cyclophosphamide",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "AC (adriamycin-cyclophosphamide) or CAF (adriamycin-cyclophosphamide-5-fluorouracil) combinations"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387460002",
+          "display": "Cyclophosphamide",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "CAF (adriamycin-cyclophosphamide-5-fluorouracil) combinations"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387460002",
+          "display": "Cyclophosphamide",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "AC (adriamycin-cyclophosphamide)"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387608008",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "adjuvant chemotherapy"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "108606009",
+          "display": "Doxorubicin",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "AC (adriamycin-cyclophosphamide)"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "108606009",
+          "display": "Doxorubicin",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "CAF (adriamycin-cyclophosphamide-5-fluorouracil)"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Adjuvant Chemotherapy for Breast Cancer Patients"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "367336001",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Lifemel Honey During Adjuvant Chemotherapy for Breast Cancer Patients"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "71388002",
+          "display": "Procedure",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.8,
+          "evidence_text": "Adjuvant Chemotherapy for Breast Cancer Patients to Prevent Leucopenia"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Breast Cancer Female"
+        },
+        {
+          "element_type": "PatientSex",
+          "code": "248153007",
+          "display": "Female",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Breast Cancer Female"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Invasive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Histologic diagnosis of invasive breast cancer or ductal carcinoma in situ."
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "92546004",
+          "display": "Ductal carcinoma in situ of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Histologic diagnosis of invasive breast cancer or ductal carcinoma in situ."
+        },
+        {
+          "element_type": "PatientDemographics",
+          "code": "184099003",
+          "display": "Age 18 years or older",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Age > 18 years."
+        },
+        {
+          "element_type": "PatientDemographics",
+          "code": "248152002",
+          "display": "Female",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Female gender."
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "367336001",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients who have received neoadjuvant chemotherapy for their current diagnosis."
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "to in aid removal of breast cancers"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "breast cancer locator (BCL) surgical device to in aid removal of breast cancers"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "breast cancers"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "HER2 positive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "HER2-positive Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Male breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Male Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Stage IV breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Stage IV Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "HER2 positive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients with HER-2+ Stage IV breast cancer that have been maximally treated and not in a complete remission"
+        },
+        {
+          "element_type": "TNMStage",
+          "code": "399537006",
+          "display": "Stage IV breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients with HER-2+ Stage IV breast cancer that have been maximally treated and not in a complete remission"
+        },
+        {
+          "element_type": "PatientDemographics",
+          "code": "424144002",
+          "display": "Age 18 years or older",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Subjects must be > 18 years old"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387018007",
+          "display": "Trastuzumab therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients can be receiving trastuzumab and/or hormonal therapy and/or bisphosphonates"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "373871005",
+          "display": "Hormonal therapy for cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients can be receiving trastuzumab and/or hormonal therapy and/or bisphosphonates"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387132000",
+          "display": "Bisphosphonate therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients can be receiving trastuzumab and/or hormonal therapy and/or bisphosphonates"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "94260004",
+          "display": "Brain metastasis",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Active brain metastasis"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "128348002",
+          "display": "Skeletal metastasis",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Skeletal or bone-only disease that is measurable by FDG PET imaging will also be allowed"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "HER2-positive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "patients with HER2-positive stage IV breast cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "315025001",
+          "display": "Stage IV breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "patients with HER2-positive stage IV breast cancer"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387608007",
+          "display": "Cyclophosphamide",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Drugs used in chemotherapy, such as cyclophosphamide"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "763703003",
+          "display": "T-cell immunotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "ex vivo-expanded HER2-specific T cells"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "418992000",
+          "display": "Cancer vaccine therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "Vaccines made from HER2 peptides may help the body build an effective immune response"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "418992000",
+          "display": "Cancer vaccine therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients receive HER2 peptide vaccine intradermally once weekly for 3 weeks"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387608007",
+          "display": "Cyclophosphamide",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients receive cyclophosphamide IV on day -1"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "763703003",
+          "display": "T-cell immunotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients receive ex vivo-expanded HER2 specific T-cell IV over 30 minutes on days 1, 10, and 20"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "HER2-positive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "HER2-Positive Stage IV Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "HER2-positive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "HER-2-Positive Breast Cancer"
+        },
+        {
+          "element_type": "TNMStage",
+          "code": "444256004",
+          "display": "Stage IV breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Stage IV Breast Cancer"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "108290001",
+          "display": "Adoptive T-cell therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Adoptive T-Cell Therapy With HER-2/Neu (HER-2)-Specific Memory CD8+ T Lymphocytes"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387317001",
+          "display": "Cyclophosphamide",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Cyclophosphamide After Vaccine Therapy"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "418992009",
+          "display": "Peptide vaccine therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Peptide Vaccine in Patients With Advanced Stage HER-2-Positive Breast Cancer"
+        }
+      ],
+      "success": true,
+      "error_message": "",
+      "execution_time_seconds": 0.0,
+      "timestamp": "2025-09-20T00:28:15.323259"
+    },
+    "deepseek-chat_direct_mcode_evidence_based_concise": {
+      "rater_id": "deepseek-chat_direct_mcode_evidence_based_concise",
+      "trial_id": "cached_trial",
+      "mcode_elements": [
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Breast Cancer Female"
+        },
+        {
+          "element_type": "PatientSex",
+          "code": "248153007",
+          "display": "Female",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Breast Cancer Female"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Invasive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Histologic diagnosis of invasive breast cancer or ductal carcinoma in situ."
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "92546004",
+          "display": "Ductal carcinoma in situ of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Histologic diagnosis of invasive breast cancer or ductal carcinoma in situ."
+        },
+        {
+          "element_type": "PatientDemographics",
+          "code": "248152002",
+          "display": "Female",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Female gender."
+        },
+        {
+          "element_type": "PatientDemographics",
+          "code": "424144002",
+          "display": "Age greater than 18 years",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Age > 18 years."
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "to create a breast cancer locator (BCL) surgical device to in aid removal of breast cancers"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Conditions: Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "breast cancer patient treated with adjuvant chemotherapy"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "367336001",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "breast cancer patient treated with adjuvant chemotherapy"
+        },
+        {
+          "element_type": "PatientDemographics",
+          "code": "424144002",
+          "display": "Current chronological age",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "minimumAge: 18 Years"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "patients with early breast cancer"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387608008",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "adjuvant chemotherapy with AC (adriamycin-cyclophosphamide) or CAF (adriamycin-cyclophosphamide-5-fluorouracil) combinations"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387608008",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "during the adjuvant chemotherapy"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "108725007",
+          "display": "Doxorubicin",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "AC (adriamycin-cyclophosphamide) or CAF (adriamycin-cyclophosphamide-5-fluorouracil) combinations"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387317007",
+          "display": "Cyclophosphamide",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "AC (adriamycin-cyclophosphamide) or CAF (adriamycin-cyclophosphamide-5-fluorouracil) combinations"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387608008",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "adjuvant chemotherapy"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387608008",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "adjuvant chemotherapy"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Lifemel Honey During Adjuvant Chemotherapy for Breast Cancer Patients to Prevent Leucopenia"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "367336001",
+          "display": "Chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Lifemel Honey During Adjuvant Chemotherapy for Breast Cancer Patients to Prevent Leucopenia"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "108290001",
+          "display": "Adjuvant chemotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Lifemel Honey During Adjuvant Chemotherapy for Breast Cancer Patients to Prevent Leucopenia"
+        },
+        {
+          "element_type": "AdverseEvent",
+          "code": "267432007",
+          "display": "Leucopenia",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Lifemel Honey to Reduce Leucopenia During Chemotherapy"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "HER2 positive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "HER2-positive Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Male breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Male Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "315025001",
+          "display": "Stage IV breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Stage IV Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "HER2 positive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients with HER-2+ Stage IV breast cancer that have been maximally treated and not in a complete remission"
+        },
+        {
+          "element_type": "TNMStage",
+          "code": "444256004",
+          "display": "Stage IV breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients with HER-2+ Stage IV breast cancer that have been maximally treated and not in a complete remission"
+        },
+        {
+          "element_type": "PatientDemographics",
+          "code": "424144002",
+          "display": "Age greater than 18 years",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Subjects must be > 18 years old"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387607008",
+          "display": "Trastuzumab therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients can be receiving trastuzumab and/or hormonal therapy and/or bisphosphonates"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "373928009",
+          "display": "Hormonal therapy for cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients can be receiving trastuzumab and/or hormonal therapy and/or bisphosphonates"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387125007",
+          "display": "Bisphosphonate therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients can be receiving trastuzumab and/or hormonal therapy and/or bisphosphonates"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "94260004",
+          "display": "Brain metastasis",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Active brain metastasis"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "399068003",
+          "display": "Bone metastasis",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Skeletal or bone-only disease that is measurable by FDG PET imaging will also be allowed"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "HER2-positive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "patients with HER2-positive stage IV breast cancer"
+        },
+        {
+          "element_type": "TNMStage",
+          "code": "444256004",
+          "display": "Stage IV breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "patients with HER2-positive stage IV breast cancer"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387608007",
+          "display": "Cyclophosphamide",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Drugs used in chemotherapy, such as cyclophosphamide"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "763703007",
+          "display": "T-cell immunotherapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "ex vivo-expanded HER2-specific T cells"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "418992000",
+          "display": "Cancer vaccine therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.9,
+          "evidence_text": "Vaccines made from HER2 peptides may help the body build an effective immune response"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "763703007",
+          "display": "Adoptive cell transfer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 0.8,
+          "evidence_text": "adoptively transferred HER-2-specific TE cells derived from TCM or TEM precursors"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "HER2-positive breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "HER2-Positive Stage IV Breast Cancer"
+        },
+        {
+          "element_type": "TNMStage",
+          "code": "444256004",
+          "display": "Stage IV breast cancer",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "HER2-Positive Stage IV Breast Cancer"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "108290001",
+          "display": "Adoptive T-cell therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Adoptive T-Cell Therapy With HER-2/Neu (HER-2)-Specific Memory CD8+ T Lymphocytes"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "387317001",
+          "display": "Cyclophosphamide",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "Ex Vivo-Expanded HER2-Specific T Cells and Cyclophosphamide After Vaccine Therapy"
+        },
+        {
+          "element_type": "CancerTreatment",
+          "code": "418992009",
+          "display": "Vaccine therapy",
+          "system": "http://snomed.info/sct",
+          "confidence_score": 1.0,
+          "evidence_text": "After Vaccine Therapy in Treating Patients With HER2-Positive Stage IV Breast Cancer"
+        }
+      ],
+      "success": true,
+      "error_message": "",
+      "execution_time_seconds": 0.0,
+      "timestamp": "2025-09-20T00:28:15.323517"
+    },
+    "deepseek-coder_direct_mcode_evidence_based": {
+      "rater_id": "deepseek-coder_direct_mcode_evidence_based",
+      "trial_id": "cached_trial",
+      "mcode_elements": [
+        {
+          "element_type": "ResearchStudy",
+          "code": "SINGLE_GROUP",
+          "display": "Single Group Assignment",
+          "system": "http://hl7.org/fhir/research-study-classification",
+          "confidence_score": 1.0,
+          "evidence_text": "\"interventionModel\": \"SINGLE_GROUP\""
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "NONE",
+          "display": "No Masking",
+          "system": "http://hl7.org/fhir/masking-level",
+          "confidence_score": 1.0,
+          "evidence_text": "\"masking\": \"NONE\""
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "OTHER",
+          "display": "Other",
+          "system": "http://hl7.org/fhir/research-study-prim-purpose-type",
+          "confidence_score": 1.0,
+          "evidence_text": "\"primaryPurpose\": \"OTHER\""
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "SNOMED CT",
+          "confidence_score": 1.0,
+          "evidence_text": "Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Infiltrating duct carcinoma of breast",
+          "system": "SNOMED CT",
+          "confidence_score": 1.0,
+          "evidence_text": "Histologic diagnosis of invasive breast cancer or ductal carcinoma in situ."
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "86049000",
+          "display": "Carcinoma in situ of breast",
+          "system": "SNOMED CT",
+          "confidence_score": 1.0,
+          "evidence_text": "Histologic diagnosis of invasive breast cancer or ductal carcinoma in situ."
+        },
+        {
+          "element_type": "TumorSize",
+          "code": "LP212175-6",
+          "display": "Tumor size",
+          "system": "LOINC",
+          "confidence_score": 1.0,
+          "evidence_text": "Tumor size at least 1 cm in diameter as visualized on mammogram or US."
+        },
+        {
+          "element_type": "CancerRelatedMedication",
+          "code": "C945",
+          "display": "Neoadjuvant chemotherapy",
+          "system": "NCI Thesaurus",
+          "confidence_score": 1.0,
+          "evidence_text": "Patients who have received neoadjuvant chemotherapy for their current diagnosis."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "LA33-6",
+          "display": "Yes",
+          "system": "LOINC",
+          "confidence_score": 1.0,
+          "evidence_text": "Ability to voluntarily provide informed consent to participate prior to any study-related assessments/procedures being conducted."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "LA33-6",
+          "display": "Yes",
+          "system": "LOINC",
+          "confidence_score": 1.0,
+          "evidence_text": "A staging, pre-operative breast MRI is considered to be clinically indicated."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Research Study",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "The purpose of this study is to determine whether a supine breast MRI obtained with a second intravenous injection of gadolinium contrast immediately after a standard clinical prone breast MRI will provide sufficient tumor visualization to allow a Radiologist to define and outline the tumor edges (\"segment\" the tumor)."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Research Study",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "The clinical pre-operative breast MRI exam will be obtained in the prone position with intravenous (IV) Gadolinium (Gd) contrast injection per standard of care clinical protocol."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Research Study",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "After completion of the standard clinical prone breast MRI, the participant will be re-positioned and the investigative supine breast MRI protocol with a second dose of IV Gd will be obtained."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Research Study",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "A second dose of contrast equal to the first dose will be given, and additional images will be obtained in the supine position."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Research Study",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "Subtraction images will be generated for both the prone and the supine sequences."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Research Study",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "It is hypothesized that the second contrast injection will generate tumor-to-fibroglandular contrast differences such that supine subtraction images will allow visualization and segmentation of the tumor equal to prone segmentation images."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Research Study",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "It is expected that the addition of a second injection of contrast will improve the ability to visualize and accurately segment the supine post-Gd images."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Research Study",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "While the total dose of gadolinium delivered in two injections is twice the amount normally given during a clinical prone breast MRI, this total dose is equal to that administered for other clinical MRI studies such as cardiac MRI."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Research Study",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "No additional imaging or testing will be required for this research study following the standard clinical MRI."
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Clinical Trial",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "briefTitle: 21DIF039: Prone to Supine Breast MRI II, P2S2 Breast MRI Trial"
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "NCT05131607",
+          "display": "NCT05131607",
+          "system": "http://clinicaltrials.gov",
+          "confidence_score": 1.0,
+          "evidence_text": "nctId: NCT05131607"
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "randomized",
+          "display": "Randomized allocation",
+          "system": "http://hl7.org/fhir/research-study-classification",
+          "confidence_score": 1.0,
+          "evidence_text": "\"allocation\": \"RANDOMIZED\""
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "parallel",
+          "display": "Parallel assignment",
+          "system": "http://hl7.org/fhir/research-study-classification",
+          "confidence_score": 1.0,
+          "evidence_text": "\"interventionModel\": \"PARALLEL\""
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "prevention",
+          "display": "Prevention",
+          "system": "http://hl7.org/fhir/research-study-classification",
+          "confidence_score": 1.0,
+          "evidence_text": "\"primaryPurpose\": \"PREVENTION\""
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "double-blind",
+          "display": "Double blind",
+          "system": "http://hl7.org/fhir/research-study-classification",
+          "confidence_score": 1.0,
+          "evidence_text": "\"masking\": \"DOUBLE\""
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "SNOMED CT",
+          "confidence_score": 1.0,
+          "evidence_text": "Breast Cancer"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "254837009",
+          "display": "Malignant neoplasm of breast",
+          "system": "SNOMED CT",
+          "confidence_score": 1.0,
+          "evidence_text": "breast cancer patient"
+        },
+        {
+          "element_type": "CancerRelatedMedicationAdministration",
+          "code": "367336001",
+          "display": "Chemotherapy",
+          "system": "SNOMED CT",
+          "confidence_score": 1.0,
+          "evidence_text": "treated with adjuvant chemotherapy"
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "clinical-trial",
+          "display": "Clinical trial eligibility criteria",
+          "system": "mCODE",
+          "confidence_score": 1.0,
+          "evidence_text": "Eligibility Criteria: Inclusion Criteria:"
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "minimum-age",
+          "display": "Minimum age requirement",
+          "system": "mCODE",
+          "confidence_score": 1.0,
+          "evidence_text": "minimumAge: 18 Years"
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "healthy-volunteers",
+          "display": "Healthy volunteers excluded",
+          "system": "mCODE",
+          "confidence_score": 1.0,
+          "evidence_text": "healthyVolunteers: False"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "C4872",
+          "display": "Early Breast Cancer",
+          "system": "NCI Thesaurus",
+          "confidence_score": 1.0,
+          "evidence_text": "early breast cancer"
+        },
+        {
+          "element_type": "CancerRelatedMedication",
+          "code": "C1326",
+          "display": "Doxorubicin",
+          "system": "NCI Thesaurus",
+          "confidence_score": 1.0,
+          "evidence_text": "adriamycin"
+        },
+        {
+          "element_type": "CancerRelatedMedication",
+          "code": "C405",
+          "display": "Cyclophosphamide",
+          "system": "NCI Thesaurus",
+          "confidence_score": 1.0,
+          "evidence_text": "cyclophosphamide"
+        },
+        {
+          "element_type": "CancerRelatedMedication",
+          "code": "C509",
+          "display": "Fluorouracil",
+          "system": "NCI Thesaurus",
+          "confidence_score": 1.0,
+          "evidence_text": "5- fluorouracil"
+        },
+        {
+          "element_type": "CancerRelatedMedication",
+          "code": "C945",
+          "display": "Honey",
+          "system": "NCI Thesaurus",
+          "confidence_score": 1.0,
+          "evidence_text": "Lifemel honey or regular honey"
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "LA29458-3",
+          "display": "Double-blind study",
+          "system": "LOINC",
+          "confidence_score": 1.0,
+          "evidence_text": "double blind"
+        },
+        {
+          "element_type": "LaboratoryResult",
+          "code": "26464-8",
+          "display": "Leukocytes [#/volume] in Blood",
+          "system": "LOINC",
+          "confidence_score": 1.0,
+          "evidence_text": "WBC count"
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Clinical Trial",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "briefTitle: Lifemel Honey to Reduce Leucopenia During Chemotherapy"
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "research-study",
+          "display": "Clinical Trial",
+          "system": "http://hl7.org/fhir/resource-types",
+          "confidence_score": 1.0,
+          "evidence_text": "officialTitle: Lifemel Honey During Adjuvant Chemotherapy for Breast Cancer Patients to Prevent Leucopenia"
+        },
+        {
+          "element_type": "ResearchStudy",
+          "code": "NCT00243165",
+          "display": "Clinical Trial Identifier",
+          "system": "http://clinicaltrials.gov",
+          "confidence_score": 1.0,
+          "evidence_text": "nctId: NCT00243165"
+        },
+        {
+          "element_type": "CancerCondition",
+          "code": "C4878",
+          "display": "Breast Cancer",
+          "system": "http://ncimeta.nci.nih.gov",
+          "confidence_score": 1.0,
+          "evidence_text": "Breast Cancer Patients"
+        },
+        {
+          "element_type": "CancerRelatedMedicationAdministration",
+          "code": "C945",
+          "display": "Chemotherapy",
+          "system": "http://ncimeta.nci.nih.gov",
+          "confidence_score": 1.0,
+          "evidence_text": "Chemotherapy"
+        },
+        {
+          "element_type": "CancerRelatedMedicationAdministration",
+          "code": "C15262",
+          "display": "Adjuvant Chemotherapy",
+          "system": "http://ncimeta.nci.nih.gov",
+          "confidence_score": 1.0,
+          "evidence_text": "Adjuvant Chemotherapy"
+        },
+        {
+          "element_type": "CancerRelatedMedicationAdministration",
+          "code": "C15262",
+          "display": "Adjuvant Chemotherapy",
+          "system": "http://ncimeta.nci.nih.gov",
+          "confidence_score": 1.0,
+          "evidence_text": "During Adjuvant Chemotherapy"
+        },
+        {
+          "element_type": "AdverseEvent",
+          "code": "C3163",
+          "display": "Leucopenia",
+          "system": "http://ncimeta.nci.nih.gov",
+          "confidence_score": 1.0,
+          "evidence_text": "Leucopenia"
+        },
+        {
+          "element_type": "AdverseEvent",
+          "code": "C3163",
+          "display": "Leucopenia",
+          "system": "http://ncimeta.nci.nih.gov",
+          "confidence_score": 1.0,
+          "evidence_text": "to Reduce Leucopenia"
+        },
+        {
+          "element_type": "AdverseEvent",
+          "code": "C3163",
+          "display": "Leucopenia",
+          "system": "http://ncimeta.nci.nih.gov",
+          "confidence_score": 1.0,
+          "evidence_text": "to Prevent Leucopenia"
+        }
+      ],
+      "success": true,
+      "error_message": "",
+      "execution_time_seconds": 0.0,
+      "timestamp": "2025-09-20T00:28:15.323748"
+    }
+  }
+}
