@@ -67,6 +67,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
 
     # Validate arguments
     if not any([args.condition, args.nct_id, args.nct_ids]):
+        parser = create_parser()
         parser.error("Must specify one of: --condition, --nct-id, or --nct-ids")
 
     # Prepare workflow parameters
