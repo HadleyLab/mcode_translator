@@ -86,7 +86,9 @@ class DependencyContainer:
         Returns:
             Configured McodeMemoryStorage instance
         """
-        return McodeMemoryStorage()
+        if "memory_storage" not in self._singletons:
+            self._singletons["memory_storage"] = McodeMemoryStorage()
+        return self._singletons["memory_storage"]
 
     def create_clinical_trial_pipeline(
         self,
