@@ -5,6 +5,12 @@ A comprehensive Python client for the HeySol API with support for MCP protocol,
 authentication, memory management, and robust error handling.
 """
 
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 from .client import HeySolClient
 from .async_client import AsyncHeySolClient
 from .oauth2 import (

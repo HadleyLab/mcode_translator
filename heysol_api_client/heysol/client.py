@@ -123,10 +123,47 @@ class HeySolClient:
         # Initialize authentication
         self._initialize_authentication()
 
-        # Initialize MCP session
-        self._initialize_session()
+        # Initialize MCP session (skip for OAuth2 if no tokens available)
+        if not (self.use_oauth2 and not self._has_valid_oauth2_tokens()):
+            self._initialize_session()
+        else:
+            self.logger.info("Skipping MCP session initialization until OAuth2 tokens are available")
 
         self.logger.info("HeySol API client initialized successfully")
+
+    def _has_valid_oauth2_tokens(self) -> bool:
+        """
+        Check if we have valid OAuth2 tokens.
+
+        Returns:
+            True if valid tokens are available
+        """
+        if not self.use_oauth2 or not self.oauth2_auth:
+            return False
+
+        try:
+            # Try to get authorization header - this will validate tokens
+            self.oauth2_auth.get_authorization_header()
+            return True
+        except Exception:
+            return False
+
+    def initialize_mcp_session(self) -> None:
+        """
+        Initialize MCP session after OAuth2 authentication is complete.
+
+        Raises:
+            HeySolError: If MCP session initialization fails
+        """
+        if self.session_id:
+            self.logger.info("MCP session already initialized")
+            return
+
+        try:
+            self._initialize_session()
+            self.logger.info("MCP session initialized successfully after OAuth2 authentication")
+        except Exception as e:
+            raise HeySolError(f"Failed to initialize MCP session after OAuth2: {e}")
 
     def _setup_logging(self) -> None:
         """Setup logging configuration."""
@@ -178,10 +215,17 @@ class HeySolClient:
         if self.use_oauth2:
             try:
                 # Import OAuth2 classes locally to avoid circular imports
-                from .oauth2 import OAuth2Authenticator, OAuth2ClientCredentialsAuthenticator, OAuth2Error
+                from .oauth2 import OAuth2Authenticator, OAuth2ClientCredentialsAuthenticator, InteractiveOAuth2Authenticator, OAuth2Error
 
-                if self.config.oauth2_client_secret:
-                    # Use client credentials flow
+                # Check if we have Google OAuth2 credentials (client_id contains googleusercontent.com)
+                is_google_oauth = self.config.oauth2_client_id and "googleusercontent.com" in self.config.oauth2_client_id
+
+                if is_google_oauth:
+                    # Use interactive OAuth2 flow for Google OAuth2 apps
+                    self.oauth2_auth = InteractiveOAuth2Authenticator(self.config)
+                    self.logger.info("Google OAuth2 interactive flow initialized (tokens will be obtained on first request)")
+                elif self.config.oauth2_client_secret:
+                    # Use client credentials flow for non-Google OAuth2
                     self.oauth2_auth = OAuth2ClientCredentialsAuthenticator(self.config)
                     self.oauth2_auth.authenticate()
                     self.logger.info("OAuth2 client credentials authentication initialized")

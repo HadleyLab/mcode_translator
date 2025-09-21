@@ -905,6 +905,14 @@ class OAuth2ClientManager:
         try:
             success = self.client.authorize_oauth2_interactive(scope=scope)
             if success:
+                # Initialize MCP session after successful OAuth2 authentication
+                try:
+                    self.client.initialize_mcp_session()
+                    self.logger.info("MCP session initialized after OAuth2 authentication")
+                except Exception as e:
+                    self.logger.warning(f"Failed to initialize MCP session after OAuth2: {e}")
+                    # Don't fail the entire authentication if MCP session fails
+
                 self._cache_auth_status(scope, True)
                 self.logger.info("OAuth2 authentication completed successfully")
                 return True
