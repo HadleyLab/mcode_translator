@@ -13,7 +13,6 @@ A comprehensive, production-ready Python client for the HeySol API with support 
 - 🚀 **Full API Support**: Complete coverage of HeySol API endpoints
 - 🔐 **Authentication**: API key and Bearer token authentication
 - 📝 **Memory Management**: Ingest, search, and manage memory spaces
-- ⚡ **Async Support**: Concurrent operations using aiohttp
 - 🛡️ **Error Handling**: Comprehensive exception hierarchy with retry mechanisms
 - 📊 **Rate Limiting**: Built-in rate limiting and throttling
 - 📝 **Type Hints**: Full type annotation support
@@ -76,27 +75,6 @@ for episode in results["episodes"]:
 client.close()
 ```
 
-### Async Usage
-
-```python
-import asyncio
-from heysol import AsyncHeySolClient
-
-async def main():
-    async with AsyncHeySolClient(api_key="your-api-key-here") as client:
-        # Concurrent operations
-        tasks = [
-            client.ingest("Data point 1", tags=["batch"]),
-            client.ingest("Data point 2", tags=["batch"]),
-            client.ingest("Data point 3", tags=["batch"]),
-        ]
-
-        # Execute concurrently
-        results = await asyncio.gather(*tasks)
-        print(f"Successfully ingested {len(results)} items")
-
-asyncio.run(main())
-```
 
 ### Configuration
 
@@ -122,7 +100,6 @@ Create a `heysol_config.json`:
   "max_retries": 3,
   "rate_limit_per_minute": 60,
   "log_level": "INFO",
-  "async_enabled": false
 }
 ```
 
@@ -155,16 +132,6 @@ Main synchronous client for the HeySol API.
 - `delete_log_entry(log_id: str) -> Dict[str, Any]`: Delete log entry
 - `close() -> None`: Close client and clean up resources
 
-### AsyncHeySolClient
-
-Async client for concurrent operations.
-
-#### Methods
-
-All methods from `HeySolClient` available as async versions, plus:
-
-- `async with client:` - Context manager support
-- Concurrent execution of multiple operations
 
 ### Configuration
 
@@ -187,7 +154,6 @@ Configuration class supporting multiple sources:
 | `max_retries` | int | 3 | Maximum retry attempts |
 | `rate_limit_per_minute` | int | 60 | Rate limit per minute |
 | `log_level` | str | `INFO` | Logging level |
-| `async_enabled` | bool | False | Enable async support |
 
 ## Error Handling
 
@@ -220,7 +186,6 @@ except HeySolError as e:
 See the `examples/` directory for comprehensive usage examples:
 
 - `basic_usage.py` - Basic client operations
-- `async_usage.py` - Async operations and concurrency
 - `log_management.py` - Log management and deletion operations
 - `oauth2_google_demo.py` - Interactive Google OAuth2 demo
 - `oauth2_simple_demo.py` - Simple working OAuth2 demo
@@ -268,7 +233,6 @@ pytest --cov=heysol_api_client
 
 # Run specific test categories
 pytest -m "unit"  # Unit tests only
-pytest -m "async"  # Async tests only
 pytest -m "slow"   # Slow integration tests
 ```
 
