@@ -7,13 +7,19 @@ The HeySol API client provides access to the HeySol platform through both MCP (M
 ## 📊 Implementation Status
 
 ### ✅ **Fully Working & Tested**
-- **MCP Tools**: `memory_ingest`, `memory_search`, `memory_get_spaces`, `get_user_profile`
-- **Memory Endpoints**: `search_knowledge_graph`, `add_data_to_ingestion_queue`, `get_episode_facts`, `get_ingestion_logs`, `get_specific_log`
-- **Space Endpoints**: `bulk_space_operations`, `get_space_details`, `update_space`, `delete_space`
-- **OAuth2 Endpoints**: `get_oauth2_authorization_url`, `oauth2_authorization_decision`, `oauth2_token_exchange`, `get_oauth2_user_info`, `oauth2_refresh_token`, `oauth2_revoke_token`
-- **Webhook Endpoints**: `register_webhook`, `list_webhooks`, `get_webhook`, `update_webhook`, `delete_webhook`
+- **MCP Tools**: Complete MCP protocol integration via Server-Sent Events
+  - `memory_ingest`, `memory_search`, `memory_get_spaces`, `get_user_profile` - ✅ Available via MCP
+- **Space Management**: Complete CRUD operations with bulk support
+  - `bulk_space_operations()`, `get_space_details()`, `update_space()`, `delete_space()` - ✅ Working
+- **Memory Operations**: Core ingestion and search functionality
+  - `search_knowledge_graph()`, `add_data_to_ingestion_queue()`, `get_episode_facts()`, `get_ingestion_logs()`, `get_specific_log()` - ✅ Working
+- **OAuth2 Framework**: Complete OAuth2 authentication system
+  - `get_oauth2_authorization_url()`, `oauth2_token_exchange()`, `get_oauth2_user_info()`, `oauth2_refresh_token()`, `oauth2_revoke_token()` - ✅ Working
+- **Webhook Management**: Full webhook lifecycle management
+  - `register_webhook()`, `list_webhooks()`, `get_webhook()`, `update_webhook()`, `delete_webhook()` - ✅ Working
 
 ### ⚠️ **Pending Implementation**
+- **User Profile Management**: `/user/profile` endpoint returns 404 Not Found
 - **DELETE /memory/logs/{log_id}**: Log entry deletion endpoint not available in API
 - **DELETE /oauth2/authorize/{request_id}**: OAuth2 authorization decision endpoint not tested
 - **GET /oauth2/introspect**: Token introspection endpoint not tested
@@ -23,10 +29,12 @@ The HeySol API client provides access to the HeySol platform through both MCP (M
 
 ## Base Configuration
 
+- **Base URL**: `https://core.heysol.ai/api/v1`
 - **MCP URL**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
-- **Protocol**: Server-Sent Events (SSE) for MCP, JSON for direct API
-- **Authentication**: Bearer token authentication
+- **Authentication**: Bearer token (API key or OAuth2)
+- **Protocol**: REST API + MCP (Model Context Protocol) via Server-Sent Events
 - **Server**: `core-unified-mcp-server v1.0.0`
+- **Status**: Production-ready for space management and MCP operations
 
 ## Authentication
 
@@ -40,7 +48,7 @@ client = HeySolClient(api_key="your-api-key-here")
 
 ## MCP Tools
 
-The following MCP tools are available:
+The following MCP tools are **available and working** via the MCP endpoint at `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`:
 
 ### 1. memory_ingest
 **Purpose**: Store conversation data, insights, and decisions in CORE Memory

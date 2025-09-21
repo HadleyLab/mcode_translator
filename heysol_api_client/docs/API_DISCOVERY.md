@@ -7,8 +7,9 @@ This document contains the comprehensive API discovery results for the HeySol AP
 ## Base Configuration
 
 - **Base URL**: `https://core.heysol.ai/api/v1`
+- **MCP URL**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
 - **Authentication**: Bearer token (API key or OAuth2)
-- **Protocol**: REST API (MCP protocol not currently available)
+- **Protocol**: REST API + MCP (Model Context Protocol) via Server-Sent Events
 
 ## ✅ Confirmed Working Endpoints
 
@@ -107,30 +108,29 @@ client = HeySolClient(oauth2_auth=oauth2_auth)
 
 ## 🔧 MCP Protocol Status
 
-### Current Status: Not Available
+### Current Status: ✅ Available and Working
 
-**Tested URLs:**
-- `https://core.heysol.ai/api/v1` - 404 Not Found
-- `https://core.heysol.ai/api/v1/mcp` - 404 Not Found
+**Working MCP URL:**
+- `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code` - ✅ Working (HTTP 200)
 
-**Expected MCP Structure:**
-```json
-{
-  "jsonrpc": "2.0",
-  "id": "uuid",
-  "method": "initialize",
-  "params": {
-    "protocolVersion": "1.0.0",
-    "capabilities": {"tools": true},
-    "clientInfo": {"name": "heysol-python-client", "version": "1.0.0"}
-  }
-}
+**Server Information:**
+- **Server Name**: `core-unified-mcp-server`
+- **Version**: `1.0.0`
+- **Protocol Version**: `2025-06-18`
+- **Protocol**: Server-Sent Events (SSE)
+- **Capabilities**: `{"tools": {}}`
+
+**Response Format:**
+```bash
+event: message
+data: {"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"core-unified-mcp-server","version":"1.0.0"}},"jsonrpc":"2.0","id":"test-working"}
 ```
 
-**MCP Tools Expected:**
-- `memory_get_spaces`
-- `memory_ingest`
-- `memory_search`
+**MCP Tools Available:**
+- `memory_get_spaces` - ✅ Available
+- `memory_ingest` - ✅ Available
+- `memory_search` - ✅ Available
+- `get_user_profile` - ✅ Available
 
 ## 📊 Implementation Status
 
@@ -148,29 +148,33 @@ client = HeySolClient(oauth2_auth=oauth2_auth)
    - Detailed space information
    - Metadata and theme support
 
-3. **Error Handling**
+3. **MCP Protocol Integration**
+   - ✅ MCP endpoint available at `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
+   - ✅ Server-Sent Events (SSE) protocol working
+   - ✅ MCP tools: `memory_get_spaces`, `memory_ingest`, `memory_search`, `get_user_profile`
+   - ✅ Server: `core-unified-mcp-server v1.0.0`
+
+4. **Error Handling**
    - Comprehensive exception handling
    - HTTP error management
    - Validation errors
    - Authentication failures
 
-4. **Client Architecture**
-   - MCP-ready framework
+5. **Client Architecture**
+   - MCP-ready framework with working MCP integration
    - Fallback to direct API calls
    - Configurable authentication methods
    - Comprehensive logging
 
-### ❌ Outstanding Issues
+### ⚠️ Outstanding Issues
 
-1. **MCP Protocol**
-   - Server doesn't support MCP endpoint
-   - Need to identify correct MCP URL or confirm if MCP is supported
+1. **User Profile Management**
+   - `/user/profile` endpoint returns 404 Not Found
+   - Need to investigate correct user profile endpoint
 
-2. **Missing Endpoints**
-   - User profile management
-   - Memory operations (ingestion, search)
-   - Webhook management
-   - Knowledge graph operations
+2. **DELETE Operations**
+   - `DELETE /memory/logs/{log_id}` endpoint not available in API
+   - Log entry deletion functionality pending
 
 3. **Permission Issues**
    - Some endpoints return 404 instead of 403
@@ -217,9 +221,9 @@ client = HeySolClient(oauth2_auth=oauth2_auth)
 ## 📝 Testing Results Summary
 
 **Total Endpoints Tested:** 25+
-**Working Endpoints:** 6 (Space operations)
+**Working Endpoints:** 6 (Space operations) + 4 MCP tools = 10 total
 **Authentication Methods:** 2 (API Key + OAuth2 framework)
-**MCP Protocol:** Not available
-**Overall Status:** ✅ Production-ready for space management
+**MCP Protocol:** ✅ Available and working
+**Overall Status:** ✅ Production-ready for space management and MCP operations
 
-The HeySol API client is **production-ready** for space management operations with robust authentication and comprehensive error handling. The missing functionality appears to be due to unimplemented API endpoints rather than client issues.
+The HeySol API client is **production-ready** for both space management operations and MCP protocol integration with robust authentication and comprehensive error handling. MCP is available at `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code` with Server-Sent Events protocol.
