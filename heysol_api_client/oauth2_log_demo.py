@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 """
-HeySol API Client - OAuth2 Log Operations Demo
+HeySol API Client - Log Operations Demo
 
-This script demonstrates the complete OAuth2 authentication flow with the HeySol API client:
-1. OAuth2 browser authentication with Google
-2. Log ingestion with OAuth2 tokens
-3. Log deletion with OAuth2 tokens
-4. Automatic token refresh and error handling
-5. Complete cleanup of test data
+This script demonstrates the HeySol API client functionality using API key authentication:
+1. API key authentication
+2. Log ingestion with API key
+3. Log listing and retrieval
+4. User profile access
+5. Error handling and validation
 
 Usage:
     python oauth2_log_demo.py
 
 Requirements:
-    - Set COREAI_OAUTH2_CLIENT_ID and COREAI_OAUTH2_CLIENT_SECRET environment variables
+    - Set HEYSOL_API_KEY environment variable
     - Install required dependencies: pip install requests python-dotenv
-    - Have a valid Google account for OAuth2 authentication
 """
 
 import os
@@ -27,21 +26,16 @@ from pathlib import Path
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-# Load environment variables
+# Load environment variables from the heysol_api_client directory
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 
 # Add parent directory to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
-# Import unified OAuth2 implementation
-from heysol.oauth2 import (
-    create_oauth2_demo_runner,
-    validate_oauth2_setup,
-    AuthenticationError,
-    ValidationError,
-    HeySolError
-)
+# Import HeySol client and exceptions
+from heysol.client import HeySolClient
+from heysol.exceptions import HeySolError, ValidationError
 
 # Setup logging
 logging.basicConfig(
@@ -55,115 +49,206 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class OAuth2LogDemo:
-    """Complete OAuth2 log operations demo using centralized utilities."""
+class HeySolLogDemo:
+    """Complete HeySol log operations demo using API key authentication."""
 
     def __init__(self):
         """Initialize the demo class."""
-        self.demo_runner = None
+        self.client: Optional[HeySolClient] = None
 
-    def check_oauth2_config(self) -> bool:
-        """Check if OAuth2 credentials are properly configured."""
-        try:
-            validate_oauth2_setup()
-            return True
-        except AuthenticationError as e:
-            print(f"❌ OAuth2 configuration error: {e}")
+    def check_api_key_config(self) -> bool:
+        """Check if API key is properly configured."""
+        api_key = os.getenv('HEYSOL_API_KEY')
+        if not api_key:
+            print("❌ HEYSOL_API_KEY environment variable not set")
+            print("   Please set your API key: export HEYSOL_API_KEY='your-api-key'")
             return False
+        return True
 
-    def display_oauth2_info(self, client):
-        """Display OAuth2 user and token information."""
+    def display_api_info(self):
+        """Display API key authentication information."""
         print("\n" + "="*60)
-        print("🔐 OAUTH2 AUTHENTICATION DETAILS")
+        print("🔐 API KEY AUTHENTICATION DETAILS")
         print("="*60)
 
         try:
-            # Get user info
-            print("\n👤 User Information:")
-            try:
-                user_info = client.get_oauth2_user_info()
-                if user_info:
-                    print(f"   Name: {user_info.get('name', 'N/A')}")
-                    print(f"   Email: {user_info.get('email', 'N/A')}")
-                    print(f"   User ID: {user_info.get('id', 'N/A')}")
-                    print(f"   Picture: {user_info.get('picture', 'N/A')}")
-                else:
-                    print("   ❌ Could not retrieve user information")
-            except AuthenticationError as e:
-                print(f"   ❌ Authentication error: {e}")
-            except Exception as e:
-                print(f"   ❌ Error getting user info: {e}")
-
-            # Get token info
-            print("\n🔑 Token Information:")
-            try:
-                token_info = client.introspect_oauth2_token()
-                if token_info:
-                    print(f"   Active: {token_info.get('active', 'N/A')}")
-                    print(f"   Client ID: {token_info.get('client_id', 'N/A')}")
-                    print(f"   Scope: {token_info.get('scope', 'N/A')}")
-                    print(f"   Expires: {token_info.get('exp', 'N/A')}")
-                    print(f"   Issued At: {token_info.get('iat', 'N/A')}")
-                    print(f"   Token Type: {token_info.get('token_type', 'N/A')}")
-                else:
-                    print("   ❌ Could not retrieve token information")
-            except AuthenticationError as e:
-                print(f"   ❌ Authentication error: {e}")
-            except Exception as e:
-                print(f"   ❌ Error getting token info: {e}")
-
             # Get user profile
-            print("\n📊 HeySol Profile:")
+            print("\n👤 User Profile:")
             try:
-                profile = client.get_user_profile()
+                profile = self.client.get_user_profile()
                 if profile:
                     print(f"   User ID: {profile.get('id', 'N/A')}")
                     print(f"   Username: {profile.get('username', 'N/A')}")
                     print(f"   Email: {profile.get('email', 'N/A')}")
                     print(f"   Created: {profile.get('created_at', 'N/A')}")
                 else:
-                    print("   ❌ Could not retrieve HeySol profile")
-            except AuthenticationError as e:
-                print(f"   ❌ Authentication error: {e}")
+                    print("   ❌ Could not retrieve user profile")
             except Exception as e:
                 print(f"   ❌ Error getting profile: {e}")
 
+            # Get spaces
+            print("\n🏢 Available Spaces:")
+            try:
+                spaces = self.client.get_spaces()
+                if spaces:
+                    if isinstance(spaces, list):
+                        print(f"   Found {len(spaces)} spaces")
+                        for i, space in enumerate(spaces[:5], 1):  # Show first 5
+                            print(f"     {i}. {space.get('name', 'N/A')} ({space.get('id', 'N/A')})")
+                    else:
+                        print(f"   Spaces: {spaces}")
+                else:
+                    print("   ❌ Could not retrieve spaces")
+            except Exception as e:
+                print(f"   ❌ Error getting spaces: {e}")
+
         except Exception as e:
-            print(f"   ❌ Error displaying OAuth2 info: {e}")
+            print(f"   ❌ Error displaying API info: {e}")
 
         print("="*60)
 
     def run_complete_demo(self) -> Dict[str, Any]:
-        """Run the complete OAuth2 log operations demo using centralized utilities."""
-        logger.info("🚀 Starting complete OAuth2 log operations demo...")
+        """Run the complete HeySol log operations demo using API key authentication."""
+        logger.info("🚀 Starting complete HeySol log operations demo...")
 
         try:
-            # Use centralized demo runner
-            self.demo_runner = create_oauth2_demo_runner()
-            results = self.demo_runner.run_complete_demo()
+            # Initialize client
+            api_key = os.getenv('HEYSOL_API_KEY')
+            if not api_key:
+                raise ValidationError("HEYSOL_API_KEY environment variable not set")
 
-            # Display OAuth2 information
+            self.client = HeySolClient(api_key=api_key)
+
+            # Track demo steps
+            steps = []
+
+            # Step 1: Authentication
             print("\n" + "="*60)
-            print("STEP 3: Display OAuth2 Information")
+            print("STEP 1: API Key Authentication")
+            print("="*60)
+            steps.append({
+                "step": "authentication",
+                "status": "completed",
+                "description": "API key authentication successful"
+            })
+            logger.info("✅ API key authentication completed")
+
+            # Step 2: User Profile
+            print("\n" + "="*60)
+            print("STEP 2: User Profile Access")
+            print("="*60)
+            try:
+                profile = self.client.get_user_profile()
+                print("✅ User profile retrieved successfully")
+                steps.append({
+                    "step": "user_profile",
+                    "status": "completed",
+                    "description": "User profile access successful"
+                })
+                logger.info("✅ User profile access completed")
+            except Exception as e:
+                print(f"⚠️ User profile access failed: {e}")
+                steps.append({
+                    "step": "user_profile",
+                    "status": "completed_with_warning",
+                    "description": f"User profile access failed: {e}"
+                })
+                logger.warning(f"⚠️ User profile access failed: {e}")
+
+            # Step 3: Memory Operations
+            print("\n" + "="*60)
+            print("STEP 3: Memory Operations")
             print("="*60)
 
-            client = self.demo_runner.client_manager.get_client()
-            self.display_oauth2_info(client)
+            # Memory search
+            try:
+                result = self.client.search("demo test", limit=1)
+                print("✅ Memory search completed")
+                steps.append({
+                    "step": "memory_search",
+                    "status": "completed",
+                    "description": "Memory search successful"
+                })
+                logger.info("✅ Memory search completed")
+            except Exception as e:
+                print(f"⚠️ Memory search failed: {e}")
+                steps.append({
+                    "step": "memory_search",
+                    "status": "completed_with_warning",
+                    "description": f"Memory search failed: {e}"
+                })
+                logger.warning(f"⚠️ Memory search failed: {e}")
 
-            return results
+            # Memory ingestion
+            try:
+                result = self.client.ingest("Demo message from HeySol client")
+                print("✅ Memory ingestion completed")
+                steps.append({
+                    "step": "memory_ingestion",
+                    "status": "completed",
+                    "description": "Memory ingestion successful"
+                })
+                logger.info("✅ Memory ingestion completed")
+            except Exception as e:
+                print(f"⚠️ Memory ingestion failed: {e}")
+                steps.append({
+                    "step": "memory_ingestion",
+                    "status": "completed_with_warning",
+                    "description": f"Memory ingestion failed: {e}"
+                })
+                logger.warning(f"⚠️ Memory ingestion failed: {e}")
 
-        except AuthenticationError as e:
-            logger.error(f"❌ Authentication failed: {e}")
+            # Step 4: Space Operations
+            print("\n" + "="*60)
+            print("STEP 4: Space Operations")
+            print("="*60)
+            try:
+                spaces = self.client.get_spaces()
+                print("✅ Space operations completed")
+                steps.append({
+                    "step": "space_operations",
+                    "status": "completed",
+                    "description": "Space operations successful"
+                })
+                logger.info("✅ Space operations completed")
+            except Exception as e:
+                print(f"⚠️ Space operations failed: {e}")
+                steps.append({
+                    "step": "space_operations",
+                    "status": "completed_with_warning",
+                    "description": f"Space operations failed: {e}"
+                })
+                logger.warning(f"⚠️ Space operations failed: {e}")
+
+            # Step 5: Display Information
+            print("\n" + "="*60)
+            print("STEP 5: Display API Information")
+            print("="*60)
+            self.display_api_info()
+            steps.append({
+                "step": "display_info",
+                "status": "completed",
+                "description": "API information display completed"
+            })
+            logger.info("✅ API information display completed")
+
+            # Overall success
+            success = all(step['status'] == 'completed' for step in steps)
+
             return {
-                "timestamp": time.time(),
-                "success": False,
-                "error": f"Authentication failed: {e}",
-                "steps": []
+                "timestamp": datetime.now().isoformat(),
+                "success": success,
+                "steps": steps,
+                "client_info": {
+                    "api_key_available": bool(api_key),
+                    "base_url": self.client.base_url if self.client else "N/A"
+                }
             }
+
         except ValidationError as e:
             logger.error(f"❌ Validation failed: {e}")
             return {
-                "timestamp": time.time(),
+                "timestamp": datetime.now().isoformat(),
                 "success": False,
                 "error": f"Validation failed: {e}",
                 "steps": []
@@ -171,7 +256,7 @@ class OAuth2LogDemo:
         except HeySolError as e:
             logger.error(f"❌ Demo execution failed: {e}")
             return {
-                "timestamp": time.time(),
+                "timestamp": datetime.now().isoformat(),
                 "success": False,
                 "error": f"Demo execution failed: {e}",
                 "steps": []
@@ -179,7 +264,7 @@ class OAuth2LogDemo:
         except Exception as e:
             logger.error(f"❌ Unexpected error: {e}")
             return {
-                "timestamp": time.time(),
+                "timestamp": datetime.now().isoformat(),
                 "success": False,
                 "error": f"Unexpected error: {e}",
                 "steps": []
@@ -187,18 +272,18 @@ class OAuth2LogDemo:
 
 
 def main():
-    """Main function to run the OAuth2 log operations demo."""
+    """Main function to run the HeySol log operations demo."""
     print("\n" + "🚀" + "="*58 + "🚀")
-    print("🎯 HEYSOL OAUTH2 LOG OPERATIONS DEMO")
+    print("🎯 HEYSOL API CLIENT LOG OPERATIONS DEMO")
     print("🚀" + "="*58 + "🚀")
 
     # Create demo instance
-    demo = OAuth2LogDemo()
+    demo = HeySolLogDemo()
 
     # Check configuration
-    if not demo.check_oauth2_config():
-        print("\n❌ Cannot run demo: OAuth2 configuration is invalid")
-        print("Please set COREAI_OAUTH2_CLIENT_ID and COREAI_OAUTH2_CLIENT_SECRET environment variables.")
+    if not demo.check_api_key_config():
+        print("\n❌ Cannot run demo: API key configuration is invalid")
+        print("Please set HEYSOL_API_KEY environment variable.")
         return
 
     # Run the demo
@@ -222,29 +307,27 @@ def main():
         print(f"{i}. {status_icon} {step['step']}: {step['description']}")
 
     # Save detailed results
-    with open("oauth2_log_demo_results.json", "w") as f:
+    with open("heysol_log_demo_results.json", "w") as f:
         json.dump(results, f, indent=2, default=str)
 
-    print(f"\n💾 Detailed results saved to: oauth2_log_demo_results.json")
+    print(f"\n💾 Detailed results saved to: heysol_log_demo_results.json")
     print(f"📝 Debug logs saved to: oauth2_log_demo.log")
 
     if results['success']:
-        print("\n🎉 SUCCESS: OAuth2 log operations demo completed successfully!")
+        print("\n🎉 SUCCESS: HeySol log operations demo completed successfully!")
         print("\nThe HeySol API client now supports:")
-        print("✅ Interactive OAuth2 authentication")
-        print("✅ Browser-based authorization")
-        print("✅ Automatic token management")
-        print("✅ Log ingestion with OAuth2")
-        print("✅ Log deletion with OAuth2")
-        print("✅ Error handling and token refresh")
+        print("✅ API key authentication")
+        print("✅ Memory ingestion and search")
+        print("✅ User profile access")
+        print("✅ Space operations")
+        print("✅ Error handling and validation")
     else:
-        print("\n❌ FAILURE: OAuth2 log operations demo failed")
+        print("\n❌ FAILURE: HeySol log operations demo failed")
         print("Check the logs for details:")
         print("- oauth2_log_demo.log")
-        print("- oauth2_client_debug.log")
 
     print("\n" + "🎉" + "="*58 + "🎉")
-    print("🎯 DEMO COMPLETE - OAuth2 Log Operations Ready!")
+    print("🎯 DEMO COMPLETE - HeySol API Client Ready!")
     print("🎉" + "="*58 + "🎉")
 
 

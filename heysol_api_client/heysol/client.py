@@ -1,8 +1,9 @@
 """
-Minimal HeySol API client implementation.
+HeySol API client implementation with MCP (Model Context Protocol) support.
 """
 
 import json
+import uuid
 from typing import Any, Dict, Optional
 from urllib.parse import urljoin
 
@@ -10,6 +11,7 @@ import requests
 
 from .config import HeySolConfig
 from .exceptions import HeySolError, ValidationError
+from .oauth2 import InteractiveOAuth2Authenticator, OAuth2Tokens
 
 
 class HeySolClient:
@@ -17,28 +19,76 @@ class HeySolClient:
     Core client for interacting with the HeySol API.
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None, oauth2_auth: Optional[InteractiveOAuth2Authenticator] = None, skip_mcp_init: bool = False):
         """
         Initialize the HeySol API client.
 
         Args:
-            api_key: HeySol API key
+            api_key: HeySol API key (for API key authentication)
+            base_url: Base URL for the API (optional, uses config default if not provided)
+            oauth2_auth: OAuth2 authenticator instance (for OAuth2 authentication)
+            skip_mcp_init: Skip MCP session initialization (useful for testing)
         """
-        if not api_key:
-            raise ValidationError("API key is required")
+        # Load configuration
+        config = HeySolConfig.from_env()
+
+        # Use provided values or fall back to config
+        # Only load API key from config if not using OAuth2 and api_key is None (not empty string)
+        if api_key is None and not oauth2_auth:
+            api_key = config.api_key
+        if not base_url:
+            base_url = config.base_url
+
+        # Validate authentication method
+        if not api_key and not oauth2_auth:
+            raise ValidationError("Either API key or OAuth2 authenticator is required")
+
+        if api_key and oauth2_auth:
+            raise ValidationError("Cannot use both API key and OAuth2 authentication simultaneously")
 
         self.api_key = api_key
-        self.base_url = "https://core.heysol.ai/api/v1/mcp"
+        self.base_url = base_url
+        self.source = config.source
+        self.mcp_url = config.mcp_url
+        self.session_id: Optional[str] = None
+        self.oauth2_auth = oauth2_auth
+        self.oauth2_tokens: Optional[OAuth2Tokens] = None
+        self.tools: Dict[str, Any] = {}
+        self.timeout = 60  # Default timeout
+
+        # Initialize MCP session (skip for testing)
+        if not skip_mcp_init:
+            self._initialize_session()
+
+    def _get_authorization_header(self) -> str:
+        """Get the appropriate authorization header based on authentication method."""
+        if self.oauth2_auth:
+            # Use OAuth2 authentication
+            try:
+                return self.oauth2_auth.get_authorization_header()
+            except HeySolError as e:
+                raise HeySolError(f"OAuth2 authentication failed: {e}")
+        else:
+            # Use API key authentication
+            if not self.api_key:
+                raise HeySolError("No API key available for authentication")
+            return f"Bearer {self.api_key}"
 
     def _make_request(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Make an HTTP request."""
-        url = urljoin(self.base_url, endpoint.lstrip("/"))
+        """Make an HTTP request using MCP JSON-RPC protocol."""
+        url = self.base_url.rstrip("/") + "/" + endpoint.lstrip("/")
+
+        # Get authorization header based on authentication method
+        auth_header = self._get_authorization_header()
 
         headers = {
             "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
+            "Accept": "application/json, text/event-stream, */*",
+            "Authorization": auth_header,
         }
+
+        if self.session_id:
+            headers["Mcp-Session-Id"] = self.session_id
 
         response = requests.request(
             method=method,
@@ -46,33 +96,201 @@ class HeySolClient:
             json=data,
             params=params,
             headers=headers,
-            timeout=60,
+            timeout=self.timeout,
         )
 
         response.raise_for_status()
         return response.json()
 
+    def _mcp_request(self, method: str, params: Optional[Dict[str, Any]] = None, stream: bool = False) -> Dict[str, Any]:
+        """Make an MCP JSON-RPC request."""
+        payload = {
+            "jsonrpc": "2.0",
+            "id": str(uuid.uuid4()),
+            "method": method,
+            "params": params or {},
+        }
+
+        response = requests.post(
+            self.mcp_url,
+            json=payload,
+            headers=self._get_mcp_headers(),
+            timeout=self.timeout,
+            stream=stream
+        )
+
+        try:
+            response.raise_for_status()
+        except requests.HTTPError:
+            raise HeySolError(f"HTTP error: {response.status_code} - {response.text}")
+
+        return self._parse_mcp_response(response)
+
+    def _get_mcp_headers(self) -> Dict[str, str]:
+        """Get MCP-specific headers."""
+        headers = {
+            "Authorization": self._get_authorization_header(),
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream, */*",
+        }
+        if self.session_id:
+            headers["Mcp-Session-Id"] = self.session_id
+        return headers
+
+    def _parse_mcp_response(self, response: requests.Response) -> Dict[str, Any]:
+        """Parse MCP JSON-RPC response."""
+        content_type = (response.headers.get("Content-Type") or "").split(";")[0].strip()
+
+        if content_type == "application/json":
+            msg = response.json()
+        elif content_type == "text/event-stream":
+            msg = None
+            for line in response.iter_lines(decode_unicode=True):
+                if line.startswith("data:"):
+                    msg = json.loads(line[5:].strip())
+                    break
+            if msg is None:
+                raise HeySolError("No JSON in SSE stream")
+        else:
+            raise HeySolError(f"Unexpected Content-Type: {content_type}")
+
+        if "error" in msg:
+            raise HeySolError(f"MCP error: {msg['error']}")
+
+        return msg["result"]
+
+    def _initialize_session(self) -> None:
+        """Initialize MCP session and discover available tools."""
+        # Initialize session
+        init_payload = {
+            "jsonrpc": "2.0",
+            "id": str(uuid.uuid4()),
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "1.0.0",
+                "capabilities": {"tools": True},
+                "clientInfo": {"name": "heysol-python-client", "version": "1.0.0"},
+            },
+        }
+
+        try:
+            response = requests.post(
+                self.mcp_url,
+                json=init_payload,
+                headers=self._get_mcp_headers(),
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+            result = self._parse_mcp_response(response)
+            self.session_id = response.headers.get("Mcp-Session-Id") or self.session_id
+        except Exception as e:
+            raise HeySolError(f"Failed to initialize MCP session: {e}")
+
+        # List available tools
+        tools_payload = {
+            "jsonrpc": "2.0",
+            "id": str(uuid.uuid4()),
+            "method": "tools/list",
+            "params": {},
+        }
+
+        try:
+            response = requests.post(
+                self.mcp_url,
+                json=tools_payload,
+                headers=self._get_mcp_headers(),
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+            result = self._parse_mcp_response(response)
+            self.tools = {t["name"]: t for t in result.get("tools", [])}
+        except Exception as e:
+            raise HeySolError(f"Failed to list MCP tools: {e}")
+
+    def _unwrap_tool_result(self, result: Any) -> Any:
+        """Unwrap tool result from MCP response."""
+        if isinstance(result, dict) and isinstance(result.get("content"), list):
+            for item in result["content"]:
+                if item.get("type") == "text":
+                    txt = item.get("text", "")
+                    try:
+                        return json.loads(txt)
+                    except json.JSONDecodeError:
+                        return txt
+        return result
+
     def ingest(self, message: str, space_id: Optional[str] = None) -> Dict[str, Any]:
-        """Ingest data into CORE Memory."""
+        """Ingest data into CORE Memory using MCP protocol."""
         if not message:
             raise ValidationError("Message is required for ingestion")
 
-        payload = {"message": message}
-        if space_id:
-            payload["spaceId"] = space_id
+        if "memory_ingest" not in self.tools:
+            # Fallback to direct API call if MCP tool not available
+            payload = {"message": message}
+            if space_id:
+                payload["spaceId"] = space_id
+            return self._make_request("POST", "memory/ingest", data=payload)
 
-        return self._make_request("POST", "memory/ingest", data=payload)
+        # Use MCP tool
+        ingest_args = {"message": message, "source": "heysol-python-client"}
+        if space_id:
+            ingest_args["spaceId"] = space_id
+
+        result = self._mcp_request("tools/call", {
+            "name": "memory_ingest",
+            "arguments": ingest_args
+        }, stream=True)
+
+        return self._unwrap_tool_result(result)
 
     def search(self, query: str, limit: int = 10) -> Dict[str, Any]:
-        """Search for memories in CORE Memory."""
+        """Search for memories in CORE Memory using MCP protocol."""
         if not query:
             raise ValidationError("Search query is required")
 
-        return self._make_request("GET", "memory/search", params={"query": query, "limit": limit})
+        if "memory_search" not in self.tools:
+            # Fallback to direct API call if MCP tool not available
+            return self._make_request("GET", "memory/search", params={"query": query, "limit": limit})
+
+        # Use MCP tool
+        search_args = {"query": query, "limit": limit}
+
+        result = self._mcp_request("tools/call", {
+            "name": "memory_search",
+            "arguments": search_args
+        })
+
+        unwrapped_result = self._unwrap_tool_result(result)
+
+        # Handle the actual search result format
+        if isinstance(unwrapped_result, dict):
+            return unwrapped_result
+        elif isinstance(unwrapped_result, list):
+            # Fallback: if we get a list, wrap it in a dict structure
+            return {"episodes": unwrapped_result, "facts": []}
+        else:
+            return {"episodes": [], "facts": []}
 
     def get_spaces(self) -> Dict[str, Any]:
-        """Get available memory spaces."""
-        return self._make_request("GET", "memory/spaces")
+        """Get available memory spaces using MCP protocol."""
+        if "memory_get_spaces" not in self.tools:
+            # Fallback to direct API call if MCP tool not available
+            return self._make_request("GET", "spaces")
+
+        result = self._mcp_request("tools/call", {
+            "name": "memory_get_spaces",
+            "arguments": {}
+        })
+
+        unwrapped_result = self._unwrap_tool_result(result)
+
+        # Extract spaces from the result
+        if isinstance(unwrapped_result, dict) and "spaces" in unwrapped_result:
+            return unwrapped_result["spaces"]
+        elif isinstance(unwrapped_result, list):
+            return unwrapped_result
+        else:
+            return []
 
     def create_space(self, name: str, description: str = "") -> str:
         """Create a new memory space."""
@@ -126,15 +344,13 @@ class HeySolClient:
 
         return self._make_request("POST", "memory/ingestion/queue", data=payload)
 
-    def get_episode_facts(self, episode_id: Optional[str] = None, space_id: Optional[str] = None, limit: int = 100, offset: int = 0, include_metadata: bool = True) -> list:
+    def get_episode_facts(self, episode_id: str, limit: int = 100, offset: int = 0, include_metadata: bool = True) -> list:
         """Get episode facts from CORE Memory."""
-        params = {"limit": limit, "offset": offset, "include_metadata": include_metadata}
-        if episode_id:
-            params["episode_id"] = episode_id
-        if space_id:
-            params["space_id"] = space_id
+        if not episode_id:
+            raise ValidationError("Episode ID is required")
 
-        return self._make_request("GET", "memory/episodes/facts", params=params)
+        params = {"limit": limit, "offset": offset, "include_metadata": include_metadata}
+        return self._make_request("GET", f"episodes/{episode_id}/facts", params=params)
 
     def get_ingestion_logs(self, space_id: Optional[str] = None, limit: int = 100, offset: int = 0, status: Optional[str] = None, start_date: Optional[str] = None, end_date: Optional[str] = None) -> list:
         """Get ingestion logs from CORE Memory."""
@@ -231,20 +447,34 @@ class HeySolClient:
         if not access_token:
             raise ValidationError("Access token is required")
 
-        headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": f"Bearer {access_token}",
-        }
+        # Store original api_key temporarily
+        original_api_key = self.api_key
+        try:
+            # Use the access token as the api_key for this request
+            self.api_key = access_token
+            return self._make_request("GET", "oauth2/userinfo")
+        finally:
+            # Restore original api_key
+            self.api_key = original_api_key
 
-        response = requests.get(
-            f"{self.base_url}/oauth2/userinfo",
-            headers=headers,
-            timeout=60,
-        )
+    def oauth2_refresh_token(self, refresh_token: str) -> Dict[str, Any]:
+        """Refresh OAuth2 access token."""
+        if not refresh_token:
+            raise ValidationError("Refresh token is required")
 
-        response.raise_for_status()
-        return response.json()
+        payload = {"refresh_token": refresh_token}
+        return self._make_request("POST", "oauth2/refresh", data=payload)
+
+    def oauth2_revoke_token(self, token: str, token_type_hint: Optional[str] = None) -> Dict[str, Any]:
+        """Revoke OAuth2 token."""
+        if not token:
+            raise ValidationError("Token is required")
+
+        payload = {"token": token}
+        if token_type_hint:
+            payload["token_type_hint"] = token_type_hint
+
+        return self._make_request("POST", "oauth2/revoke", data=payload)
 
     def oauth2_token_introspection(self, token: str) -> Dict[str, Any]:
         """Introspect OAuth2 token."""
@@ -255,8 +485,8 @@ class HeySolClient:
         return self._make_request("GET", "oauth2/introspect", data=payload)
 
     # Webhook endpoints
-    def create_webhook(self, url: str, events: list, space_id: Optional[str] = None, secret: Optional[str] = None) -> Dict[str, Any]:
-        """Create a new webhook."""
+    def register_webhook(self, url: str, events: list, space_id: Optional[str] = None, secret: Optional[str] = None) -> Dict[str, Any]:
+        """Register a new webhook."""
         if not url:
             raise ValidationError("Webhook URL is required")
 
@@ -270,6 +500,16 @@ class HeySolClient:
             payload["secret"] = secret
 
         return self._make_request("POST", "webhooks", data=payload)
+
+    def list_webhooks(self, space_id: Optional[str] = None, active: Optional[bool] = None, limit: int = 100, offset: int = 0) -> list:
+        """List all webhooks."""
+        params = {"limit": limit, "offset": offset}
+        if space_id:
+            params["space_id"] = space_id
+        if active is not None:
+            params["active"] = active
+
+        return self._make_request("GET", "webhooks", params=params)
 
     def get_webhook(self, webhook_id: str) -> Dict[str, Any]:
         """Get webhook details."""
@@ -296,3 +536,13 @@ class HeySolClient:
             payload["active"] = active
 
         return self._make_request("PUT", f"webhooks/{webhook_id}", data=payload)
+
+    def delete_webhook(self, webhook_id: str, confirm: bool = False) -> Dict[str, Any]:
+        """Delete a webhook."""
+        if not webhook_id:
+            raise ValidationError("Webhook ID is required")
+
+        if not confirm:
+            raise ValidationError("Webhook deletion requires confirmation (confirm=True)")
+
+        return self._make_request("DELETE", f"webhooks/{webhook_id}")

@@ -1,0 +1,40 @@
+{
+  "timestamp": "2025-09-21T03:58:05.511876",
+  "success": false,
+  "steps": [
+    {
+      "step": "authentication",
+      "status": "completed",
+      "description": "API key authentication successful"
+    },
+    {
+      "step": "user_profile",
+      "status": "completed_with_warning",
+      "description": "User profile access failed: 404 Client Error: Not Found for url: https://core.heysol.ai/api/v1/user/profile"
+    },
+    {
+      "step": "memory_search",
+      "status": "completed",
+      "description": "Memory search successful"
+    },
+    {
+      "step": "memory_ingestion",
+      "status": "completed",
+      "description": "Memory ingestion successful"
+    },
+    {
+      "step": "space_operations",
+      "status": "completed",
+      "description": "Space operations successful"
+    },
+    {
+      "step": "display_info",
+      "status": "completed",
+      "description": "API information display completed"
+    }
+  ],
+  "client_info": {
+    "api_key_available": true,
+    "base_url": "https://core.heysol.ai/api/v1"
+  }
+}

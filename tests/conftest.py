@@ -5,9 +5,21 @@ import pytest
 import tempfile
 import os
 from pathlib import Path
-from unittest.mock import Mock, patch
 from typing import Dict, Any, List, Generator
 import sys
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    # Load from heysol_api_client/.env relative to project root
+    env_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'heysol_api_client', '.env')
+    load_dotenv(env_file)
+    print(f"Loaded environment from: {env_file}")
+except ImportError:
+    # python-dotenv not available, skip loading .env file
+    print("python-dotenv not available, skipping .env file loading")
+except Exception as e:
+    print(f"Error loading .env file: {e}")
 
 # Add src directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -175,16 +187,6 @@ def sample_patient_data() -> Dict[str, Any]:
         ]
     }
 
-@pytest.fixture
-def mock_api_response() -> Dict[str, Any]:
-    """Mock API response for testing."""
-    return {
-        "status": "success",
-        "data": {
-            "nct_id": "NCT12345678",
-            "title": "Mock Trial"
-        }
-    }
 
 @pytest.fixture
 def temp_cache_dir() -> Generator[str, None, None]:
@@ -192,46 +194,8 @@ def temp_cache_dir() -> Generator[str, None, None]:
     with tempfile.TemporaryDirectory() as tmpdir:
         yield tmpdir
 
-@pytest.fixture
-def mock_llm_response() -> Dict[str, Any]:
-    """Mock LLM response for testing."""
-    return {
-        "mcode_elements": [
-            {
-                "element": "PrimaryCancerCondition",
-                "system": "http://snomed.info/sct",
-                "code": "254837009",
-                "display": "Malignant neoplasm of breast"
-            }
-        ],
-        "metadata": {
-            "confidence": 0.95,
-            "token_usage": {
-                "input_tokens": 100,
-                "output_tokens": 50,
-                "total_tokens": 150
-            }
-        }
-    }
 
-@pytest.fixture
-def mock_config() -> Mock:
-    """Mock configuration object."""
-    config = Mock()
-    config.get_api_key.return_value = "test-api-key"
-    config.get_base_url.return_value = "https://api.example.com"
-    config.get_model_name.return_value = "test-model"
-    config.get_temperature.return_value = 0.7
-    config.get_max_tokens.return_value = 1000
-    return config
 
-@pytest.fixture
-def mock_core_memory_client() -> Mock:
-    """Mock Core Memory client."""
-    client = Mock()
-    client.ingest.return_value = {"status": "success", "id": "test-id"}
-    client.search.return_value = {"results": []}
-    return client
 
 @pytest.fixture
 def test_logger():
@@ -239,28 +203,8 @@ def test_logger():
     return get_logger("test_logger")
 
 
-@pytest.fixture
-def mock_pipeline_result():
-    """Mock pipeline result for testing."""
-    from src.shared.models import PipelineResult, ValidationResult, ProcessingMetadata
-    return PipelineResult(
-        mcode_mappings=[],
-        validation_results=ValidationResult(compliance_score=1.0),
-        metadata=ProcessingMetadata(engine_type="test"),
-        original_data={}
-    )
 
 
-@pytest.fixture
-def mock_mcode_element():
-    """Mock mCODE element for testing."""
-    from src.shared.models import McodeElement
-    return McodeElement(
-        element_type="PrimaryCancerCondition",
-        code="12345",
-        system="http://snomed.info/sct",
-        display="Test Cancer Condition"
-    )
 
 # Test data factories
 def create_test_trial(nct_id: str = "NCT12345678", **kwargs) -> Dict[str, Any]:
@@ -316,14 +260,13 @@ def create_test_patient(patient_id: str = "12345", **kwargs) -> Dict[str, Any]:
 # Pytest markers for test categorization
 def pytest_configure(config):
     """Configure pytest markers."""
-    config.addinivalue_line("markers", "mock: mark test as using mocks (default)")
     config.addinivalue_line("markers", "live: mark test as using real data/services")
     config.addinivalue_line("markers", "slow: mark test as slow running")
     config.addinivalue_line("markers", "performance: mark test as performance benchmark")
     config.addinivalue_line("markers", "integration: mark test as integration test")
     config.addinivalue_line("markers", "unit: mark test as unit test")
 
-# Environment variable for enabling live tests
+# Environment variable for enabling live tests (enabled by default)
 LIVE_TESTS_ENABLED = os.getenv("ENABLE_LIVE_TESTS", "true").lower() == "true"
 
 def pytest_collection_modifyitems(config, items):

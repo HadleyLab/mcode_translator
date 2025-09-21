@@ -49,9 +49,9 @@ class InteractiveOAuth2Authenticator:
         self.redirect_uri = redirect_uri or "http://localhost:8080/callback"
         self.tokens: Optional[OAuth2Tokens] = None
 
-        # OAuth2 endpoints (Google OAuth2 for HeySol)
-        self.authorization_url = "https://accounts.google.com/oauth2/auth"
-        self.token_url = "https://oauth2.googleapis.com/token"
+        # OAuth2 endpoints (HeySol API)
+        self.authorization_url = "https://core.heysol.ai/oauth/authorize"
+        self.token_url = "https://core.heysol.ai/oauth/token"
 
     def build_authorization_url(self, scope: str = "openid profile email") -> str:
         """
@@ -143,9 +143,35 @@ class InteractiveOAuth2Authenticator:
             Authorization header value
 
         Raises:
-            HeySolError: If no valid token available
+            HeySolError: If no valid token available or token is expired
         """
         if not self.tokens:
             raise HeySolError("No tokens available")
 
+        if self.tokens.is_expired():
+            raise HeySolError("Access token has expired")
+
         return f"Bearer {self.tokens.access_token}"
+
+    def set_tokens(self, access_token: str, refresh_token: Optional[str] = None, token_type: str = "Bearer", expires_in: Optional[int] = None) -> None:
+        """
+        Set OAuth2 tokens directly (for testing or direct token assignment).
+
+        Args:
+            access_token: Access token
+            refresh_token: Refresh token (optional)
+            token_type: Token type (default: Bearer)
+            expires_in: Token expiration time in seconds (optional)
+        """
+        tokens = OAuth2Tokens(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type=token_type,
+            expires_in=expires_in,
+        )
+
+        # Calculate expiration time
+        if tokens.expires_in:
+            tokens.expires_at = time.time() + tokens.expires_in
+
+        self.tokens = tokens

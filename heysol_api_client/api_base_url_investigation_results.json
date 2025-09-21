@@ -1,0 +1,250 @@
+{
+  "results": {
+    "https://core.heysol.ai/api/v1": {
+      "base_url": "https://core.heysol.ai/api/v1",
+      "total_endpoints": 12,
+      "working_endpoints": [
+        "/spaces",
+        "/webhooks"
+      ],
+      "results": {
+        "": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4513
+        },
+        "/health": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4520
+        },
+        "/status": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4520
+        },
+        "/ping": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4518
+        },
+        "/memory/search": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4527
+        },
+        "/memory/ingest": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4527
+        },
+        "/memory/logs": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4525
+        },
+        "/spaces": {
+          "status_code": 400,
+          "content_type": "application/json; charset=utf-8",
+          "content_length": 77
+        },
+        "/user/profile": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4526
+        },
+        "/webhooks": {
+          "status_code": 200,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 14043,
+          "text": "<!DOCTYPE html><html lang=\"en\" class=\"light h-full\"><head><title>CORE</title><meta name=\"viewport\" content=\"width=1024, initial-scale=1\"/><meta name=\"robots\" content=\"noindex, nofollow\"/><link rel=\"st"
+        }
+      }
+    },
+    "https://core.heysol.ai/api": {
+      "base_url": "https://core.heysol.ai/api",
+      "total_endpoints": 12,
+      "working_endpoints": [],
+      "results": {
+        "": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4510
+        },
+        "/health": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4517
+        },
+        "/status": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4517
+        },
+        "/ping": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4515
+        },
+        "/memory/search": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4524
+        },
+        "/memory/ingest": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4524
+        },
+        "/memory/logs": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4522
+        },
+        "/spaces": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4517
+        },
+        "/user/profile": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4523
+        },
+        "/webhooks": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4519
+        }
+      }
+    },
+    "https://core.heysol.ai/v1": {
+      "base_url": "https://core.heysol.ai/v1",
+      "total_endpoints": 12,
+      "working_endpoints": [],
+      "results": {
+        "": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4509
+        },
+        "/health": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4516
+        },
+        "/status": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4516
+        },
+        "/ping": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4514
+        },
+        "/memory/search": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4523
+        },
+        "/memory/ingest": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4523
+        },
+        "/memory/logs": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4521
+        },
+        "/spaces": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4516
+        },
+        "/user/profile": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4522
+        },
+        "/webhooks": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4518
+        }
+      }
+    },
+    "https://core.heysol.ai/api/v2": {
+      "base_url": "https://core.heysol.ai/api/v2",
+      "total_endpoints": 12,
+      "working_endpoints": [],
+      "results": {
+        "": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4513
+        },
+        "/health": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4520
+        },
+        "/status": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4520
+        },
+        "/ping": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4518
+        },
+        "/memory/search": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4527
+        },
+        "/memory/ingest": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4527
+        },
+        "/memory/logs": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4525
+        },
+        "/spaces": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4520
+        },
+        "/user/profile": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4526
+        },
+        "/webhooks": {
+          "status_code": 404,
+          "content_type": "text/html; charset=utf-8",
+          "content_length": 4522
+        }
+      }
+    }
+  },
+  "summary": {
+    "best_base_url": "https://core.heysol.ai/api/v1",
+    "best_score": 2,
+    "url_scores": {
+      "https://core.heysol.ai/api/v1": 2,
+      "https://core.heysol.ai/api": 0,
+      "https://core.heysol.ai/v1": 0,
+      "https://core.heysol.ai/api/v2": 0
+    },
+    "recommendations": [
+      "Best API base URL: https://core.heysol.ai/api/v1 (2 working endpoints)",
+      "API v1 endpoints are available (2 working)"
+    ]
+  }
+}
