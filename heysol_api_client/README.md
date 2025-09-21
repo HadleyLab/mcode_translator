@@ -222,17 +222,38 @@ See the `examples/` directory for comprehensive usage examples:
 - `basic_usage.py` - Basic client operations
 - `async_usage.py` - Async operations and concurrency
 - `log_management.py` - Log management and deletion operations
-- `batch_operations.py` - Bulk data operations
-- `error_handling.py` - Error handling patterns
+- `oauth2_google_demo.py` - Interactive Google OAuth2 demo
+- `oauth2_simple_demo.py` - Simple working OAuth2 demo
+- `oauth2_log_cli.py` - Command-line OAuth2 tool
+- `oauth2_log_demo.py` - Standalone OAuth2 demo script
+- `oauth2_setup_guide.py` - OAuth2 setup guide
+- `oauth2_log_operations.ipynb` - Complete OAuth2 demo notebook
+
+## Documentation
+
+See the `docs/` directory for comprehensive documentation:
+
+- `API_DOCUMENTATION.md` - Complete API reference and usage guide
+- `OAUTH2_AUTHORIZATION_GUIDE.md` - OAuth2 setup and usage guide
+- `AUTHENTICATION_GUIDE.md` - Authentication methods and configuration
+- `API_DISCOVERY.md` - API endpoint discovery and testing
+- `TESTING_REPORT.md` - Testing results and coverage reports
+
+## Results and Logs
+
+- `results/` - Test results, investigation reports, and performance data
+- `logs/` - Application logs and debugging information
 
 ## OAuth2 Authentication
 
 The HeySol API client supports OAuth2 authentication with Google accounts. See the unified OAuth2 implementation:
 
-- **`oauth2_log_operations.ipynb`** - Complete OAuth2 demo notebook
-- **`oauth2_log_demo.py`** - Standalone OAuth2 demo script
-- **`oauth2_log_cli.py`** - Command-line OAuth2 tool
-- **`OAUTH2_README.md`** - OAuth2 setup and usage guide
+- **`examples/oauth2_log_operations.ipynb`** - Complete OAuth2 demo notebook
+- **`examples/oauth2_log_demo.py`** - Standalone OAuth2 demo script
+- **`examples/oauth2_log_cli.py`** - Command-line OAuth2 tool
+- **`examples/oauth2_google_demo.py`** - Interactive Google OAuth2 demo
+- **`examples/oauth2_simple_demo.py`** - Simple working OAuth2 demo
+- **`docs/OAUTH2_AUTHORIZATION_GUIDE.md`** - OAuth2 setup and usage guide
 
 ## Testing
 
