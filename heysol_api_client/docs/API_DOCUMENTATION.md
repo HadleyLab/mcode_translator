@@ -20,7 +20,8 @@ The HeySol API client provides access to the HeySol platform through both MCP (M
 
 ### ✅ **MCP Protocol - RECOMMENDED APPROACH**
 - **Status**: ✅ **FULLY FUNCTIONAL** with 100+ tools available
-- **Server**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
+- **Base URL**: `https://core.heysol.ai/api/v1/mcp`
+- **Source Parameter**: `?source=Kilo-Code` (identifier, can be any value)
 - **Working Tools**: `memory_ingest`, `memory_search`, `memory_get_spaces`, `get_user_profile`
 - **GitHub Integration**: 90+ GitHub-related MCP tools available
 - **Authentication**: ✅ Working with API key via Bearer token
@@ -58,7 +59,7 @@ The HeySol API client provides access to the HeySol platform through both MCP (M
 ## Base Configuration
 
 - **Base URL**: `https://core.heysol.ai/api/v1`
-- **MCP URL**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
+- **MCP Endpoint**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
 - **Authentication**: Bearer token (API key or OAuth2)
 - **Protocol**: REST API + MCP (Model Context Protocol) via Server-Sent Events
 - **Server**: `core-unified-mcp-server v1.0.0`

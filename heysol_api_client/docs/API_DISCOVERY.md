@@ -7,7 +7,7 @@ This document contains the comprehensive API discovery results for the HeySol AP
 ## Base Configuration
 
 - **Base URL**: `https://core.heysol.ai/api/v1`
-- **MCP URL**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
+- **MCP Endpoint**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
 - **Authentication**: Bearer token (API key or OAuth2)
 - **Protocol**: REST API + MCP (Model Context Protocol) via Server-Sent Events
 
@@ -27,7 +27,8 @@ This document contains the comprehensive API discovery results for the HeySol AP
 
 ### ✅ **MCP Protocol - RECOMMENDED APPROACH**
 - **Status**: ✅ **FULLY FUNCTIONAL** with 100+ tools available
-- **Server**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
+- **Base URL**: `https://core.heysol.ai/api/v1/mcp`
+- **Source Parameter**: `?source=Kilo-Code` (identifier, can be any value)
 - **Authentication**: ✅ Working with API key via Bearer token
 - **Spaces**: ✅ **ALL OPERATIONS WORKING** - Retrieved 7 spaces with full metadata
 - **Memory**: ✅ **ALL OPERATIONS WORKING** - Search, ingest, facts fully functional
@@ -139,7 +140,8 @@ client = HeySolClient(oauth2_auth=oauth2_auth)
 - **Fallback Support**: ✅ HeySolClient gracefully falls back to direct API calls when needed
 
 **Server Information:**
-- **URL**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
+- **Base URL**: `https://core.heysol.ai/api/v1/mcp`
+- **Source Parameter**: `?source=Kilo-Code` (identifier, can be any value)
 - **Status**: ✅ Full MCP functionality with API key authentication
 - **Protocol Version**: 2025-06-18
 - **Server**: core-unified-mcp-server v1.0.0
