@@ -4,6 +4,23 @@
 
 The HeySol API client provides access to the HeySol platform through both MCP (Model Context Protocol) and direct REST API endpoints. This documentation covers all discovered and tested endpoints, their parameters, response formats, and usage examples.
 
+## 📊 Implementation Status
+
+### ✅ **Fully Working & Tested**
+- **MCP Tools**: `memory_ingest`, `memory_search`, `memory_get_spaces`, `get_user_profile`
+- **Memory Endpoints**: `search_knowledge_graph`, `add_data_to_ingestion_queue`, `get_episode_facts`, `get_ingestion_logs`, `get_specific_log`
+- **Space Endpoints**: `bulk_space_operations`, `get_space_details`, `update_space`, `delete_space`
+- **OAuth2 Endpoints**: `get_oauth2_authorization_url`, `oauth2_authorization_decision`, `oauth2_token_exchange`, `get_oauth2_user_info`, `oauth2_refresh_token`, `oauth2_revoke_token`
+- **Webhook Endpoints**: `register_webhook`, `list_webhooks`, `get_webhook`, `update_webhook`, `delete_webhook`
+
+### ⚠️ **Pending Implementation**
+- **DELETE /memory/logs/{log_id}**: Log entry deletion endpoint not available in API
+- **DELETE /oauth2/authorize/{request_id}**: OAuth2 authorization decision endpoint not tested
+- **GET /oauth2/introspect**: Token introspection endpoint not tested
+
+### ❌ **Removed from Implementation**
+- `delete_log_entry()` method: Removed due to lack of API endpoint support
+
 ## Base Configuration
 
 - **MCP URL**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
@@ -171,6 +188,12 @@ result = client.get_user_profile()
 - **Endpoint**: `/memory/logs/{log_id}`
 - **Method**: GET
 - **Response**: Detailed log information
+
+#### Delete Log Entry ⚠️ PENDING
+- **Endpoint**: `/memory/logs/{log_id}` (DELETE)
+- **Method**: DELETE
+- **Status**: ❌ Not yet implemented in API
+- **Note**: DELETE endpoint for log entries is not currently available in the HeySol API
 
 ### Space Endpoints
 

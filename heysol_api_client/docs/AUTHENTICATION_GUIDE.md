@@ -50,7 +50,7 @@ client = HeySolClient(api_key=tokens.access_token)
 | **Memory** | `search()` | ✅ | ✅ | Search memories |
 | **Memory** | `get_spaces()` | ✅ | ✅ | Get available memory spaces |
 | **Memory** | `create_space()` | ✅ | ✅ | Create new memory space |
-| **Memory** | `delete_log_entry()` | ✅ | ✅ | Delete log entries |
+| **Memory** | `delete_log_entry()` | ❌ | ❌ | Delete log entries (API endpoint not available) |
 | **Memory** | `search_knowledge_graph()` | ✅ | ✅ | Search knowledge graph |
 | **Memory** | `add_data_to_ingestion_queue()` | ✅ | ✅ | Queue data for ingestion |
 | **Memory** | `get_episode_facts()` | ✅ | ✅ | Get episode facts |

@@ -164,8 +164,6 @@ client.authorize_oauth2_interactive()
 result = client.ingest("My log message", tags=["example"])
 print(f"Log ID: {result['id']}")
 
-# Delete the log entry
-client.delete_log_entry(result['id'])
 ```
 
 ### CLI Usage
