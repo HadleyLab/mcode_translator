@@ -81,3 +81,11 @@ class HeySolClient:
         payload = {"name": name, "description": description}
         data = self._make_request("POST", "memory/spaces", data=payload)
         return data.get("id") or data.get("space_id")
+
+    def delete_log_entry(self, log_id: str) -> bool:
+        """Delete a log entry from CORE Memory."""
+        if not log_id:
+            raise ValidationError("Log ID is required for deletion")
+
+        self._make_request("DELETE", f"memory/logs/{log_id}")
+        return True
