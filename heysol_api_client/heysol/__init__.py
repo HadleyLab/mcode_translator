@@ -7,8 +7,19 @@ authentication, memory management, and robust error handling.
 
 from .client import HeySolClient
 from .async_client import AsyncHeySolClient
-from .oauth2 import OAuth2Authenticator, OAuth2ClientCredentialsAuthenticator, OAuth2Tokens, OAuth2Error
-from .oauth2_interactive import InteractiveOAuth2Authenticator
+from .oauth2 import (
+    OAuth2Authenticator,
+    OAuth2ClientCredentialsAuthenticator,
+    InteractiveOAuth2Authenticator,
+    OAuth2Tokens,
+    OAuth2Error,
+    OAuth2ConfigurationValidator,
+    OAuth2ClientManager,
+    OAuth2LogOperations,
+    OAuth2DemoRunner,
+    validate_oauth2_setup,
+    create_oauth2_demo_runner
+)
 from .exceptions import HeySolError, AuthenticationError, RateLimitError, APIError
 from .config import HeySolConfig
 
@@ -21,6 +32,12 @@ __all__ = [
     "InteractiveOAuth2Authenticator",
     "OAuth2Tokens",
     "OAuth2Error",
+    "OAuth2ConfigurationValidator",
+    "OAuth2ClientManager",
+    "OAuth2LogOperations",
+    "OAuth2DemoRunner",
+    "validate_oauth2_setup",
+    "create_oauth2_demo_runner",
     "HeySolError",
     "AuthenticationError",
     "RateLimitError",

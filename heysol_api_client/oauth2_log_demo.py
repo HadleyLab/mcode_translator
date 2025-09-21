@@ -34,8 +34,8 @@ load_dotenv()
 # Add parent directory to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
-# Import centralized OAuth2 utilities
-from heysol.oauth2_utils import (
+# Import unified OAuth2 implementation
+from heysol.oauth2 import (
     create_oauth2_demo_runner,
     validate_oauth2_setup,
     AuthenticationError,

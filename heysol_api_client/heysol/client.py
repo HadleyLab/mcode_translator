@@ -18,8 +18,6 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from .config import HeySolConfig
-from .oauth2 import OAuth2Authenticator, OAuth2ClientCredentialsAuthenticator, OAuth2Error
-from .oauth2_interactive import InteractiveOAuth2Authenticator
 from .exceptions import (
     HeySolError,
     AuthenticationError,
@@ -179,6 +177,9 @@ class HeySolClient:
         """Initialize authentication method (API key or OAuth2)."""
         if self.use_oauth2:
             try:
+                # Import OAuth2 classes locally to avoid circular imports
+                from .oauth2 import OAuth2Authenticator, OAuth2ClientCredentialsAuthenticator, OAuth2Error
+
                 if self.config.oauth2_client_secret:
                     # Use client credentials flow
                     self.oauth2_auth = OAuth2ClientCredentialsAuthenticator(self.config)
@@ -188,7 +189,7 @@ class HeySolClient:
                     # Use authorization code flow
                     self.oauth2_auth = OAuth2Authenticator(self.config)
                     self.logger.info("OAuth2 authorization code flow initialized (tokens will be obtained on first request)")
-            except OAuth2Error as e:
+            except Exception as e:
                 raise AuthenticationError(f"OAuth2 initialization failed: {e}")
         else:
             self.logger.info("API key authentication initialized")
@@ -205,7 +206,7 @@ class HeySolClient:
         if self.use_oauth2 and self.oauth2_auth:
             try:
                 headers["Authorization"] = self.oauth2_auth.get_authorization_header()
-            except OAuth2Error as e:
+            except Exception as e:
                 raise AuthenticationError(f"OAuth2 authentication failed: {e}")
         else:
             headers["Authorization"] = f"Bearer {self.config.api_key}"
@@ -1117,7 +1118,7 @@ class HeySolClient:
             self.oauth2_auth.authorize_interactive(scope=scope)
             self.logger.info("OAuth2 authorization completed successfully")
             return True
-        except OAuth2Error as e:
+        except Exception as e:
             raise HeySolError(f"OAuth2 authorization failed: {e}")
 
     def get_oauth2_user_info(self) -> Dict[str, Any]:
@@ -1135,7 +1136,7 @@ class HeySolClient:
 
         try:
             return self.oauth2_auth.get_user_info()
-        except OAuth2Error as e:
+        except Exception as e:
             raise HeySolError(f"Failed to get user info: {e}")
 
     def introspect_oauth2_token(self, token: Optional[str] = None) -> Dict[str, Any]:
@@ -1156,7 +1157,7 @@ class HeySolClient:
 
         try:
             return self.oauth2_auth.introspect_token(token)
-        except OAuth2Error as e:
+        except Exception as e:
             raise HeySolError(f"Token introspection failed: {e}")
 
     def refresh_oauth2_token(self) -> bool:
@@ -1176,7 +1177,7 @@ class HeySolClient:
             self.oauth2_auth.refresh_access_token()
             self.logger.info("OAuth2 token refreshed successfully")
             return True
-        except OAuth2Error as e:
+        except Exception as e:
             raise HeySolError(f"Token refresh failed: {e}")
 
     def authorize_oauth2_interactive(
@@ -1199,6 +1200,9 @@ class HeySolClient:
             raise HeySolError("OAuth2 is not enabled for this client")
 
         try:
+            # Import OAuth2 classes locally to avoid circular imports
+            from .oauth2 import InteractiveOAuth2Authenticator
+
             # Create interactive OAuth2 authenticator
             interactive_auth = InteractiveOAuth2Authenticator(self.config)
 
@@ -1218,7 +1222,7 @@ class HeySolClient:
             self.logger.info("Interactive OAuth2 authorization completed successfully")
             return True
 
-        except OAuth2Error as e:
+        except Exception as e:
             raise HeySolError(f"Interactive OAuth2 authorization failed: {e}")
 
     def close(self) -> None:
