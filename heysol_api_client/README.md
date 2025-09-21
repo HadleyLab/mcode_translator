@@ -225,14 +225,59 @@ See the `docs/` directory for comprehensive documentation:
 
 ## OAuth2 Authentication
 
-The HeySol API client supports OAuth2 authentication with Google accounts. See the unified OAuth2 implementation:
+The HeySol API client supports OAuth2 authentication with Google accounts.
+
+### Quick Setup
+
+1. **Create Google OAuth2 Credentials**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select existing
+   - Enable Google+ API
+   - Create OAuth2 credentials (Web application)
+   - Set authorized redirect URI: `http://localhost:8080/callback`
+
+2. **Configure OAuth2 Consent Screen**:
+   - Navigate to "APIs & Services" → "OAuth consent screen"
+   - Choose "External" user type and click "Create"
+   - Fill in app information (name, email, etc.)
+   - Add authorized domains (e.g., `localhost` for testing)
+   - Configure required scopes (openid, profile, email)
+   - Save and continue through all steps
+   - **Important**: Go to "Publish app" → "Publish" (even for testing)
+
+3. **Set Environment Variables**:
+   ```bash
+   export HEYSOL_OAUTH2_CLIENT_ID="your-google-oauth2-client-id"
+   export HEYSOL_OAUTH2_CLIENT_SECRET="your-google-oauth2-client-secret"
+   export HEYSOL_OAUTH2_REDIRECT_URI="http://localhost:8080/callback"
+   export HEYSOL_OAUTH2_SCOPE="openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
+   ```
+
+### Usage Examples
+
+```python
+from heysol.client import HeySolClient
+from heysol.oauth2 import InteractiveOAuth2Authenticator
+
+# Initialize with OAuth2
+oauth2_auth = InteractiveOAuth2Authenticator()
+client = HeySolClient(oauth2_auth=oauth2_auth)
+
+# Get user profile using OAuth2
+profile = client.get_user_profile()
+print(f"Hello, {profile['name']}!")
+```
+
+### Complete Implementation
+
+See the unified OAuth2 implementation:
 
 - **`examples/oauth2_log_operations.ipynb`** - Complete OAuth2 demo notebook
 - **`examples/oauth2_log_demo.py`** - Standalone OAuth2 demo script
 - **`examples/oauth2_log_cli.py`** - Command-line OAuth2 tool
 - **`examples/oauth2_google_demo.py`** - Interactive Google OAuth2 demo
 - **`examples/oauth2_simple_demo.py`** - Simple working OAuth2 demo
-- **`docs/OAUTH2_AUTHORIZATION_GUIDE.md`** - OAuth2 setup and usage guide
+- **`docs/OAUTH2_AUTHORIZATION_GUIDE.md`** - Complete OAuth2 setup and usage guide
 
 ## Testing
 
