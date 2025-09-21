@@ -1,7 +1,19 @@
 {
-  "timestamp": "2025-09-21T03:11:29.898865",
-  "total_urls_tested": 24,
-  "working_urls": [],
+  "timestamp": "2025-09-21T21:52:00.202Z",
+  "total_urls_tested": 25,
+  "working_urls": [
+    {
+      "url": "https://core.heysol.ai/api/v1/mcp?source=Kilo-Code",
+      "status": "WORKING",
+      "protocol": "Server-Sent Events (SSE)",
+      "server": "core-unified-mcp-server v1.0.0",
+      "session_management": "Working (session ID: 63c31b56-320e-4a12-84a6-bfa6df1feb8b)",
+      "memory_tools": "memory_ingest, memory_search working",
+      "authentication": "Bearer token with API key",
+      "response_format": "JSON-RPC 2.0 over SSE",
+      "status_code": 200
+    }
+  ],
   "failed_urls": [
     {
       "url": "https://core.heysol.ai/api/v1",

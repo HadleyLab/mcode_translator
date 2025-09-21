@@ -19,6 +19,29 @@ from heysol.client import HeySolClient
 from heysol.exceptions import HeySolError
 
 
+def parse_mcp_response(response: requests.Response) -> Dict[str, Any]:
+    """Parse MCP JSON-RPC response like the client.py implementation"""
+    content_type = (response.headers.get("Content-Type") or "").split(";")[0].strip()
+
+    if content_type == "application/json":
+        msg = response.json()
+    elif content_type == "text/event-stream":
+        msg = None
+        for line in response.iter_lines(decode_unicode=True):
+            if line.startswith("data:"):
+                msg = json.loads(line[5:].strip())
+                break
+        if msg is None:
+            raise Exception("No JSON in SSE stream")
+    else:
+        raise Exception(f"Unexpected Content-Type: {content_type}")
+
+    if "error" in msg:
+        raise Exception(f"MCP error: {msg['error']}")
+
+    return msg.get("result", msg)
+
+
 def test_mcp_correct_url():
     """Test MCP functionality with the correct URL."""
     print("🧪 Testing MCP with correct URL: https://core.heysol.ai/api/v1/mcp?source=Kilo-Code")
@@ -90,12 +113,21 @@ def test_mcp_correct_url():
                             server_info = result.get("result", {}).get("serverInfo", {})
                             print(f"✅ MCP Server: {server_info.get('name', 'Unknown')} v{server_info.get('version', 'Unknown')}")
 
-                            # Try to list tools using SSE format
-                            tools_payload = {
+                            # Test MCP tools using the working approach from CoreMemoryClient
+                            print("🔍 Testing MCP tools with working implementation...")
+
+                            # Test memory_ingest tool
+                            ingest_payload = {
                                 "jsonrpc": "2.0",
-                                "id": "test-tools-list",
-                                "method": "tools/list",
-                                "params": {},
+                                "id": "test-memory-ingest",
+                                "method": "tools/call",
+                                "params": {
+                                    "name": "memory_ingest",
+                                    "arguments": {
+                                        "message": "Test message for MCP memory ingestion",
+                                        "source": "test-client"
+                                    }
+                                }
                             }
 
                             # Use session ID if available
@@ -104,50 +136,61 @@ def test_mcp_correct_url():
                                 headers["Mcp-Session-Id"] = session_id
                                 print(f"✅ Using session ID: {session_id}")
 
-                            tools_response = requests.post(
+                            ingest_response = requests.post(
                                 mcp_url,
-                                json=tools_payload,
+                                json=ingest_payload,
                                 headers=headers,
                                 timeout=30
                             )
 
-                            print(f"📡 Tools response status: {tools_response.status_code}")
+                            print(f"📡 Memory ingest response status: {ingest_response.status_code}")
 
-                            if tools_response.status_code == 200:
-                                if "text/event-stream" in tools_response.headers.get("Content-Type", ""):
-                                    tools_lines = tools_response.text.strip().split('\n')
-                                    tools_data_lines = [line for line in tools_lines if line.startswith('data: ')]
+                            # Test memory_ingest tool using proper response parsing
+                            try:
+                                ingest_result = parse_mcp_response(ingest_response)
+                                print("✅ memory_ingest tool working!")
+                                print(f"📄 Ingest result: {json.dumps(ingest_result, indent=2)}")
+                            except Exception as e:
+                                print(f"❌ Memory ingest failed: {e}")
+                                return False
 
-                                    if tools_data_lines:
-                                        last_tools_data = tools_data_lines[-1][6:]
-                                        tools_result = json.loads(last_tools_data)
-                                        print(f"✅ Tools available: {json.dumps(tools_result, indent=2)}")
+                            # Test memory_search tool
+                            search_payload = {
+                                "jsonrpc": "2.0",
+                                "id": "test-memory-search",
+                                "method": "tools/call",
+                                "params": {
+                                    "name": "memory_search",
+                                    "arguments": {
+                                        "query": "test message",
+                                        "limit": 5
+                                    }
+                                }
+                            }
 
-                                        # Check for memory_ingest and memory_search tools
-                                        tools = tools_result.get("result", {}).get("tools", [])
-                                        tool_names = [tool.get("name", "") for tool in tools]
+                            search_response = requests.post(
+                                mcp_url,
+                                json=search_payload,
+                                headers=headers,
+                                timeout=30
+                            )
 
-                                        if "memory_ingest" in tool_names:
-                                            print("✅ memory_ingest tool available")
-                                        else:
-                                            print("❌ memory_ingest tool not found")
+                            print(f"📡 Memory search response status: {search_response.status_code}")
 
-                                        if "memory_search" in tool_names:
-                                            print("✅ memory_search tool available")
-                                        else:
-                                            print("❌ memory_search tool not found")
-
-                                        return True
-                                    else:
-                                        print("❌ No data lines found in tools response")
-                                        return False
-                                else:
-                                    print(f"❌ Tools response not in SSE format: {tools_response.headers.get('Content-Type')}")
+                            if search_response.status_code == 200:
+                                try:
+                                    search_result = parse_mcp_response(search_response)
+                                    print("✅ memory_search tool working!")
+                                    print(f"📄 Search result: {json.dumps(search_result, indent=2)}")
+                                except Exception as e:
+                                    print(f"❌ Memory search failed: {e}")
                                     return False
                             else:
-                                print(f"❌ Tools request failed: {tools_response.status_code}")
-                                print(f"Response: {tools_response.text}")
+                                print(f"❌ Memory search failed: {search_response.status_code}")
+                                print(f"Response: {search_response.text}")
                                 return False
+
+                            return True
                         else:
                             print(f"❌ Invalid MCP response format: {result}")
                             return False

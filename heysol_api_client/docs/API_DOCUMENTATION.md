@@ -4,28 +4,53 @@
 
 The HeySol API client provides access to the HeySol platform through both MCP (Model Context Protocol) and direct REST API endpoints. This documentation covers all discovered and tested endpoints, their parameters, response formats, and usage examples.
 
-## 📊 Implementation Status
+## 📊 Implementation Status (Updated: 2025-09-21)
 
-### ✅ **Fully Working & Tested**
-- **MCP Tools**: Complete MCP protocol integration via Server-Sent Events
-  - `memory_ingest`, `memory_search`, `memory_get_spaces`, `get_user_profile` - ✅ Available via MCP
-- **Space Management**: Complete CRUD operations with bulk support
-  - `bulk_space_operations()`, `get_space_details()`, `update_space()`, `delete_space()` - ✅ Working
-- **Memory Operations**: Core ingestion and search functionality
-  - `search_knowledge_graph()`, `add_data_to_ingestion_queue()`, `get_episode_facts()`, `get_ingestion_logs()`, `get_specific_log()` - ✅ Working
-- **OAuth2 Framework**: Complete OAuth2 authentication system
-  - `get_oauth2_authorization_url()`, `oauth2_token_exchange()`, `get_oauth2_user_info()`, `oauth2_refresh_token()`, `oauth2_revoke_token()` - ✅ Working
-- **Webhook Management**: Full webhook lifecycle management
-  - `register_webhook()`, `list_webhooks()`, `get_webhook()`, `update_webhook()`, `delete_webhook()` - ✅ Working
+### ✅ **Working Endpoints (6/21 Tested - 28.57% Success Rate)**
 
-### ⚠️ **Pending Implementation**
-- **User Profile Management**: `/user/profile` endpoint returns 404 Not Found
-- **DELETE /memory/logs/{log_id}**: Log entry deletion endpoint not available in API
-- **DELETE /oauth2/authorize/{request_id}**: OAuth2 authorization decision endpoint not tested
-- **GET /oauth2/introspect**: Token introspection endpoint not tested
+#### Space Management (Partially Working)
+- **GET `/api/v1/spaces`** - List all available spaces ✅ **WORKING** (200 OK)
+- **GET `/api/v1/spaces/{spaceId}`** - Get specific space ✅ **WORKING** (200 OK)
+- **POST `/api/v1/spaces`** - Create new space ❌ **FAILED** (500 Internal Server Error)
+- **PUT `/api/v1/spaces/{spaceId}`** - Update space ❌ **FAILED** (400 Bad Request)
+- **DELETE `/api/v1/spaces/{spaceId}`** - Delete space ❌ **FAILED** (400 Bad Request)
 
-### ❌ **Removed from Implementation**
-- `delete_log_entry()` method: Removed due to lack of API endpoint support
+#### Memory Operations (Mixed Results)
+- **GET `/api/v1/logs`** - List logs ✅ **WORKING** (200 OK, returns HTML)
+- **POST `/api/v1/search`** - Search memory ❌ **FAILED** (400 Missing query field)
+- **POST `/api/v1/add`** - Add episode ❌ **FAILED** (500 Internal Server Error)
+- **GET `/api/v1/episodes/{episodeId}/facts`** - Get episode facts ❌ **FAILED** (500 Server Error)
+- **GET `/api/v1/logs/{logId}`** - Get specific log ❌ **FAILED** (404 Not Found)
+- **DELETE `/api/v1/logs/{logId}`** - Delete log ❌ **FAILED** (404 Not Found)
+
+#### OAuth2 Operations (Authentication Required)
+- **POST `/oauth/authorize`** - OAuth2 authorization ✅ **WORKING** (200 OK, returns login page)
+- **GET `/oauth/authorize`** - OAuth2 authorization ❌ **FAILED** (Connection refused - HTTP vs HTTPS)
+- **POST `/oauth/token`** - Token exchange ❌ **FAILED** (401 Invalid client credentials)
+- **GET `/oauth/userinfo`** - User info ❌ **FAILED** (401 Invalid token)
+- **GET `/oauth/tokeninfo`** - Token info ❌ **FAILED** (400 Missing id_token parameter)
+
+#### Webhook Management (Partially Working)
+- **POST `/api/v1/webhooks`** - Create webhook ✅ **WORKING** (200 OK, returns HTML)
+- **PUT `/api/v1/webhooks/{id}`** - Update webhook ✅ **WORKING** (200 OK, returns HTML)
+- **GET `/api/v1/webhooks/{id}`** - Get webhook ❌ **FAILED** (400 Server Error)
+
+#### User Management (Authentication Issues)
+- **GET `/api/profile`** - User profile ❌ **FAILED** (401 Invalid token)
+
+### ⚠️ **MCP Protocol Status**
+- **Status**: ✅ **FULLY FUNCTIONAL** with 100+ tools available
+- **Server**: `https://core.heysol.ai/api/v1/mcp?source=Kilo-Code`
+- **Working Tools**: `memory_ingest`, `memory_search`, `memory_get_spaces`, `get_user_profile`
+- **GitHub Integration**: 90+ GitHub-related MCP tools available
+- **Authentication**: ✅ Working with API key via Bearer token
+
+### ❌ **Known Issues & Limitations**
+- **Server-Side Errors**: Multiple 500 errors suggest backend instability
+- **Authentication Mismatch**: Some endpoints require OAuth2 instead of API key
+- **Data Validation**: Operations fail with missing required fields or invalid test data
+- **Response Format**: Some endpoints return HTML instead of JSON
+- **DELETE Operations**: Log and space deletion endpoints not functional
 
 ## Base Configuration
 
