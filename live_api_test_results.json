@@ -1,0 +1,205 @@
+{
+  "success": false,
+  "total_tests": 10,
+  "passed": 6,
+  "failed": 4,
+  "tests": [
+    {
+      "test_name": "authentication",
+      "status": "passed",
+      "error": null,
+      "details": {
+        "session_id": "99ff50cc-60f5-4f01-83f9-8e7f1f4e57c3",
+        "available_tools": [
+          "memory_ingest",
+          "memory_search",
+          "memory_get_spaces",
+          "get_user_profile"
+        ]
+      }
+    },
+    {
+      "test_name": "get_spaces",
+      "status": "passed",
+      "error": null,
+      "details": {
+        "spaces_count": 5,
+        "spaces": [
+          {
+            "id": "cmflmxmas00rvqf1vz3bslziu",
+            "name": "Profile",
+            "description": "Store the user\u00e2\u0080\u0099s stable, non-sensitive identity and preference facts that improve personalization across assistants. Facts must be long-lived (expected validity \u00e2\u0089\u00a5 3 months) and broadly useful across contexts (not app-specific).\nInclude (examples):\n\u00e2\u0080\u00a2 Preferred name, pronunciation, public handles (GitHub/Twitter/LinkedIn URLs), primary email domain\n\u00e2\u0080\u00a2 Timezone, locale, working hours, meeting preferences (async/sync bias, default duration)\n\u00e2\u0080\u00a2 Role, team, company, office location (city-level only), seniority\n\u00e2\u0080\u00a2 Tooling defaults (editor, ticketing system, repo host), keyboard layout, OS\n\u00e2\u0080\u00a2 Communication preferences (tone, brevity vs. detail, summary-first)\nExclude: secrets/credentials; one-off or short-term states; health/financial/political/religious/sexual data; precise home address; raw event logs; app-specific analytics; anything the user did not explicitly consent to share.",
+            "autoMode": false,
+            "summary": null,
+            "themes": [],
+            "statementCount": null,
+            "status": "pending",
+            "icon": null,
+            "lastPatternTrigger": null,
+            "statementCountAtLastTrigger": null,
+            "workspaceId": "584250a5-ce09-42ca-9b70-06d900f7e454",
+            "createdAt": "2025-09-15T21:27:34.948Z",
+            "updatedAt": "2025-09-15T21:27:34.948Z"
+          },
+          {
+            "id": "cmfr7b92x00frny1vjr71po6l",
+            "name": "Patients",
+            "description": "Space for storing mCODE-compliant patient oncology data",
+            "autoMode": false,
+            "summary": "<h3>Updated Summary of Patterns in \"Patients\" Space Episodes</h3>\n<p>Recent analysis of the \"Patients\" space, incorporating the latest episodes for Jane Smith and Tamara8 Kassulke119, continues to reinforce and expand upon established themes in oncology patient data modeling and record-keeping. The following patterns are observed:</p>\n<ul>\n  <li><strong>mCODE Core Concepts Ontology for Oncology Data Modeling:</strong> All episodes consistently employ the mCODE Core Concepts ontology to structure oncology patient data. Entity types such as Person, CancerDiagnosis, CancerStage, BiomarkerResult, TreatmentEvent, Regimen, DiseaseStatus, Specimen, Encounter, Organization, and Practitioner are referenced. These entities are linked by predicates (e.g., hasDiagnosis, stagedAs, hasBiomarker, receivedTreatment) and use standard coding systems like SNOMED, NCIt, and LOINC for data standardization. The ontology supports detailed representation of patient histories, clinical events, and outcomes. The new episodes for Jane Smith and Tamara8 Kassulke119 both document malignant neoplasm of the breast diagnoses, with Tamara8 Kassulke119's record further detailing comorbidities, reproductive history, and social factors. No new ontology elements are introduced, and the data model remains consistent across all patient records.</li>\n  <li><strong>Longitudinal Oncology Patient Records with Integrated Social and Medical History:</strong> Multiple episodes provide detailed longitudinal records for individual oncology patients. The new episode for Tamara8 Kassulke119 expands the documentation of medical, social, and behavioral health history, including repeated documentation of employment status (full-time and not in labor force), stress, limited social contact, and violence in the environment. The episode also documents a sequence of cancer-related findings and diagnoses over time, including breast cancer, as well as comorbid conditions and non-oncologic health events (obesity, chronic pain, acute bronchitis, miscarriage, blighted ovum, and normal pregnancies). The episode for Jane Smith adds another case of breast cancer, further supporting the pattern of comprehensive longitudinal tracking and the inclusion of both oncologic and non-oncologic health events. The presence of repeated documentation of employment status and stress in these and previous episodes further supports the theme of integrated medical and social history in patient records.</li>\n  <li><strong>Clinical Trial Information in Oncology:</strong> Several episodes summarize oncology clinical trials, including details on study design, patient population, interventions, and outcomes. The new episodes do not introduce new clinical trial data or patient-trial associations, and the previously documented trial withdrawal remains the most recent update in this theme.</li>\n</ul>\n<p><strong>Additional Observations:</strong></p>\n<ul>\n  <li>There is a recurring focus on breast cancer cases, with the new episodes for Jane Smith and Tamara8 Kassulke119 both documenting malignant neoplasm of the breast. This expands the clinical diversity of the patient cohort and reinforces the pattern of multi-cancer documentation, which previously included both lung and breast cancer cases.</li>\n  <li>Patient records frequently include both medical and social history. The new episode for Tamara8 Kassulke119 adds further documentation of limited social contact, violence in the environment, and repeated employment status and stress findings, broadening the scope of social and behavioral health factors captured in the space. This complements previous records that included employment status, stress, social isolation, lack of transportation, intimate partner abuse, and criminal record.</li>\n  <li>Comorbidities such as obesity, chronic low back pain, chronic neck pain, and acute bronchitis are documented in the new episode for Tamara8 Kassulke119, consistent with the pattern of recording non-oncologic health conditions alongside cancer diagnoses.</li>\n  <li>Additional life events, such as miscarriage, blighted ovum, and normal pregnancies, are documented in the new episode for Tamara8 Kassulke119, indicating that the space captures a broad range of patient experiences beyond oncology-specific data. This further supports the pattern of including reproductive history and other significant life events in patient records.</li>\n  <li>There are no new medication management details or updates to clinical trial associations in the new episodes.</li>\n  <li>Duplicate or conflicting demographic data are not introduced or resolved in the new episodes.</li>\n</ul>\n<p>One episode documents a developer's onboarding statement, which remains outside the main themes.</p>",
+            "themes": [
+              "mCODE Core Concepts Ontology for Oncology Data Modeling",
+              "Longitudinal Oncology Patient Records with Integrated Social and Medical History",
+              "Clinical Trial Information in Oncology"
+            ],
+            "statementCount": 571,
+            "status": "processing",
+            "icon": null,
+            "lastPatternTrigger": "2025-09-20T20:04:38.087Z",
+            "statementCountAtLastTrigger": 536,
+            "workspaceId": "584250a5-ce09-42ca-9b70-06d900f7e454",
+            "createdAt": "2025-09-19T18:56:54.202Z",
+            "updatedAt": "2025-09-20T20:55:51.864Z"
+          },
+          {
+            "id": "cmfr7b8qt00fpny1vkqu9gr7o",
+            "name": "Clinical Trials",
+            "description": "Space for storing mCODE-aligned clinical trial protocols and eligibility criteria",
+            "autoMode": false,
+            "summary": "<h3>Updated Summary of Patterns in Clinical Trials Space Episodes</h3>\n<p>Analysis of the Clinical Trials space, now incorporating one hundred and forty episodes, continues to reinforce previously observed patterns while introducing a minor extension regarding the implementation of data standards. The five most recent episodes include three identical entries documenting the clinical trial NCT12345678, titled \"Phase 2 Study of Test Drug in Breast Cancer,\" as recruiting participants on September 20, 2025, and one entry for clinical trial NCT12345, which reported promising results for targeted therapy in oncology patients on the same date. Additionally, a new episode notes that implementing the mCODE standard requires structured data collection to achieve better outcomes. These episodes do not introduce new patient records or expand on trial metadata, but the mention of mCODE implementation provides a new perspective on data quality and standardization. Key patterns and themes remain consistent, with the following updates:</p>\n<ul>\n  <li><strong>Consistent Use and Emphasis on mCODE Core Concepts Ontology for Oncology Data Modeling:</strong> All episodes, including the latest five, utilize the mCODE Core Concepts ontology (STU4) for structuring oncology and related health data. Entities such as Person, CancerDiagnosis, CancerStage, BiomarkerResult, GenomicVariant, TreatmentEvent, Regimen, DiseaseStatus, Specimen, Encounter, Organization, and Practitioner are consistently modeled. The new episode explicitly highlights the importance of structured data collection for effective mCODE implementation, reinforcing the focus on data standardization.</li>\n  <li><strong>Clinical Trial Information in Oncology: Repeated Documentation, Limited Metadata, and New Trial Result:</strong> The three repeated entries for NCT12345678 further increase the frequency of this trial's documentation but do not provide new information beyond what was already documented. The entry for NCT12345 continues to represent the first instance of a trial outcome being noted in the dataset, but details about the trial's protocol, population, or specific results remain unspecified. Previously noted metadata gaps, such as incomplete trial details, persist.</li>\n  <li><strong>Longitudinal Oncology Patient Records: Recurrent and Variant Entries:</strong> The latest episodes do not introduce new patient records. Previously, detailed longitudinal records for individuals such as Tegan755 Collier206, Luann880 Hand679, Vilma125 Kling921, and Yetta429 Erdman779 documented sequences of medical events, including both oncologic and non-oncologic conditions. This pattern remains unchanged.</li>\n  <li><strong>Persistent Patterns of Data Duplication and Incomplete Metadata:</strong> The three new identical episodes for NCT12345678 continue to illustrate the pattern of data duplication within the space. Issues with repeated entries for clinical trials and patient records, as well as unspecified metadata fields, remain present.</li>\n  <li><strong>Expansion of Social Determinants and Non-Oncologic Data in Patient Records:</strong> No new patient records are added in the latest episodes. Previously, patient records included documentation of social determinants and life events, such as employment status, education, social isolation, and exposure to violence. This pattern is unchanged by the new clinical trial entries.</li>\n  <li><strong>Linkage Between Patient Records and Clinical Trial Assessment:</strong> No new instances of explicit linkage between patient records and clinical trial assessments are observed in the latest episodes. The pattern remains limited to previously documented cases.</li>\n</ul>\n<p>The addition of three identical episodes for clinical trial NCT12345678 as a recruiting breast cancer study on September 20, 2025, further increases the frequency of this trial's documentation but does not expand the dataset's scope or address previously noted metadata gaps. The new entry for NCT12345 continues to represent the first mention of a clinical trial result, but lacks detail. The explicit mention of the need for structured data collection to implement mCODE highlights ongoing attention to data quality and standardization. The space continues to focus on structured, mCODE-aligned representations of clinical trial protocols and detailed patient histories, with persistent challenges in metadata completeness and data duplication. The semantic coverage of patient data and clinical trial documentation remains incrementally expanded by repeated trial entries and the new trial result, but no new domains or linkages are introduced in the latest updates.</p>",
+            "themes": [
+              "Consistent Use and Emphasis on mCODE Core Concepts Ontology for Oncology Data Modeling",
+              "Clinical Trial Information in Oncology: Repeated Documentation, Limited Metadata, and New Trial Result",
+              "Longitudinal Oncology Patient Records: Recurrent and Variant Entries",
+              "Persistent Patterns of Data Duplication and Incomplete Metadata",
+              "Expansion of Social Determinants and Non-Oncologic Data in Patient Records",
+              "Linkage Between Patient Records and Clinical Trial Assessment"
+            ],
+            "statementCount": 468,
+            "status": "ready",
+            "icon": null,
+            "lastPatternTrigger": "2025-09-20T20:07:05.504Z",
+            "statementCountAtLastTrigger": 434,
+            "workspaceId": "584250a5-ce09-42ca-9b70-06d900f7e454",
+            "createdAt": "2025-09-19T18:56:53.766Z",
+            "updatedAt": "2025-09-20T20:55:39.941Z"
+          },
+          {
+            "id": "cmfsptlh900hvpj1vk6kml4bl",
+            "name": "Python Examples",
+            "description": "Space for Python client examples",
+            "autoMode": false,
+            "summary": null,
+            "themes": [],
+            "statementCount": null,
+            "status": "ready",
+            "icon": null,
+            "lastPatternTrigger": null,
+            "statementCountAtLastTrigger": null,
+            "workspaceId": "584250a5-ce09-42ca-9b70-06d900f7e454",
+            "createdAt": "2025-09-20T20:22:49.341Z",
+            "updatedAt": "2025-09-20T20:22:49.341Z"
+          },
+          {
+            "id": "cmfsr4ufl00ihpj1vzauthjgi",
+            "name": "test_space_1758401973",
+            "description": "Test space for API testing",
+            "autoMode": false,
+            "summary": null,
+            "themes": [],
+            "statementCount": null,
+            "status": "ready",
+            "icon": null,
+            "lastPatternTrigger": "2025-09-20T21:02:17.961Z",
+            "statementCountAtLastTrigger": 63,
+            "workspaceId": "584250a5-ce09-42ca-9b70-06d900f7e454",
+            "createdAt": "2025-09-20T20:59:33.778Z",
+            "updatedAt": "2025-09-20T21:02:18.118Z"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "create_space",
+      "status": "passed",
+      "error": null,
+      "details": {
+        "space_name": "test_space_1758402139",
+        "space_id": "cmfsr8edo00ilpj1vuywe69ix"
+      }
+    },
+    {
+      "test_name": "memory_ingestion",
+      "status": "passed",
+      "error": null,
+      "details": {
+        "message": "This is a test message for API testing",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"success\":true,\"id\":\"run_cmfsr8emz09m634ntwxva3t79\"}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "test_name": "memory_search",
+      "status": "passed",
+      "error": null,
+      "details": {
+        "query": "test message",
+        "episodes_count": 0,
+        "facts_count": 0,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"episodes\":[],\"facts\":[]}"
+            }
+          ],
+          "episodes": [],
+          "facts": []
+        }
+      }
+    },
+    {
+      "test_name": "user_profile",
+      "status": "failed",
+      "error": "User profile failed: Failed to get user profile: Invalid API key or authentication failed (Status: 401)",
+      "details": {}
+    },
+    {
+      "test_name": "get_ingestion_logs",
+      "status": "failed",
+      "error": "get_ingestion_logs failed: Failed to get ingestion logs: Failed to parse JSON response: Expecting value: line 1 column 1 (char 0)",
+      "details": {}
+    },
+    {
+      "test_name": "get_specific_log",
+      "status": "failed",
+      "error": "get_specific_log failed: Failed to get ingestion logs: Failed to parse JSON response: Expecting value: line 1 column 1 (char 0)",
+      "details": {}
+    },
+    {
+      "test_name": "delete_log_entry",
+      "status": "failed",
+      "error": "delete_log_entry failed: Failed to get ingestion logs: Failed to parse JSON response: Expecting value: line 1 column 1 (char 0)",
+      "details": {}
+    },
+    {
+      "test_name": "delete_space",
+      "status": "passed",
+      "error": null,
+      "details": {
+        "space_name": "test_delete_space_1758402140",
+        "space_id": "cmfsr8f9p00ippj1vkrmgfotx",
+        "delete_result": {
+          "success": true,
+          "message": "Space deleted successfully"
+        }
+      }
+    }
+  ]
+}

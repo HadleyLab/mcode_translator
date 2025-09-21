@@ -1,6 +1,0 @@
-{
-  "timestamp": 1758420006.080996,
-  "success": false,
-  "error": "Authentication failed: Failed to create OAuth2 client: Failed to initialize MCP session: OAuth2 authentication failed: No tokens available (Status: 401) (Status: 401)",
-  "steps": []
-}
