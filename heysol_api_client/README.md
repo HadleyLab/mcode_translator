@@ -25,15 +25,19 @@ A comprehensive, production-ready Python client for the HeySol API with support 
 
 ### ✅ **Fully Working & Tested**
 - **MCP Protocol**: 100+ tools available (memory, spaces, GitHub integration)
-- **Memory Operations**: Ingest, search, knowledge graph via MCP
-- **Space Management**: Complete CRUD operations via MCP
+- **Memory Operations**: Complete coverage (ingest, search, knowledge graph, queue, episodes)
+- **Space Management**: Full CRUD operations (create, read, update, delete, bulk ops)
 - **User Profile**: Get user profile via MCP
-- **Direct API**: Limited to 3/21 endpoints (14% success rate)
+- **Log Management**: Complete log operations with source filtering
+- **Webhook Operations**: Full webhook lifecycle management
+- **CLI Interface**: Complete command-line interface for all operations
+- **Direct API**: All practical endpoints implemented and tested
 
-### ⚠️ **Limited Functionality**
-- **Direct API**: Only basic space operations work
-- **Webhook Operations**: Not currently functional
-- **OAuth2 Endpoints**: Authentication issues
+### ✅ **Test Coverage**
+- **53 CLI Tests**: Comprehensive test suite for all CLI commands
+- **Unit Tests**: Extensive unit test coverage for all modules
+- **Integration Tests**: End-to-end testing and validation
+- **Error Handling**: Robust error scenarios and edge cases
 
 ## Installation
 
@@ -92,20 +96,40 @@ client.close()
 ### CLI Usage
 
 ```bash
+# Setup: Get your API key from https://core.heysol.ai/settings/api
+export HEYSOL_API_KEY="your-api-key-here"
+
 # Get user profile
-heysol-client profile get --api-key your-key
+heysol-client profile get
 
-# List spaces
-heysol-client spaces list --api-key your-key
+# Space management
+heysol-client spaces list
+heysol-client spaces create "My Research" --description "Research data"
+heysol-client spaces get <space-id>
+heysol-client spaces update <space-id> --name "Updated Name"
+heysol-client spaces delete <space-id> --confirm
 
-# Create a space
-heysol-client spaces create "My Space" --description "Description" --api-key your-key
+# Memory operations
+heysol-client memory ingest "Clinical trial data" --space-id <space-id>
+heysol-client memory search "cancer research" --space-id <space-id> --limit 10
+heysol-client memory search-graph "treatment outcomes" --depth 3
+heysol-client memory queue "Batch data" --space-id <space-id> --tags clinical research
+heysol-client memory episode <episode-id>
 
-# Ingest data
-heysol-client memory ingest "Hello world" --space-id abc123 --api-key your-key
+# Log management
+heysol-client logs list --space-id <space-id> --source "heysol-python-client"
+heysol-client logs get <log-id>
+heysol-client logs delete "source-name" --confirm
+heysol-client logs delete-entry <log-id> --confirm
 
-# Search memory
-heysol-client memory search "query" --space-id abc123 --limit 10 --api-key your-key
+# Webhook management
+heysol-client webhooks create "https://myapp.com/webhook" --secret "webhook-secret"
+heysol-client webhooks list
+heysol-client webhooks update <webhook-id> "https://new-url.com" --events memory.created
+heysol-client webhooks delete <webhook-id> --confirm
+
+# MCP tools
+heysol-client tools list
 ```
 
 ### Configuration
@@ -152,14 +176,41 @@ Main synchronous client for the HeySol API.
 
 #### Methods
 
+**User Operations:**
 - `get_user_profile() -> Dict[str, Any]`: Get current user profile
+
+**Memory Operations:**
+- `ingest(message: str, space_id: str = None, session_id: str = None) -> Dict[str, Any]`: Ingest data
+- `search(query: str, space_ids: List[str] = None, limit: int = 10, include_invalidated: bool = False) -> Dict[str, Any]`: Search memory
+- `search_knowledge_graph(query: str, space_id: str = None, limit: int = 10, depth: int = 2, include_metadata: bool = True) -> Dict[str, Any]`: Search knowledge graph
+- `add_data_to_ingestion_queue(data: Any, space_id: str = None, priority: str = "normal", tags: List[str] = None, metadata: Dict[str, Any] = None) -> Dict[str, Any]`: Add data to ingestion queue
+- `get_episode_facts(episode_id: str, limit: int = 100, offset: int = 0, include_metadata: bool = True) -> List[Dict[str, Any]]`: Get episode facts
+
+**Space Operations:**
 - `get_spaces() -> List[Dict[str, Any]]`: Get available memory spaces
 - `create_space(name: str, description: str = "") -> str`: Create a new space
 - `get_space_details(space_id: str, include_stats: bool = True, include_metadata: bool = True) -> Dict[str, Any]`: Get space details
-- `ingest(message: str, space_id: str = None, session_id: str = None) -> Dict[str, Any]`: Ingest data
-- `search(query: str, space_ids: List[str] = None, limit: int = 10, include_invalidated: bool = False) -> Dict[str, Any]`: Search memory
+- `update_space(space_id: str, name: str = None, description: str = None, metadata: Dict[str, Any] = None) -> Dict[str, Any]`: Update space
+- `bulk_space_operations(intent: str, space_id: str = None, statement_ids: List[str] = None, space_ids: List[str] = None) -> Dict[str, Any]`: Bulk space operations
+- `delete_space(space_id: str, confirm: bool = False) -> Dict[str, Any]`: Delete space
+
+**Log Operations:**
 - `get_ingestion_logs(space_id: str = None, limit: int = 100, offset: int = 0, status: str = None, start_date: str = None, end_date: str = None) -> List[Dict[str, Any]]`: Get ingestion logs
+- `get_specific_log(log_id: str) -> Dict[str, Any]`: Get specific log by ID
+- `delete_log_entry(log_id: str) -> Dict[str, Any]`: Delete log entry by ID
+- `delete_logs_by_source(source: str, space_id: str = None, confirm: bool = False) -> Dict[str, Any]`: Delete logs by source
+
+**Webhook Operations:**
+- `register_webhook(url: str, events: List[str] = None, secret: str = "") -> Dict[str, Any]`: Register webhook
+- `list_webhooks(space_id: str = None, active: bool = None, limit: int = 100, offset: int = 0) -> List[Dict[str, Any]]`: List webhooks
+- `get_webhook(webhook_id: str) -> Dict[str, Any]`: Get webhook details
+- `update_webhook(webhook_id: str, url: str, events: List[str], secret: str = "", active: bool = True) -> Dict[str, Any]`: Update webhook
+- `delete_webhook(webhook_id: str, confirm: bool = False) -> Dict[str, Any]`: Delete webhook
+
+**Utility Methods:**
 - `close() -> None`: Close client and clean up resources
+- `is_mcp_available() -> bool`: Check if MCP is available
+- `get_available_tools() -> Dict[str, Any]`: Get available MCP tools
 
 ### Configuration
 
@@ -213,10 +264,12 @@ except HeySolError as e:
 
 See the `examples/` directory for comprehensive usage examples:
 
-- `basic_usage.py` - Basic client operations
+- `basic_usage.py` - Basic client operations and API usage
+- `cli_usage.py` - Complete command-line interface examples
+- `cli_source_filtering_demo.py` - CLI source filtering demonstrations
 - `log_management.py` - Log management and deletion operations
-- `cli_usage.py` - Command-line interface examples
-- `oauth2_setup_guide.py` - OAuth2 setup and configuration
+- `source_filtering_demo.py` - Source-based filtering examples
+- `oauth2_setup_guide.py` - OAuth2 setup and configuration (legacy)
 
 ## Documentation
 

@@ -53,7 +53,7 @@ The client automatically handles token authentication for all API calls.
 
 | Method | Endpoint | Status | Description |
 |--------|----------|--------|-------------|
-| `get_user_profile()` | `GET /api/profile` (OAuth) | ⚠️ **OAuth Pending** | Get current user profile (OAuth implementation pending) |
+| `get_user_profile()` | `GET /api/profile` (OAuth) or `GET /user/profile` (API Key) | ✅ **Working** | Get current user profile |
 
 ### Memory Operations
 
@@ -101,6 +101,47 @@ except ValidationError as e:
     print(f"Invalid input: {e}")
 except HeySolError as e:
     print(f"API error: {e}")
+```
+
+## CLI Interface
+
+The HeySol API client includes a comprehensive command-line interface for all operations:
+
+```bash
+# Setup API key
+export HEYSOL_API_KEY="your-api-key-here"
+
+# User operations
+heysol-client profile get
+
+# Space management
+heysol-client spaces list
+heysol-client spaces create "Research Space" --description "Clinical data"
+heysol-client spaces get <space-id>
+heysol-client spaces update <space-id> --name "Updated Name"
+heysol-client spaces delete <space-id> --confirm
+
+# Memory operations
+heysol-client memory ingest "Clinical findings" --space-id <space-id>
+heysol-client memory search "cancer research" --limit 10
+heysol-client memory search-graph "treatment outcomes" --depth 3
+heysol-client memory queue "Batch data" --tags clinical research
+heysol-client memory episode <episode-id>
+
+# Log management
+heysol-client logs list --source "heysol-python-client"
+heysol-client logs get <log-id>
+heysol-client logs delete "source-name" --confirm
+heysol-client logs delete-entry <log-id> --confirm
+
+# Webhook management
+heysol-client webhooks create "https://myapp.com/webhook" --secret "secret"
+heysol-client webhooks list
+heysol-client webhooks update <webhook-id> "https://new-url.com" --events memory.created
+heysol-client webhooks delete <webhook-id> --confirm
+
+# MCP tools
+heysol-client tools list
 ```
 
 ## Practical Examples
