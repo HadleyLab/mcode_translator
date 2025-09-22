@@ -11,7 +11,7 @@ A comprehensive, production-ready Python client for the HeySol API with support 
 ## Features
 
 - 🚀 **Full API Support**: Complete coverage of HeySol API endpoints
-- 🔐 **Authentication**: API key and Bearer token authentication
+- 🔐 **Authentication**: API key authentication with Bearer token support
 - 📝 **Memory Management**: Ingest, search, and manage memory spaces
 - 🛡️ **Error Handling**: Comprehensive exception hierarchy with retry mechanisms
 - 📊 **Rate Limiting**: Built-in rate limiting and throttling
@@ -23,17 +23,16 @@ A comprehensive, production-ready Python client for the HeySol API with support 
 ## 📊 Implementation Status
 
 ### ✅ **Fully Working & Tested**
-- **MCP Tools**: `memory_ingest`, `memory_search`, `memory_get_spaces`, `get_user_profile`
-- **Memory Operations**: Search, ingest, get logs, knowledge graph search
-- **Space Management**: Create, update, delete, bulk operations
-- **OAuth2 Flow**: Authorization, token exchange, refresh, revocation
-- **Webhook Management**: Register, list, update, delete webhooks
-- **User Profile**: Get user profile and preferences
+- **MCP Protocol**: 100+ tools available (memory, spaces, GitHub integration)
+- **Memory Operations**: Ingest, search, knowledge graph via MCP
+- **Space Management**: Complete CRUD operations via MCP
+- **User Profile**: Get user profile via MCP
+- **Direct API**: Limited to 3/21 endpoints (14% success rate)
 
-### ⚠️ **Pending Implementation**
-- **Log Entry Deletion**: DELETE endpoint not available in HeySol API
-- **OAuth2 Authorization Decision**: Endpoint not yet tested
-- **Token Introspection**: OAuth2 token introspection not tested
+### ⚠️ **Limited Functionality**
+- **Direct API**: Only basic space operations work
+- **Webhook Operations**: Not currently functional
+- **OAuth2 Endpoints**: Authentication issues
 
 ## Installation
 
@@ -62,7 +61,7 @@ pip install -e ".[dev]"
 ### Basic Usage
 
 ```python
-from heysol import HeySolClient, HeySolConfig
+from heysol import HeySolClient
 
 # Initialize with API key
 client = HeySolClient(api_key="your-api-key-here")
@@ -77,12 +76,11 @@ space_id = client.get_or_create_space("My Research", "Space for research data")
 # Ingest data
 result = client.ingest(
     message="Clinical trial shows promising results for new treatment",
-    space_id=space_id,
-    tags=["clinical-trial", "research"]
+    space_id=space_id
 )
 
 # Search for data
-results = client.search("clinical trial", space_id=space_id, limit=5)
+results = client.search("clinical trial", space_ids=[space_id], limit=5)
 for episode in results["episodes"]:
     print(f"- {episode['content']}")
 
@@ -136,7 +134,7 @@ Main synchronous client for the HeySol API.
 #### Methods
 
 - `get_user_profile() -> Dict[str, Any]`: Get current user profile
-- `get_spaces() -> List[Dict[str, Any]]`: Get available memory spaces
+- `get_spaces() -> List[Dict[str, Any]]`: Get available memory spaces (returns array of space objects)
 - `create_space(name: str, description: str = "") -> str`: Create a new space
 - `get_or_create_space(name: str, description: str = "") -> str`: Get existing or create space
 - `ingest(message: str, space_id: str = None, source: str = None, priority: str = "normal", tags: List[str] = None) -> Dict[str, Any]`: Ingest data
@@ -144,6 +142,7 @@ Main synchronous client for the HeySol API.
 - `search_knowledge_graph(query: str, space_id: str = None, limit: int = 10, depth: int = 2, include_metadata: bool = True) -> Dict[str, Any]`: Search knowledge graph
 - `get_ingestion_logs(space_id: str = None, limit: int = 100, offset: int = 0, status: str = None, start_date: str = None, end_date: str = None) -> List[Dict[str, Any]]`: Get ingestion logs
 - `get_specific_log(log_id: str) -> Dict[str, Any]`: Get specific log by ID
+- `delete_log_entry(log_id: str) -> Dict[str, Any]`: Delete a log entry
 - `close() -> None`: Close client and clean up resources
 
 
@@ -201,79 +200,17 @@ See the `examples/` directory for comprehensive usage examples:
 
 - `basic_usage.py` - Basic client operations
 - `log_management.py` - Log management and deletion operations
-- `oauth2_google_demo.py` - Interactive Google OAuth2 demo
-- `oauth2_simple_demo.py` - Simple working OAuth2 demo
-- `oauth2_log_cli.py` - Command-line OAuth2 tool
-- `oauth2_log_demo.py` - Standalone OAuth2 demo script
-- `oauth2_setup_guide.py` - OAuth2 setup guide
-- `oauth2_log_operations.ipynb` - Complete OAuth2 demo notebook
 
 ## Documentation
 
 See the `docs/` directory for comprehensive documentation:
 
 - `API_DOCUMENTATION.md` - Complete API reference and usage guide
-- `OAUTH2_AUTHORIZATION_GUIDE.md` - OAuth2 setup and usage guide
 - `AUTHENTICATION_GUIDE.md` - Authentication methods and configuration
 - `API_DISCOVERY.md` - API endpoint discovery and testing
 - `TESTING_REPORT.md` - Testing results and coverage reports
 
 
-## OAuth2 Authentication
-
-The HeySol API client supports OAuth2 authentication with Google accounts.
-
-### Quick Setup
-
-1. **Create Google OAuth2 Credentials**:
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project or select existing
-   - Enable Google+ API
-   - Create OAuth2 credentials (Web application)
-   - Set authorized redirect URI: `http://localhost:8080/callback`
-
-2. **Configure OAuth2 Consent Screen**:
-   - Navigate to "APIs & Services" → "OAuth consent screen"
-   - Choose "External" user type and click "Create"
-   - Fill in app information (name, email, etc.)
-   - Add authorized domains (e.g., `localhost` for testing)
-   - Configure required scopes (openid, profile, email)
-   - Save and continue through all steps
-   - **Important**: Go to "Publish app" → "Publish" (even for testing)
-
-3. **Set Environment Variables**:
-   ```bash
-   export HEYSOL_OAUTH2_CLIENT_ID="your-google-oauth2-client-id"
-   export HEYSOL_OAUTH2_CLIENT_SECRET="your-google-oauth2-client-secret"
-   export HEYSOL_OAUTH2_REDIRECT_URI="http://localhost:8080/callback"
-   export HEYSOL_OAUTH2_SCOPE="openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
-   ```
-
-### Usage Examples
-
-```python
-from heysol.client import HeySolClient
-from heysol.oauth2 import InteractiveOAuth2Authenticator
-
-# Initialize with OAuth2
-oauth2_auth = InteractiveOAuth2Authenticator()
-client = HeySolClient(oauth2_auth=oauth2_auth)
-
-# Get user profile using OAuth2
-profile = client.get_user_profile()
-print(f"Hello, {profile['name']}!")
-```
-
-### Complete Implementation
-
-See the unified OAuth2 implementation:
-
-- **`examples/oauth2_log_operations.ipynb`** - Complete OAuth2 demo notebook
-- **`examples/oauth2_log_demo.py`** - Standalone OAuth2 demo script
-- **`examples/oauth2_log_cli.py`** - Command-line OAuth2 tool
-- **`examples/oauth2_google_demo.py`** - Interactive Google OAuth2 demo
-- **`examples/oauth2_simple_demo.py`** - Simple working OAuth2 demo
-- **`docs/OAUTH2_AUTHORIZATION_GUIDE.md`** - Complete OAuth2 setup and usage guide
 
 ## Testing
 

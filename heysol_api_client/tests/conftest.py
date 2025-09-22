@@ -35,40 +35,10 @@ def api_key() -> str:
     return api_key
 
 
-@pytest.fixture(scope="session")
-def oauth2_credentials() -> Dict[str, str]:
-    """Get OAuth2 credentials from environment variables."""
-    client_id = os.getenv("HEYSOL_OAUTH2_CLIENT_ID")
-    client_secret = os.getenv("HEYSOL_OAUTH2_CLIENT_SECRET")
-    redirect_uri = os.getenv("HEYSOL_OAUTH2_REDIRECT_URI", "http://localhost:8080/callback")
-
-    if not client_id or not client_secret:
-        pytest.skip("OAuth2 credentials not configured")
-
-    return {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "redirect_uri": redirect_uri
-    }
-
-
 @pytest.fixture
 def client(api_key: str) -> HeySolClient:
     """Create a test client instance with API key."""
     return HeySolClient(api_key=api_key, skip_mcp_init=True)
-
-
-@pytest.fixture
-def oauth2_client(oauth2_credentials: Dict[str, str]) -> HeySolClient:
-    """Create a test client instance with OAuth2 authentication."""
-    from heysol.oauth2 import InteractiveOAuth2Authenticator
-
-    auth = InteractiveOAuth2Authenticator(
-        client_id=oauth2_credentials["client_id"],
-        client_secret=oauth2_credentials["client_secret"],
-        redirect_uri=oauth2_credentials["redirect_uri"]
-    )
-    return HeySolClient(oauth2_auth=auth, skip_mcp_init=True)
 
 
 @pytest.fixture
@@ -88,32 +58,49 @@ def mock_api_setup(requests_mock: requests_mock.Mocker, test_config: HeySolConfi
         }
     )
 
-    # Memory endpoints
+    # Memory endpoints - Updated to match new API format
     requests_mock.post(
-        f"{base_url}/memory/knowledge-graph/search",
-        json={"nodes": [], "edges": []}
+        f"{base_url}/search",
+        json={"episodes": [], "total": 0}
+    )
+    # Additional search endpoints for edge cases
+    requests_mock.post(
+        f"{base_url}/search",
+        json={"episodes": [], "total": 0},
+        additional_matcher=lambda r: "limit=10" in r.url
     )
     requests_mock.post(
-        f"{base_url}/memory/ingestion/queue",
-        json={"queue_id": "queue-123"}
+        f"{base_url}/search",
+        json={"nodes": [], "edges": []},
+        additional_matcher=lambda r: "type=knowledge_graph" in r.url
+    )
+    requests_mock.post(
+        f"{base_url}/add",
+        json={"success": True, "id": "episode-123"}
     )
     requests_mock.get(
         f"{base_url}/episodes/episode-123/facts",
         json=[]
     )
     requests_mock.get(
-        f"{base_url}/memory/logs",
+        f"{base_url}/logs",
         json=[]
     )
+    # Additional logs endpoints for large responses
     requests_mock.get(
-        f"{base_url}/memory/logs/log-123",
+        f"{base_url}/logs",
+        json={"logs": [{"id": i, "value": f"test_value_{i}"} for i in range(10000)], "metadata": {"total_count": 10000, "page": 1}},
+        additional_matcher=lambda r: "limit=10000" in r.url
+    )
+    requests_mock.get(
+        f"{base_url}/logs/log-123",
         json={"id": "log-123"}
     )
 
-    # Spaces endpoints
+    # Spaces endpoints - Updated to match new API format
     requests_mock.get(
         f"{base_url}/spaces",
-        json=[]
+        json={"spaces": []}
     )
     requests_mock.post(
         f"{base_url}/spaces",
@@ -121,47 +108,44 @@ def mock_api_setup(requests_mock: requests_mock.Mocker, test_config: HeySolConfi
     )
     requests_mock.get(
         f"{base_url}/spaces/space-123",
-        json={"id": "space-123", "name": "Test Space"}
+        json={"space": {"id": "space-123", "name": "Test Space"}}
     )
     requests_mock.put(
         f"{base_url}/spaces/space-123",
         json={"id": "space-123", "name": "Updated Space"}
     )
+    requests_mock.put(
+        f"{base_url}/spaces",
+        json={"success": True}
+    )
     requests_mock.delete(
         f"{base_url}/spaces/space-123",
         json={"deleted": True}
     )
-
-    # OAuth2 endpoints
-    requests_mock.get(
-        f"{base_url}/oauth2/authorize",
-        json={"authorization_url": "https://example.com/auth"}
-    )
-    requests_mock.post(
-        f"{base_url}/oauth2/token",
-        json={"access_token": "token-123"}
-    )
-    requests_mock.get(
-        f"{base_url}/oauth2/userinfo",
-        json={"sub": "user-123"}
+    # Additional space endpoints for error testing
+    requests_mock.delete(
+        f"{base_url}/spaces/space-123",
+        status_code=401,
+        json={"error": "Unauthorized"}
     )
 
-    # Webhook endpoints
+
+    # Webhook endpoints - Updated to match new API format
     requests_mock.post(
         f"{base_url}/webhooks",
         json={"webhook_id": "webhook-123"}
     )
     requests_mock.get(
         f"{base_url}/webhooks",
-        json=[]
+        json={"webhooks": []}
     )
     requests_mock.get(
         f"{base_url}/webhooks/webhook-123",
-        json={"id": "webhook-123"}
+        json={"webhook": {"id": "webhook-123"}}
     )
     requests_mock.put(
         f"{base_url}/webhooks/webhook-123",
-        json={"id": "webhook-123"}
+        json={"webhook_id": "webhook-123"}
     )
     requests_mock.delete(
         f"{base_url}/webhooks/webhook-123",

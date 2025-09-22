@@ -134,16 +134,6 @@ class TestLiveAPIIntegration(unittest.TestCase):
         except HeySolError as e:
             self.skipTest(f"Space operations not accessible: {e}")
 
-    @pytest.mark.integration
-    def test_live_oauth2_authorization_url(self):
-        """Test live get_oauth2_authorization_url endpoint."""
-        try:
-            result = self.client.get_oauth2_authorization_url("openid profile email")
-            self.assertIsInstance(result, str)
-            self.assertIn("authorize", result)
-            print(f"✅ OAuth2 authorization URL generated: {result[:50]}...")
-        except HeySolError as e:
-            self.skipTest(f"OAuth2 authorization not accessible: {e}")
 
     @pytest.mark.integration
     def test_live_webhook_operations(self):
@@ -156,8 +146,7 @@ class TestLiveAPIIntegration(unittest.TestCase):
             webhook_result = self.client.register_webhook(
                 webhook_url,
                 events,
-                space_id=self.test_space_id,
-                secret="test-webhook-secret"
+                "test-webhook-secret"
             )
             self.assertIsInstance(webhook_result, dict)
             webhook_id = webhook_result.get("id")
@@ -193,15 +182,6 @@ class TestLiveAPIIntegration(unittest.TestCase):
         except HeySolError as e:
             self.skipTest(f"Webhook operations not accessible: {e}")
 
-    @pytest.mark.integration
-    def test_live_oauth2_token_operations(self):
-        """Test live OAuth2 token operations."""
-        try:
-            # Test token introspection (if we have a token)
-            # This would require a valid token to test properly
-            print("⚠️  OAuth2 token operations require valid tokens - skipping detailed tests")
-        except HeySolError as e:
-            self.skipTest(f"OAuth2 token operations not accessible: {e}")
 
     @pytest.mark.integration
     def test_live_error_handling(self):

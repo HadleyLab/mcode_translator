@@ -6,7 +6,6 @@ Tests individual API endpoints with mock responses, covering:
 - User endpoints
 - Memory endpoints
 - Spaces endpoints
-- OAuth2 endpoints
 - Webhook endpoints
 - Response parsing and validation
 """
@@ -46,34 +45,38 @@ class TestAPIEndpoints:
 
         # Memory endpoints
         requests_mock.post(
-            "https://core.heysol.ai/api/v1/memory/knowledge-graph/search",
-            json={"nodes": [], "edges": []}
+            "https://core.heysol.ai/api/v1/search",
+            json={"episodes": [], "total": 0}
         )
         requests_mock.post(
-            "https://core.heysol.ai/api/v1/memory/ingestion/queue",
-            json={"queue_id": "queue-123"}
+            "https://core.heysol.ai/api/v1/add",
+            json={"success": True, "id": "episode-123"}
         )
         requests_mock.get(
             "https://core.heysol.ai/api/v1/episodes/episode-123/facts",
             json=[]
         )
         requests_mock.get(
-            "https://core.heysol.ai/api/v1/memory/logs",
+            "https://core.heysol.ai/api/v1/logs",
             json=[]
         )
         requests_mock.get(
-            "https://core.heysol.ai/api/v1/memory/logs/log-123",
+            "https://core.heysol.ai/api/v1/logs/log-123",
             json={"id": "log-123"}
         )
 
         # Spaces endpoints
         requests_mock.get(
             "https://core.heysol.ai/api/v1/spaces",
-            json=[]
+            json={"spaces": []}
         )
         requests_mock.post(
             "https://core.heysol.ai/api/v1/spaces",
             json={"id": "space-123", "name": "Test Space"}
+        )
+        requests_mock.put(
+            "https://core.heysol.ai/api/v1/spaces",
+            json={"success": True, "assigned_count": 5}
         )
         requests_mock.get(
             "https://core.heysol.ai/api/v1/spaces/space-123",
@@ -81,26 +84,20 @@ class TestAPIEndpoints:
         )
         requests_mock.put(
             "https://core.heysol.ai/api/v1/spaces/space-123",
-            json={"id": "space-123", "name": "Updated Space"}
+            json={
+                "id": "space-123",
+                "name": "Updated Space",
+                "description": "Updated description",
+                "createdAt": "2024-01-01T00:00:00Z",
+                "updatedAt": "2024-01-02T00:00:00Z",
+                "userId": "user-123"
+            }
         )
         requests_mock.delete(
             "https://core.heysol.ai/api/v1/spaces/space-123",
             json={"deleted": True}
         )
 
-        # OAuth2 endpoints
-        requests_mock.get(
-            "https://core.heysol.ai/api/v1/oauth2/authorize",
-            json={"authorization_url": "https://example.com/auth"}
-        )
-        requests_mock.post(
-            "https://core.heysol.ai/api/v1/oauth2/token",
-            json={"access_token": "token-123"}
-        )
-        requests_mock.get(
-            "https://core.heysol.ai/api/v1/oauth2/userinfo",
-            json={"sub": "user-123"}
-        )
 
         # Webhook endpoints
         requests_mock.post(
@@ -155,20 +152,15 @@ class TestAPIEndpoints:
     def test_search_knowledge_graph_valid(self, client):
         """Test search_knowledge_graph with valid inputs."""
         expected_result = {
-            "query": "clinical trial",
-            "nodes": [
+            "results": [
                 {"id": "node-1", "label": "Clinical Trial", "type": "concept"},
                 {"id": "node-2", "label": "Patient", "type": "entity"}
-            ],
-            "edges": [
-                {"source": "node-1", "target": "node-2", "relationship": "involves"}
-            ],
-            "total_results": 2
+            ]
         }
 
         with requests_mock.Mocker() as m:
             m.post(
-                "https://core.heysol.ai/api/v1/memory/knowledge-graph/search",
+                "https://core.heysol.ai/api/v1/search?limit=10&depth=2&type=knowledge_graph",
                 json=expected_result,
                 status_code=200
             )
@@ -181,39 +173,38 @@ class TestAPIEndpoints:
         # Test minimum limit
         with requests_mock.Mocker() as m:
             m.post(
-                "https://core.heysol.ai/api/v1/memory/knowledge-graph/search",
-                json={"nodes": [], "edges": []},
+                "https://core.heysol.ai/api/v1/search?limit=1&depth=2&type=knowledge_graph",
+                json={"results": []},
                 status_code=200
             )
 
             result = client.search_knowledge_graph("test", limit=1)
-            assert result == {"nodes": [], "edges": []}
+            assert result == {"results": []}
 
         # Test maximum limit
         with requests_mock.Mocker() as m:
             m.post(
-                "https://core.heysol.ai/api/v1/memory/knowledge-graph/search",
-                json={"nodes": [], "edges": []},
+                "https://core.heysol.ai/api/v1/search?limit=100&depth=2&type=knowledge_graph",
+                json={"results": []},
                 status_code=200
             )
 
             result = client.search_knowledge_graph("test", limit=100)
-            assert result == {"nodes": [], "edges": []}
+            assert result == {"results": []}
 
     def test_add_data_to_ingestion_queue_valid(self, client):
         """Test add_data_to_ingestion_queue with valid inputs."""
         test_data = {"clinical_data": "test data", "patient_id": "123"}
         expected_response = {
-            "queue_id": "queue-123",
-            "status": "queued",
-            "estimated_processing_time": "30s"
+            "success": True,
+            "queueId": "episode-123"
         }
 
         with requests_mock.Mocker() as m:
             m.post(
-                "https://core.heysol.ai/api/v1/memory/ingestion/queue",
+                "https://core.heysol.ai/api/v1/add",
                 json=expected_response,
-                status_code=202
+                status_code=200
             )
 
             result = client.add_data_to_ingestion_queue(
@@ -269,7 +260,7 @@ class TestAPIEndpoints:
 
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/memory/logs",
+                "https://core.heysol.ai/api/v1/logs?limit=50&offset=0&status=success",
                 json=expected_logs,
                 status_code=200
             )
@@ -291,7 +282,7 @@ class TestAPIEndpoints:
 
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/memory/logs/log-123",
+                "https://core.heysol.ai/api/v1/logs/log-123",
                 json=expected_log,
                 status_code=200
             )
@@ -320,7 +311,7 @@ class TestAPIEndpoints:
         with requests_mock.Mocker() as m:
             m.get(
                 "https://core.heysol.ai/api/v1/spaces",
-                json=expected_spaces,
+                json={"spaces": expected_spaces},
                 status_code=200
             )
 
@@ -338,7 +329,7 @@ class TestAPIEndpoints:
 
         with requests_mock.Mocker() as m:
             m.post(
-                "https://core.heysol.ai/api/v1/memory/spaces",
+                "https://core.heysol.ai/api/v1/spaces",
                 json=expected_response,
                 status_code=201
             )
@@ -376,7 +367,9 @@ class TestAPIEndpoints:
             "id": "space-123",
             "name": "Updated Space",
             "description": "Updated description",
-            "updated_at": "2024-01-02T00:00:00Z"
+            "createdAt": "2024-01-01T00:00:00Z",
+            "updatedAt": "2024-01-02T00:00:00Z",
+            "userId": "user-123"
         }
 
         with requests_mock.Mocker() as m:
@@ -410,60 +403,28 @@ class TestAPIEndpoints:
             result = client.delete_space("space-123", confirm=True)
             assert result == expected_response
 
-    # OAuth2 Endpoints
-    def test_get_oauth2_authorization_url_valid(self, client):
-        """Test get_oauth2_authorization_url with valid inputs."""
+    def test_bulk_space_operations_valid(self, client):
+        """Test bulk_space_operations with valid inputs."""
         expected_response = {
-            "authorization_url": "https://core.heysol.ai/api/v1/oauth2/authorize?client_id=test&scope=openid+profile+email&response_type=code"
+            "success": True,
+            "assigned_count": 5,
+            "message": "Successfully assigned 5 statements to space"
         }
 
         with requests_mock.Mocker() as m:
-            m.get(
-                "https://core.heysol.ai/api/v1/oauth2/authorize",
+            m.put(
+                "https://core.heysol.ai/api/v1/spaces",
                 json=expected_response,
                 status_code=200
             )
 
-            result = client.get_oauth2_authorization_url(scope="openid profile email")
+            result = client.bulk_space_operations(
+                intent="assign_statements",
+                space_id="space-123",
+                statement_ids=["stmt-1", "stmt-2", "stmt-3", "stmt-4", "stmt-5"]
+            )
             assert result == expected_response
 
-    def test_oauth2_token_exchange_valid(self, client):
-        """Test oauth2_token_exchange with valid inputs."""
-        expected_response = {
-            "access_token": "access-token-123",
-            "token_type": "Bearer",
-            "expires_in": 3600,
-            "refresh_token": "refresh-token-123"
-        }
-
-        with requests_mock.Mocker() as m:
-            m.post(
-                "https://core.heysol.ai/api/v1/oauth2/token",
-                json=expected_response,
-                status_code=200
-            )
-
-            result = client.oauth2_token_exchange("auth-code-123", "https://example.com/callback")
-            assert result == expected_response
-
-    def test_get_oauth2_user_info_valid(self, client):
-        """Test get_oauth2_user_info with valid access token."""
-        expected_user_info = {
-            "sub": "user-123",
-            "name": "Test User",
-            "email": "test@example.com",
-            "email_verified": True
-        }
-
-        with requests_mock.Mocker() as m:
-            m.get(
-                "https://core.heysol.ai/api/v1/oauth2/userinfo",
-                json=expected_user_info,
-                status_code=200
-            )
-
-            result = client.get_oauth2_user_info("access-token-123")
-            assert result == expected_user_info
 
     # Webhook Endpoints
     def test_register_webhook_valid(self, client):
@@ -557,6 +518,7 @@ class TestAPIEndpoints:
                 "webhook-123",
                 url="https://example.com/updated-webhook",
                 events=["memory.ingest", "memory.search", "space.create"],
+                secret="updated-webhook-secret",
                 active=False
             )
             assert result == expected_response

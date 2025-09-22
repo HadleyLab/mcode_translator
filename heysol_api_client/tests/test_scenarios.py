@@ -7,7 +7,6 @@ Tests real API integration scenarios including:
 - Real endpoint functionality
 - Performance with actual network calls
 - Error handling with real API failures
-- OAuth2 integration flows
 - Webhook registration and management
 """
 
@@ -30,23 +29,6 @@ class TestIntegrationScenarios:
         api_key = os.getenv("HEYSOL_API_KEY") or os.getenv("COREAI_API_KEY", "test-key-for-live-tests")
         return HeySolClient(api_key=api_key)
 
-    @pytest.fixture
-    def oauth2_client(self):
-        """Create a client instance with OAuth2 authentication."""
-        client_id = os.getenv("HEYSOL_OAUTH2_CLIENT_ID")
-        client_secret = os.getenv("HEYSOL_OAUTH2_CLIENT_SECRET")
-        redirect_uri = os.getenv("HEYSOL_OAUTH2_REDIRECT_URI", "http://localhost:8080/callback")
-
-        if not client_id or not client_secret:
-            pytest.skip("OAuth2 credentials not configured")
-
-        from heysol.oauth2 import InteractiveOAuth2Authenticator
-        auth = InteractiveOAuth2Authenticator(
-            client_id=client_id,
-            client_secret=client_secret,
-            redirect_uri=redirect_uri
-        )
-        return HeySolClient(oauth2_auth=auth)
 
     # Live API Connectivity Tests
     @pytest.mark.integration
@@ -67,7 +49,7 @@ class TestIntegrationScenarios:
             # Test authentication by making an authenticated request
             profile = live_client.get_user_profile()
             assert isinstance(profile, dict)
-            assert "id" in profile or "sub" in profile  # OAuth2 vs API key user
+            assert "id" in profile  # API key user
             print(f"✅ Live API authentication successful for user: {profile.get('name', 'Unknown')}")
         except Exception as e:
             pytest.skip(f"Live API authentication test skipped due to: {e}")
@@ -109,23 +91,6 @@ class TestIntegrationScenarios:
         except Exception as e:
             pytest.skip(f"Live space operations test skipped due to: {e}")
 
-    @pytest.mark.integration
-    def test_live_oauth2_flow(self, oauth2_client):
-        """Test OAuth2 authentication flow with live API."""
-        try:
-            # Test OAuth2 authorization URL generation
-            auth_url = oauth2_client.get_oauth2_authorization_url()
-            assert isinstance(auth_url, dict)
-            assert "authorization_url" in auth_url
-            print("✅ Live OAuth2 authorization URL generated successfully")
-
-            # Test OAuth2 user info retrieval
-            user_info = oauth2_client.get_oauth2_user_info("dummy-token")
-            assert isinstance(user_info, dict)
-            print("✅ Live OAuth2 user info endpoint accessible")
-
-        except Exception as e:
-            pytest.skip(f"Live OAuth2 flow test skipped due to: {e}")
 
     # Performance Integration Tests
     @pytest.mark.integration
@@ -209,46 +174,6 @@ class TestIntegrationScenarios:
         except Exception as e:
             pytest.skip(f"Live API rate limiting test skipped due to: {e}")
 
-    # OAuth2 Integration Tests
-    @pytest.mark.integration
-    def test_oauth2_token_operations(self, oauth2_client):
-        """Test OAuth2 token operations with live API."""
-        try:
-            # Test token exchange
-            token_result = oauth2_client.oauth2_token_exchange("dummy-code", "http://localhost:8080/callback")
-            assert isinstance(token_result, dict)
-            print("✅ Live OAuth2 token exchange completed")
-
-            # Test token refresh
-            refresh_result = oauth2_client.oauth2_refresh_token("dummy-refresh-token")
-            assert isinstance(refresh_result, dict)
-            print("✅ Live OAuth2 token refresh completed")
-
-        except Exception as e:
-            pytest.skip(f"OAuth2 token operations test skipped due to: {e}")
-
-    @pytest.mark.integration
-    def test_oauth2_webhook_operations(self, oauth2_client):
-        """Test webhook operations with OAuth2 authentication."""
-        try:
-            # Test webhook listing
-            webhooks = oauth2_client.list_webhooks(limit=10)
-            assert isinstance(webhooks, list)
-            print(f"✅ Live OAuth2 webhook listing completed: {len(webhooks)} webhooks")
-
-            # Test webhook registration (may fail due to permissions)
-            try:
-                webhook_result = oauth2_client.register_webhook(
-                    "https://example.com/test-webhook",
-                    ["memory.ingest"]
-                )
-                assert isinstance(webhook_result, dict)
-                print("✅ Live OAuth2 webhook registration completed")
-            except Exception as e:
-                print(f"OAuth2 webhook registration failed (expected): {e}")
-
-        except Exception as e:
-            pytest.skip(f"OAuth2 webhook operations test skipped due to: {e}")
 
     # Data Consistency Tests
     @pytest.mark.integration
@@ -271,26 +196,6 @@ class TestIntegrationScenarios:
         except Exception as e:
             pytest.skip(f"Live data consistency test skipped due to: {e}")
 
-    # Authentication Method Comparison Tests
-    @pytest.mark.integration
-    def test_authentication_methods_comparison(self, live_client, oauth2_client):
-        """Compare API key vs OAuth2 authentication methods."""
-        try:
-            # Test API key authentication
-            api_key_spaces = live_client.get_spaces()
-            assert isinstance(api_key_spaces, list)
-            print(f"✅ API key authentication: {len(api_key_spaces)} spaces")
-
-            # Test OAuth2 authentication
-            oauth2_spaces = oauth2_client.get_spaces()
-            assert isinstance(oauth2_spaces, list)
-            print(f"✅ OAuth2 authentication: {len(oauth2_spaces)} spaces")
-
-            # Both should return the same data structure
-            assert type(api_key_spaces) == type(oauth2_spaces)
-
-        except Exception as e:
-            pytest.skip(f"Authentication methods comparison test skipped due to: {e}")
 
     # Network Resilience Tests
     @pytest.mark.integration

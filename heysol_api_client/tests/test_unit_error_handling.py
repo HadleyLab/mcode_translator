@@ -208,7 +208,7 @@ class TestErrorHandling:
     # Input Validation Error Tests
     def test_empty_api_key_validation(self):
         """Test validation of empty API key."""
-        with pytest.raises(ValidationError, match="Either API key or OAuth2 authenticator is required"):
+        with pytest.raises(ValidationError, match="API key is required"):
             HeySolClient(api_key="", skip_mcp_init=True)
 
     def test_none_api_key_validation(self):
@@ -251,27 +251,13 @@ class TestErrorHandling:
     def test_invalid_webhook_url_validation(self, client):
         """Test validation of invalid webhook URL."""
         with pytest.raises(ValidationError, match="Webhook URL is required"):
-            client.register_webhook("", ["memory.ingest"])
+            client.register_webhook("", ["memory.ingest"], "secret")
 
     def test_invalid_webhook_id_validation(self, client):
         """Test validation of invalid webhook ID."""
         with pytest.raises(ValidationError, match="Webhook ID is required"):
             client.get_webhook("")
 
-    def test_invalid_oauth2_decision_validation(self, client):
-        """Test validation of invalid OAuth2 decision."""
-        with pytest.raises(ValidationError, match="Decision must be 'allow' or 'deny'"):
-            client.oauth2_authorization_decision("invalid", "req-123")
-
-    def test_invalid_oauth2_code_validation(self, client):
-        """Test validation of invalid OAuth2 authorization code."""
-        with pytest.raises(ValidationError, match="Authorization code is required"):
-            client.oauth2_token_exchange("", "https://example.com/callback")
-
-    def test_invalid_oauth2_token_validation(self, client):
-        """Test validation of invalid OAuth2 access token."""
-        with pytest.raises(ValidationError, match="Access token is required"):
-            client.get_oauth2_user_info("")
 
     def test_delete_space_without_confirmation_validation(self, client):
         """Test validation of space deletion without confirmation."""
@@ -382,23 +368,16 @@ class TestErrorHandling:
             result = client.get_user_profile()
             assert result == unicode_response
 
-    def test_large_response_handling(self, client):
+    def test_large_response_handling(self, client, mock_api_setup):
         """Test handling of large JSON responses."""
         large_response = {
-            "data": [{"id": i, "value": f"test_value_{i}"} for i in range(10000)],
+            "logs": [{"id": i, "value": f"test_value_{i}"} for i in range(10000)],
             "metadata": {"total_count": 10000, "page": 1}
         }
 
-        with requests_mock.Mocker() as m:
-            m.get(
-                "https://core.heysol.ai/api/v1/memory/logs",
-                json=large_response,
-                status_code=200
-            )
-
-            result = client.get_ingestion_logs(limit=10000)
-            assert result == large_response
-            assert len(result["data"]) == 10000
+        result = client.get_ingestion_logs(limit=10000)
+        assert result == large_response["logs"]
+        assert len(result) == 10000
 
     def test_nested_error_response(self, client):
         """Test handling of nested error response structures."""

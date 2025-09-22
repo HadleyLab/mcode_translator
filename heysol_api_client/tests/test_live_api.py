@@ -35,7 +35,7 @@ class TestHeySolClientLiveAPI:
         """Test get_user_profile with live API."""
         profile = live_client.get_user_profile()
         assert isinstance(profile, dict)
-        assert "id" in profile or "sub" in profile  # OAuth2 vs API key user
+        assert "id" in profile  # API key user
         print(f"✅ Live user profile retrieved: {profile.get('name', 'Unknown')}")
 
     # Memory Endpoints Integration Tests
@@ -70,17 +70,6 @@ class TestHeySolClientLiveAPI:
         assert isinstance(spaces, list)
         print(f"✅ Live spaces retrieved: {len(spaces)} spaces")
 
-    # OAuth2 Endpoints Integration Tests
-    @pytest.mark.integration
-    def test_live_get_oauth2_authorization_url(self, live_client):
-        """Test get_oauth2_authorization_url with live API."""
-        try:
-            result = live_client.get_oauth2_authorization_url()
-            assert isinstance(result, dict)
-            assert "authorization_url" in result
-            print(f"✅ Live OAuth2 authorization URL retrieved")
-        except Exception as e:
-            pytest.skip(f"Live API OAuth2 authorization test skipped due to: {e}")
 
     # Webhook Endpoints Integration Tests
     @pytest.mark.integration

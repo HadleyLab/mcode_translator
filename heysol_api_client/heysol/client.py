@@ -11,7 +11,6 @@ import requests
 
 from .config import HeySolConfig
 from .exceptions import HeySolError, ValidationError
-from .oauth2 import InteractiveOAuth2Authenticator, OAuth2Tokens
 
 
 class HeySolClient:
@@ -19,40 +18,33 @@ class HeySolClient:
     Core client for interacting with the HeySol API.
     """
 
-    def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None, oauth2_auth: Optional[InteractiveOAuth2Authenticator] = None, skip_mcp_init: bool = False):
+    def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None, skip_mcp_init: bool = False):
         """
         Initialize the HeySol API client.
 
         Args:
-            api_key: HeySol API key (for API key authentication)
+            api_key: HeySol API key (required for authentication)
             base_url: Base URL for the API (optional, uses config default if not provided)
-            oauth2_auth: OAuth2 authenticator instance (for OAuth2 authentication)
             skip_mcp_init: Skip MCP session initialization (useful for testing)
         """
         # Load configuration
         config = HeySolConfig.from_env()
 
         # Use provided values or fall back to config
-        # Only load API key from config if not using OAuth2 and api_key is None (not empty string)
-        if api_key is None and not oauth2_auth:
+        if api_key is None:
             api_key = config.api_key
         if not base_url:
             base_url = config.base_url
 
-        # Validate authentication method
-        if not api_key and not oauth2_auth:
-            raise ValidationError("Either API key or OAuth2 authenticator is required")
-
-        if api_key and oauth2_auth:
-            raise ValidationError("Cannot use both API key and OAuth2 authentication simultaneously")
+        # Validate authentication
+        if not api_key:
+            raise ValidationError("API key is required")
 
         self.api_key = api_key
         self.base_url = base_url
         self.source = config.source
         self.mcp_url = config.mcp_url
         self.session_id: Optional[str] = None
-        self.oauth2_auth = oauth2_auth
-        self.oauth2_tokens: Optional[OAuth2Tokens] = None
         self.tools: Dict[str, Any] = {}
         self.timeout = 60  # Default timeout
 
@@ -61,18 +53,10 @@ class HeySolClient:
             self._initialize_session()
 
     def _get_authorization_header(self) -> str:
-        """Get the appropriate authorization header based on authentication method."""
-        if self.oauth2_auth:
-            # Use OAuth2 authentication
-            try:
-                return self.oauth2_auth.get_authorization_header()
-            except HeySolError as e:
-                raise HeySolError(f"OAuth2 authentication failed: {e}")
-        else:
-            # Use API key authentication
-            if not self.api_key:
-                raise HeySolError("No API key available for authentication")
-            return f"Bearer {self.api_key}"
+        """Get the authorization header using API key."""
+        if not self.api_key:
+            raise HeySolError("No API key available for authentication")
+        return f"Bearer {self.api_key}"
 
     def _make_request(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Make an HTTP request using MCP JSON-RPC protocol."""
@@ -225,76 +209,75 @@ class HeySolClient:
                         return txt
         return result
 
-    def ingest(self, message: str, space_id: Optional[str] = None) -> Dict[str, Any]:
-        """Ingest data into CORE Memory using MCP protocol."""
+    def is_mcp_available(self) -> bool:
+        """Check if MCP is available and initialized."""
+        return bool(self.session_id and self.tools)
+
+    def get_preferred_access_method(self, mcp_tool_name: Optional[str] = None) -> str:
+        """Determine the preferred access method for a given operation."""
+        if mcp_tool_name and mcp_tool_name in self.tools:
+            return "mcp"
+        elif self.is_mcp_available():
+            return "mcp"
+        else:
+            return "direct_api"
+
+    def ensure_mcp_available(self, tool_name: Optional[str] = None) -> None:
+        """Ensure MCP is available and optionally check for specific tool."""
+        if not self.is_mcp_available():
+            raise HeySolError("MCP is not available. Please check your MCP configuration.")
+
+        if tool_name and tool_name not in self.tools:
+            raise HeySolError(f"MCP tool '{tool_name}' is not available. Available tools: {list(self.tools.keys())}")
+
+    def get_available_tools(self) -> Dict[str, Any]:
+        """Get information about available MCP tools."""
+        return self.tools.copy()
+
+    def ingest(self, message: str, space_id: Optional[str] = None, session_id: Optional[str] = None) -> Dict[str, Any]:
+        """Ingest data into CORE Memory using direct API."""
         if not message:
             raise ValidationError("Message is required for ingestion")
 
-        if "memory_ingest" not in self.tools:
-            # Fallback to direct API call if MCP tool not available
-            payload = {"message": message}
-            if space_id:
-                payload["spaceId"] = space_id
-            return self._make_request("POST", "memory/ingest", data=payload)
-
-        # Use MCP tool
-        ingest_args = {"message": message, "source": "heysol-python-client"}
+        # Use direct API call with the correct format
+        payload = {
+            "episodeBody": message,
+            "referenceTime": "2023-11-07T05:31:56Z",  # Use current timestamp
+            "metadata": {},
+            "source": self.source or "heysol-python-client",
+            "sessionId": session_id or self.session_id or ""
+        }
         if space_id:
-            ingest_args["spaceId"] = space_id
+            payload["spaceId"] = space_id
 
-        result = self._mcp_request("tools/call", {
-            "name": "memory_ingest",
-            "arguments": ingest_args
-        }, stream=True)
+        return self._make_request("POST", "add", data=payload)
 
-        return self._unwrap_tool_result(result)
-
-    def search(self, query: str, limit: int = 10) -> Dict[str, Any]:
-        """Search for memories in CORE Memory using MCP protocol."""
+    def search(self, query: str, space_ids: Optional[list] = None, limit: int = 10, include_invalidated: bool = False) -> Dict[str, Any]:
+        """Search for memories in CORE Memory using direct API."""
         if not query:
             raise ValidationError("Search query is required")
 
-        if "memory_search" not in self.tools:
-            # Fallback to direct API call if MCP tool not available
-            return self._make_request("GET", "memory/search", params={"query": query, "limit": limit})
+        # Use direct API call with correct format
+        payload = {
+            "query": query,
+            "spaceIds": space_ids or [],
+            "includeInvalidated": include_invalidated
+        }
 
-        # Use MCP tool
-        search_args = {"query": query, "limit": limit}
+        params = {"limit": limit}
 
-        result = self._mcp_request("tools/call", {
-            "name": "memory_search",
-            "arguments": search_args
-        })
+        return self._make_request("POST", "search", data=payload, params=params)
 
-        unwrapped_result = self._unwrap_tool_result(result)
+    def get_spaces(self) -> list:
+        """Get available memory spaces using direct API."""
+        # Use direct API call to GET /api/v1/spaces
+        result = self._make_request("GET", "spaces")
 
-        # Handle the actual search result format
-        if isinstance(unwrapped_result, dict):
-            return unwrapped_result
-        elif isinstance(unwrapped_result, list):
-            # Fallback: if we get a list, wrap it in a dict structure
-            return {"episodes": unwrapped_result, "facts": []}
-        else:
-            return {"episodes": [], "facts": []}
-
-    def get_spaces(self) -> Dict[str, Any]:
-        """Get available memory spaces using MCP protocol."""
-        if "memory_get_spaces" not in self.tools:
-            # Fallback to direct API call if MCP tool not available
-            return self._make_request("GET", "spaces")
-
-        result = self._mcp_request("tools/call", {
-            "name": "memory_get_spaces",
-            "arguments": {}
-        })
-
-        unwrapped_result = self._unwrap_tool_result(result)
-
-        # Extract spaces from the result
-        if isinstance(unwrapped_result, dict) and "spaces" in unwrapped_result:
-            return unwrapped_result["spaces"]
-        elif isinstance(unwrapped_result, list):
-            return unwrapped_result
+        # Handle the expected response format
+        if isinstance(result, dict) and "spaces" in result:
+            return result["spaces"]
+        elif isinstance(result, list):
+            return result
         else:
             return []
 
@@ -304,7 +287,7 @@ class HeySolClient:
             raise ValidationError("Space name is required")
 
         payload = {"name": name, "description": description}
-        data = self._make_request("POST", "memory/spaces", data=payload)
+        data = self._make_request("POST", "spaces", data=payload)
         return data.get("id") or data.get("space_id")
 
 
@@ -325,23 +308,54 @@ class HeySolClient:
         if depth < 1 or depth > 5:
             raise ValidationError("Depth must be between 1 and 5")
 
-        params = {"q": query, "limit": limit, "depth": depth}
-        if space_id:
-            params["space_id"] = space_id
+        # Use the same search endpoint but with knowledge graph parameters
+        payload = {
+            "query": query,
+            "spaceIds": [space_id] if space_id else [],
+            "includeInvalidated": False
+        }
 
-        return self._make_request("POST", "memory/knowledge-graph/search", params=params)
+        params = {"limit": limit, "depth": depth, "type": "knowledge_graph"}
+
+        result = self._make_request("POST", "search", data=payload, params=params)
+
+        # Handle knowledge graph response format
+        if "results" in result:
+            return result
+        else:
+            # Fallback: convert episodes format to results format if needed
+            return {"results": result.get("episodes", [])}
 
     def add_data_to_ingestion_queue(self, data: Any, space_id: Optional[str] = None, priority: str = "normal", tags: Optional[list] = None, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Add data to the ingestion queue for processing."""
-        payload = {"data": data, "priority": priority}
+        # Use the same /add endpoint as ingest but with queue-specific payload
+        payload = {
+            "episodeBody": data if isinstance(data, str) else json.dumps(data),
+            "referenceTime": "2023-11-07T05:31:56Z",  # Use current timestamp
+            "metadata": metadata or {},
+            "source": self.source or "heysol-python-client",
+            "sessionId": ""
+        }
         if space_id:
-            payload["space_id"] = space_id
-        if tags:
-            payload["tags"] = tags
-        if metadata:
-            payload["metadata"] = metadata
+            payload["spaceId"] = space_id
 
-        return self._make_request("POST", "memory/ingestion/queue", data=payload)
+        # Add queue-specific fields to metadata
+        queue_metadata = payload["metadata"]
+        queue_metadata["priority"] = priority
+        if tags:
+            queue_metadata["tags"] = tags
+
+        result = self._make_request("POST", "add", data=payload)
+
+        # Handle queue-specific response format
+        if "success" in result and "id" in result:
+            # Convert id to queueId for compatibility
+            result["queueId"] = result.pop("id")
+        elif "success" in result and "queueId" not in result:
+            # If success but no queueId, generate one
+            result["queueId"] = result.get("id", "unknown")
+
+        return result
 
     def get_episode_facts(self, episode_id: str, limit: int = 100, offset: int = 0, include_metadata: bool = True) -> list:
         """Get episode facts from CORE Memory."""
@@ -355,27 +369,52 @@ class HeySolClient:
         """Get ingestion logs from CORE Memory."""
         params = {"limit": limit, "offset": offset}
         if space_id:
-            params["space_id"] = space_id
+            params["spaceId"] = space_id
         if status:
             params["status"] = status
         if start_date:
-            params["start_date"] = start_date
+            params["startDate"] = start_date
         if end_date:
-            params["end_date"] = end_date
+            params["endDate"] = end_date
 
-        return self._make_request("GET", "memory/logs", params=params)
+        result = self._make_request("GET", "logs", params=params)
+
+        # Handle the expected response format
+        if isinstance(result, dict) and "logs" in result:
+            return result["logs"]
+        elif isinstance(result, list):
+            return result
+        else:
+            return []
 
     def get_specific_log(self, log_id: str) -> Dict[str, Any]:
         """Get a specific ingestion log by ID."""
         if not log_id:
             raise ValidationError("Log ID is required")
 
-        return self._make_request("GET", f"memory/logs/{log_id}")
+        result = self._make_request("GET", f"logs/{log_id}")
+
+        # Handle the expected response format
+        if isinstance(result, dict) and "log" in result:
+            return result["log"]
+        else:
+            return result
 
     # Spaces endpoints
-    def bulk_space_operations(self, operations: list) -> list:
+    def bulk_space_operations(self, intent: str, space_id: Optional[str] = None, statement_ids: Optional[list] = None, space_ids: Optional[list] = None) -> Dict[str, Any]:
         """Perform bulk operations on spaces."""
-        return self._make_request("PUT", "spaces/bulk", data={"operations": operations})
+        if not intent:
+            raise ValidationError("Intent is required for bulk operations")
+
+        payload = {"intent": intent}
+        if space_id:
+            payload["spaceId"] = space_id
+        if statement_ids:
+            payload["statementIds"] = statement_ids
+        if space_ids:
+            payload["spaceIds"] = space_ids
+
+        return self._make_request("PUT", "spaces", data=payload)
 
     def get_space_details(self, space_id: str, include_stats: bool = True, include_metadata: bool = True) -> Dict[str, Any]:
         """Get detailed information about a specific space."""
@@ -385,7 +424,7 @@ class HeySolClient:
         params = {"include_stats": include_stats, "include_metadata": include_metadata}
         return self._make_request("GET", f"spaces/{space_id}/details", params=params)
 
-    def update_space(self, space_id: str, name: Optional[str] = None, description: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None, is_public: Optional[bool] = None) -> Dict[str, Any]:
+    def update_space(self, space_id: str, name: Optional[str] = None, description: Optional[str] = None) -> Dict[str, Any]:
         """Update properties of an existing space."""
         if not space_id:
             raise ValidationError("Space ID is required")
@@ -395,110 +434,56 @@ class HeySolClient:
             payload["name"] = name
         if description is not None:
             payload["description"] = description
-        if metadata is not None:
-            payload["metadata"] = metadata
-        if is_public is not None:
-            payload["is_public"] = is_public
 
         return self._make_request("PUT", f"spaces/{space_id}", data=payload)
 
-    def delete_space(self, space_id: str, confirm: bool = False, cascade: bool = False) -> Dict[str, Any]:
-        """Delete a space and optionally all its contents."""
+    def delete_space(self, space_id: str, confirm: bool = False) -> Dict[str, Any]:
+        """Delete a space."""
         if not space_id:
             raise ValidationError("Space ID is required")
 
         if not confirm:
             raise ValidationError("Space deletion requires confirmation (confirm=True)")
 
-        params = {"cascade": cascade}
-        return self._make_request("DELETE", f"spaces/{space_id}", params=params)
+        return self._make_request("DELETE", f"spaces/{space_id}")
 
-    # OAuth2 endpoints
-    def get_oauth2_authorization_url(self, scope: str = "openid profile email") -> str:
-        """Get OAuth2 authorization URL."""
-        params = {"scope": scope}
-        return self._make_request("GET", "oauth2/authorize", params=params)
-
-    def oauth2_authorization_decision(self, decision: str, request_id: str) -> Dict[str, Any]:
-        """Make OAuth2 authorization decision."""
-        if decision not in ["allow", "deny"]:
-            raise ValidationError("Decision must be 'allow' or 'deny'")
-
-        if not request_id:
-            raise ValidationError("Request ID is required")
-
-        payload = {"decision": decision}
-        return self._make_request("POST", f"oauth2/authorize/{request_id}", data=payload)
-
-    def oauth2_token_exchange(self, code: str, redirect_uri: str) -> Dict[str, Any]:
-        """Exchange OAuth2 authorization code for tokens."""
-        if not code:
-            raise ValidationError("Authorization code is required")
-
-        if not redirect_uri:
-            raise ValidationError("Redirect URI is required")
-
-        payload = {"code": code, "redirect_uri": redirect_uri}
-        return self._make_request("POST", "oauth2/token", data=payload)
-
-    def get_oauth2_user_info(self, access_token: str) -> Dict[str, Any]:
-        """Get OAuth2 user information."""
-        if not access_token:
-            raise ValidationError("Access token is required")
-
-        # Store original api_key temporarily
-        original_api_key = self.api_key
-        try:
-            # Use the access token as the api_key for this request
-            self.api_key = access_token
-            return self._make_request("GET", "oauth2/userinfo")
-        finally:
-            # Restore original api_key
-            self.api_key = original_api_key
-
-    def oauth2_refresh_token(self, refresh_token: str) -> Dict[str, Any]:
-        """Refresh OAuth2 access token."""
-        if not refresh_token:
-            raise ValidationError("Refresh token is required")
-
-        payload = {"refresh_token": refresh_token}
-        return self._make_request("POST", "oauth2/refresh", data=payload)
-
-    def oauth2_revoke_token(self, token: str, token_type_hint: Optional[str] = None) -> Dict[str, Any]:
-        """Revoke OAuth2 token."""
-        if not token:
-            raise ValidationError("Token is required")
-
-        payload = {"token": token}
-        if token_type_hint:
-            payload["token_type_hint"] = token_type_hint
-
-        return self._make_request("POST", "oauth2/revoke", data=payload)
-
-    def oauth2_token_introspection(self, token: str) -> Dict[str, Any]:
-        """Introspect OAuth2 token."""
-        if not token:
-            raise ValidationError("Token is required")
-
-        payload = {"token": token}
-        return self._make_request("GET", "oauth2/introspect", data=payload)
 
     # Webhook endpoints
-    def register_webhook(self, url: str, events: list, space_id: Optional[str] = None, secret: Optional[str] = None) -> Dict[str, Any]:
+    def register_webhook(self, url: str, events: list, secret: str) -> Dict[str, Any]:
         """Register a new webhook."""
         if not url:
             raise ValidationError("Webhook URL is required")
 
         if not events:
-            raise ValidationError("Events list is required")
+            raise ValidationError("Webhook events are required")
 
-        payload = {"url": url, "events": events}
-        if space_id:
-            payload["space_id"] = space_id
-        if secret:
-            payload["secret"] = secret
+        if secret == "":
+            raise ValidationError("Webhook secret is required")
 
-        return self._make_request("POST", "webhooks", data=payload)
+        # Use form data format as specified in API
+        data = {"url": url, "events": ",".join(events), "secret": secret}
+
+        # Create a custom request for form data
+        request_url = self.base_url.rstrip("/") + "/" + "webhooks".lstrip("/")
+
+        headers = {
+            "Authorization": self._get_authorization_header(),
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json, text/event-stream, */*",
+        }
+
+        if self.session_id:
+            headers["Mcp-Session-Id"] = self.session_id
+
+        response = requests.post(
+            url=request_url,
+            data=data,  # This will automatically encode as form data
+            headers=headers,
+            timeout=self.timeout,
+        )
+
+        response.raise_for_status()
+        return response.json()
 
     def list_webhooks(self, space_id: Optional[str] = None, active: Optional[bool] = None, limit: int = 100, offset: int = 0) -> list:
         """List all webhooks."""
@@ -517,24 +502,44 @@ class HeySolClient:
 
         return self._make_request("GET", f"webhooks/{webhook_id}")
 
-    def update_webhook(self, webhook_id: str, url: Optional[str] = None, events: Optional[list] = None, space_id: Optional[str] = None, secret: Optional[str] = None, active: Optional[bool] = None) -> Dict[str, Any]:
+    def update_webhook(self, webhook_id: str, url: str, events: list, secret: str = "", active: bool = True) -> Dict[str, Any]:
         """Update webhook properties."""
         if not webhook_id:
             raise ValidationError("Webhook ID is required")
 
-        payload = {}
-        if url is not None:
-            payload["url"] = url
-        if events is not None:
-            payload["events"] = events
-        if space_id is not None:
-            payload["space_id"] = space_id
-        if secret is not None:
-            payload["secret"] = secret
-        if active is not None:
-            payload["active"] = active
+        if not url:
+            raise ValidationError("Webhook URL is required")
 
-        return self._make_request("PUT", f"webhooks/{webhook_id}", data=payload)
+        if not events:
+            raise ValidationError("Webhook events are required")
+
+        if not secret:
+            raise ValidationError("Webhook secret is required")
+
+        # Use form data format as specified in API
+        data = {"url": url, "events": ",".join(events), "secret": secret, "active": str(active).lower()}
+
+        # Create a custom request for form data
+        request_url = self.base_url.rstrip("/") + "/" + f"webhooks/{webhook_id}".lstrip("/")
+
+        headers = {
+            "Authorization": self._get_authorization_header(),
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json, text/event-stream, */*",
+        }
+
+        if self.session_id:
+            headers["Mcp-Session-Id"] = self.session_id
+
+        response = requests.put(
+            url=request_url,
+            data=data,  # This will automatically encode as form data
+            headers=headers,
+            timeout=self.timeout,
+        )
+
+        response.raise_for_status()
+        return response.json()
 
     def delete_webhook(self, webhook_id: str, confirm: bool = False) -> Dict[str, Any]:
         """Delete a webhook."""
@@ -545,3 +550,12 @@ class HeySolClient:
             raise ValidationError("Webhook deletion requires confirmation (confirm=True)")
 
         return self._make_request("DELETE", f"webhooks/{webhook_id}")
+
+    def delete_log_entry(self, log_id: str) -> Dict[str, Any]:
+        """Delete a log entry from CORE Memory."""
+        if not log_id:
+            raise ValidationError("Log ID is required")
+
+        # Use the DELETE endpoint with log ID in payload
+        payload = {"id": log_id}
+        return self._make_request("DELETE", f"logs/{log_id}", data=payload)
