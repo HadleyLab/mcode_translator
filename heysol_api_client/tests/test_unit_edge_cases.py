@@ -101,7 +101,7 @@ class TestEdgeCases:
         """Test maximum limits for various parameters."""
         # Test maximum search limit
         result = client.search_knowledge_graph("test", limit=100, depth=5)
-        assert result == {"results": []}
+        assert result == {'edges': [], 'nodes': []}
 
         # Test maximum offset
         result = client.get_ingestion_logs(limit=10, offset=10000)
@@ -124,7 +124,7 @@ class TestEdgeCases:
         for expected_response in minimal_responses:
             with requests_mock.Mocker() as m:
                 m.get(
-                    "https://core.heysol.ai/api/v1/user/profile",
+                    "https://core.heysol.ai/api/profile",
                     json=expected_response,
                     status_code=200
                 )
@@ -144,7 +144,7 @@ class TestEdgeCases:
         for expected_response in boolean_responses:
             with requests_mock.Mocker() as m:
                 m.get(
-                    "https://core.heysol.ai/api/v1/user/profile",
+                    "https://core.heysol.ai/api/profile",
                     json=expected_response,
                     status_code=200
                 )
@@ -165,7 +165,7 @@ class TestEdgeCases:
         for expected_response in null_responses:
             with requests_mock.Mocker() as m:
                 m.get(
-                    "https://core.heysol.ai/api/v1/user/profile",
+                    "https://core.heysol.ai/api/profile",
                     json=expected_response,
                     status_code=200
                 )
@@ -192,7 +192,7 @@ class TestEdgeCases:
 
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                "https://core.heysol.ai/api/profile",
                 json=deep_response,
                 status_code=200
             )
@@ -218,7 +218,7 @@ class TestEdgeCases:
 
             with requests_mock.Mocker() as m:
                 m.get(
-                    "https://core.heysol.ai/api/v1/user/profile",
+                    "https://core.heysol.ai/api/profile",
                     json={"id": "user-123"},
                     status_code=200
                 )
@@ -230,7 +230,7 @@ class TestEdgeCases:
         """Test handling of empty headers in responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                "https://core.heysol.ai/api/profile",
                 json={"id": "user-123"},
                 status_code=200,
                 headers={}  # Empty headers
@@ -243,7 +243,7 @@ class TestEdgeCases:
         """Test handling of case-sensitive headers."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                "https://core.heysol.ai/api/profile",
                 json={"id": "user-123"},
                 status_code=200,
                 headers={
@@ -261,7 +261,7 @@ class TestEdgeCases:
         """Test rapid successive requests."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                "https://core.heysol.ai/api/profile",
                 json={"id": "user-123"},
                 status_code=200
             )
@@ -283,7 +283,7 @@ class TestEdgeCases:
         """Test handling of concurrent-like requests."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                "https://core.heysol.ai/api/profile",
                 json={"id": "user-123"},
                 status_code=200
             )
@@ -308,7 +308,7 @@ class TestEdgeCases:
             data={"content": long_string},
             tags=["long", "test"]
         )
-        assert result == {"success": True, "queueId": "episode-123"}
+        assert result == {"success": True, "id": "episode-123"}
 
     def test_extremely_long_urls(self, client):
         """Test handling of extremely long URLs."""
@@ -338,7 +338,7 @@ class TestEdgeCases:
         for expected_response in empty_responses:
             with requests_mock.Mocker() as m:
                 m.get(
-                    "https://core.heysol.ai/api/v1/user/profile",
+                    "https://core.heysol.ai/api/profile",
                     json=expected_response,
                     status_code=200
                 )
@@ -364,7 +364,7 @@ class TestEdgeCases:
 
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                "https://core.heysol.ai/api/profile",
                 json=mixed_response,
                 status_code=200
             )
@@ -378,7 +378,7 @@ class TestEdgeCases:
         with requests_mock.Mocker() as m:
             # Simulate a slow response
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                "https://core.heysol.ai/api/profile",
                 json={"id": "user-123"},
                 status_code=200
             )
@@ -396,7 +396,7 @@ class TestEdgeCases:
         with requests_mock.Mocker() as m:
             # First request fails
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                "https://core.heysol.ai/api/profile",
                 json={"error": "Temporary failure"},
                 status_code=500
             )
@@ -416,7 +416,7 @@ class TestEdgeCases:
 
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                "https://core.heysol.ai/api/profile",
                 json=unicode_error,
                 status_code=400
             )
@@ -434,7 +434,7 @@ class TestEdgeCases:
 
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                "https://core.heysol.ai/api/profile",
                 json=large_error,
                 status_code=500
             )

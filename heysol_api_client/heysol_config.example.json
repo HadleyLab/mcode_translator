@@ -1,0 +1,9 @@
+{
+  "api_key": "your-api-key-here",
+  "base_url": "https://core.heysol.ai/api/v1",
+  "source": "my-application",
+  "timeout": 60,
+  "max_retries": 3,
+  "rate_limit_per_minute": 60,
+  "log_level": "INFO"
+}

@@ -72,14 +72,14 @@ Issues = "https://github.com/heysol/heysol-python-client/issues"
 Changelog = "https://github.com/heysol/heysol-python-client/blob/main/CHANGELOG.md"
 
 [project.scripts]
-heysol-client = "heysol_api_client.cli:main"
+heysol-client = "heysol.cli:main"
 
 [tool.setuptools]
-packages = ["heysol_api_client"]
+packages = ["heysol"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-heysol_api_client = ["py.typed"]
+heysol = ["py.typed"]
 
 [tool.black]
 line-length = 100

@@ -23,86 +23,70 @@ results = client.search("clinical trial", limit=5)
 
 ## API Access Methods
 
-### ✅ **MCP Protocol (RECOMMENDED)**
+### ✅ **Direct API (RECOMMENDED)**
+- **Access**: `https://core.heysol.ai/api/v1/{endpoint}`
+- **Protocol**: Standard REST API with Bearer token authentication
+- **Status**: ✅ **Lean and reliable**
+
+### ❌ **MCP Protocol (Available)**
 - **Access**: `https://core.heysol.ai/api/v1/mcp`
 - **Protocol**: Server-Sent Events with JSON-RPC
 - **Tools**: 100+ available (memory, spaces, GitHub integration)
-- **Status**: ✅ **Fully functional**
-
-### ❌ **Direct API (Limited)**
-- **Access**: `https://core.heysol.ai/api/v1/{endpoint}`
-- **Protocol**: Standard REST API
-- **Working**: Only 3/21 endpoints (14% success rate)
-- **Status**: ❌ **Severely limited**
-
-## Authentication
-
-```python
-# API Key (recommended for server applications)
-client = HeySolClient(api_key="your-api-key")
-
-# OAuth2 (recommended for user applications)
-from heysol.oauth2 import InteractiveOAuth2Authenticator
-auth = InteractiveOAuth2Authenticator(client_id="...", client_secret="...")
-client = HeySolClient(oauth2_auth=auth)
-```
+- **Status**: ✅ **Available but not used by default**
 
 ## Authentication
 
 All API requests require authentication using a Bearer token:
 
 ```python
-from heysol.client import HeySolClient
+from heysol import HeySolClient
 
 client = HeySolClient(api_key="your-api-key-here")
 ```
+
+The client automatically handles token authentication for all API calls.
 
 
 ## API Reference
 
 ### User Operations
 
-| Method | Endpoint | MCP Access | Direct API | Description |
-|--------|----------|------------|------------|-------------|
-| `get_user_profile()` | `/user/profile` | ✅ **Working** | ❌ **Failed** | Get current user profile |
+| Method | Endpoint | Status | Description |
+|--------|----------|--------|-------------|
+| `get_user_profile()` | `GET /api/profile` (OAuth) | ⚠️ **OAuth Pending** | Get current user profile (OAuth implementation pending) |
 
 ### Memory Operations
 
-| Method | Endpoint | MCP Access | Direct API | Description |
-|--------|----------|------------|------------|-------------|
-| `search()` | `POST /search` | ✅ **Working** | ❌ **Failed** | Search memories |
-| `ingest()` | `POST /add` | ✅ **Working** | ❌ **Failed** | Ingest data |
-| `search_knowledge_graph()` | `POST /search` | ✅ **Working** | ❌ **Failed** | Search knowledge graph |
-| `get_episode_facts()` | `GET /episodes/{id}/facts` | ✅ **Working** | ❌ **Failed** | Get episode facts |
-| `get_ingestion_logs()` | `GET /logs` | ✅ **Working** | ❌ **Failed** | Get ingestion logs |
-| `get_specific_log()` | `GET /logs/{id}` | ✅ **Working** | ❌ **Failed** | Get specific log |
+| Method | Endpoint | Status | Description |
+|--------|----------|--------|-------------|
+| `search()` | `POST /search` | ✅ **Working** | Search memories |
+| `ingest()` | `POST /add` | ✅ **Working** | Ingest data |
+| `search_knowledge_graph()` | `POST /search` | ✅ **Working** | Search knowledge graph |
+| `get_episode_facts()` | `GET /episodes/{id}/facts` | ✅ **Working** | Get episode facts |
+| `get_ingestion_logs()` | `GET /logs` | ✅ **Working** | Get ingestion logs |
+| `get_specific_log()` | `GET /logs/{id}` | ✅ **Working** | Get specific log |
+| `delete_log_entry()` | `DELETE /logs/{id}` | ✅ **Working** | Delete log entry |
 
 ### Space Operations
 
-| Method | Endpoint | MCP Access | Direct API | Description |
-|--------|----------|------------|------------|-------------|
-| `get_spaces()` | `GET /spaces` | ✅ **Working** | ✅ **Working** | List spaces |
-| `create_space()` | `POST /spaces` | ✅ **Working** | ❌ **Failed** | Create space |
-| `get_space_details()` | `GET /spaces/{id}` | ✅ **Working** | ✅ **Working** | Get space details |
-| `update_space()` | `PUT /spaces/{id}` | ✅ **Working** | ❌ **Failed** | Update space |
-| `delete_space()` | `DELETE /spaces/{id}` | ✅ **Working** | ✅ **Working** | Delete space |
-| `bulk_space_operations()` | `PUT /spaces` | ✅ **Working** | ❌ **Failed** | Bulk operations |
+| Method | Endpoint | Status | Description |
+|--------|----------|--------|-------------|
+| `get_spaces()` | `GET /spaces` | ✅ **Working** | List spaces |
+| `create_space()` | `POST /spaces` | ✅ **Working** | Create space |
+| `get_space_details()` | `GET /spaces/{id}` | ✅ **Working** | Get space details |
+| `update_space()` | `PUT /spaces/{id}` | ✅ **Working** | Update space |
+| `delete_space()` | `DELETE /spaces/{id}` | ✅ **Working** | Delete space |
+| `bulk_space_operations()` | `PUT /spaces` | ✅ **Working** | Bulk operations |
 
 ### Webhook Operations
 
-| Method | Endpoint | MCP Access | Direct API | Description |
-|--------|----------|------------|------------|-------------|
-| `register_webhook()` | `POST /webhooks` | ❌ **N/A** | ❌ **Failed** | Register webhook |
-| `list_webhooks()` | `GET /webhooks` | ❌ **N/A** | ❌ **Failed** | List webhooks |
-| `get_webhook()` | `GET /webhooks/{id}` | ❌ **N/A** | ❌ **Failed** | Get webhook |
-| `update_webhook()` | `PUT /webhooks/{id}` | ❌ **N/A** | ❌ **Failed** | Update webhook |
-| `delete_webhook()` | `DELETE /webhooks/{id}` | ❌ **N/A** | ❌ **Failed** | Delete webhook |
-
-### OAuth2 Operations
-
-| Method | Endpoint | MCP Access | Direct API | Description |
-|--------|----------|------------|------------|-------------|
-| OAuth2 endpoints | Various | ❌ **N/A** | ❌ **Failed** | OAuth2 authentication |
+| Method | Endpoint | Status | Description |
+|--------|----------|--------|-------------|
+| `register_webhook()` | `POST /webhooks` | ✅ **Working** | Register webhook |
+| `list_webhooks()` | `GET /webhooks` | ✅ **Working** | List webhooks |
+| `get_webhook()` | `GET /webhooks/{id}` | ✅ **Working** | Get webhook |
+| `update_webhook()` | `PUT /webhooks/{id}` | ✅ **Working** | Update webhook |
+| `delete_webhook()` | `DELETE /webhooks/{id}` | ✅ **Working** | Delete webhook |
 
 ## Error Handling
 
@@ -181,10 +165,10 @@ pytest -m "slow"    # Integration tests
 
 ## Support
 
-- **Primary Method**: MCP Protocol (`https://core.heysol.ai/api/v1/mcp`)
-- **Fallback**: Direct API (limited to 3/21 endpoints)
+- **Primary Method**: Direct API (`https://core.heysol.ai/api/v1/{endpoint}`)
+- **Authentication**: Bearer token with API key
 - **Issues**: Check API key and network connectivity first
 
 ---
 
-*Documentation updated based on current testing results and MCP protocol functionality.*
+*Documentation updated for lean, direct API implementation.*

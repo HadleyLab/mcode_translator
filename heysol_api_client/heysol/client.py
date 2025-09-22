@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from .config import HeySolConfig
+from .config import HeySolConfig, DEFAULT_BASE_URL
 from .exceptions import HeySolError, ValidationError
 
 
@@ -44,6 +44,7 @@ class HeySolClient:
         self.base_url = base_url
         self.source = config.source
         self.mcp_url = config.mcp_url
+        self.profile_url = config.profile_url
         self.session_id: Optional[str] = None
         self.tools: Dict[str, Any] = {}
         self.timeout = 60  # Default timeout
@@ -60,7 +61,11 @@ class HeySolClient:
 
     def _make_request(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Make an HTTP request using MCP JSON-RPC protocol."""
-        url = self.base_url.rstrip("/") + "/" + endpoint.lstrip("/")
+        # Handle absolute URLs (for endpoints that need different base URLs)
+        if endpoint.startswith("http"):
+            url = endpoint
+        else:
+            url = self.base_url.rstrip("/") + "/" + endpoint.lstrip("/")
 
         # Get authorization header based on authentication method
         auth_header = self._get_authorization_header()
@@ -178,36 +183,16 @@ class HeySolClient:
             "params": {},
         }
 
-        try:
-            response = requests.post(
-                self.mcp_url,
-                json=tools_payload,
-                headers=self._get_mcp_headers(),
-                timeout=self.timeout
-            )
-            response.raise_for_status()
-            result = self._parse_mcp_response(response)
-            self.tools = {t["name"]: t for t in result.get("tools", [])}
-        except Exception as e:
-            # If tools/list fails, try to initialize with known tools
-            self.tools = {
-                "memory_ingest": {"name": "memory_ingest", "description": "Ingest data into CORE Memory"},
-                "memory_search": {"name": "memory_search", "description": "Search for memories in CORE Memory"},
-                "memory_get_spaces": {"name": "memory_get_spaces", "description": "Get available memory spaces"},
-                "get_user_profile": {"name": "get_user_profile", "description": "Get the current user's profile"}
-            }
+        response = requests.post(
+            self.mcp_url,
+            json=tools_payload,
+            headers=self._get_mcp_headers(),
+            timeout=self.timeout
+        )
+        response.raise_for_status()
+        result = self._parse_mcp_response(response)
+        self.tools = {t["name"]: t for t in result.get("tools", [])}
 
-    def _unwrap_tool_result(self, result: Any) -> Any:
-        """Unwrap tool result from MCP response."""
-        if isinstance(result, dict) and isinstance(result.get("content"), list):
-            for item in result["content"]:
-                if item.get("type") == "text":
-                    txt = item.get("text", "")
-                    try:
-                        return json.loads(txt)
-                    except json.JSONDecodeError:
-                        return txt
-        return result
 
     def is_mcp_available(self) -> bool:
         """Check if MCP is available and initialized."""
@@ -270,16 +255,8 @@ class HeySolClient:
 
     def get_spaces(self) -> list:
         """Get available memory spaces using direct API."""
-        # Use direct API call to GET /api/v1/spaces
         result = self._make_request("GET", "spaces")
-
-        # Handle the expected response format
-        if isinstance(result, dict) and "spaces" in result:
-            return result["spaces"]
-        elif isinstance(result, list):
-            return result
-        else:
-            return []
+        return result.get("spaces", result) if isinstance(result, dict) else result
 
     def create_space(self, name: str, description: str = "") -> str:
         """Create a new memory space."""
@@ -288,13 +265,23 @@ class HeySolClient:
 
         payload = {"name": name, "description": description}
         data = self._make_request("POST", "spaces", data=payload)
-        return data.get("id") or data.get("space_id")
+
+        # Handle different response formats
+        space_id = None
+        if isinstance(data, dict):
+            space_id = (data.get("space", {}).get("id") or
+                       data.get("id") or
+                       data.get("space_id"))
+        return space_id
 
 
-    # User endpoints
     def get_user_profile(self) -> Dict[str, Any]:
-        """Get the current user's profile."""
-        return self._make_request("GET", "user/profile")
+        """Get the current user's profile.
+
+        Note: This endpoint uses OAuth authentication. OAuth implementation will be added in a future version.
+        Currently, this may fail without proper OAuth setup.
+        """
+        return self._make_request("GET", self.profile_url)
 
     # Memory endpoints
     def search_knowledge_graph(self, query: str, space_id: Optional[str] = None, limit: int = 10, depth: int = 2) -> Dict[str, Any]:
@@ -318,20 +305,22 @@ class HeySolClient:
         params = {"limit": limit, "depth": depth, "type": "knowledge_graph"}
 
         result = self._make_request("POST", "search", data=payload, params=params)
-
-        # Handle knowledge graph response format
-        if "results" in result:
-            return result
-        else:
-            # Fallback: convert episodes format to results format if needed
-            return {"results": result.get("episodes", [])}
+        return result
 
     def add_data_to_ingestion_queue(self, data: Any, space_id: Optional[str] = None, priority: str = "normal", tags: Optional[list] = None, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Add data to the ingestion queue for processing."""
-        # Use the same /add endpoint as ingest but with queue-specific payload
+        # Handle different data formats - extract content as episodeBody
+        if isinstance(data, str):
+            episode_body = data
+        elif isinstance(data, dict):
+            episode_body = data.get("content", json.dumps(data))
+        else:
+            episode_body = str(data)
+
+        # Use the same /add endpoint as ingest with minimal payload
         payload = {
-            "episodeBody": data if isinstance(data, str) else json.dumps(data),
-            "referenceTime": "2023-11-07T05:31:56Z",  # Use current timestamp
+            "episodeBody": episode_body,
+            "referenceTime": "2023-11-07T05:31:56Z",
             "metadata": metadata or {},
             "source": self.source or "heysol-python-client",
             "sessionId": ""
@@ -339,22 +328,7 @@ class HeySolClient:
         if space_id:
             payload["spaceId"] = space_id
 
-        # Add queue-specific fields to metadata
-        queue_metadata = payload["metadata"]
-        queue_metadata["priority"] = priority
-        if tags:
-            queue_metadata["tags"] = tags
-
         result = self._make_request("POST", "add", data=payload)
-
-        # Handle queue-specific response format
-        if "success" in result and "id" in result:
-            # Convert id to queueId for compatibility
-            result["queueId"] = result.pop("id")
-        elif "success" in result and "queueId" not in result:
-            # If success but no queueId, generate one
-            result["queueId"] = result.get("id", "unknown")
-
         return result
 
     def get_episode_facts(self, episode_id: str, limit: int = 100, offset: int = 0, include_metadata: bool = True) -> list:
@@ -378,14 +352,7 @@ class HeySolClient:
             params["endDate"] = end_date
 
         result = self._make_request("GET", "logs", params=params)
-
-        # Handle the expected response format
-        if isinstance(result, dict) and "logs" in result:
-            return result["logs"]
-        elif isinstance(result, list):
-            return result
-        else:
-            return []
+        return result.get("logs", result) if isinstance(result, dict) else result
 
     def get_specific_log(self, log_id: str) -> Dict[str, Any]:
         """Get a specific ingestion log by ID."""
@@ -393,12 +360,7 @@ class HeySolClient:
             raise ValidationError("Log ID is required")
 
         result = self._make_request("GET", f"logs/{log_id}")
-
-        # Handle the expected response format
-        if isinstance(result, dict) and "log" in result:
-            return result["log"]
-        else:
-            return result
+        return result.get("log", result) if isinstance(result, dict) else result
 
     # Spaces endpoints
     def bulk_space_operations(self, intent: str, space_id: Optional[str] = None, statement_ids: Optional[list] = None, space_ids: Optional[list] = None) -> Dict[str, Any]:
@@ -424,7 +386,7 @@ class HeySolClient:
         params = {"include_stats": include_stats, "include_metadata": include_metadata}
         return self._make_request("GET", f"spaces/{space_id}/details", params=params)
 
-    def update_space(self, space_id: str, name: Optional[str] = None, description: Optional[str] = None) -> Dict[str, Any]:
+    def update_space(self, space_id: str, name: Optional[str] = None, description: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Update properties of an existing space."""
         if not space_id:
             raise ValidationError("Space ID is required")
@@ -434,6 +396,8 @@ class HeySolClient:
             payload["name"] = name
         if description is not None:
             payload["description"] = description
+        if metadata is not None:
+            payload["metadata"] = metadata
 
         return self._make_request("PUT", f"spaces/{space_id}", data=payload)
 
@@ -449,19 +413,16 @@ class HeySolClient:
 
 
     # Webhook endpoints
-    def register_webhook(self, url: str, events: list, secret: str) -> Dict[str, Any]:
+    def register_webhook(self, url: str, events: Optional[list] = None, secret: str = "") -> Dict[str, Any]:
         """Register a new webhook."""
         if not url:
             raise ValidationError("Webhook URL is required")
 
-        if not events:
-            raise ValidationError("Webhook events are required")
-
         if secret == "":
             raise ValidationError("Webhook secret is required")
 
-        # Use form data format as specified in API
-        data = {"url": url, "events": ",".join(events), "secret": secret}
+        # Use form data format as specified in API docs (only url and secret)
+        data = {"url": url, "secret": secret}
 
         # Create a custom request for form data
         request_url = self.base_url.rstrip("/") + "/" + "webhooks".lstrip("/")
@@ -559,3 +520,98 @@ class HeySolClient:
         # Use the DELETE endpoint with log ID in payload
         payload = {"id": log_id}
         return self._make_request("DELETE", f"logs/{log_id}", data=payload)
+
+    def delete_logs_by_source(self, source: str, space_id: Optional[str] = None, confirm: bool = False) -> Dict[str, Any]:
+        """Delete all logs with a specific source using MCP."""
+        if not source:
+            raise ValidationError("Source is required")
+
+        if not confirm:
+            raise ValidationError("Log deletion by source requires confirmation (confirm=True)")
+
+        if not self.is_mcp_available():
+            raise HeySolError("MCP is not available for source-based log deletion")
+
+        # First, search for logs with the specified source
+        search_params = {
+            "query": "*",  # Search all logs
+            "spaceIds": [space_id] if space_id else [],
+            "includeInvalidated": False
+        }
+
+        try:
+            # Use MCP search to find logs with the specified source
+            search_result = self._mcp_request("memory_search", search_params)
+
+            # Filter logs by source
+            logs_to_delete = []
+            if isinstance(search_result, dict) and "episodes" in search_result:
+                for episode in search_result["episodes"]:
+                    if episode.get("source") == source:
+                        logs_to_delete.append(episode)
+
+            if not logs_to_delete:
+                return {"message": f"No logs found with source '{source}'", "deleted_count": 0}
+
+            # Delete each log
+            deleted_count = 0
+            errors = []
+
+            for log in logs_to_delete:
+                try:
+                    # Use MCP to delete the log
+                    delete_params = {"id": log.get("id")}
+                    delete_result = self._mcp_request("memory_delete", delete_params)
+                    deleted_count += 1
+                except Exception as e:
+                    errors.append(f"Failed to delete log {log.get('id')}: {e}")
+
+            return {
+                "message": f"Deleted {deleted_count} logs with source '{source}'",
+                "deleted_count": deleted_count,
+                "total_found": len(logs_to_delete),
+                "errors": errors
+            }
+
+        except Exception as e:
+            raise HeySolError(f"Failed to delete logs by source: {e}")
+
+    def get_logs_by_source(self, source: str, space_id: Optional[str] = None, limit: int = 100) -> Dict[str, Any]:
+        """Get all logs with a specific source using MCP."""
+        if not source:
+            raise ValidationError("Source is required")
+
+        if not self.is_mcp_available():
+            raise HeySolError("MCP is not available for source-based log retrieval")
+
+        # Use MCP search to find logs with the specified source
+        search_params = {
+            "query": "*",  # Search all logs
+            "spaceIds": [space_id] if space_id else [],
+            "includeInvalidated": False
+        }
+
+        try:
+            search_result = self._mcp_request("memory_search", search_params)
+
+            # Filter logs by source
+            filtered_logs = []
+            if isinstance(search_result, dict) and "episodes" in search_result:
+                for episode in search_result["episodes"]:
+                    if episode.get("source") == source:
+                        filtered_logs.append(episode)
+
+            return {
+                "logs": filtered_logs[:limit],
+                "total_count": len(filtered_logs),
+                "source": source,
+                "space_id": space_id
+            }
+
+        except Exception as e:
+            raise HeySolError(f"Failed to get logs by source: {e}")
+
+    def close(self) -> None:
+        """Close the client and clean up resources."""
+        # Currently no resources to clean up, but method provided for API compatibility
+        pass

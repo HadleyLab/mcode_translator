@@ -19,6 +19,7 @@ A comprehensive, production-ready Python client for the HeySol API with support 
 - 📚 **Documentation**: Comprehensive docstrings and examples
 - 🧪 **Testing**: 80%+ test coverage with mocks and fixtures
 - 📦 **PyPI Ready**: Complete packaging configuration
+- 🖥️ **CLI Tool**: Command-line interface for all operations
 
 ## 📊 Implementation Status
 
@@ -88,6 +89,24 @@ for episode in results["episodes"]:
 client.close()
 ```
 
+### CLI Usage
+
+```bash
+# Get user profile
+heysol-client profile get --api-key your-key
+
+# List spaces
+heysol-client spaces list --api-key your-key
+
+# Create a space
+heysol-client spaces create "My Space" --description "Description" --api-key your-key
+
+# Ingest data
+heysol-client memory ingest "Hello world" --space-id abc123 --api-key your-key
+
+# Search memory
+heysol-client memory search "query" --space-id abc123 --limit 10 --api-key your-key
+```
 
 ### Configuration
 
@@ -112,7 +131,7 @@ Create a `heysol_config.json`:
   "timeout": 60,
   "max_retries": 3,
   "rate_limit_per_minute": 60,
-  "log_level": "INFO",
+  "log_level": "INFO"
 }
 ```
 
@@ -134,17 +153,13 @@ Main synchronous client for the HeySol API.
 #### Methods
 
 - `get_user_profile() -> Dict[str, Any]`: Get current user profile
-- `get_spaces() -> List[Dict[str, Any]]`: Get available memory spaces (returns array of space objects)
+- `get_spaces() -> List[Dict[str, Any]]`: Get available memory spaces
 - `create_space(name: str, description: str = "") -> str`: Create a new space
-- `get_or_create_space(name: str, description: str = "") -> str`: Get existing or create space
-- `ingest(message: str, space_id: str = None, source: str = None, priority: str = "normal", tags: List[str] = None) -> Dict[str, Any]`: Ingest data
-- `search(query: str, space_id: str = None, limit: int = 10, **kwargs) -> Dict[str, Any]`: Search memory
-- `search_knowledge_graph(query: str, space_id: str = None, limit: int = 10, depth: int = 2, include_metadata: bool = True) -> Dict[str, Any]`: Search knowledge graph
+- `get_space_details(space_id: str, include_stats: bool = True, include_metadata: bool = True) -> Dict[str, Any]`: Get space details
+- `ingest(message: str, space_id: str = None, session_id: str = None) -> Dict[str, Any]`: Ingest data
+- `search(query: str, space_ids: List[str] = None, limit: int = 10, include_invalidated: bool = False) -> Dict[str, Any]`: Search memory
 - `get_ingestion_logs(space_id: str = None, limit: int = 100, offset: int = 0, status: str = None, start_date: str = None, end_date: str = None) -> List[Dict[str, Any]]`: Get ingestion logs
-- `get_specific_log(log_id: str) -> Dict[str, Any]`: Get specific log by ID
-- `delete_log_entry(log_id: str) -> Dict[str, Any]`: Delete a log entry
 - `close() -> None`: Close client and clean up resources
-
 
 ### Configuration
 
@@ -200,6 +215,8 @@ See the `examples/` directory for comprehensive usage examples:
 
 - `basic_usage.py` - Basic client operations
 - `log_management.py` - Log management and deletion operations
+- `cli_usage.py` - Command-line interface examples
+- `oauth2_setup_guide.py` - OAuth2 setup and configuration
 
 ## Documentation
 
@@ -209,8 +226,6 @@ See the `docs/` directory for comprehensive documentation:
 - `AUTHENTICATION_GUIDE.md` - Authentication methods and configuration
 - `API_DISCOVERY.md` - API endpoint discovery and testing
 - `TESTING_REPORT.md` - Testing results and coverage reports
-
-
 
 ## Testing
 

@@ -12,12 +12,18 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 # Read the version from the package
-about = {}
-exec((this_directory / "heysol_api_client" / "heysol" / "__init__.py").read_text(encoding="utf-8"), about)
+version_file = this_directory / "heysol" / "__init__.py"
+version_content = version_file.read_text(encoding="utf-8")
+for line in version_content.split('\n'):
+    if line.startswith('__version__'):
+        version = line.split('=')[1].strip().strip('"\'')
+        break
+else:
+    version = "1.0.0"
 
 setup(
     name="heysol-api-client",
-    version=about["__version__"],
+    version=version,
     author="HeySol API Client Development Team",
     author_email="dev@heysol.ai",
     description="A comprehensive Python client for the HeySol API with MCP protocol support",
@@ -66,7 +72,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "heysol-client=heysol_api_client.cli:main",
+            "heysol-client=heysol.cli:main",
         ],
     },
     include_package_data=True,

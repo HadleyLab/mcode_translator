@@ -19,6 +19,7 @@ from unittest.mock import Mock, patch
 from typing import Dict, Any
 
 from heysol.client import HeySolClient
+from heysol.config import HeySolConfig
 from heysol.exceptions import ValidationError
 
 
@@ -30,12 +31,17 @@ class TestErrorHandling:
         """Create a test client instance."""
         return HeySolClient(api_key="test-api-key", skip_mcp_init=True)
 
+    @pytest.fixture
+    def config(self):
+        """Create a test config instance."""
+        return HeySolConfig(api_key="test-api-key")
+
     # HTTP Error Response Tests
-    def test_400_bad_request_error(self, client):
+    def test_400_bad_request_error(self, client, config):
         """Test handling of 400 Bad Request responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 status_code=400,
                 json={"error": "Invalid request parameters", "details": "Missing required field: 'id'"}
             )
@@ -48,11 +54,11 @@ class TestErrorHandling:
             assert error_response["error"] == "Invalid request parameters"
             assert "Missing required field: 'id'" in error_response["details"]
 
-    def test_401_unauthorized_error(self, client):
+    def test_401_unauthorized_error(self, client, config):
         """Test handling of 401 Unauthorized responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 status_code=401,
                 json={"error": "Invalid API key or authentication failed"}
             )
@@ -63,11 +69,11 @@ class TestErrorHandling:
             error_response = exc_info.value.response.json()
             assert error_response["error"] == "Invalid API key or authentication failed"
 
-    def test_403_forbidden_error(self, client):
+    def test_403_forbidden_error(self, client, config):
         """Test handling of 403 Forbidden responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 status_code=403,
                 json={"error": "Access denied", "details": "Insufficient permissions"}
             )
@@ -78,11 +84,11 @@ class TestErrorHandling:
             error_response = exc_info.value.response.json()
             assert error_response["error"] == "Access denied"
 
-    def test_404_not_found_error(self, client):
+    def test_404_not_found_error(self, client, config):
         """Test handling of 404 Not Found responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 status_code=404,
                 json={"error": "Requested resource not found"}
             )
@@ -93,11 +99,11 @@ class TestErrorHandling:
             error_response = exc_info.value.response.json()
             assert error_response["error"] == "Requested resource not found"
 
-    def test_408_request_timeout_error(self, client):
+    def test_408_request_timeout_error(self, client, config):
         """Test handling of 408 Request Timeout responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 status_code=408,
                 json={"error": "Request timeout", "details": "The request took too long to process"}
             )
@@ -108,11 +114,11 @@ class TestErrorHandling:
             error_response = exc_info.value.response.json()
             assert error_response["error"] == "Request timeout"
 
-    def test_429_rate_limit_error(self, client):
+    def test_429_rate_limit_error(self, client, config):
         """Test handling of 429 Rate Limit responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 status_code=429,
                 json={"error": "Rate limit exceeded"},
                 headers={"Retry-After": "60"}
@@ -125,11 +131,11 @@ class TestErrorHandling:
             assert error_response["error"] == "Rate limit exceeded"
             assert exc_info.value.response.headers["Retry-After"] == "60"
 
-    def test_500_server_error(self, client):
+    def test_500_server_error(self, client, config):
         """Test handling of 500 Server Error responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 status_code=500,
                 json={"error": "Internal Server Error"}
             )
@@ -140,11 +146,11 @@ class TestErrorHandling:
             error_response = exc_info.value.response.json()
             assert error_response["error"] == "Internal Server Error"
 
-    def test_502_bad_gateway_error(self, client):
+    def test_502_bad_gateway_error(self, client, config):
         """Test handling of 502 Bad Gateway responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 status_code=502,
                 json={"error": "Bad Gateway", "details": "Upstream server error"}
             )
@@ -155,11 +161,11 @@ class TestErrorHandling:
             error_response = exc_info.value.response.json()
             assert error_response["error"] == "Bad Gateway"
 
-    def test_503_service_unavailable_error(self, client):
+    def test_503_service_unavailable_error(self, client, config):
         """Test handling of 503 Service Unavailable responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 status_code=503,
                 json={"error": "Service Unavailable", "details": "Server is temporarily unavailable"},
                 headers={"Retry-After": "300"}
@@ -172,33 +178,33 @@ class TestErrorHandling:
             assert error_response["error"] == "Service Unavailable"
 
     # Connection Error Tests
-    def test_connection_timeout_error(self, client):
+    def test_connection_timeout_error(self, client, config):
         """Test handling of connection timeout errors."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 exc=requests.exceptions.ConnectTimeout
             )
 
             with pytest.raises(requests.exceptions.ConnectTimeout):
                 client.get_user_profile()
 
-    def test_connection_error(self, client):
+    def test_connection_error(self, client, config):
         """Test handling of connection errors."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 exc=requests.exceptions.ConnectionError
             )
 
             with pytest.raises(requests.exceptions.ConnectionError):
                 client.get_user_profile()
 
-    def test_too_many_redirects_error(self, client):
+    def test_too_many_redirects_error(self, client, config):
         """Test handling of too many redirects errors."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 exc=requests.exceptions.TooManyRedirects
             )
 
@@ -270,11 +276,11 @@ class TestErrorHandling:
             client.delete_webhook("webhook-123")
 
     # Response Parsing Error Tests
-    def test_malformed_json_response(self, client):
+    def test_malformed_json_response(self, client, config):
         """Test handling of malformed JSON responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 text='{"invalid": json syntax}',
                 status_code=200,
                 headers={"Content-Type": "application/json"}
@@ -283,11 +289,11 @@ class TestErrorHandling:
             with pytest.raises(json.JSONDecodeError):
                 client.get_user_profile()
 
-    def test_empty_response_body(self, client):
+    def test_empty_response_body(self, client, config):
         """Test handling of empty response body."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 text="",
                 status_code=200,
                 headers={"Content-Type": "application/json"}
@@ -296,11 +302,11 @@ class TestErrorHandling:
             with pytest.raises(json.JSONDecodeError):
                 client.get_user_profile()
 
-    def test_html_error_response(self, client):
+    def test_html_error_response(self, client, config):
         """Test handling of HTML error responses."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 text="<html><body><h1>Server Error</h1></body></html>",
                 status_code=500,
                 headers={"Content-Type": "text/html"}
@@ -310,22 +316,22 @@ class TestErrorHandling:
                 client.get_user_profile()
 
     # Network Error Tests
-    def test_network_unavailable(self, client):
+    def test_network_unavailable(self, client, config):
         """Test handling of network unavailable errors."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 exc=requests.exceptions.ConnectionError
             )
 
             with pytest.raises(requests.exceptions.ConnectionError):
                 client.get_user_profile()
 
-    def test_ssl_verification_error(self, client):
+    def test_ssl_verification_error(self, client, config):
         """Test handling of SSL verification errors."""
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 exc=requests.exceptions.SSLError
             )
 
@@ -333,14 +339,14 @@ class TestErrorHandling:
                 client.get_user_profile()
 
     # Edge Cases
-    def test_extremely_long_api_key(self, client):
+    def test_extremely_long_api_key(self, client, config):
         """Test handling of extremely long API key."""
         long_api_key = "x" * 10000  # 10KB API key
         client_with_long_key = HeySolClient(api_key=long_api_key, skip_mcp_init=True)
 
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 json={"id": "user-123"},
                 status_code=200
             )
@@ -349,7 +355,7 @@ class TestErrorHandling:
             result = client_with_long_key.get_user_profile()
             assert result == {"id": "user-123"}
 
-    def test_unicode_in_response(self, client):
+    def test_unicode_in_response(self, client, config):
         """Test handling of Unicode characters in responses."""
         unicode_response = {
             "id": "user-123",
@@ -360,7 +366,7 @@ class TestErrorHandling:
 
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 json=unicode_response,
                 status_code=200
             )
@@ -379,7 +385,7 @@ class TestErrorHandling:
         assert result == large_response["logs"]
         assert len(result) == 10000
 
-    def test_nested_error_response(self, client):
+    def test_nested_error_response(self, client, config):
         """Test handling of nested error response structures."""
         nested_error = {
             "error": {
@@ -395,7 +401,7 @@ class TestErrorHandling:
 
         with requests_mock.Mocker() as m:
             m.get(
-                "https://core.heysol.ai/api/v1/user/profile",
+                config.profile_url,
                 json=nested_error,
                 status_code=400
             )
