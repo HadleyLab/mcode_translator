@@ -23,7 +23,7 @@ else:
 
 setup(
     name="heysol-api-client",
-    version=version,
+    version="1.0.1",
     author="HeySol API Client Development Team",
     author_email="dev@heysol.ai",
     description="A comprehensive Python client for the HeySol API with MCP protocol support",

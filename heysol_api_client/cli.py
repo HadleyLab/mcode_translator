@@ -59,14 +59,20 @@ def cli(ctx: click.Context, api_key, base_url, source, pretty, skip_mcp):
       # List logs
       heysol-client logs list --space-id abc123 --limit 50
 
-      # Delete logs by source
-      heysol-client logs delete "source-name" --confirm
-
       # Delete specific log entry
-      heysol-client logs delete-entry "log-id" --confirm
+      heysol-client logs delete "log-id" --confirm
+
+      # Delete logs by source
+      heysol-client logs delete-by-source "source-name" --confirm
 
       # Get specific log
       heysol-client logs get "log-id"
+
+      # Get logs by source
+      heysol-client logs get-by-source "kilo-code" --limit 10
+
+      # List unique sources
+      heysol-client logs sources
 
       # Update space properties
       heysol-client spaces update "space-id" --name "New Name"
