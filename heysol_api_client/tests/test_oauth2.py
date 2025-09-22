@@ -18,9 +18,9 @@ import requests
 from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 
-from heysol_api_client.heysol import HeySolClient
-from heysol_api_client.heysol.oauth2 import InteractiveOAuth2Authenticator, OAuth2Tokens
-from heysol_api_client.heysol.exceptions import HeySolError, ValidationError, AuthenticationError
+from heysol import HeySolClient
+from heysol.oauth2 import InteractiveOAuth2Authenticator, OAuth2Tokens
+from heysol.exceptions import HeySolError, ValidationError, AuthenticationError
 
 
 class TestOAuth2Comprehensive:

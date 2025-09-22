@@ -218,10 +218,6 @@ See the `docs/` directory for comprehensive documentation:
 - `API_DISCOVERY.md` - API endpoint discovery and testing
 - `TESTING_REPORT.md` - Testing results and coverage reports
 
-## Results and Logs
-
-- `results/` - Test results, investigation reports, and performance data
-- `logs/` - Application logs and debugging information
 
 ## OAuth2 Authentication
 
