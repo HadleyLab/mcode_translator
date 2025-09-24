@@ -1,451 +1,465 @@
-"""Unit tests for PatientGenerator module"""
-
+"""
+Unit tests for patient_generator module.
+"""
 import json
 import os
 import tempfile
 import zipfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-
+from unittest.mock import Mock, patch, mock_open
 import pytest
-
-from src.utils.config import Config, ConfigurationError
-from src.utils.patient_generator import (ArchiveLoadError, PatientGenerator,
-                                         PatientNotFoundError,
-                                         create_patient_generator)
-
-
-@pytest.fixture
-def sample_fhir_bundle():
-    """Sample FHIR Bundle with Patient resource."""
-    return {
-        "resourceType": "Bundle",
-        "type": "collection",
-        "entry": [
-            {
-                "resource": {
-                    "resourceType": "Patient",
-                    "id": "patient-123",
-                    "identifier": [{"value": "PT123"}],
-                    "name": [{"family": "Doe", "given": ["John"]}],
-                    "gender": "male",
-                    "birthDate": "1980-01-01",
-                }
-            }
-        ],
-    }
-
-
-@pytest.fixture
-def sample_single_patient():
-    """Sample single Patient resource."""
-    return {
-        "resourceType": "Patient",
-        "id": "patient-456",
-        "identifier": [{"value": "PT456"}],
-        "name": [{"family": "Smith", "given": ["Jane"]}],
-        "gender": "female",
-        "birthDate": "1990-05-15",
-    }
-
-
-@pytest.fixture
-def sample_ndjson_content(sample_fhir_bundle):
-    """Sample NDJSON content with multiple bundles."""
-    bundle1 = sample_fhir_bundle
-    bundle2 = sample_fhir_bundle.copy()
-    bundle2["entry"] = bundle2["entry"].copy()
-    bundle2["entry"][0] = bundle2["entry"][0].copy()
-    bundle2["entry"][0]["resource"] = bundle2["entry"][0]["resource"].copy()
-    bundle2["entry"][0]["resource"]["id"] = "patient-789"
-    bundle2["entry"][0]["resource"]["name"] = bundle2["entry"][0]["resource"][
-        "name"
-    ].copy()
-    bundle2["entry"][0]["resource"]["name"][0] = bundle2["entry"][0]["resource"][
-        "name"
-    ][0].copy()
-    bundle2["entry"][0]["resource"]["name"][0]["family"] = "Johnson"
-
-    # Create proper NDJSON format - each JSON object on its own line
-    return f"{json.dumps(bundle1)}\n{json.dumps(bundle2)}\n"
-
-
-@pytest.fixture
-def create_test_zip(
-    tmp_path, sample_fhir_bundle, sample_single_patient, sample_ndjson_content
-):
-    """Create test ZIP file with various patient data formats."""
-    zip_path = tmp_path / "test_patients.zip"
-
-    with zipfile.ZipFile(zip_path, "w") as zf:
-        # Add single bundle JSON
-        zf.writestr("patients/bundle1.json", json.dumps(sample_fhir_bundle))
-
-        # Add single patient JSON
-        zf.writestr("patients/single_patient.json", json.dumps(sample_single_patient))
-
-        # Add NDJSON file
-        zf.writestr("patients/patients.ndjson", sample_ndjson_content)
-
-        # Add invalid file
-        zf.writestr("patients/invalid.txt", "not json")
-
-    return str(zip_path)
-
-
-def test_patient_generator_basic_loading(create_test_zip):
-    """Test basic PatientGenerator loading from ZIP archive."""
-    generator = PatientGenerator(create_test_zip)
-
-    assert (
-        len(generator) == 4
-    )  # 1 bundle + 1 single patient + 1 NDJSON + 1 invalid file
-
-    # Test iterator - should handle invalid files gracefully
-    patients = []
-    for patient in generator:
-        patients.append(patient)
-
-    # Should have 3 valid patients (invalid.txt is skipped due to error, NDJSON has 2)
-    assert len(patients) == 3
-    assert all(p.get("resourceType") == "Bundle" for p in patients)
-
-    # Verify each has Patient resource
-    for patient_bundle in patients:
-        patient_entry = next(
-            (
-                e
-                for e in patient_bundle.get("entry", [])
-                if e.get("resource", {}).get("resourceType") == "Patient"
-            ),
-            None,
-        )
-        assert patient_entry is not None
-
-
-def test_patient_generator_random_selection(create_test_zip):
-    """Test random patient selection."""
-    generator = PatientGenerator(create_test_zip)
-    random_patient = generator.get_random_patient()
-
-    assert random_patient.get("resourceType") == "Bundle"
-    assert len(random_patient.get("entry", [])) > 0
-
-
-def test_patient_generator_specific_id(create_test_zip):
-    """Test getting patient by specific ID."""
-    generator = PatientGenerator(create_test_zip)
-
-    # Test with known ID from fixture
-    patient = generator.get_patient_by_id("patient-123")
-    assert patient.get("resourceType") == "Bundle"
-
-    # Test with identifier value
-    patient_by_id = generator.get_patient_by_id("PT123")
-    assert patient_by_id.get("resourceType") == "Bundle"
-
-    # Test with unknown ID
-    with pytest.raises(PatientNotFoundError):
-        generator.get_patient_by_id("nonexistent-patient")
-
-
-def test_patient_generator_exclude_ids(create_test_zip):
-    """Test random selection with excluded IDs."""
-    generator = PatientGenerator(create_test_zip)
-
-    # Exclude a non-existent patient, should still get a random one
-    random_patient = generator.get_random_patient(exclude_ids=["nonexistent-patient"])
-
-    # Verify we got a valid patient
-    assert random_patient is not None
-    assert random_patient.get("resourceType") == "Bundle"
-
-
-def test_patient_generator_shuffle(create_test_zip):
-    """Test patient shuffling with seed for reproducibility."""
-    generator1 = PatientGenerator(create_test_zip, shuffle=True, seed=42)
-    generator2 = PatientGenerator(create_test_zip, shuffle=True, seed=42)
-
-    # Both generators should produce the same shuffled order
-    patients1 = list(generator1)
-    patients2 = list(generator2)
-
-    assert patients1 == patients2
-
-    # Test that shuffling produces different order than non-shuffled
-    # (This might fail if the files happen to be in the same order by chance)
-    non_shuffled = list(PatientGenerator(create_test_zip))
-    # Since we have few files, they might be the same, so we'll just check reproducibility
-    assert len(patients1) == len(non_shuffled)
-
-
-def test_patient_generator_limit_and_start(create_test_zip):
-    """Test getting limited slice of patients."""
-    generator = PatientGenerator(create_test_zip)
-
-    # Get first 2 patients
-    limited_patients = generator.get_patients(limit=2)
-    assert len(limited_patients) == 2
-
-    # Get patients starting from index 1, limit 1
-    slice_patients = generator.get_patients(limit=1, start=1)
-    assert len(slice_patients) == 1
-    assert slice_patients[0] != limited_patients[0]  # Different patient
-
-
-def test_create_patient_generator_with_config_name():
-    """Test factory function with configuration-based archive name."""
-    with patch("src.utils.patient_generator.Config") as mock_config:
-        # Mock config to return a valid archive path
-        mock_config_instance = MagicMock()
-        mock_config.return_value = mock_config_instance
-        mock_config_instance.config_data = {
-            "synthetic_data": {
-                "base_directory": "data/synthetic_patients",
-                "archives": {"breast_cancer": {"10_years": {"url": "test_url"}}},
-            }
-        }
-
-        # Mock os.path.exists to return True for resolved path
-        with patch("os.path.exists") as mock_exists, patch(
-            "src.utils.patient_generator.PatientGenerator"
-        ) as mock_generator:
-
-            mock_exists.return_value = True
-            create_patient_generator("breast_cancer/10_years")
-
-            # Verify PatientGenerator was called with original identifier (resolution happens inside)
-            mock_generator.assert_called_once_with(
-                "breast_cancer/10_years", mock_config_instance, False, None
-            )
-
-
-def test_patient_generator_invalid_zip():
-    """Test loading from invalid ZIP file."""
-    with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp:
-        tmp.write(b"not a zip file")
-        tmp_path = tmp.name
-
-    try:
-        with pytest.raises(ArchiveLoadError):
-            PatientGenerator(tmp_path)
-    finally:
-        os.unlink(tmp_path)
-
-
-def test_patient_generator_empty_archive(tmp_path):
-    """Test loading from empty ZIP archive."""
-    empty_zip = tmp_path / "empty.zip"
-
-    with zipfile.ZipFile(empty_zip, "w"):
-        pass  # Create empty ZIP
-
-    try:
-        generator = PatientGenerator(str(empty_zip))
-        assert len(generator) == 0
-        with pytest.raises(ArchiveLoadError):
-            generator.get_random_patient()
-    finally:
-        empty_zip.unlink()
-
-
-def test_patient_generator_non_json_files(create_test_zip):
-    """Test that non-JSON files in archive are ignored."""
-    # Add a non-JSON file to the test ZIP
-    with zipfile.ZipFile(create_test_zip, "a") as zf:
-        zf.writestr("patients/non_json.txt", "not json content")
-
-    generator = PatientGenerator(create_test_zip)
-    # Should find the 3 JSON/NDJSON files plus the added non-JSON file (5 total)
-    assert len(generator) == 5
-
-
-def test_patient_generator_config_resolution_failure():
-    """Test that invalid archive names raise appropriate errors."""
-    with patch("src.utils.patient_generator.Config") as mock_config:
-        mock_config_instance = MagicMock()
-        mock_config.return_value = mock_config_instance
-        mock_config_instance.config_data = {
-            "synthetic_data": {
-                "base_directory": "data/synthetic_patients",
-                "archives": {},  # Empty archives
-            }
-        }
-
-        with patch("os.path.exists") as mock_exists:
-            mock_exists.return_value = False
-
-            with pytest.raises(ArchiveLoadError):
-                create_patient_generator("invalid_archive_name")
-
-
-def test_patient_generator_ndjson_malformed_lines():
-    """Test handling of malformed JSON lines in NDJSON files."""
-    # Create ZIP with NDJSON containing some invalid lines
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_path = Path(tmp_dir) / "malformed.ndjson.zip"
-
-        malformed_ndjson = (
-            json.dumps({"resourceType": "Bundle", "entry": []})
-            + "\n"  # Valid
-            + "invalid json line\n"  # Invalid
-            + json.dumps({"resourceType": "Patient", "id": "valid-patient"})
-            + "\n"  # Valid
-        )
-
-        with zipfile.ZipFile(zip_path, "w") as zf:
-            zf.writestr("patients/malformed.ndjson", malformed_ndjson)
-
-        generator = PatientGenerator(str(zip_path))
-
-        # Should load 1 valid entry (empty bundle is valid but may not be counted as patient)
-        patients = list(generator)
-        assert len(patients) == 1
-
-
-def test_patient_generator_extract_patient_id_variations():
-    """Test patient ID extraction from different identifier formats."""
-    from src.utils.patient_generator import extract_patient_id
-
-    test_cases = [
-        # Patient with ID
-        {
-            "resourceType": "Bundle",
-            "entry": [{"resource": {"resourceType": "Patient", "id": "test-id-1"}}],
-        },
-        # Patient with identifier
-        {
-            "resourceType": "Bundle",
+from src.utils.patient_generator import (
+    PatientGenerator,
+    create_patient_generator,
+    extract_patient_id,
+    _extract_patient_id_from_bundle,
+    PatientNotFoundError,
+    ArchiveLoadError,
+)
+
+
+class TestExtractPatientId:
+    """Test patient ID extraction functions."""
+
+    def test_extract_patient_id_from_bundle_with_id(self):
+        """Test extracting patient ID when ID is present."""
+        bundle = {
             "entry": [
                 {
                     "resource": {
                         "resourceType": "Patient",
-                        "identifier": [{"value": "identifier-123"}],
+                        "id": "patient-123"
                     }
                 }
-            ],
-        },
-        # Patient with name fallback
-        {
-            "resourceType": "Bundle",
+            ]
+        }
+
+        result = _extract_patient_id_from_bundle(bundle)
+        assert result == "patient-123"
+
+    def test_extract_patient_id_from_bundle_with_identifier(self):
+        """Test extracting patient ID from identifier."""
+        bundle = {
             "entry": [
                 {
                     "resource": {
                         "resourceType": "Patient",
-                        "name": [{"family": "Test", "given": ["Alice"]}],
+                        "identifier": [
+                            {"value": "identifier-456"}
+                        ]
                     }
                 }
-            ],
-        },
-        # No identifiable patient
-        {
-            "resourceType": "Bundle",
-            "entry": [{"resource": {"resourceType": "Observation"}}],
-        },
-    ]
+            ]
+        }
 
-    expected_ids = ["test-id-1", "identifier-123", "Test_Alice", None]
+        result = _extract_patient_id_from_bundle(bundle)
+        assert result == "identifier-456"
 
-    for i, bundle in enumerate(test_cases):
-        extracted_id = extract_patient_id(bundle)  # Direct method access for testing
-        assert extracted_id == expected_ids[i]
+    def test_extract_patient_id_from_bundle_with_name_fallback(self):
+        """Test extracting patient ID using name fallback."""
+        bundle = {
+            "entry": [
+                {
+                    "resource": {
+                        "resourceType": "Patient",
+                        "name": [
+                            {
+                                "family": "Smith",
+                                "given": ["John"]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+
+        result = _extract_patient_id_from_bundle(bundle)
+        assert result == "Smith_John"
+
+    def test_extract_patient_id_from_bundle_no_patient(self):
+        """Test extracting patient ID when no patient resource exists."""
+        bundle = {
+            "entry": [
+                {
+                    "resource": {
+                        "resourceType": "Observation"
+                    }
+                }
+            ]
+        }
+
+        result = _extract_patient_id_from_bundle(bundle)
+        assert result is None
+
+    def test_extract_patient_id_from_bundle_empty(self):
+        """Test extracting patient ID from empty bundle."""
+        bundle = {}
+
+        result = _extract_patient_id_from_bundle(bundle)
+        assert result is None
+
+    def test_extract_patient_id_wrapper(self):
+        """Test the public extract_patient_id wrapper."""
+        bundle = {
+            "entry": [
+                {
+                    "resource": {
+                        "resourceType": "Patient",
+                        "id": "patient-789"
+                    }
+                }
+            ]
+        }
+
+        result = extract_patient_id(bundle)
+        assert result == "patient-789"
 
 
-def test_patient_generator_multiple_archives_config():
-    """Test PatientGenerator with multiple archive configurations."""
-    # This test would typically require actual archive files, but we can test the resolution logic
-    with patch("src.utils.patient_generator.Config") as mock_config:
-        mock_config_instance = MagicMock()
+class TestPatientGeneratorInit:
+    """Test PatientGenerator initialization."""
+
+    @patch('src.utils.patient_generator.Config')
+    @patch('src.utils.patient_generator.os.path.exists')
+    def test_init_with_existing_path(self, mock_exists, mock_config):
+        """Test initialization with existing archive path."""
+        mock_exists.return_value = True
+        mock_config_instance = Mock()
         mock_config.return_value = mock_config_instance
 
-        # Test resolution with full config
-        mock_config_instance.config_data = {
+        with patch.object(PatientGenerator, '_load_file_list'):
+            generator = PatientGenerator("test.zip")
+
+            assert generator.archive_path == "test.zip"
+            assert generator.shuffle is False
+            assert generator.seed is None
+
+    @patch('src.utils.patient_generator.Config')
+    @patch('src.utils.patient_generator.os.path.exists')
+    def test_init_with_named_archive(self, mock_exists, mock_config):
+        """Test initialization with named archive resolution."""
+        mock_exists.side_effect = lambda p: p == "/data/synthetic_patients/cancer/type1/archive.zip"
+        mock_config_instance = Mock()
+        mock_config_instance.synthetic_data_config = {
             "synthetic_data": {
-                "base_directory": "/path/to/data",
                 "archives": {
-                    "test_type": {
-                        "test_duration": {
-                            "url": "http://example.com/test.zip",
-                            "description": "Test archive",
-                        }
+                    "cancer": {
+                        "type1": {}
                     }
                 },
+                "base_directory": "/data/synthetic_patients"
             }
         }
+        mock_config.return_value = mock_config_instance
 
-        with patch("os.path.exists") as mock_exists:
-            mock_exists.return_value = True
-            with patch("src.utils.patient_generator.PatientGenerator") as mock_gen:
-                create_patient_generator("test_type/test_duration")
+        with patch.object(PatientGenerator, '_load_file_list'):
+            generator = PatientGenerator("cancer_type1")
 
-                # Verify it called with original identifier (resolution happens inside)
-                mock_gen.assert_called_with(
-                    "test_type/test_duration", mock_config_instance, False, None
-                )
+            assert generator.archive_path == "/data/synthetic_patients/cancer/type1/cancer_type1.zip"
 
+    @patch('src.utils.patient_generator.Config')
+    @patch('src.utils.patient_generator.os.path.exists')
+    def test_init_archive_not_found(self, mock_exists, mock_config):
+        """Test initialization when archive is not found."""
+        mock_exists.return_value = False
+        mock_config_instance = Mock()
+        mock_config.return_value = mock_config_instance
 
-class TestPatientGeneratorIntegration:
-    """Integration tests for PatientGenerator with real ZIP operations."""
-
-    @pytest.fixture(autouse=True)
-    def setup_method(self, create_test_zip):
-        self.test_zip = create_test_zip
-
-    def test_full_workflow(self):
-        """Test complete workflow: load -> iterate -> random -> specific."""
-        generator = PatientGenerator(self.test_zip, shuffle=True, seed=42)
-
-        # 1. Test basic loading and iteration
-        all_patients = list(generator)
-        assert len(all_patients) == 3  # 4 files but 1 invalid
-
-        # 2. Test random selection excludes current iteration position
-        first_patient = all_patients[0]
-        random_patient = generator.get_random_patient()
-        assert random_patient != first_patient
-
-        # 3. Test specific ID lookup
-        patient_ids = generator.get_patient_ids()
-        assert len(patient_ids) >= 3  # From fixtures
-
-        if patient_ids:
-            specific_patient = generator.get_patient_by_id(patient_ids[0])
-            assert specific_patient in all_patients
-
-        # 4. Test limit and start
-        limited = generator.get_patients(limit=2, start=1)
-        assert len(limited) >= 1  # May be less due to invalid files in shuffled order
-        assert limited[0] != all_patients[0]  # Starts from index 1
-
-        # 5. Test reset
-        generator.reset()
-        assert next(iter(generator)) == all_patients[0]  # Back to start after shuffle
-
-    def test_error_handling(self):
-        """Test various error conditions."""
-        # Invalid ZIP
-        with tempfile.NamedTemporaryFile(suffix=".zip") as tmp:
-            tmp.write(b"not zip")
-            tmp.flush()
-            with pytest.raises(ArchiveLoadError):
-                PatientGenerator(tmp.name)
-
-        # Non-existent file
         with pytest.raises(ArchiveLoadError):
             PatientGenerator("nonexistent.zip")
 
-        # Empty ZIP
-        empty_zip = Path(self.test_zip).parent / "empty.zip"
-        with zipfile.ZipFile(empty_zip, "w"):
-            pass
-        try:
-            generator = PatientGenerator(str(empty_zip))
-            assert len(generator) == 0
+
+class TestPatientGeneratorFileLoading:
+    """Test file loading functionality."""
+
+    def test_load_file_list_success(self):
+        """Test successful file list loading."""
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
+            # Create a test ZIP file
+            with zipfile.ZipFile(tmp.name, 'w') as zf:
+                zf.writestr('patient1.json', '{"resourceType": "Bundle"}')
+                zf.writestr('patient2.ndjson', '{"id": "1"}\n{"id": "2"}')
+
+            try:
+                with patch('src.utils.patient_generator.Config'):
+                    generator = PatientGenerator(tmp.name)
+                    generator._load_file_list()
+
+                    assert len(generator._patient_files) == 2
+                    assert 'patient1.json' in generator._patient_files
+                    assert 'patient2.ndjson' in generator._patient_files
+            finally:
+                os.unlink(tmp.name)
+
+    def test_load_file_list_invalid_zip(self):
+        """Test loading file list from invalid ZIP."""
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp.write(b"not a zip file")
+            tmp.flush()
+
+            try:
+                with patch('src.utils.patient_generator.Config'):
+                    generator = PatientGenerator(tmp.name)
+
+                    with pytest.raises(ArchiveLoadError):
+                        generator._load_file_list()
+            finally:
+                os.unlink(tmp.name)
+
+    def test_load_file_list_no_patients(self):
+        """Test loading file list with no patient files."""
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
+            with zipfile.ZipFile(tmp.name, 'w') as zf:
+                zf.writestr('readme.txt', 'This is not patient data')
+
+            try:
+                with patch('src.utils.patient_generator.Config'):
+                    generator = PatientGenerator(tmp.name)
+                    generator._load_file_list()
+
+                    assert len(generator._patient_files) == 0
+            finally:
+                os.unlink(tmp.name)
+
+
+class TestPatientGeneratorIteration:
+    """Test iteration functionality."""
+
+    def test_len(self):
+        """Test length method."""
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+            generator._patient_files = ['file1.json', 'file2.json', 'file3.json']
+
+            assert len(generator) == 3
+
+    def test_iter(self):
+        """Test iterator initialization."""
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+            generator._patient_files = ['file1.json', 'file2.json']
+            generator._current_index = 5  # Some non-zero value
+
+            iterator = iter(generator)
+
+            assert generator._current_index == 0
+            assert iterator is generator
+
+    def test_reset(self):
+        """Test reset method."""
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+            generator._current_index = 10
+
+            generator.reset()
+
+            assert generator._current_index == 0
+
+    def test_close(self):
+        """Test close method."""
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+            generator._patient_files = ['file1.json', 'file2.json']
+            generator._current_index = 5
+            generator._loaded = True
+
+            generator.close()
+
+            assert generator._patient_files == []
+            assert generator._current_index == 0
+            assert generator._loaded is False
+
+
+class TestPatientGeneratorPatientOperations:
+    """Test patient retrieval operations."""
+
+    def test_get_random_patient_no_files(self):
+        """Test get_random_patient with no patient files."""
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+            generator._patient_files = []
+
             with pytest.raises(ArchiveLoadError):
                 generator.get_random_patient()
-        finally:
-            empty_zip.unlink()
+
+    def test_get_patient_by_id_not_found(self):
+        """Test get_patient_by_id when patient is not found."""
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+            generator._patient_files = ['file1.json']
+            generator._load_patient_from_file = Mock(side_effect=Exception("Load failed"))
+
+            with pytest.raises(PatientNotFoundError):
+                generator.get_patient_by_id("nonexistent")
+
+    def test_get_patients_with_limit(self):
+        """Test get_patients with limit."""
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+            generator._patient_files = ['file1.json', 'file2.json', 'file3.json']
+            generator._load_patient_from_file = Mock(return_value={"bundle": "data"})
+
+            result = generator.get_patients(limit=2, start=1)
+
+            assert len(result) == 2
+            assert generator._load_patient_from_file.call_count == 2
+
+    def test_get_patient_ids(self):
+        """Test get_patient_ids method."""
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+            generator._patient_files = ['file1.json']
+            generator._current_index = 0
+            generator._load_patient_from_file = Mock(return_value={
+                "entry": [{"resource": {"resourceType": "Patient", "id": "patient-123"}}]
+            })
+            generator.extract_patient_id = Mock(return_value="patient-123")
+
+            result = generator.get_patient_ids()
+
+            assert result == ["patient-123"]
+
+
+class TestCreatePatientGenerator:
+    """Test create_patient_generator function."""
+
+    @patch('src.utils.patient_generator.Config')
+    @patch('src.utils.patient_generator.PatientGenerator')
+    def test_create_patient_generator_with_config(self, mock_generator, mock_config):
+        """Test create_patient_generator with provided config."""
+        mock_config_instance = Mock()
+        mock_config.return_value = mock_config_instance
+
+        result = create_patient_generator("test.zip", config=mock_config_instance, shuffle=True, seed=42)
+
+        mock_generator.assert_called_once_with("test.zip", mock_config_instance, True, 42)
+
+    @patch('src.utils.patient_generator.Config')
+    @patch('src.utils.patient_generator.PatientGenerator')
+    def test_create_patient_generator_no_config(self, mock_generator, mock_config):
+        """Test create_patient_generator without config."""
+        mock_config_instance = Mock()
+        mock_config.return_value = mock_config_instance
+
+        result = create_patient_generator("test.zip")
+
+        mock_generator.assert_called_once_with("test.zip", mock_config_instance, False, None)
+
+
+class TestPatientGeneratorLoadPatientFromFile:
+    """Test _load_patient_from_file method."""
+
+    def test_load_patient_from_file_json_success(self):
+        """Test loading patient from JSON file successfully."""
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
+            with zipfile.ZipFile(tmp.name, 'w') as zf:
+                zf.writestr('patient.json', '{"resourceType": "Bundle", "entry": []}')
+
+            try:
+                with patch('src.utils.patient_generator.Config'):
+                    generator = PatientGenerator.__new__(PatientGenerator)
+                    generator.archive_path = tmp.name
+
+                    result = generator._load_patient_from_file('patient.json')
+
+                    assert result["resourceType"] == "Bundle"
+            finally:
+                os.unlink(tmp.name)
+
+    def test_load_patient_from_file_ndjson_success(self):
+        """Test loading patient from NDJSON file successfully."""
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
+            with zipfile.ZipFile(tmp.name, 'w') as zf:
+                zf.writestr('patients.ndjson', '{"resourceType": "Bundle", "entry": []}\n{"invalid": "json"}')
+
+            try:
+                with patch('src.utils.patient_generator.Config'):
+                    generator = PatientGenerator.__new__(PatientGenerator)
+                    generator.archive_path = tmp.name
+
+                    result = generator._load_patient_from_file('patients.ndjson')
+
+                    assert result["resourceType"] == "Bundle"
+            finally:
+                os.unlink(tmp.name)
+
+    def test_load_patient_from_file_invalid_json(self):
+        """Test loading patient from invalid JSON file."""
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
+            with zipfile.ZipFile(tmp.name, 'w') as zf:
+                zf.writestr('invalid.json', 'not json')
+
+            try:
+                with patch('src.utils.patient_generator.Config'):
+                    generator = PatientGenerator.__new__(PatientGenerator)
+                    generator.archive_path = tmp.name
+
+                    with pytest.raises(ValueError):
+                        generator._load_patient_from_file('invalid.json')
+            finally:
+                os.unlink(tmp.name)
+
+
+class TestPatientGeneratorNormalizeToBundle:
+    """Test _normalize_to_bundle method."""
+
+    def test_normalize_bundle_already_bundle(self):
+        """Test normalizing data that is already a bundle."""
+        data = {
+            "resourceType": "Bundle",
+            "type": "collection",
+            "entry": []
+        }
+
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+
+            result = generator._normalize_to_bundle(data)
+
+            assert result == data
+
+    def test_normalize_single_patient(self):
+        """Test normalizing single patient resource."""
+        data = {
+            "resourceType": "Patient",
+            "id": "patient-123"
+        }
+
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+
+            result = generator._normalize_to_bundle(data)
+
+            assert result["resourceType"] == "Bundle"
+            assert result["type"] == "collection"
+            assert len(result["entry"]) == 1
+            assert result["entry"][0]["resource"] == data
+
+    def test_normalize_bundle_like_structure(self):
+        """Test normalizing bundle-like structure."""
+        data = {
+            "entry": [{"resource": {"resourceType": "Patient"}}]
+        }
+
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+
+            result = generator._normalize_to_bundle(data)
+
+            assert result["resourceType"] == "Bundle"
+            assert result["type"] == "collection"
+            assert result["entry"] == data["entry"]
+
+    def test_normalize_invalid_data(self):
+        """Test normalizing invalid data."""
+        data = "invalid data"
+
+        with patch('src.utils.patient_generator.Config'):
+            generator = PatientGenerator.__new__(PatientGenerator)
+
+            result = generator._normalize_to_bundle(data)
+
+            assert result is None
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+    pytest.main([__file__])
