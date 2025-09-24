@@ -9,7 +9,6 @@ including argument parsing, workflow execution, data validation, and error handl
 import argparse
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from src.cli.patients_fetcher import (
     create_parser,
@@ -79,7 +78,9 @@ class TestPatientsFetcherCLI:
     @patch("src.cli.patients_fetcher.PatientsFetcherWorkflow")
     @patch("src.cli.patients_fetcher.McodeCLI.create_config")
     @patch("src.cli.patients_fetcher.McodeCLI.setup_logging")
-    def test_main_successful_fetch(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_successful_fetch(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test successful patient data fetching."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -112,7 +113,7 @@ class TestPatientsFetcherCLI:
         mock_result.metadata = {
             "total_fetched": 5,
             "fetch_type": "archive",
-            "archive_path": "breast_cancer_10_years"
+            "archive_path": "breast_cancer_10_years",
         }
         mock_workflow.execute.return_value = mock_result
         mock_workflow_class.return_value = mock_workflow
@@ -125,7 +126,7 @@ class TestPatientsFetcherCLI:
         mock_workflow.execute.assert_called_once_with(
             archive_path="breast_cancer_10_years",
             limit=5,
-            output_path="patients.ndjson"
+            output_path="patients.ndjson",
         )
 
         # Verify logging was set up
@@ -135,7 +136,9 @@ class TestPatientsFetcherCLI:
     @patch("src.cli.patients_fetcher.PatientsFetcherWorkflow")
     @patch("src.cli.patients_fetcher.McodeCLI.create_config")
     @patch("src.cli.patients_fetcher.McodeCLI.setup_logging")
-    def test_main_list_archives_flag(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_list_archives_flag(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test the list archives functionality."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -163,7 +166,10 @@ class TestPatientsFetcherCLI:
 
         # Mock workflow for list_archives
         mock_workflow = MagicMock()
-        mock_workflow.list_available_archives.return_value = ["breast_cancer_10_years", "mixed_cancer_lifetime"]
+        mock_workflow.list_available_archives.return_value = [
+            "breast_cancer_10_years",
+            "mixed_cancer_lifetime",
+        ]
         mock_workflow_class.return_value = mock_workflow
 
         # Call main
@@ -176,7 +182,9 @@ class TestPatientsFetcherCLI:
     @patch("src.cli.patients_fetcher.PatientsFetcherWorkflow")
     @patch("src.cli.patients_fetcher.McodeCLI.create_config")
     @patch("src.cli.patients_fetcher.McodeCLI.setup_logging")
-    def test_main_workflow_failure(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_workflow_failure(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test handling of workflow execution failure."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -225,7 +233,9 @@ class TestPatientsFetcherCLI:
     @patch("src.cli.patients_fetcher.PatientsFetcherWorkflow")
     @patch("src.cli.patients_fetcher.McodeCLI.create_config")
     @patch("src.cli.patients_fetcher.McodeCLI.setup_logging")
-    def test_main_keyboard_interrupt_handling(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_keyboard_interrupt_handling(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test handling of keyboard interrupt during execution."""
         # Mock configuration and logging
         mock_config = MagicMock()

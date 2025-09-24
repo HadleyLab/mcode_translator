@@ -1,5 +1,4 @@
 import json
-import os
 import uuid
 from typing import Any, Dict, Optional
 
@@ -73,7 +72,11 @@ class CoreMemoryClient:
     def _post(self, payload: JSON, stream: bool = False) -> requests.Response:
         """Send POST request to MCP server."""
         response = requests.post(
-            self.url, json=payload, headers=self._headers(), timeout=self.timeout, stream=stream
+            self.url,
+            json=payload,
+            headers=self._headers(),
+            timeout=self.timeout,
+            stream=stream,
         )
         try:
             response.raise_for_status()
@@ -432,7 +435,7 @@ class CoreMemoryClient:
                 "message": "Ingestion logs API endpoint is pending implementation",
                 "source": "system",
                 "status": "pending",
-                "created_at": "2025-01-01T00:00:00Z"
+                "created_at": "2025-01-01T00:00:00Z",
             }
         ]
 
@@ -470,7 +473,7 @@ class CoreMemoryClient:
                 "content": "Episode facts API endpoint is pending implementation",
                 "episode_id": episode_id or "unknown",
                 "confidence": 0.0,
-                "metadata": {"status": "pending"}
+                "metadata": {"status": "pending"},
             }
         ]
 
@@ -499,7 +502,7 @@ class CoreMemoryClient:
             "message": "Specific log API endpoint is pending implementation",
             "source": "system",
             "status": "pending",
-            "created_at": "2025-01-01T00:00:00Z"
+            "created_at": "2025-01-01T00:00:00Z",
         }
 
     def delete_log_entry(self, log_id: str) -> dict:
@@ -525,7 +528,7 @@ class CoreMemoryClient:
         return {
             "id": log_id,
             "status": "deleted",
-            "message": "Log deletion API endpoint is pending implementation"
+            "message": "Log deletion API endpoint is pending implementation",
         }
 
     def get_user_profile(self) -> dict:
@@ -547,7 +550,7 @@ class CoreMemoryClient:
             "name": "API User",
             "email": "user@api.example.com",
             "status": "active",
-            "message": "User profile API endpoint is pending implementation"
+            "message": "User profile API endpoint is pending implementation",
         }
 
     def get_space_details(self, space_id: str) -> dict:
@@ -584,7 +587,12 @@ class CoreMemoryClient:
         except Exception as e:
             raise CoreMemoryError(f"Failed to get space details for '{space_id}': {e}")
 
-    def update_space(self, space_id: str, name: Optional[str] = None, description: Optional[str] = None) -> dict:
+    def update_space(
+        self,
+        space_id: str,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> dict:
         """
         Update a space in CORE Memory.
 
@@ -612,7 +620,9 @@ class CoreMemoryClient:
             payload["description"] = description
 
         if not payload:
-            raise CoreMemoryError("At least one field (name or description) must be provided for update.")
+            raise CoreMemoryError(
+                "At least one field (name or description) must be provided for update."
+            )
 
         # Try PATCH first (more standard for updates)
         base_url = self.url.split("/api/v1/mcp")[0]
@@ -634,7 +644,9 @@ class CoreMemoryClient:
         except requests.HTTPError as e:
             if e.response.status_code == 400:
                 # Space updates may not be supported
-                raise CoreMemoryError(f"Space updates are not supported by the API (400 Bad Request): {e}")
+                raise CoreMemoryError(
+                    f"Space updates are not supported by the API (400 Bad Request): {e}"
+                )
             elif e.response.status_code == 405:
                 # Try PUT if PATCH is not allowed
                 try:
@@ -651,7 +663,9 @@ class CoreMemoryClient:
                     response.raise_for_status()
                     return response.json()
                 except Exception as e2:
-                    raise CoreMemoryError(f"Failed to update space '{space_id}' with PUT: {e2}")
+                    raise CoreMemoryError(
+                        f"Failed to update space '{space_id}' with PUT: {e2}"
+                    )
             else:
                 raise CoreMemoryError(f"Failed to update space '{space_id}': {e}")
         except Exception as e:

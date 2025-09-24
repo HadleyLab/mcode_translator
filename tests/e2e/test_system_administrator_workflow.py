@@ -6,13 +6,8 @@ Tests the complete system administrator workflow from configuration to maintenan
 1. Configuration (config validation, environment setup) → 2. Monitoring (performance metrics, health checks) → 3. Maintenance (cleanup, testing, system administration)
 """
 
-import argparse
 import json
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch
 
-import pytest
 
 from mcode_translate import main as mcode_translate_main
 
@@ -29,22 +24,19 @@ class TestSystemAdministratorWorkflowE2E:
                 "deepseek-coder": {
                     "model": "deepseek-coder",
                     "api_key": "test-key",
-                    "base_url": "https://api.deepseek.com"
+                    "base_url": "https://api.deepseek.com",
                 }
             },
             "apis": {
                 "clinical_trials": {
                     "base_url": "https://clinicaltrials.gov/api/v2",
-                    "timeout": 30
+                    "timeout": 30,
                 }
             },
-            "core_memory": {
-                "source": "test",
-                "enabled": True
-            }
+            "core_memory": {"source": "test", "enabled": True},
         }
 
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             json.dump(test_config, f)
 
         # Test basic CLI help to verify system is functional
@@ -57,9 +49,7 @@ class TestSystemAdministratorWorkflowE2E:
 
         try:
             # Test basic help command to verify CLI is functional
-            test_args = [
-                "--help"
-            ]
+            test_args = ["--help"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -78,7 +68,11 @@ class TestSystemAdministratorWorkflowE2E:
         output = captured_output.getvalue()
 
         # Verify CLI is functional and shows help
-        assert "mCODE Translator CLI" in output or "usage:" in output or "positional arguments" in output
+        assert (
+            "mCODE Translator CLI" in output
+            or "usage:" in output
+            or "positional arguments" in output
+        )
 
     def test_system_administrator_workflow_monitoring_and_logging(self, tmp_path):
         """Test monitoring and logging phase of system administrator workflow."""
@@ -92,10 +86,7 @@ class TestSystemAdministratorWorkflowE2E:
 
         try:
             # Test fetch-trials command with verbose logging (but no actual execution)
-            test_args = [
-                "fetch-trials",
-                "--help"
-            ]
+            test_args = ["fetch-trials", "--help"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -114,7 +105,11 @@ class TestSystemAdministratorWorkflowE2E:
         output = captured_output.getvalue()
 
         # Verify CLI help shows logging options
-        assert "--verbose" in output or "--log-level" in output or "logging" in output.lower()
+        assert (
+            "--verbose" in output
+            or "--log-level" in output
+            or "logging" in output.lower()
+        )
 
     def test_system_administrator_workflow_maintenance_testing(self, tmp_path):
         """Test maintenance testing phase of system administrator workflow."""
@@ -128,10 +123,7 @@ class TestSystemAdministratorWorkflowE2E:
 
         try:
             # Test run-tests help command
-            test_args = [
-                "run-tests",
-                "--help"
-            ]
+            test_args = ["run-tests", "--help"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -150,7 +142,12 @@ class TestSystemAdministratorWorkflowE2E:
         output = captured_output.getvalue()
 
         # Verify testing commands are available
-        assert "unit" in output or "integration" in output or "performance" in output or "lint" in output
+        assert (
+            "unit" in output
+            or "integration" in output
+            or "performance" in output
+            or "lint" in output
+        )
 
     def test_system_administrator_workflow_coverage_reporting(self, tmp_path):
         """Test coverage reporting in system administrator workflow."""
@@ -164,10 +161,7 @@ class TestSystemAdministratorWorkflowE2E:
 
         try:
             # Test run-tests help to verify coverage option exists
-            test_args = [
-                "run-tests",
-                "--help"
-            ]
+            test_args = ["run-tests", "--help"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -200,10 +194,7 @@ class TestSystemAdministratorWorkflowE2E:
 
         try:
             # Test download-data command with list option
-            test_args = [
-                "download-data",
-                "--list"
-            ]
+            test_args = ["download-data", "--list"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -220,7 +211,9 @@ class TestSystemAdministratorWorkflowE2E:
         output = captured_output.getvalue()
 
         # Verify archive listing was shown
-        assert "Available Synthetic Patient Archives" in output or "📚 Available" in output
+        assert (
+            "Available Synthetic Patient Archives" in output or "📚 Available" in output
+        )
 
     def test_system_administrator_workflow_error_handling_and_recovery(self, tmp_path):
         """Test error handling and recovery in system administrator workflow."""
@@ -236,9 +229,7 @@ class TestSystemAdministratorWorkflowE2E:
 
         try:
             # Test invalid command
-            test_args = [
-                "invalid-command"
-            ]
+            test_args = ["invalid-command"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -260,7 +251,11 @@ class TestSystemAdministratorWorkflowE2E:
 
         # Verify error was handled gracefully
         combined_output = output + error_output
-        assert "invalid choice" in combined_output or "unrecognized arguments" in combined_output or len(combined_output) > 0
+        assert (
+            "invalid choice" in combined_output
+            or "unrecognized arguments" in combined_output
+            or len(combined_output) > 0
+        )
 
     def test_system_administrator_workflow_system_health_check(self, tmp_path):
         """Test system health check in system administrator workflow."""
@@ -274,9 +269,7 @@ class TestSystemAdministratorWorkflowE2E:
 
         try:
             # Test version/info command (if available) or basic help
-            test_args = [
-                "--help"
-            ]
+            test_args = ["--help"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -295,7 +288,9 @@ class TestSystemAdministratorWorkflowE2E:
         output = captured_output.getvalue()
 
         # Verify system is responsive
-        assert len(output) > 0 and ("mCODE" in output or "usage:" in output or "positional arguments" in output)
+        assert len(output) > 0 and (
+            "mCODE" in output or "usage:" in output or "positional arguments" in output
+        )
 
     def test_complete_system_administrator_workflow_integration(self, tmp_path):
         """Test the complete end-to-end system administrator workflow integration."""
@@ -303,7 +298,7 @@ class TestSystemAdministratorWorkflowE2E:
         commands_to_test = [
             ["--help"],
             ["run-tests", "--help"],
-            ["download-data", "--help"]
+            ["download-data", "--help"],
         ]
 
         all_outputs = []
@@ -338,6 +333,8 @@ class TestSystemAdministratorWorkflowE2E:
         combined_output = " ".join(all_outputs)
 
         # Verify system administrator functionality is available
-        assert ("run-tests" in combined_output or
-                "download-data" in combined_output or
-                "mCODE Translator" in combined_output)
+        assert (
+            "run-tests" in combined_output
+            or "download-data" in combined_output
+            or "mCODE Translator" in combined_output
+        )

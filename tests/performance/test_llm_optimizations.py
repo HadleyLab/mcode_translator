@@ -9,8 +9,6 @@ Tests for LLM service optimizations:
 """
 
 import time
-import pytest
-from pathlib import Path
 
 from src.pipeline.llm_service import LLMService
 from src.utils.config import Config
@@ -22,13 +20,15 @@ logger = get_logger(__name__)
 def test_connection_pooling():
     """Test connection pooling and reuse."""
     config = Config()
-    service = LLMService(config, "deepseek-coder", "direct_mcode_evidence_based_concise")
+    service = LLMService(
+        config, "deepseek-coder", "direct_mcode_evidence_based_concise"
+    )
 
     # Make multiple requests to test connection reuse
     test_texts = [
         "Patient with breast cancer stage II",
         "Lung cancer treatment with chemotherapy",
-        "Prostate cancer diagnosis and staging"
+        "Prostate cancer diagnosis and staging",
     ]
 
     start_time = time.time()
@@ -49,7 +49,9 @@ def test_connection_pooling():
 def test_batch_processing():
     """Test batch processing capabilities."""
     config = Config()
-    service = LLMService(config, "deepseek-coder", "direct_mcode_evidence_based_concise")
+    service = LLMService(
+        config, "deepseek-coder", "direct_mcode_evidence_based_concise"
+    )
 
     # Prepare batch of texts
     batch_texts = [
@@ -57,7 +59,7 @@ def test_batch_processing():
         "Clinical trial for advanced lung cancer therapy",
         "Prostate cancer screening and early detection",
         "Colorectal cancer treatment protocols",
-        "Pancreatic cancer diagnosis criteria"
+        "Pancreatic cancer diagnosis criteria",
     ]
 
     # Process texts individually (no batch method available)
@@ -76,13 +78,15 @@ def test_batch_processing():
 def test_performance_monitoring():
     """Test performance monitoring capabilities."""
     config = Config()
-    service = LLMService(config, "deepseek-coder", "direct_mcode_evidence_based_concise")
+    service = LLMService(
+        config, "deepseek-coder", "direct_mcode_evidence_based_concise"
+    )
 
     # Make some requests to test basic functionality
     test_texts = [
         "Breast cancer patient with hormone receptor positive status",
         "Lung cancer staging and treatment planning",
-        "Colorectal cancer screening guidelines"
+        "Colorectal cancer screening guidelines",
     ]
 
     start_time = time.time()
@@ -101,13 +105,15 @@ def test_performance_monitoring():
 def test_enhanced_caching():
     """Test enhanced caching with semantic similarity."""
     config = Config()
-    service = LLMService(config, "deepseek-coder", "direct_mcode_evidence_based_concise")
+    service = LLMService(
+        config, "deepseek-coder", "direct_mcode_evidence_based_concise"
+    )
 
     # Test similar texts that should benefit from semantic caching
     similar_texts = [
         "Patient with breast cancer diagnosis",
         "Breast cancer patient diagnosed recently",
-        "Individual diagnosed with breast cancer"
+        "Individual diagnosed with breast cancer",
     ]
 
     results = []
@@ -121,4 +127,3 @@ def test_enhanced_caching():
     # Basic validation
     assert len(results) == len(similar_texts), "Should process all similar texts"
     assert all(r is not None for r in results), "All results should be valid"
-

@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 @dataclass
 class Task:
     """Task representation for both async and thread-based execution."""
+
     id: str
     func: Callable
     args: tuple = ()
@@ -33,6 +34,7 @@ class Task:
 @dataclass
 class TaskResult:
     """Async task result."""
+
     task_id: str
     success: bool
     result: Any = None
@@ -57,13 +59,15 @@ class AsyncQueue:
         self,
         tasks: List[Task],
         timeout: Optional[float] = None,
-        progress_callback: Optional[Callable] = None
+        progress_callback: Optional[Callable] = None,
     ) -> List[TaskResult]:
         """Execute tasks with controlled concurrency using a worker pool approach."""
         if not tasks:
             return []
 
-        self.logger.info(f"🚀 {self.name}: Processing {len(tasks)} tasks (max {self.max_concurrent} concurrent)")
+        self.logger.info(
+            f"🚀 {self.name}: Processing {len(tasks)} tasks (max {self.max_concurrent} concurrent)"
+        )
 
         async def worker(worker_id: int, task_queue: asyncio.Queue):
             """Worker function that processes tasks from the queue."""
@@ -78,41 +82,54 @@ class AsyncQueue:
                         break
 
                     start_time = time.time()
-                    self.logger.info(f"⚡ {self.name}: WORKER-{worker_id} STARTED {task.id}")
+                    self.logger.info(
+                        f"⚡ {self.name}: WORKER-{worker_id} STARTED {task.id}"
+                    )
 
                     try:
                         # Run sync function in thread pool
                         loop = asyncio.get_event_loop()
+
                         def task_wrapper():
                             return task.func(*task.args, **task.kwargs)
 
                         result = await loop.run_in_executor(None, task_wrapper)
 
                         duration = time.time() - start_time
-                        self.logger.info(f"✅ {self.name}: WORKER-{worker_id} COMPLETED {task.id} ({duration:.2f}s)")
+                        self.logger.info(
+                            f"✅ {self.name}: WORKER-{worker_id} COMPLETED {task.id} ({duration:.2f}s)"
+                        )
 
-                        task_results.append(TaskResult(
-                            task_id=task.id,
-                            success=True,
-                            result=result,
-                            duration=duration
-                        ))
+                        task_results.append(
+                            TaskResult(
+                                task_id=task.id,
+                                success=True,
+                                result=result,
+                                duration=duration,
+                            )
+                        )
 
                     except Exception as e:
                         duration = time.time() - start_time
-                        self.logger.error(f"❌ {self.name}: WORKER-{worker_id} FAILED {task.id} ({duration:.2f}s): {e}")
-                        task_results.append(TaskResult(
-                            task_id=task.id,
-                            success=False,
-                            error=e,
-                            duration=duration
-                        ))
+                        self.logger.error(
+                            f"❌ {self.name}: WORKER-{worker_id} FAILED {task.id} ({duration:.2f}s): {e}"
+                        )
+                        task_results.append(
+                            TaskResult(
+                                task_id=task.id,
+                                success=False,
+                                error=e,
+                                duration=duration,
+                            )
+                        )
 
                     finally:
                         task_queue.task_done()
 
                         if progress_callback:
-                            progress_callback(len(task_results), len(tasks), task_results[-1])
+                            progress_callback(
+                                len(task_results), len(tasks), task_results[-1]
+                            )
 
                 except Exception as e:
                     self.logger.error(f"❌ {self.name}: WORKER-{worker_id} error: {e}")
@@ -138,7 +155,9 @@ class AsyncQueue:
         # Wait for all workers to complete
         if timeout:
             try:
-                await asyncio.wait_for(asyncio.gather(*workers, return_exceptions=True), timeout=timeout)
+                await asyncio.wait_for(
+                    asyncio.gather(*workers, return_exceptions=True), timeout=timeout
+                )
             except asyncio.TimeoutError:
                 self.logger.error(f"⏰ {self.name}: Timeout after {timeout}s")
                 # Cancel remaining tasks
@@ -154,22 +173,21 @@ class AsyncQueue:
 
         return task_results
 
-    async def execute_task(self, task: Task, timeout: Optional[float] = None) -> TaskResult:
+    async def execute_task(
+        self, task: Task, timeout: Optional[float] = None
+    ) -> TaskResult:
         """Execute single task."""
         results = await self.execute_tasks([task], timeout)
-        return results[0] if results else TaskResult(
-            task_id=task.id,
-            success=False,
-            error=Exception("No result")
+        return (
+            results[0]
+            if results
+            else TaskResult(
+                task_id=task.id, success=False, error=Exception("No result")
+            )
         )
 
 
-def create_task(
-    task_id: str,
-    func: Callable,
-    *args,
-    **kwargs
-) -> Task:
+def create_task(task_id: str, func: Callable, *args, **kwargs) -> Task:
     """Create async task."""
     return Task(id=task_id, func=func, args=args, kwargs=kwargs)
 
@@ -186,7 +204,7 @@ def create_async_queue_from_args(args, component_type: str = "custom") -> AsyncQ
         Configured AsyncQueue
     """
     # Get worker count from args
-    max_concurrent = getattr(args, 'workers', 1)
+    max_concurrent = getattr(args, "workers", 1)
     if max_concurrent <= 0:
         max_concurrent = 1
 
@@ -195,6 +213,7 @@ def create_async_queue_from_args(args, component_type: str = "custom") -> AsyncQ
 
 
 # Thread-based concurrency classes for backward compatibility
+
 
 class WorkerPool:
     """
@@ -215,9 +234,13 @@ class WorkerPool:
         """Start the worker pool."""
         with self._lock:
             if not self._running:
-                self.executor = ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix=self.name)
+                self.executor = ThreadPoolExecutor(
+                    max_workers=self.max_workers, thread_name_prefix=self.name
+                )
                 self._running = True
-                self.logger.info(f"🚀 {self.name}: Started with {self.max_workers} workers")
+                self.logger.info(
+                    f"🚀 {self.name}: Started with {self.max_workers} workers"
+                )
 
     def stop(self):
         """Stop the worker pool."""
@@ -248,21 +271,19 @@ class WorkerPool:
             try:
                 result = task.func(*task.args, **task.kwargs)
                 duration = time.time() - start_time
-                self.logger.info(f"✅ {self.name}: COMPLETED {task.id} ({duration:.2f}s)")
+                self.logger.info(
+                    f"✅ {self.name}: COMPLETED {task.id} ({duration:.2f}s)"
+                )
                 return TaskResult(
-                    task_id=task.id,
-                    success=True,
-                    result=result,
-                    duration=duration
+                    task_id=task.id, success=True, result=result, duration=duration
                 )
             except Exception as e:
                 duration = time.time() - start_time
-                self.logger.error(f"❌ {self.name}: FAILED {task.id} ({duration:.2f}s): {e}")
+                self.logger.error(
+                    f"❌ {self.name}: FAILED {task.id} ({duration:.2f}s): {e}"
+                )
                 return TaskResult(
-                    task_id=task.id,
-                    success=False,
-                    error=e,
-                    duration=duration
+                    task_id=task.id, success=False, error=e, duration=duration
                 )
 
         return self.executor.submit(task_wrapper)
@@ -290,9 +311,7 @@ class TaskQueue:
             return future.result()
 
     def execute_tasks(
-        self,
-        tasks: List[Task],
-        progress_callback: Optional[Callable] = None
+        self, tasks: List[Task], progress_callback: Optional[Callable] = None
     ) -> List[TaskResult]:
         """Execute multiple tasks with optional progress callback."""
         if not tasks:
@@ -312,16 +331,15 @@ class TaskQueue:
                     progress_callback(i + 1, len(tasks), result)
 
             successful = sum(1 for r in results if r.success)
-            self.logger.info(f"🎉 {self.worker_pool.name}: Completed {successful}/{len(tasks)} tasks")
+            self.logger.info(
+                f"🎉 {self.worker_pool.name}: Completed {successful}/{len(tasks)} tasks"
+            )
 
             return results
 
 
 def run_concurrent(
-    func: Callable,
-    items: List[Any],
-    max_workers: int = 4,
-    task_prefix: str = "task"
+    func: Callable, items: List[Any], max_workers: int = 4, task_prefix: str = "task"
 ) -> List[TaskResult]:
     """
     Run a function concurrently on a list of items.
@@ -336,8 +354,7 @@ def run_concurrent(
         List of TaskResult objects
     """
     tasks = [
-        create_task(f"{task_prefix}_{i}", func, item)
-        for i, item in enumerate(items)
+        create_task(f"{task_prefix}_{i}", func, item) for i, item in enumerate(items)
     ]
 
     queue = TaskQueue(max_workers=max_workers, name=f"{task_prefix.title()}Queue")

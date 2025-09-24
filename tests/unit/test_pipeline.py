@@ -3,12 +3,12 @@ Unit tests for the new ultra-lean pipeline architecture.
 """
 
 import json
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
 from src.pipeline import McodePipeline
-from src.shared.models import PipelineResult, McodeElement, ValidationResult, ProcessingMetadata
+from src.shared.models import PipelineResult, McodeElement, ValidationResult
 from src.utils.config import Config
 
 
@@ -42,7 +42,9 @@ class TestMcodePipeline:
         """Test successful processing of a trial."""
         # Mock the LLM service to return a sample mCODE element
         mock_map_to_mcode.return_value = [
-            McodeElement(element_type="CancerCondition", code="C123", display="Test Cancer")
+            McodeElement(
+                element_type="CancerCondition", code="C123", display="Test Cancer"
+            )
         ]
 
         pipeline = McodePipeline()
@@ -83,7 +85,7 @@ class TestMcodePipeline:
         """Test batch processing of trials."""
         # For this test, we can just check if it runs without error
         # A more thorough test would mock the process method
-        with patch.object(McodePipeline, 'process') as mock_process:
+        with patch.object(McodePipeline, "process") as mock_process:
             mock_process.return_value = PipelineResult(
                 mcode_mappings=[],
                 validation_results=ValidationResult(compliance_score=1.0),
@@ -92,13 +94,15 @@ class TestMcodePipeline:
                     "total_count": 1,
                     "successful": 1,
                     "failed": 0,
-                    "success_rate": 1.0
+                    "success_rate": 1.0,
                 },
-                original_data={}
+                original_data={},
             )
 
             pipeline = McodePipeline()
-            batch_results = await pipeline.process_batch([sample_trial_data, sample_trial_data])
+            batch_results = await pipeline.process_batch(
+                [sample_trial_data, sample_trial_data]
+            )
 
             assert len(batch_results) == 2
             assert mock_process.call_count == 2
@@ -106,14 +110,14 @@ class TestMcodePipeline:
     def test_compliance_score_calculation(self):
         """Test the compliance score calculation."""
         pipeline = McodePipeline()
-        
+
         # No elements
         assert pipeline._calculate_compliance_score([]) == 0.0
-        
+
         # One required element
         elements1 = [McodeElement(element_type="CancerCondition")]
         assert pipeline._calculate_compliance_score(elements1) > 0.3
-        
+
         # All required elements
         elements3 = [
             McodeElement(element_type="CancerCondition"),

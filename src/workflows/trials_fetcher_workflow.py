@@ -9,11 +9,13 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from src.utils.fetcher import (ClinicalTrialsAPIError, get_full_study,
-                               search_trials, get_full_studies_batch,
-                               search_trials_parallel)
-from typing import Tuple
-from src.utils.logging_config import get_logger
+from src.utils.fetcher import (
+    ClinicalTrialsAPIError,
+    get_full_study,
+    search_trials,
+    get_full_studies_batch,
+    search_trials_parallel,
+)
 from src.utils.concurrency import TaskQueue, create_task, get_fetcher_pool
 
 from .base_workflow import FetcherWorkflow, WorkflowResult
@@ -49,7 +51,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
             nct_ids = kwargs.get("nct_ids")
             limit = kwargs.get("limit", 10)
             output_path = kwargs.get("output_path")
-            cli_args = kwargs.get("cli_args")  # CLI arguments for concurrency
+            kwargs.get("cli_args")  # CLI arguments for concurrency
 
             # Validate inputs
             if not self._validate_fetch_params(condition, nct_id, nct_ids):
@@ -112,7 +114,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                     condition,
                     max_results=limit,
                     page_size=100,  # API limit per page
-                    max_workers=4
+                    max_workers=4,
                 )
                 basic_trials = search_result.get("studies", [])
             else:
@@ -163,40 +165,57 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                 task = create_task(
                     task_id=f"full_fetch_{i}",
                     func=self._fetch_single_trial_data,
-                    nct_id=nct_id
+                    nct_id=nct_id,
                 )
                 tasks.append(task)
 
             # Execute tasks concurrently
             fetcher_pool = get_fetcher_pool()
-            task_queue = TaskQueue(max_workers=fetcher_pool.max_workers, name="FullDataFetcherQueue")
+            task_queue = TaskQueue(
+                max_workers=fetcher_pool.max_workers, name="FullDataFetcherQueue"
+            )
 
             def progress_callback(completed, total, result):
-                nct_id = nct_ids[int(result.task_id.split('_')[2])]
+                nct_id = nct_ids[int(result.task_id.split("_")[2])]
                 if result.success and result.result:
                     self.logger.debug(f"✅ Fetched full data for {nct_id}")
                 else:
                     self.logger.warning(f"❌ No data returned for {nct_id}")
 
-            task_results = task_queue.execute_tasks(tasks, progress_callback=progress_callback)
+            task_results = task_queue.execute_tasks(
+                tasks, progress_callback=progress_callback
+            )
 
             # Process results
             for task_result in task_results:
-                nct_id = nct_ids[int(task_result.task_id.split('_')[2])]
+                nct_id = nct_ids[int(task_result.task_id.split("_")[2])]
 
                 if task_result.success and task_result.result:
                     full_trials.append(task_result.result)
                     successful_fetches += 1
                 else:
                     # Include basic trial data if full fetch fails
-                    basic_trial = next((t for t in basic_trials if
-                                       t.get("protocolSection", {}).get("identificationModule", {}).get("nctId") == nct_id), None)
+                    basic_trial = next(
+                        (
+                            t
+                            for t in basic_trials
+                            if t.get("protocolSection", {})
+                            .get("identificationModule", {})
+                            .get("nctId")
+                            == nct_id
+                        ),
+                        None,
+                    )
                     if basic_trial:
                         full_trials.append(basic_trial)
                     if task_result.error:
-                        self.logger.error(f"❌ Failed to fetch full data for {nct_id}: {task_result.error}")
+                        self.logger.error(
+                            f"❌ Failed to fetch full data for {nct_id}: {task_result.error}"
+                        )
 
-            self.logger.info(f"📊 Concurrent full data fetch complete: {successful_fetches}/{len(nct_ids)} successful")
+            self.logger.info(
+                f"📊 Concurrent full data fetch complete: {successful_fetches}/{len(nct_ids)} successful"
+            )
 
             # Step 4: Validate data completeness
             data_quality = self._assess_data_quality(full_trials)
@@ -263,16 +282,20 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
     def _fetch_multiple_trials(self, nct_ids: List[str]) -> Dict[str, Any]:
         """Fetch multiple trials by NCT IDs using optimized batch processing."""
         try:
-            self.logger.info(f"📥 Fetching {len(nct_ids)} trials using batch processing")
+            self.logger.info(
+                f"📥 Fetching {len(nct_ids)} trials using batch processing"
+            )
 
             # Get concurrency configuration from CLI args
             cli_args = self._get_cli_args()
             max_workers = 8  # Default batch size
             if cli_args:
                 # Extract concurrency settings from CLI args if available
-                max_workers = getattr(cli_args, 'max_workers', 8)
+                max_workers = getattr(cli_args, "max_workers", 8)
 
-            self.logger.info(f"🤖 Using batch processing with {max_workers} concurrent workers")
+            self.logger.info(
+                f"🤖 Using batch processing with {max_workers} concurrent workers"
+            )
 
             # Use the optimized batch processing function
             batch_results = get_full_studies_batch(nct_ids, max_workers=max_workers)
@@ -287,7 +310,11 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                     self.logger.debug(f"✅ Fetched: {nct_id}")
                 else:
                     failed_trials.append(nct_id)
-                    error_msg = result.get("error", "Unknown error") if isinstance(result, dict) else str(result)
+                    error_msg = (
+                        result.get("error", "Unknown error")
+                        if isinstance(result, dict)
+                        else str(result)
+                    )
                     self.logger.warning(f"❌ Failed to fetch {nct_id}: {error_msg}")
 
             success_rate = len(successful_trials) / len(nct_ids) if nct_ids else 0
@@ -307,7 +334,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                     "success_rate": success_rate,
                     "failed_trials": failed_trials,
                     "batch_workers": max_workers,
-                    "processing_method": "batch_api_calls"
+                    "processing_method": "batch_api_calls",
                 },
             }
 
@@ -336,7 +363,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
             with open(output_file, "w", encoding="utf-8") as f:
                 for item in data:
                     json.dump(item, f, ensure_ascii=False)
-                    f.write('\n')
+                    f.write("\n")
 
             self.logger.info(f"💾 Results saved to: {output_file} (NDJSON format)")
 
@@ -356,17 +383,27 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
         for trial in trials:
             score = self._calculate_trial_completeness(trial)
             quality_scores.append(score)
-            if score >= 0.8:  # Consider trial complete if 80%+ of expected fields present
+            if (
+                score >= 0.8
+            ):  # Consider trial complete if 80%+ of expected fields present
                 complete_trials += 1
 
         avg_score = sum(quality_scores) / len(quality_scores) if quality_scores else 0.0
 
         quality_assessment = {
-            "status": "good" if avg_score >= 0.8 else "partial" if avg_score >= 0.5 else "incomplete",
+            "status": (
+                "good"
+                if avg_score >= 0.8
+                else "partial" if avg_score >= 0.5 else "incomplete"
+            ),
             "completeness_score": round(avg_score, 2),
             "complete_trials": complete_trials,
             "total_trials": total_trials,
-            "completeness_percentage": round((complete_trials / total_trials) * 100, 1) if total_trials > 0 else 0.0
+            "completeness_percentage": (
+                round((complete_trials / total_trials) * 100, 1)
+                if total_trials > 0
+                else 0.0
+            ),
         }
 
         if quality_assessment["status"] != "good":
@@ -394,13 +431,22 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
         # Define expected fields for a complete trial
         expected_fields = {
             "identificationModule": ["nctId", "briefTitle", "officialTitle"],
-            "statusModule": ["overallStatus", "startDateStruct", "completionDateStruct"],
+            "statusModule": [
+                "overallStatus",
+                "startDateStruct",
+                "completionDateStruct",
+            ],
             "descriptionModule": ["briefSummary", "detailedDescription"],
-            "eligibilityModule": ["eligibilityCriteria", "minimumAge", "maximumAge", "sex"],
+            "eligibilityModule": [
+                "eligibilityCriteria",
+                "minimumAge",
+                "maximumAge",
+                "sex",
+            ],
             "conditionsModule": ["conditions"],
             "armsInterventionsModule": ["interventions"],
             "designModule": ["studyType", "phases", "primaryPurpose"],
-            "sponsorCollaboratorsModule": ["leadSponsor"]
+            "sponsorCollaboratorsModule": ["leadSponsor"],
         }
 
         total_fields = 0
@@ -421,7 +467,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
     def _get_cli_args(self):
         """Get CLI arguments from the current execution context."""
         # This will be set by the CLI script when calling execute()
-        return getattr(self, '_cli_args', None)
+        return getattr(self, "_cli_args", None)
 
     def _set_cli_args(self, args):
         """Set CLI arguments for concurrency configuration."""

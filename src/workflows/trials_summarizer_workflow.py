@@ -5,12 +5,10 @@ This workflow handles generating comprehensive natural language summaries
 from processed mCODE trial data and stores them in CORE Memory.
 """
 
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import McodeMemoryStorage
-from src.utils.logging_config import get_logger
 
 from .base_workflow import TrialsProcessorWorkflow, WorkflowResult
 
@@ -64,9 +62,7 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
             successful_count = 0
             failed_count = 0
 
-            self.logger.info(
-                f"📝 Generating summaries for {len(trials_data)} trials"
-            )
+            self.logger.info(f"📝 Generating summaries for {len(trials_data)} trials")
 
             for trial in trials_data:
                 try:
@@ -82,12 +78,16 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
                     processed_trial = trial.copy()
                     if "McodeResults" not in processed_trial:
                         processed_trial["McodeResults"] = {}
-                    processed_trial["McodeResults"]["natural_language_summary"] = summary
+                    processed_trial["McodeResults"][
+                        "natural_language_summary"
+                    ] = summary
 
                     # Store in CORE Memory if requested
                     if store_in_memory and self.memory_storage:
                         # Extract mCODE elements if available
-                        mcode_elements = trial.get("McodeResults", {}).get("mcode_mappings", [])
+                        mcode_elements = trial.get("McodeResults", {}).get(
+                            "mcode_mappings", []
+                        )
                         trial_metadata = self._extract_trial_metadata(trial)
 
                         mcode_data = {
@@ -134,7 +134,8 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
                     "successful": successful_count,
                     "failed": failed_count,
                     "success_rate": success_rate,
-                    "stored_in_memory": store_in_memory and self.memory_storage is not None,
+                    "stored_in_memory": store_in_memory
+                    and self.memory_storage is not None,
                 },
             )
 
@@ -200,7 +201,9 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
                 status = protocol["statusModule"]
                 metadata["overall_status"] = status.get("overallStatus")
                 metadata["start_date"] = status.get("startDateStruct", {}).get("date")
-                metadata["completion_date"] = status.get("completionDateStruct", {}).get("date")
+                metadata["completion_date"] = status.get(
+                    "completionDateStruct", {}
+                ).get("date")
 
             # Conditions
             if "conditionsModule" in protocol:
@@ -217,6 +220,7 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
 
         # Add processing timestamp
         from datetime import datetime
+
         metadata["processed_at"] = datetime.utcnow().isoformat()
 
         return metadata

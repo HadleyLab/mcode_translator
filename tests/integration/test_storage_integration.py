@@ -1,6 +1,7 @@
 """
 Integration tests for storage interactions with CORE Memory and comprehensive error handling.
 """
+
 import pytest
 from unittest.mock import patch, MagicMock
 from src.storage.mcode_memory_storage import McodeMemoryStorage
@@ -29,13 +30,13 @@ class TestStorageIntegration:
                 {
                     "code": "C4872",
                     "display": "Breast Cancer",
-                    "system": "http://snomed.info/sct"
+                    "system": "http://snomed.info/sct",
                 }
             ],
             "metadata": {
                 "processing_timestamp": "2024-01-01T00:00:00Z",
-                "confidence_score": 0.95
-            }
+                "confidence_score": 0.95,
+            },
         }
 
     @pytest.fixture
@@ -43,50 +44,59 @@ class TestStorageIntegration:
         """Sample patient data for testing."""
         return {
             "original_patient_data": {
-                "entry": [{
-                    "resource": {
-                        "resourceType": "Patient",
-                        "id": "patient_123"
-                    }
-                }]
+                "entry": [
+                    {"resource": {"resourceType": "Patient", "id": "patient_123"}}
+                ]
             },
             "mcode_mappings": [
                 {
                     "code": "C4872",
                     "display": "Breast Cancer",
-                    "system": "http://snomed.info/sct"
+                    "system": "http://snomed.info/sct",
                 }
             ],
-            "demographics": {
-                "age": 45,
-                "gender": "female"
-            },
-            "metadata": {
-                "processing_timestamp": "2024-01-01T00:00:00Z"
-            }
+            "demographics": {"age": 45, "gender": "female"},
+            "metadata": {"processing_timestamp": "2024-01-01T00:00:00Z"},
         }
 
-    def test_store_trial_mcode_summary(self, mock_core_memory_client, sample_trial_data):
+    def test_store_trial_mcode_summary(
+        self, mock_core_memory_client, sample_trial_data
+    ):
         """Test storing trial mCODE summary."""
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
             success = storage.store_trial_mcode_summary("NCT123456", sample_trial_data)
             assert success
             mock_core_memory_client.ingest.assert_called_once()
 
-    def test_store_patient_mcode_summary(self, mock_core_memory_client, sample_patient_data):
+    def test_store_patient_mcode_summary(
+        self, mock_core_memory_client, sample_patient_data
+    ):
         """Test storing patient mCODE summary."""
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
-            success = storage.store_patient_mcode_summary("patient_123", sample_patient_data)
+            success = storage.store_patient_mcode_summary(
+                "patient_123", sample_patient_data
+            )
             assert success
             mock_core_memory_client.ingest.assert_called_once()
 
     def test_search_similar_trials(self, mock_core_memory_client):
         """Test searching for similar trials."""
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
-            mock_core_memory_client.search.return_value = [{"id": "test_id", "data": "test_data"}]
+            mock_core_memory_client.search.return_value = [
+                {"id": "test_id", "data": "test_data"}
+            ]
             results = storage.search_similar_trials("breast cancer")
             assert results is not None
             assert len(results) == 1
@@ -95,21 +105,29 @@ class TestStorageIntegration:
 
     def test_store_trial_mcode_summary_with_empty_data(self, mock_core_memory_client):
         """Test storing trial with empty data."""
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
             success = storage.store_trial_mcode_summary("NCT123456", {})
             assert success
             mock_core_memory_client.ingest.assert_called_once()
 
-    def test_store_patient_mcode_summary_with_minimal_data(self, mock_core_memory_client):
+    def test_store_patient_mcode_summary_with_minimal_data(
+        self, mock_core_memory_client
+    ):
         """Test storing patient with minimal required data."""
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
             minimal_data = {
                 "original_patient_data": {"entry": []},
                 "mcode_mappings": [],
                 "demographics": {},
-                "metadata": {}
+                "metadata": {},
             }
             success = storage.store_patient_mcode_summary("patient_123", minimal_data)
             assert success
@@ -117,7 +135,10 @@ class TestStorageIntegration:
 
     def test_search_similar_trials_empty_results(self, mock_core_memory_client):
         """Test searching with no results."""
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
             mock_core_memory_client.search.return_value = []
             results = storage.search_similar_trials("nonexistent condition")
@@ -128,7 +149,10 @@ class TestStorageIntegration:
         """Test handling of storage connection failures."""
         mock_core_memory_client.ingest.side_effect = Exception("Connection failed")
 
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
             success = storage.store_trial_mcode_summary("NCT123456", {"data": "test"})
             assert not success  # Should handle error gracefully
@@ -136,16 +160,28 @@ class TestStorageIntegration:
     def test_storage_error_handling_search_failure(self, mock_core_memory_client):
         """Test handling of search failures."""
         from src.utils.core_memory_client import CoreMemoryError
+
         mock_core_memory_client.search.side_effect = CoreMemoryError("Search failed")
 
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
             results = storage.search_similar_trials("breast cancer")
-            assert results == {"episodes": [], "facts": []}  # Should return empty results on error
+            assert results == {
+                "episodes": [],
+                "facts": [],
+            }  # Should return empty results on error
 
-    def test_batch_storage_operations(self, mock_core_memory_client, sample_trial_data, sample_patient_data):
+    def test_batch_storage_operations(
+        self, mock_core_memory_client, sample_trial_data, sample_patient_data
+    ):
         """Test batch storage operations."""
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
 
             # Store multiple trials
@@ -155,9 +191,27 @@ class TestStorageIntegration:
                 assert success
 
             # Store multiple patients
-            patients = [sample_patient_data, {**sample_patient_data, "original_patient_data": {"entry": [{"resource": {"resourceType": "Patient", "id": "patient_456"}}]}}]
+            patients = [
+                sample_patient_data,
+                {
+                    **sample_patient_data,
+                    "original_patient_data": {
+                        "entry": [
+                            {
+                                "resource": {
+                                    "resourceType": "Patient",
+                                    "id": "patient_456",
+                                }
+                            }
+                        ]
+                    },
+                },
+            ]
             for patient in patients:
-                success = storage.store_patient_mcode_summary(patient["original_patient_data"]["entry"][0]["resource"]["id"], patient)
+                success = storage.store_patient_mcode_summary(
+                    patient["original_patient_data"]["entry"][0]["resource"]["id"],
+                    patient,
+                )
                 assert success
 
             # Verify all operations were called
@@ -165,7 +219,10 @@ class TestStorageIntegration:
 
     def test_storage_data_validation(self, mock_core_memory_client):
         """Test data validation before storage."""
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
 
             # Test with None data
@@ -173,19 +230,28 @@ class TestStorageIntegration:
             assert not success
 
             # Test with invalid patient data structure
-            success = storage.store_patient_mcode_summary("patient_123", {"invalid": "structure"})
+            success = storage.store_patient_mcode_summary(
+                "patient_123", {"invalid": "structure"}
+            )
             assert not success
 
-    def test_concurrent_storage_access(self, mock_core_memory_client, sample_trial_data):
+    def test_concurrent_storage_access(
+        self, mock_core_memory_client, sample_trial_data
+    ):
         """Test concurrent storage access patterns."""
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
 
             # Simulate concurrent operations
             operations = []
             for i in range(5):
                 trial_data = {**sample_trial_data, "nct_id": f"NCT{i}"}
-                success = storage.store_trial_mcode_summary(trial_data["nct_id"], trial_data)
+                success = storage.store_trial_mcode_summary(
+                    trial_data["nct_id"], trial_data
+                )
                 operations.append(success)
 
             # All operations should succeed
@@ -194,14 +260,17 @@ class TestStorageIntegration:
 
     def test_storage_memory_limits(self, mock_core_memory_client):
         """Test handling of large data sets."""
-        with patch('src.storage.mcode_memory_storage.CoreMemoryClient', return_value=mock_core_memory_client):
+        with patch(
+            "src.storage.mcode_memory_storage.CoreMemoryClient",
+            return_value=mock_core_memory_client,
+        ):
             storage = McodeMemoryStorage()
 
             # Create large trial data
             large_trial_data = {
                 "nct_id": "NCT123456",
                 "large_field": "x" * 10000,  # 10KB string
-                "metadata": {"processing_timestamp": "2024-01-01T00:00:00Z"}
+                "metadata": {"processing_timestamp": "2024-01-01T00:00:00Z"},
             }
 
             success = storage.store_trial_mcode_summary("NCT123456", large_trial_data)

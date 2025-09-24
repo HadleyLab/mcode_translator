@@ -7,9 +7,8 @@ without any processing or core memory storage.
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from src.utils.logging_config import get_logger
 from src.utils.patient_generator import create_patient_generator
 
 from .base_workflow import FetcherWorkflow, WorkflowResult
@@ -184,7 +183,7 @@ class PatientsFetcherWorkflow(FetcherWorkflow):
             with open(output_file, "w", encoding="utf-8") as f:
                 for item in data:
                     json.dump(item, f, ensure_ascii=False)
-                    f.write('\n')
+                    f.write("\n")
 
             self.logger.info(f"💾 Patient data saved to: {output_file} (NDJSON format)")
 
@@ -196,12 +195,15 @@ class PatientsFetcherWorkflow(FetcherWorkflow):
         """Output fetch results to stdout in NDJSON format."""
         try:
             import sys
+
             for item in data:
                 json.dump(item, sys.stdout, ensure_ascii=False)
-                sys.stdout.write('\n')
+                sys.stdout.write("\n")
             sys.stdout.flush()
 
-            self.logger.info(f"📤 Patient data written to stdout: {len(data)} records (NDJSON format)")
+            self.logger.info(
+                f"📤 Patient data written to stdout: {len(data)} records (NDJSON format)"
+            )
 
         except Exception as e:
             self.logger.error(f"Failed to output patient data to stdout: {e}")

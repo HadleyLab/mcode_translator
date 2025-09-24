@@ -10,9 +10,8 @@ import argparse
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
 
-import pytest
 
 from src.cli.trials_processor import (
     create_parser,
@@ -70,8 +69,14 @@ class TestTrialsProcessorCLI:
     @patch("src.cli.trials_processor.McodeCLI.setup_logging")
     @patch("src.cli.trials_processor.load_ndjson_data")
     @patch("pathlib.Path.exists", return_value=True)
-    def test_main_successful_processing_without_ingest(self, mock_path_exists, mock_load_data,
-                                                      mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_successful_processing_without_ingest(
+        self,
+        mock_path_exists,
+        mock_load_data,
+        mock_setup_logging,
+        mock_create_config,
+        mock_workflow_class,
+    ):
         """Test successful trial processing without CORE Memory ingestion."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -80,7 +85,7 @@ class TestTrialsProcessorCLI:
         # Mock trial data
         mock_trial_data = [
             {"nct_id": "NCT12345678", "title": "Test Trial 1"},
-            {"nct_id": "NCT87654321", "title": "Test Trial 2"}
+            {"nct_id": "NCT87654321", "title": "Test Trial 2"},
         ]
         mock_load_data.return_value = mock_trial_data
 
@@ -109,8 +114,10 @@ class TestTrialsProcessorCLI:
         mock_result.data = [
             {
                 "trial_id": "NCT12345678",
-                "McodeResults": {"mcode_mappings": [{"element_type": "CancerCondition"}]},
-                "original_trial_data": mock_trial_data[0]
+                "McodeResults": {
+                    "mcode_mappings": [{"element_type": "CancerCondition"}]
+                },
+                "original_trial_data": mock_trial_data[0],
             }
         ]
         mock_result.metadata = {
@@ -119,7 +126,7 @@ class TestTrialsProcessorCLI:
             "failed": 0,
             "success_rate": 1.0,
             "model_used": "deepseek-coder",
-            "prompt_used": "direct_mcode_evidence_based_concise"
+            "prompt_used": "direct_mcode_evidence_based_concise",
         }
         mock_workflow.execute.return_value = mock_result
         mock_workflow_class.return_value = mock_workflow
@@ -135,7 +142,7 @@ class TestTrialsProcessorCLI:
             prompt="direct_mcode_evidence_based_concise",
             store_in_memory=False,
             workers=0,
-            cli_args=args
+            cli_args=args,
         )
 
         # Verify data loading was called
@@ -147,9 +154,15 @@ class TestTrialsProcessorCLI:
     @patch("src.cli.trials_processor.load_ndjson_data")
     @patch("src.cli.trials_processor.McodeMemoryStorage")
     @patch("pathlib.Path.exists", return_value=True)
-    def test_main_successful_processing_with_ingest(self, mock_path_exists, mock_memory_class,
-                                                   mock_load_data, mock_setup_logging,
-                                                   mock_create_config, mock_workflow_class):
+    def test_main_successful_processing_with_ingest(
+        self,
+        mock_path_exists,
+        mock_memory_class,
+        mock_load_data,
+        mock_setup_logging,
+        mock_create_config,
+        mock_workflow_class,
+    ):
         """Test successful trial processing with CORE Memory ingestion."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -191,7 +204,7 @@ class TestTrialsProcessorCLI:
             "successful": 1,
             "failed": 0,
             "success_rate": 1.0,
-            "stored_in_memory": True
+            "stored_in_memory": True,
         }
         mock_workflow.execute.return_value = mock_result
         mock_workflow_class.return_value = mock_workflow
@@ -208,7 +221,9 @@ class TestTrialsProcessorCLI:
     @patch("src.cli.trials_processor.McodeCLI.create_config")
     @patch("src.cli.trials_processor.McodeCLI.setup_logging")
     @patch("pathlib.Path.exists", return_value=False)
-    def test_main_input_file_not_found(self, mock_path_exists, mock_setup_logging, mock_create_config):
+    def test_main_input_file_not_found(
+        self, mock_path_exists, mock_setup_logging, mock_create_config
+    ):
         """Test error when input file does not exist."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -247,8 +262,9 @@ class TestTrialsProcessorCLI:
     @patch("src.cli.trials_processor.McodeCLI.setup_logging")
     @patch("src.cli.trials_processor.load_ndjson_data")
     @patch("pathlib.Path.exists", return_value=True)
-    def test_main_empty_trial_data(self, mock_path_exists, mock_load_data,
-                                  mock_setup_logging, mock_create_config):
+    def test_main_empty_trial_data(
+        self, mock_path_exists, mock_load_data, mock_setup_logging, mock_create_config
+    ):
         """Test error when input file contains no trial data."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -291,8 +307,14 @@ class TestTrialsProcessorCLI:
     @patch("src.cli.trials_processor.McodeCLI.setup_logging")
     @patch("src.cli.trials_processor.load_ndjson_data")
     @patch("pathlib.Path.exists", return_value=True)
-    def test_main_workflow_failure(self, mock_path_exists, mock_load_data,
-                                  mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_workflow_failure(
+        self,
+        mock_path_exists,
+        mock_load_data,
+        mock_setup_logging,
+        mock_create_config,
+        mock_workflow_class,
+    ):
         """Test handling of workflow execution failure."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -344,8 +366,14 @@ class TestTrialsProcessorCLI:
     @patch("src.cli.trials_processor.McodeCLI.setup_logging")
     @patch("src.cli.trials_processor.load_ndjson_data")
     @patch("pathlib.Path.exists", return_value=True)
-    def test_main_keyboard_interrupt_handling(self, mock_path_exists, mock_load_data,
-                                            mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_keyboard_interrupt_handling(
+        self,
+        mock_path_exists,
+        mock_load_data,
+        mock_setup_logging,
+        mock_create_config,
+        mock_workflow_class,
+    ):
         """Test handling of keyboard interrupt during execution."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -395,25 +423,19 @@ class TestTrialsProcessorCLI:
         # Mock processed data with proper ClinicalTrials.gov structure for extract_trial_id
         mock_data = [
             {
-                "protocolSection": {
-                    "identificationModule": {
-                        "nctId": "NCT12345678"
-                    }
-                },
+                "protocolSection": {"identificationModule": {"nctId": "NCT12345678"}},
                 "McodeResults": {
                     "mcode_mappings": [
                         {"element_type": "CancerCondition", "value": "Breast Cancer"},
-                        {"element_type": "CancerTreatment", "value": "Chemotherapy"}
+                        {"element_type": "CancerTreatment", "value": "Chemotherapy"},
                     ]
                 },
                 "original_trial_data": {
                     "protocolSection": {
-                        "identificationModule": {
-                            "nctId": "NCT12345678"
-                        }
+                        "identificationModule": {"nctId": "NCT12345678"}
                     },
-                    "title": "Test Trial"
-                }
+                    "title": "Test Trial",
+                },
             }
         ]
 
@@ -421,7 +443,9 @@ class TestTrialsProcessorCLI:
         mock_logger = MagicMock()
 
         # Create temporary file
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.ndjson') as temp_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", delete=False, suffix=".ndjson"
+        ) as temp_file:
             temp_path = temp_file.name
 
         try:
@@ -429,7 +453,7 @@ class TestTrialsProcessorCLI:
             save_processed_data(mock_data, temp_path, mock_logger)
 
             # Verify file was written
-            with open(temp_path, 'r') as f:
+            with open(temp_path, "r") as f:
                 lines = f.readlines()
                 assert len(lines) == 1
 
@@ -437,7 +461,12 @@ class TestTrialsProcessorCLI:
                 saved_data = json.loads(lines[0])
                 assert saved_data["trial_id"] == "NCT12345678"
                 assert len(saved_data["mcode_elements"]["mcode_mappings"]) == 2
-                assert saved_data["original_trial_data"]["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
+                assert (
+                    saved_data["original_trial_data"]["protocolSection"][
+                        "identificationModule"
+                    ]["nctId"]
+                    == "NCT12345678"
+                )
 
             # Verify logger was called
             mock_logger.info.assert_called_with(f"💾 mCODE data saved to: {temp_path}")
@@ -453,7 +482,7 @@ class TestTrialsProcessorCLI:
             {
                 "trial_id": "NCT12345678",
                 "McodeResults": {"mcode_mappings": []},
-                "original_trial_data": {"nct_id": "NCT12345678"}
+                "original_trial_data": {"nct_id": "NCT12345678"},
             }
         ]
 
@@ -481,7 +510,7 @@ class TestTrialsProcessorCLI:
             "success_rate": 0.8,
             "stored_in_memory": True,  # Add this to match the expected output
             "model_used": "deepseek-coder",
-            "prompt_used": "direct_mcode_evidence_based_concise"
+            "prompt_used": "direct_mcode_evidence_based_concise",
         }
 
         mock_logger = MagicMock()
@@ -505,7 +534,7 @@ class TestTrialsProcessorCLI:
             "total_trials": 5,
             "successful": 5,
             "failed": 0,
-            "success_rate": 1.0
+            "success_rate": 1.0,
         }
 
         mock_logger = MagicMock()
@@ -540,7 +569,7 @@ class TestTrialsProcessorCLI:
         calls = [call.args[0] for call in mock_logger.info.call_args_list]
         assert "📊 Total trials: 3" in calls
         assert "✅ Successful: 0" in calls  # Default value when not provided
-        assert "❌ Failed: 0" in calls      # Default value when not provided
+        assert "❌ Failed: 0" in calls  # Default value when not provided
         assert "📈 Success rate: 0.0%" in calls  # Default value when not provided
 
     @patch("src.cli.trials_processor.ClinicalTrialsProcessorWorkflow")
@@ -548,8 +577,14 @@ class TestTrialsProcessorCLI:
     @patch("src.cli.trials_processor.McodeCLI.setup_logging")
     @patch("src.cli.trials_processor.load_ndjson_data")
     @patch("pathlib.Path.exists", return_value=True)
-    def test_main_with_concurrency_settings(self, mock_path_exists, mock_load_data,
-                                          mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_with_concurrency_settings(
+        self,
+        mock_path_exists,
+        mock_load_data,
+        mock_setup_logging,
+        mock_create_config,
+        mock_workflow_class,
+    ):
         """Test that concurrency settings are properly passed to workflow."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -586,7 +621,7 @@ class TestTrialsProcessorCLI:
             "total_trials": 1,
             "successful": 1,
             "failed": 0,
-            "success_rate": 1.0
+            "success_rate": 1.0,
         }
         mock_workflow.execute.return_value = mock_result
         mock_workflow_class.return_value = mock_workflow
@@ -602,15 +637,16 @@ class TestTrialsProcessorCLI:
             prompt="direct_mcode_evidence_based_concise",
             store_in_memory=False,
             workers=8,
-            cli_args=args
+            cli_args=args,
         )
 
     @patch("src.cli.trials_processor.McodeCLI.create_config")
     @patch("src.cli.trials_processor.McodeCLI.setup_logging")
     @patch("src.cli.trials_processor.load_ndjson_data")
     @patch("pathlib.Path.exists", return_value=True)
-    def test_main_memory_storage_initialization_failure(self, mock_path_exists, mock_load_data,
-                                                      mock_setup_logging, mock_create_config):
+    def test_main_memory_storage_initialization_failure(
+        self, mock_path_exists, mock_load_data, mock_setup_logging, mock_create_config
+    ):
         """Test handling of CORE Memory storage initialization failure."""
         # Mock configuration and logging
         mock_config = MagicMock()

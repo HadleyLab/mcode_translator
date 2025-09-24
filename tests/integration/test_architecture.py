@@ -5,12 +5,8 @@ This module tests the new modular architecture to ensure all components
 work together correctly.
 """
 
-from unittest.mock import Mock, patch
-
 import pytest
 
-from src.shared.cli_utils import McodeCLI
-from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
 from src.pipeline import McodePipeline
 from src.pipeline.document_ingestor import DocumentIngestor
@@ -38,7 +34,6 @@ class TestArchitecture:
         ingestor = DocumentIngestor()
         assert isinstance(ingestor, DocumentIngestor)
         assert hasattr(ingestor, "ingest_clinical_trial_document")
-
 
 
 if __name__ == "__main__":

@@ -1,10 +1,11 @@
 """
 Unit tests for pairwise_cross_validation module.
 """
+
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import pytest
 
 from src.optimization.pairwise_cross_validation import (
@@ -24,7 +25,7 @@ class TestPairwiseComparisonTask:
             gold_prompt="prompt1",
             gold_model="model1",
             comp_prompt="prompt2",
-            comp_model="model2"
+            comp_model="model2",
         )
 
         assert task.trial_id == "trial_123"
@@ -55,8 +56,8 @@ class TestPairwiseComparisonTask:
 class TestPairwiseCrossValidatorInit:
     """Test PairwiseCrossValidator initialization."""
 
-    @patch('src.optimization.pairwise_cross_validation.PromptLoader')
-    @patch('src.optimization.pairwise_cross_validation.LLMLoader')
+    @patch("src.optimization.pairwise_cross_validation.PromptLoader")
+    @patch("src.optimization.pairwise_cross_validation.LLMLoader")
     def test_init_default(self, mock_llm_loader, mock_prompt_loader):
         """Test default initialization."""
         validator = PairwiseCrossValidator()
@@ -71,8 +72,8 @@ class TestPairwiseCrossValidatorInit:
         mock_prompt_loader.assert_called_once()
         mock_llm_loader.assert_called_once()
 
-    @patch('src.optimization.pairwise_cross_validation.PromptLoader')
-    @patch('src.optimization.pairwise_cross_validation.LLMLoader')
+    @patch("src.optimization.pairwise_cross_validation.PromptLoader")
+    @patch("src.optimization.pairwise_cross_validation.LLMLoader")
     def test_init_custom_output_dir(self, mock_llm_loader, mock_prompt_loader):
         """Test initialization with custom output directory."""
         validator = PairwiseCrossValidator("custom_results")
@@ -84,8 +85,8 @@ class TestPairwiseCrossValidatorMethods:
     """Test PairwiseCrossValidator methods."""
 
     @pytest.fixture
-    @patch('src.optimization.pairwise_cross_validation.PromptLoader')
-    @patch('src.optimization.pairwise_cross_validation.LLMLoader')
+    @patch("src.optimization.pairwise_cross_validation.PromptLoader")
+    @patch("src.optimization.pairwise_cross_validation.LLMLoader")
     def setup_validator(self, mock_llm_loader, mock_prompt_loader):
         """Set up validator with mocked loaders."""
         mock_prompt_instance = Mock()
@@ -125,11 +126,11 @@ class TestPairwiseCrossValidatorMethods:
         trial_data = {
             "successful_trials": [
                 {"id": "trial1", "data": "test1"},
-                {"id": "trial2", "data": "test2"}
+                {"id": "trial2", "data": "test2"},
             ]
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as tmp:
             json.dump(trial_data, tmp)
             tmp.flush()
 
@@ -148,10 +149,10 @@ class TestPairwiseCrossValidatorMethods:
 
         trial_data = [
             {"id": "trial1", "data": "test1"},
-            {"id": "trial2", "data": "test2"}
+            {"id": "trial2", "data": "test2"},
         ]
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as tmp:
             json.dump(trial_data, tmp)
             tmp.flush()
 
@@ -177,7 +178,7 @@ class TestPairwiseCrossValidatorMethods:
 
         invalid_data = {"invalid": "format"}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as tmp:
             json.dump(invalid_data, tmp)
             tmp.flush()
 
@@ -192,11 +193,7 @@ class TestPairwiseCrossValidatorMethods:
         validator, _, _ = setup_validator
 
         trial_data = {
-            "protocolSection": {
-                "identificationModule": {
-                    "nctId": "NCT123456"
-                }
-            }
+            "protocolSection": {"identificationModule": {"nctId": "NCT123456"}}
         }
 
         result = validator._extract_trial_id(trial_data, 0)
@@ -243,7 +240,7 @@ class TestPairwiseCrossValidatorMethods:
             "mapping_precision": 0.9,
             "mapping_recall": 0.8,
             "gold_mappings_count": 10,
-            "comp_mappings_count": 9
+            "comp_mappings_count": 9,
         }
 
         validator.pairwise_results = [mock_task]
@@ -277,12 +274,12 @@ class TestPairwiseCrossValidatorMethods:
                 "total_comparisons": 10,
                 "successful_comparisons": 8,
                 "success_rate": 0.8,
-                "unique_config_pairs": 5
+                "unique_config_pairs": 5,
             },
             "overall_metrics": {
                 "mapping_f1_score": {"mean": 0.75},
-                "mapping_jaccard_similarity": {"mean": 0.65}
-            }
+                "mapping_jaccard_similarity": {"mean": 0.65},
+            },
         }
 
         validator.print_summary()
@@ -294,8 +291,8 @@ class TestPairwiseCrossValidatorMethods:
 class TestPairwiseCrossValidatorIntegration:
     """Integration tests for PairwiseCrossValidator."""
 
-    @patch('src.optimization.pairwise_cross_validation.PromptLoader')
-    @patch('src.optimization.pairwise_cross_validation.LLMLoader')
+    @patch("src.optimization.pairwise_cross_validation.PromptLoader")
+    @patch("src.optimization.pairwise_cross_validation.LLMLoader")
     def test_generate_pairwise_tasks(self, mock_llm_loader, mock_prompt_loader):
         """Test generating pairwise tasks."""
         mock_prompt_instance = Mock()
@@ -303,20 +300,24 @@ class TestPairwiseCrossValidatorIntegration:
         mock_prompt_loader.return_value = mock_prompt_instance
         mock_llm_loader.return_value = mock_llm_instance
 
-        mock_prompt_instance.list_available_prompts.return_value = {"prompt1": {}, "prompt2": {}}
-        mock_llm_instance.list_available_llms.return_value = {"model1": {}, "model2": {}}
+        mock_prompt_instance.list_available_prompts.return_value = {
+            "prompt1": {},
+            "prompt2": {},
+        }
+        mock_llm_instance.list_available_llms.return_value = {
+            "model1": {},
+            "model2": {},
+        }
 
         validator = PairwiseCrossValidator()
 
         trials = [
             {"protocolSection": {"identificationModule": {"nctId": "NCT1"}}},
-            {"protocolSection": {"identificationModule": {"nctId": "NCT2"}}}
+            {"protocolSection": {"identificationModule": {"nctId": "NCT2"}}},
         ]
 
         tasks = validator.generate_pairwise_tasks(
-            prompts=["prompt1", "prompt2"],
-            models=["model1", "model2"],
-            trials=trials
+            prompts=["prompt1", "prompt2"], models=["model1", "model2"], trials=trials
         )
 
         # Should generate tasks for all combinations

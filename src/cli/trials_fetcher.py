@@ -10,7 +10,6 @@ import sys
 from typing import Optional
 
 from src.shared.cli_utils import McodeCLI
-from src.utils.config import Config
 from src.workflows.trials_fetcher_workflow import TrialsFetcherWorkflow
 
 
@@ -31,15 +30,9 @@ Examples:
     McodeCLI.add_concurrency_args(parser)
 
     # Fetch options
-    parser.add_argument(
-        "--condition", help="Medical condition to search for"
-    )
-    parser.add_argument(
-        "--nct-id", help="Specific NCT ID to fetch"
-    )
-    parser.add_argument(
-        "--nct-ids", help="Comma-separated list of NCT IDs to fetch"
-    )
+    parser.add_argument("--condition", help="Medical condition to search for")
+    parser.add_argument("--nct-id", help="Specific NCT ID to fetch")
+    parser.add_argument("--nct-ids", help="Comma-separated list of NCT IDs to fetch")
     parser.add_argument(
         "--limit",
         type=int,
@@ -47,9 +40,7 @@ Examples:
         help="Maximum number of trials to fetch (default: 10)",
     )
     parser.add_argument(
-        "--out",
-        dest="output_file",
-        help="Output file for trial data (NDJSON format)"
+        "--out", dest="output_file", help="Output file for trial data (NDJSON format)"
     )
 
     return parser
@@ -102,6 +93,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         print(f"❌ Unexpected error: {e}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 

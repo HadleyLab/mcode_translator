@@ -1,11 +1,15 @@
 """
 Unit tests for DependencyContainer with mocked dependencies.
 """
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from src.core.dependency_container import DependencyContainer, get_container, set_container, reset_container
-from src.pipeline import McodePipeline
-from src.storage.mcode_memory_storage import McodeMemoryStorage
+from unittest.mock import Mock, patch
+from src.core.dependency_container import (
+    DependencyContainer,
+    get_container,
+    set_container,
+    reset_container,
+)
 
 
 @pytest.mark.mock
@@ -20,7 +24,7 @@ class TestDependencyContainer:
         """Reset container after each test."""
         reset_container()
 
-    @patch('src.core.dependency_container.Config')
+    @patch("src.core.dependency_container.Config")
     def test_init_with_config(self, mock_config_class):
         """Test initialization with config."""
         mock_config = Mock()
@@ -31,7 +35,7 @@ class TestDependencyContainer:
         assert container.config == mock_config
         mock_config_class.assert_not_called()  # Should use provided config
 
-    @patch('src.core.dependency_container.Config')
+    @patch("src.core.dependency_container.Config")
     def test_init_without_config(self, mock_config_class):
         """Test initialization without config creates default."""
         mock_config = Mock()
@@ -79,8 +83,8 @@ class TestDependencyContainer:
         result = container.get_component("nonexistent")
         assert result is None
 
-    @patch('src.core.dependency_container.McodeMemoryStorage')
-    @patch('src.core.dependency_container.Config')
+    @patch("src.core.dependency_container.McodeMemoryStorage")
+    @patch("src.core.dependency_container.Config")
     def test_create_memory_storage(self, mock_config_class, mock_storage_class):
         """Test creating memory storage with mock."""
         mock_config = Mock()
@@ -94,8 +98,8 @@ class TestDependencyContainer:
         assert result == mock_storage
         mock_storage_class.assert_called_once()
 
-    @patch('src.core.dependency_container.McodePipeline')
-    @patch('src.core.dependency_container.Config')
+    @patch("src.core.dependency_container.McodePipeline")
+    @patch("src.core.dependency_container.Config")
     def test_create_mcode_processor(self, mock_config_class, mock_pipeline_class):
         """Test creating mCODE processor with mock."""
         mock_config = Mock()
@@ -110,7 +114,6 @@ class TestDependencyContainer:
         mock_pipeline_class.assert_called_once()
 
 
-
 @pytest.mark.mock
 class TestGlobalContainerFunctions:
     """Test global container management functions."""
@@ -123,7 +126,9 @@ class TestGlobalContainerFunctions:
         """Test get_container creates default when none set."""
         reset_container()
 
-        with patch('src.core.dependency_container.DependencyContainer') as mock_container_class:
+        with patch(
+            "src.core.dependency_container.DependencyContainer"
+        ) as mock_container_class:
             mock_container = Mock()
             mock_container_class.return_value = mock_container
 

@@ -457,7 +457,9 @@ class APIManager:
                         if os.path.isfile(file_path):
                             os.remove(file_path)
             except Exception as e:
-                logger.warning(f"Failed to clear namespace cache directory {namespace_cache_dir}: {e}")
+                logger.warning(
+                    f"Failed to clear namespace cache directory {namespace_cache_dir}: {e}"
+                )
 
     async def aget_cache_stats(self, cache_namespace: str = None) -> Dict[str, Any]:
         """
@@ -471,7 +473,11 @@ class APIManager:
         """
         if cache_namespace is None:
             # Get stats for all async caches
-            tasks = [cache.aget_stats() for cache in self.caches.values() if hasattr(cache, 'aget_stats')]
+            tasks = [
+                cache.aget_stats()
+                for cache in self.caches.values()
+                if hasattr(cache, "aget_stats")
+            ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             stats = {}
@@ -500,7 +506,9 @@ class APIManager:
 class AsyncAPICache:
     """Async version of disk-based cache for API responses"""
 
-    def __init__(self, cache_dir: str, namespace: str, default_ttl: int, max_workers: int = 4):
+    def __init__(
+        self, cache_dir: str, namespace: str, default_ttl: int, max_workers: int = 4
+    ):
         """
         Initialize the async cache with thread pool for I/O operations
 
@@ -574,11 +582,17 @@ class AsyncAPICache:
 
                 # Check expiration
                 ttl = cached_data.get("ttl", None)
-                if ttl and ttl > 0 and time.time() - cached_data.get("timestamp", 0) > ttl:
+                if (
+                    ttl
+                    and ttl > 0
+                    and time.time() - cached_data.get("timestamp", 0) > ttl
+                ):
                     os.remove(cache_path)
                     return None
 
-                logger.debug(f"Async Cache HIT {cache_key[:8]}... in '{self.namespace}'")
+                logger.debug(
+                    f"Async Cache HIT {cache_key[:8]}... in '{self.namespace}'"
+                )
                 return cached_data["result"]
             except Exception as e:
                 logger.warning(f"Cache read failed: {e}")
@@ -637,7 +651,9 @@ class AsyncAPICache:
                 with open(cache_path, "w") as f:
                     json.dump(cached_data, f, default=str)
 
-                logger.debug(f"Async Cache STORED {cache_key[:8]}... in '{self.namespace}'")
+                logger.debug(
+                    f"Async Cache STORED {cache_key[:8]}... in '{self.namespace}'"
+                )
             except Exception as e:
                 logger.warning(f"Cache write failed: {e}")
 
@@ -764,8 +780,8 @@ class AsyncAPICache:
         """
         tasks = []
         for item in items:
-            result = item['result']
-            key_data = item['key_data']
+            result = item["result"]
+            key_data = item["key_data"]
             tasks.append(self.aset_by_key(result, key_data))
 
         await asyncio.gather(*tasks, return_exceptions=True)
@@ -779,7 +795,9 @@ class AsyncAPICache:
             key_data_list: List of cache key data to warm
             fetch_func: Function to fetch data if not cached
         """
-        logger.info(f"Warming cache for {len(key_data_list)} items in namespace '{self.namespace}'")
+        logger.info(
+            f"Warming cache for {len(key_data_list)} items in namespace '{self.namespace}'"
+        )
 
         # Check what's already cached
         cached_results = await self.abatch_get(key_data_list)
@@ -821,14 +839,18 @@ class AsyncAPICache:
         Args:
             cleanup_interval: Interval in seconds for cleanup operations
         """
-        logger.info(f"Starting background maintenance for cache namespace '{self.namespace}'")
+        logger.info(
+            f"Starting background maintenance for cache namespace '{self.namespace}'"
+        )
 
         while True:
             try:
                 await asyncio.sleep(cleanup_interval)
                 await self._aperform_maintenance()
             except asyncio.CancelledError:
-                logger.info(f"Background maintenance stopped for namespace '{self.namespace}'")
+                logger.info(
+                    f"Background maintenance stopped for namespace '{self.namespace}'"
+                )
                 break
             except Exception as e:
                 logger.warning(f"Background maintenance error: {e}")
@@ -852,17 +874,20 @@ class AsyncAPICache:
                 current_time = time.time()
 
                 for filename in os.listdir(self.cache_dir):
-                    if not filename.endswith('.json'):
+                    if not filename.endswith(".json"):
                         continue
 
                     file_path = os.path.join(self.cache_dir, filename)
                     try:
-                        with open(file_path, 'r') as f:
+                        with open(file_path, "r") as f:
                             cached_data = json.load(f)
 
                         ttl = cached_data.get("ttl", None)
-                        if (ttl is not None and ttl > 0 and
-                            current_time - cached_data.get("timestamp", 0) > ttl):
+                        if (
+                            ttl is not None
+                            and ttl > 0
+                            and current_time - cached_data.get("timestamp", 0) > ttl
+                        ):
                             os.remove(file_path)
                             cleaned_count += 1
                     except Exception:
@@ -874,7 +899,9 @@ class AsyncAPICache:
                             pass
 
                 if cleaned_count > 0:
-                    logger.info(f"Cleaned up {cleaned_count} expired cache entries in '{self.namespace}'")
+                    logger.info(
+                        f"Cleaned up {cleaned_count} expired cache entries in '{self.namespace}'"
+                    )
 
                 return cleaned_count
 

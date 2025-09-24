@@ -10,13 +10,11 @@ Tests for async cache operations including:
 """
 
 import asyncio
-import json
 import time
 import pytest
-from pathlib import Path
 import tempfile
 
-from src.utils.api_manager import APIManager, AsyncAPICache
+from src.utils.api_manager import APIManager
 from src.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -70,7 +68,9 @@ async def test_batch_async_operations(temp_cache_dir):
     results = await cache.abatch_get(keys_to_get)
 
     # Verify results
-    successful_gets = sum(1 for r in results if r is not None and not isinstance(r, Exception))
+    successful_gets = sum(
+        1 for r in results if r is not None and not isinstance(r, Exception)
+    )
 
     assert successful_gets == 10, "All batch items should be retrieved"
 
@@ -145,14 +145,19 @@ async def test_performance_comparison(temp_cache_dir):
 
     # Test data
     test_items = [
-        {"result": {"perf_test": i, "data": f"item_{i}" * 100}, "key_data": f"perf_key_{i}"}
+        {
+            "result": {"perf_test": i, "data": f"item_{i}" * 100},
+            "key_data": f"perf_key_{i}",
+        }
         for i in range(10)  # Reduced for faster test
     ]
 
     # Async performance test
     async_start = time.time()
     await async_cache.abatch_set(test_items)
-    async_results = await async_cache.abatch_get([item["key_data"] for item in test_items])
+    async_results = await async_cache.abatch_get(
+        [item["key_data"] for item in test_items]
+    )
     async_time = time.time() - async_start
 
     # Sync performance test
@@ -217,20 +222,21 @@ async def test_error_handling(temp_cache_dir):
     try:
         # This should handle errors gracefully
         await cache.aset_by_key({"test": "data"}, "error_key")
-        result = await cache.aget_by_key("error_key")
+        await cache.aget_by_key("error_key")
     except Exception as e:
         pytest.fail(f"Unexpected error: {e}")
 
     # Test batch operations with some failures
     batch_items = [
-        {"result": {"item": i}, "key_data": f"batch_error_{i}"}
-        for i in range(5)
+        {"result": {"item": i}, "key_data": f"batch_error_{i}"} for i in range(5)
     ]
 
     # This should handle any errors gracefully
     await cache.abatch_set(batch_items)
     results = await cache.abatch_get([item["key_data"] for item in batch_items])
 
-    successful = sum(1 for r in results if r is not None and not isinstance(r, Exception))
+    successful = sum(
+        1 for r in results if r is not None and not isinstance(r, Exception)
+    )
 
     assert successful >= 0, "Should handle batch operations gracefully"

@@ -17,7 +17,9 @@ class TestLLMServiceCore:
     def llm_service(self):
         """Create LLM service instance for testing."""
         config = Config()
-        return LLMService(config, "deepseek-coder", "direct_mcode_evidence_based_concise")
+        return LLMService(
+            config, "deepseek-coder", "direct_mcode_evidence_based_concise"
+        )
 
     @pytest.fixture
     def mock_config(self):
@@ -34,9 +36,11 @@ class TestLLMServiceCore:
     async def test_map_to_mcode_successful(self, llm_service, mock_config):
         """Test successful mCODE mapping."""
         # Mock the LLM loader and prompt loader
-        with patch('src.pipeline.llm_service.llm_loader') as mock_llm_loader, \
-             patch('src.pipeline.llm_service.prompt_loader') as mock_prompt_loader, \
-             patch.object(llm_service, '_call_llm_api_async') as mock_call_api:
+        with patch("src.pipeline.llm_service.llm_loader") as mock_llm_loader, patch(
+            "src.pipeline.llm_service.prompt_loader"
+        ) as mock_prompt_loader, patch.object(
+            llm_service, "_call_llm_api_async"
+        ) as mock_call_api:
 
             # Setup mocks
             mock_llm_config = Mock()
@@ -50,14 +54,14 @@ class TestLLMServiceCore:
                     {
                         "element_type": "CancerCondition",
                         "code": "C123",
-                        "display": "Test Cancer"
+                        "display": "Test Cancer",
                     }
                 ]
             }
             mock_call_api.return_value = mock_response
 
             # Mock cache miss
-            with patch.object(llm_service.api_manager, 'get_cache') as mock_get_cache:
+            with patch.object(llm_service.api_manager, "get_cache") as mock_get_cache:
                 mock_cache = Mock()
                 mock_cache.get_by_key.return_value = None
                 mock_get_cache.return_value = mock_cache
@@ -78,12 +82,12 @@ class TestLLMServiceCore:
                 {
                     "element_type": "CancerCondition",
                     "code": "C123",
-                    "display": "Test Cancer"
+                    "display": "Test Cancer",
                 }
             ]
         }
 
-        with patch.object(llm_service.api_manager, 'get_cache') as mock_get_cache:
+        with patch.object(llm_service.api_manager, "get_cache") as mock_get_cache:
             mock_cache = Mock()
             mock_cache.get_by_key.return_value = cached_data
             mock_get_cache.return_value = mock_cache
@@ -102,7 +106,7 @@ class TestLLMServiceCore:
                     "code": "C123",
                     "display": "Test Cancer",
                     "system": "SNOMED CT",
-                    "confidence_score": 0.9
+                    "confidence_score": 0.9,
                 }
             ]
         }
@@ -118,12 +122,7 @@ class TestLLMServiceCore:
         """Test parsing alternative response formats."""
         # Test 'mappings' format
         response_json = {
-            "mappings": [
-                {
-                    "element_type": "CancerTreatment",
-                    "code": "T456"
-                }
-            ]
+            "mappings": [{"element_type": "CancerTreatment", "code": "T456"}]
         }
 
         elements = llm_service._parse_llm_response(response_json)
@@ -134,17 +133,12 @@ class TestLLMServiceCore:
         """Test handling of invalid mCODE elements."""
         response_json = {
             "mcode_mappings": [
-                {
-                    "element_type": "CancerCondition",
-                    "code": "C123"
-                },
-                {
-                    "invalid_field": "invalid_value"  # Missing element_type
-                }
+                {"element_type": "CancerCondition", "code": "C123"},
+                {"invalid_field": "invalid_value"},  # Missing element_type
             ]
         }
 
-        with patch.object(llm_service.logger, 'warning') as mock_warning:
+        with patch.object(llm_service.logger, "warning") as mock_warning:
             elements = llm_service._parse_llm_response(response_json)
 
             # Should parse valid element and skip invalid one
@@ -193,15 +187,18 @@ class TestLLMServiceCore:
     @pytest.mark.asyncio
     async def test_map_to_mcode_no_api_key(self, llm_service):
         """Test mCODE mapping fails without API key."""
-        with patch.object(llm_service.config, 'get_api_key', return_value=None):
+        with patch.object(llm_service.config, "get_api_key", return_value=None):
             with pytest.raises(ValueError, match="No API key available"):
                 await llm_service.map_to_mcode("test text")
 
     @pytest.mark.asyncio
     async def test_map_to_mcode_missing_config(self, llm_service):
         """Test mCODE mapping with missing LLM config - should make actual API call."""
-        with patch('src.pipeline.llm_service.llm_loader') as mock_llm_loader, \
-             patch.object(llm_service.api_manager, 'get_cache') as mock_get_cache:
+        with patch(
+            "src.pipeline.llm_service.llm_loader"
+        ) as mock_llm_loader, patch.object(
+            llm_service.api_manager, "get_cache"
+        ) as mock_get_cache:
 
             # Setup mocks for successful API call
             mock_llm_config = Mock()
@@ -228,8 +225,9 @@ class TestLLMServiceCore:
         """Test _call_llm_api_async with empty response."""
         llm_service.config = mock_config
 
-        with patch('openai.AsyncOpenAI') as mock_openai, \
-             patch('src.utils.token_tracker.extract_token_usage_from_response') as mock_extract:
+        with patch("openai.AsyncOpenAI") as mock_openai, patch(
+            "src.utils.token_tracker.extract_token_usage_from_response"
+        ) as mock_extract:
 
             mock_client = AsyncMock()
             mock_openai.return_value = mock_client
@@ -243,16 +241,21 @@ class TestLLMServiceCore:
             mock_extract.return_value = Mock(total_tokens=100)
 
             with pytest.raises(ValueError, match="Empty LLM response"):
-                await llm_service._call_llm_api_async("test prompt", Mock(model_identifier="test-model"))
+                await llm_service._call_llm_api_async(
+                    "test prompt", Mock(model_identifier="test-model")
+                )
 
     @pytest.mark.asyncio
-    async def test_call_llm_api_async_deepseek_response_parsing(self, llm_service, mock_config):
+    async def test_call_llm_api_async_deepseek_response_parsing(
+        self, llm_service, mock_config
+    ):
         """Test _call_llm_api_async with DeepSeek response parsing."""
         llm_service.config = mock_config
         llm_service.model_name = "deepseek-coder"
 
-        with patch('openai.AsyncOpenAI') as mock_openai, \
-             patch('src.utils.token_tracker.extract_token_usage_from_response') as mock_extract:
+        with patch("openai.AsyncOpenAI") as mock_openai, patch(
+            "src.utils.token_tracker.extract_token_usage_from_response"
+        ) as mock_extract:
 
             mock_client = AsyncMock()
             mock_openai.return_value = mock_client
@@ -260,24 +263,31 @@ class TestLLMServiceCore:
             # Mock DeepSeek response with markdown and trailing comma
             mock_response = Mock()
             mock_response.choices = [Mock()]
-            mock_response.choices[0].message.content = '```json\n{"mcode_mappings": [{"element_type": "CancerCondition", "code": "C123",}]}\n```'
+            mock_response.choices[0].message.content = (
+                '```json\n{"mcode_mappings": [{"element_type": "CancerCondition", "code": "C123",}]}\n```'
+            )
             mock_client.chat.completions.create.return_value = mock_response
 
             mock_extract.return_value = Mock(total_tokens=100)
 
-            result = await llm_service._call_llm_api_async("test prompt", Mock(model_identifier="deepseek-coder"))
+            result = await llm_service._call_llm_api_async(
+                "test prompt", Mock(model_identifier="deepseek-coder")
+            )
 
             assert "mcode_mappings" in result
             assert len(result["mcode_mappings"]) == 1
 
     @pytest.mark.asyncio
-    async def test_call_llm_api_async_deepseek_reasoner_cleanup(self, llm_service, mock_config):
+    async def test_call_llm_api_async_deepseek_reasoner_cleanup(
+        self, llm_service, mock_config
+    ):
         """Test _call_llm_api_async with DeepSeek reasoner reasoning content removal."""
         llm_service.config = mock_config
         llm_service.model_name = "deepseek-reasoner"
 
-        with patch('openai.AsyncOpenAI') as mock_openai, \
-             patch('src.utils.token_tracker.extract_token_usage_from_response') as mock_extract:
+        with patch("openai.AsyncOpenAI") as mock_openai, patch(
+            "src.utils.token_tracker.extract_token_usage_from_response"
+        ) as mock_extract:
 
             mock_client = AsyncMock()
             mock_openai.return_value = mock_client
@@ -285,22 +295,29 @@ class TestLLMServiceCore:
             # Mock DeepSeek reasoner response with reasoning content
             mock_response = Mock()
             mock_response.choices = [Mock()]
-            mock_response.choices[0].message.content = 'Let me think about this clinical case. The patient shows signs of cancer. {"mcode_mappings": [{"element_type": "CancerCondition"}]}'
+            mock_response.choices[0].message.content = (
+                'Let me think about this clinical case. The patient shows signs of cancer. {"mcode_mappings": [{"element_type": "CancerCondition"}]}'
+            )
             mock_client.chat.completions.create.return_value = mock_response
 
             mock_extract.return_value = Mock(total_tokens=100)
 
-            result = await llm_service._call_llm_api_async("test prompt", Mock(model_identifier="deepseek-reasoner"))
+            result = await llm_service._call_llm_api_async(
+                "test prompt", Mock(model_identifier="deepseek-reasoner")
+            )
 
             assert "mcode_mappings" in result
 
     @pytest.mark.asyncio
-    async def test_call_llm_api_async_json_parsing_error(self, llm_service, mock_config):
+    async def test_call_llm_api_async_json_parsing_error(
+        self, llm_service, mock_config
+    ):
         """Test _call_llm_api_async with JSON parsing error."""
         llm_service.config = mock_config
 
-        with patch('openai.AsyncOpenAI') as mock_openai, \
-             patch('src.utils.token_tracker.extract_token_usage_from_response') as mock_extract:
+        with patch("openai.AsyncOpenAI") as mock_openai, patch(
+            "src.utils.token_tracker.extract_token_usage_from_response"
+        ) as mock_extract:
 
             mock_client = AsyncMock()
             mock_openai.return_value = mock_client
@@ -314,16 +331,20 @@ class TestLLMServiceCore:
             mock_extract.return_value = Mock(total_tokens=100)
 
             with pytest.raises(ValueError, match="returned invalid JSON"):
-                await llm_service._call_llm_api_async("test prompt", Mock(model_identifier="test-model"))
+                await llm_service._call_llm_api_async(
+                    "test prompt", Mock(model_identifier="test-model")
+                )
 
     @pytest.mark.asyncio
-    async def test_call_llm_api_async_rate_limiting_retry(self, llm_service, mock_config):
+    async def test_call_llm_api_async_rate_limiting_retry(
+        self, llm_service, mock_config
+    ):
         """Test _call_llm_api_async with rate limiting and retry logic."""
         llm_service.config = mock_config
 
-        with patch('openai.AsyncOpenAI') as mock_openai, \
-             patch('src.utils.token_tracker.extract_token_usage_from_response') as mock_extract, \
-             patch('asyncio.sleep') as mock_sleep:
+        with patch("openai.AsyncOpenAI") as mock_openai, patch(
+            "src.utils.token_tracker.extract_token_usage_from_response"
+        ) as mock_extract, patch("asyncio.sleep") as mock_sleep:
 
             mock_client = AsyncMock()
             mock_openai.return_value = mock_client
@@ -331,12 +352,14 @@ class TestLLMServiceCore:
             # Mock rate limit error on first call, success on second
             mock_client.chat.completions.create.side_effect = [
                 Exception("429 Too Many Requests"),
-                Mock(choices=[Mock(message=Mock(content='{"mcode_mappings": []}'))])
+                Mock(choices=[Mock(message=Mock(content='{"mcode_mappings": []}'))]),
             ]
 
             mock_extract.return_value = Mock(total_tokens=100)
 
-            result = await llm_service._call_llm_api_async("test prompt", Mock(model_identifier="test-model"))
+            await llm_service._call_llm_api_async(
+                "test prompt", Mock(model_identifier="test-model")
+            )
 
             # Should have retried and succeeded
             assert mock_client.chat.completions.create.call_count == 2
@@ -347,16 +370,20 @@ class TestLLMServiceCore:
         """Test _call_llm_api_async with quota exceeded error."""
         llm_service.config = mock_config
 
-        with patch('openai.AsyncOpenAI') as mock_openai:
+        with patch("openai.AsyncOpenAI") as mock_openai:
 
             mock_client = AsyncMock()
             mock_openai.return_value = mock_client
 
             # Mock quota error
-            mock_client.chat.completions.create.side_effect = Exception("insufficient_quota")
+            mock_client.chat.completions.create.side_effect = Exception(
+                "insufficient_quota"
+            )
 
             with pytest.raises(ValueError, match="has exceeded its quota"):
-                await llm_service._call_llm_api_async("test prompt", Mock(model_identifier="test-model"))
+                await llm_service._call_llm_api_async(
+                    "test prompt", Mock(model_identifier="test-model")
+                )
 
     def test_parse_llm_response_prompt_format(self, llm_service):
         """Test parsing prompt format with nested code object."""
@@ -367,10 +394,10 @@ class TestLLMServiceCore:
                     "code": {
                         "code": "C123",
                         "display": "Test Cancer",
-                        "system": "SNOMED CT"
+                        "system": "SNOMED CT",
                     },
                     "mapping_confidence": 0.9,
-                    "source_text_fragment": "breast cancer"
+                    "source_text_fragment": "breast cancer",
                 }
             ]
         }
@@ -390,7 +417,7 @@ class TestLLMServiceCore:
         response_json = {
             "element_type": "CancerCondition",
             "code": "C123",
-            "display": "Test Cancer"
+            "display": "Test Cancer",
         }
 
         elements = llm_service._parse_llm_response(response_json)
@@ -402,12 +429,7 @@ class TestLLMServiceCore:
     def test_parse_llm_response_mapped_elements_format(self, llm_service):
         """Test parsing mapped_elements format."""
         response_json = {
-            "mapped_elements": [
-                {
-                    "element_type": "CancerTreatment",
-                    "code": "T456"
-                }
-            ]
+            "mapped_elements": [{"element_type": "CancerTreatment", "code": "T456"}]
         }
 
         elements = llm_service._parse_llm_response(response_json)
@@ -418,7 +440,10 @@ class TestLLMServiceCore:
 
     def test_generate_semantic_fingerprint_long_text(self, llm_service):
         """Test semantic fingerprint for long text."""
-        long_text = "This is a very long clinical text about cancer treatment in patients undergoing clinical trials and studies. " * 50
+        long_text = (
+            "This is a very long clinical text about cancer treatment in patients undergoing clinical trials and studies. "
+            * 50
+        )
         fingerprint = llm_service._generate_semantic_fingerprint(long_text)
 
         assert "long" in fingerprint
@@ -431,7 +456,9 @@ class TestLLMServiceCore:
 
     def test_generate_semantic_fingerprint_medium_text(self, llm_service):
         """Test semantic fingerprint for medium text."""
-        medium_text = "Patient with cancer receiving treatment in clinical trial study. " * 10
+        medium_text = (
+            "Patient with cancer receiving treatment in clinical trial study. " * 10
+        )
         fingerprint = llm_service._generate_semantic_fingerprint(medium_text)
 
         assert "short" in fingerprint  # 700 chars < 1000, so "short"

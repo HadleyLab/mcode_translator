@@ -2,10 +2,10 @@
 Performance tests for patient generator operations.
 Tests speed and efficiency of patient data processing.
 """
+
 import tempfile
-import time
 import zipfile
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 import pytest
 
 from src.utils.patient_generator import PatientGenerator
@@ -14,8 +14,8 @@ from src.utils.patient_generator import PatientGenerator
 @pytest.fixture
 def sample_zip_archive():
     """Create a sample ZIP archive with test patient data."""
-    with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
-        with zipfile.ZipFile(tmp.name, 'w') as zf:
+    with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp:
+        with zipfile.ZipFile(tmp.name, "w") as zf:
             # Create sample patient data
             for i in range(10):
                 patient_data = {
@@ -27,28 +27,33 @@ def sample_zip_archive():
                                 "resourceType": "Patient",
                                 "id": f"patient-{i}",
                                 "name": [{"family": f"Doe{i}", "given": ["John"]}],
-                                "identifier": [{"value": f"id-{i}"}]
+                                "identifier": [{"value": f"id-{i}"}],
                             }
                         }
-                    ]
+                    ],
                 }
                 import json
-                zf.writestr(f'patient_{i}.json', json.dumps(patient_data))
+
+                zf.writestr(f"patient_{i}.json", json.dumps(patient_data))
 
         yield tmp.name
 
         # Cleanup
         import os
+
         os.unlink(tmp.name)
 
 
 class TestPatientGeneratorPerformance:
     """Performance tests for PatientGenerator."""
 
-    def test_patient_generator_initialization_speed(self, sample_zip_archive, benchmark):
+    def test_patient_generator_initialization_speed(
+        self, sample_zip_archive, benchmark
+    ):
         """Benchmark patient generator initialization."""
+
         def init_generator():
-            with patch('src.utils.patient_generator.Config'):
+            with patch("src.utils.patient_generator.Config"):
                 generator = PatientGenerator(sample_zip_archive)
                 return generator
 
@@ -58,7 +63,7 @@ class TestPatientGeneratorPerformance:
 
     def test_patient_iteration_speed(self, sample_zip_archive, benchmark):
         """Benchmark patient iteration performance."""
-        with patch('src.utils.patient_generator.Config'):
+        with patch("src.utils.patient_generator.Config"):
             generator = PatientGenerator(sample_zip_archive)
 
             def iterate_patients():
@@ -72,7 +77,7 @@ class TestPatientGeneratorPerformance:
 
     def test_get_random_patient_speed(self, sample_zip_archive, benchmark):
         """Benchmark random patient retrieval."""
-        with patch('src.utils.patient_generator.Config'):
+        with patch("src.utils.patient_generator.Config"):
             generator = PatientGenerator(sample_zip_archive)
 
             def get_random():
@@ -84,7 +89,7 @@ class TestPatientGeneratorPerformance:
 
     def test_get_patients_with_limit_speed(self, sample_zip_archive, benchmark):
         """Benchmark getting patients with limit."""
-        with patch('src.utils.patient_generator.Config'):
+        with patch("src.utils.patient_generator.Config"):
             generator = PatientGenerator(sample_zip_archive)
 
             def get_limited_patients():
@@ -101,7 +106,7 @@ class TestPatientGeneratorPerformance:
                     "resource": {
                         "resourceType": "Patient",
                         "id": "test-patient-123",
-                        "identifier": [{"value": "alt-id-456"}]
+                        "identifier": [{"value": "alt-id-456"}],
                     }
                 }
             ]
@@ -118,12 +123,9 @@ class TestPatientGeneratorPerformance:
     def test_normalize_to_bundle_speed(self, benchmark):
         """Benchmark bundle normalization."""
         # Test with single patient
-        single_patient = {
-            "resourceType": "Patient",
-            "id": "test-patient"
-        }
+        single_patient = {"resourceType": "Patient", "id": "test-patient"}
 
-        with patch('src.utils.patient_generator.Config'):
+        with patch("src.utils.patient_generator.Config"):
             generator = PatientGenerator.__new__(PatientGenerator)
 
             def normalize():
@@ -141,13 +143,13 @@ class TestPatientGeneratorPerformance:
                     "resource": {
                         "resourceType": "Patient",
                         "id": "test-patient-123",
-                        "identifier": [{"value": "alt-id-456"}]
+                        "identifier": [{"value": "alt-id-456"}],
                     }
                 }
             ]
         }
 
-        with patch('src.utils.patient_generator.Config'):
+        with patch("src.utils.patient_generator.Config"):
             generator = PatientGenerator.__new__(PatientGenerator)
 
             def match_id():
@@ -160,8 +162,8 @@ class TestPatientGeneratorPerformance:
     def test_scaling_with_patient_count(self, benchmark, num_patients):
         """Test performance scaling with different patient counts."""
         # Create archive with specified number of patients
-        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
-            with zipfile.ZipFile(tmp.name, 'w') as zf:
+        with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp:
+            with zipfile.ZipFile(tmp.name, "w") as zf:
                 for i in range(num_patients):
                     patient_data = {
                         "resourceType": "Bundle",
@@ -170,16 +172,17 @@ class TestPatientGeneratorPerformance:
                             {
                                 "resource": {
                                     "resourceType": "Patient",
-                                    "id": f"patient-{i}"
+                                    "id": f"patient-{i}",
                                 }
                             }
-                        ]
+                        ],
                     }
                     import json
-                    zf.writestr(f'patient_{i}.json', json.dumps(patient_data))
+
+                    zf.writestr(f"patient_{i}.json", json.dumps(patient_data))
 
             try:
-                with patch('src.utils.patient_generator.Config'):
+                with patch("src.utils.patient_generator.Config"):
                     generator = PatientGenerator(tmp.name)
 
                     def count_patients():
@@ -190,6 +193,7 @@ class TestPatientGeneratorPerformance:
 
             finally:
                 import os
+
                 os.unlink(tmp.name)
 
 
@@ -200,19 +204,22 @@ class TestMemoryUsage:
         """Test memory efficiency with simulated large archive."""
         # This test would be more comprehensive with actual memory profiling
         # For now, just ensure basic functionality works
-        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
-            with zipfile.ZipFile(tmp.name, 'w') as zf:
+        with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp:
+            with zipfile.ZipFile(tmp.name, "w") as zf:
                 # Create many small files to simulate large archive
                 for i in range(100):
                     patient_data = {
                         "resourceType": "Bundle",
-                        "entry": [{"resource": {"resourceType": "Patient", "id": f"p{i}"}}]
+                        "entry": [
+                            {"resource": {"resourceType": "Patient", "id": f"p{i}"}}
+                        ],
                     }
                     import json
-                    zf.writestr(f'patient_{i}.json', json.dumps(patient_data))
+
+                    zf.writestr(f"patient_{i}.json", json.dumps(patient_data))
 
             try:
-                with patch('src.utils.patient_generator.Config'):
+                with patch("src.utils.patient_generator.Config"):
                     generator = PatientGenerator(tmp.name)
 
                     # Test that we can iterate without loading everything into memory
@@ -226,6 +233,7 @@ class TestMemoryUsage:
 
             finally:
                 import os
+
                 os.unlink(tmp.name)
 
 

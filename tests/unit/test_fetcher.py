@@ -1,8 +1,8 @@
 """
 Unit tests for fetcher module.
 """
-import json
-from unittest.mock import Mock, patch, mock_open
+
+from unittest.mock import Mock, patch
 import pytest
 import requests
 from src.utils.fetcher import (
@@ -21,15 +21,17 @@ from src.utils.fetcher import (
 class TestSearchTrials:
     """Test search_trials function."""
 
-    @patch('src.utils.fetcher.requests.get')
-    @patch('src.utils.fetcher.time.sleep')
-    @patch('src.utils.fetcher.Config')
+    @patch("src.utils.fetcher.requests.get")
+    @patch("src.utils.fetcher.time.sleep")
+    @patch("src.utils.fetcher.Config")
     def test_search_trials_success(self, mock_config, mock_sleep, mock_get):
         """Test successful trial search."""
         # Mock config
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
+        mock_config_instance.get_clinical_trials_base_url.return_value = (
+            "https://api.example.com"
+        )
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -38,7 +40,7 @@ class TestSearchTrials:
         mock_response.raise_for_status.return_value = None
         mock_response.json.return_value = {
             "studies": [{"nctId": "NCT001"}],
-            "nextPageToken": "token123"
+            "nextPageToken": "token123",
         }
         mock_get.return_value = mock_response
 
@@ -56,14 +58,16 @@ class TestSearchTrials:
         assert call_args[1]["params"]["fields"] == "nctId"
         assert call_args[1]["params"]["pageToken"] == "page1"
 
-    @patch('src.utils.fetcher.requests.get')
-    @patch('src.utils.fetcher.time.sleep')
-    @patch('src.utils.fetcher.Config')
+    @patch("src.utils.fetcher.requests.get")
+    @patch("src.utils.fetcher.time.sleep")
+    @patch("src.utils.fetcher.Config")
     def test_search_trials_no_fields(self, mock_config, mock_sleep, mock_get):
         """Test search without specifying fields."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
+        mock_config_instance.get_clinical_trials_base_url.return_value = (
+            "https://api.example.com"
+        )
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -72,25 +76,29 @@ class TestSearchTrials:
         mock_response.json.return_value = {"studies": []}
         mock_get.return_value = mock_response
 
-        result = search_trials("cancer")
+        search_trials("cancer")
 
         # Should not have fields parameter
         call_args = mock_get.call_args
         assert "fields" not in call_args[1]["params"]
 
-    @patch('src.utils.fetcher.requests.get')
-    @patch('src.utils.fetcher.time.sleep')
-    @patch('src.utils.fetcher.Config')
+    @patch("src.utils.fetcher.requests.get")
+    @patch("src.utils.fetcher.time.sleep")
+    @patch("src.utils.fetcher.Config")
     def test_search_trials_api_error(self, mock_config, mock_sleep, mock_get):
         """Test API error handling."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
+        mock_config_instance.get_clinical_trials_base_url.return_value = (
+            "https://api.example.com"
+        )
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
         mock_response = Mock()
-        mock_response.raise_for_status.side_effect = requests.RequestException("Network error")
+        mock_response.raise_for_status.side_effect = requests.RequestException(
+            "Network error"
+        )
         mock_get.return_value = mock_response
 
         with pytest.raises(ClinicalTrialsAPIError):
@@ -100,8 +108,8 @@ class TestSearchTrials:
 class TestGetFullStudiesBatch:
     """Test get_full_studies_batch function."""
 
-    @patch('src.utils.fetcher.TaskQueue')
-    @patch('src.utils.fetcher.create_task')
+    @patch("src.utils.fetcher.TaskQueue")
+    @patch("src.utils.fetcher.create_task")
     def test_batch_fetch_success(self, mock_create_task, mock_task_queue):
         """Test successful batch fetch."""
         # Mock task creation
@@ -123,8 +131,8 @@ class TestGetFullStudiesBatch:
         assert result["NCT001"] == {"study": "data1"}
         assert result["NCT002"] == {"study": "data2"}
 
-    @patch('src.utils.fetcher.TaskQueue')
-    @patch('src.utils.fetcher.create_task')
+    @patch("src.utils.fetcher.TaskQueue")
+    @patch("src.utils.fetcher.create_task")
     def test_batch_fetch_partial_failure(self, mock_create_task, mock_task_queue):
         """Test batch fetch with some failures."""
         mock_task = Mock()
@@ -151,11 +159,13 @@ class TestGetFullStudiesBatch:
 class TestSearchTrialsParallel:
     """Test search_trials_parallel function."""
 
-    @patch('src.utils.fetcher.calculate_total_studies')
-    @patch('src.utils.fetcher.TaskQueue')
-    @patch('src.utils.fetcher.create_task')
-    @patch('src.utils.fetcher.Config')
-    def test_parallel_search_success(self, mock_config, mock_create_task, mock_task_queue, mock_calc_total):
+    @patch("src.utils.fetcher.calculate_total_studies")
+    @patch("src.utils.fetcher.TaskQueue")
+    @patch("src.utils.fetcher.create_task")
+    @patch("src.utils.fetcher.Config")
+    def test_parallel_search_success(
+        self, mock_config, mock_create_task, mock_task_queue, mock_calc_total
+    ):
         """Test successful parallel search."""
         # Mock config
         mock_config_instance = Mock()
@@ -185,7 +195,7 @@ class TestSearchTrialsParallel:
         assert result["pagination"]["successful_pages"] == 3
         assert result["pagination"]["failed_pages"] == 0
 
-    @patch('src.utils.fetcher.calculate_total_studies')
+    @patch("src.utils.fetcher.calculate_total_studies")
     def test_parallel_search_no_results(self, mock_calc_total):
         """Test parallel search with no results."""
         mock_calc_total.return_value = {"total_studies": 0, "total_pages": 0}
@@ -200,8 +210,8 @@ class TestSearchTrialsParallel:
 class TestSearchMultipleQueries:
     """Test search_multiple_queries function."""
 
-    @patch('src.utils.fetcher.TaskQueue')
-    @patch('src.utils.fetcher.create_task')
+    @patch("src.utils.fetcher.TaskQueue")
+    @patch("src.utils.fetcher.create_task")
     def test_multiple_queries_success(self, mock_create_task, mock_task_queue):
         """Test successful multiple queries."""
         mock_task = Mock()
@@ -210,8 +220,16 @@ class TestSearchMultipleQueries:
         mock_queue_instance = Mock()
         mock_task_queue.return_value = mock_queue_instance
         mock_queue_instance.execute_tasks.return_value = [
-            Mock(task_id="query_abc12345", success=True, result={"studies": [{"id": "1"}]}),
-            Mock(task_id="query_def67890", success=True, result={"studies": [{"id": "2"}]}),
+            Mock(
+                task_id="query_abc12345",
+                success=True,
+                result={"studies": [{"id": "1"}]},
+            ),
+            Mock(
+                task_id="query_def67890",
+                success=True,
+                result={"studies": [{"id": "2"}]},
+            ),
         ]
 
         queries = ["cancer", "diabetes"]
@@ -230,14 +248,16 @@ class TestSearchMultipleQueries:
 class TestGetFullStudy:
     """Test get_full_study function."""
 
-    @patch('src.utils.fetcher.requests.get')
-    @patch('src.utils.fetcher.time.sleep')
-    @patch('src.utils.fetcher.Config')
+    @patch("src.utils.fetcher.requests.get")
+    @patch("src.utils.fetcher.time.sleep")
+    @patch("src.utils.fetcher.Config")
     def test_get_full_study_success(self, mock_config, mock_sleep, mock_get):
         """Test successful full study fetch."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
+        mock_config_instance.get_clinical_trials_base_url.return_value = (
+            "https://api.example.com"
+        )
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -254,14 +274,16 @@ class TestGetFullStudy:
         call_args = mock_get.call_args
         assert call_args[0][0] == "https://api.example.com/NCT001"
 
-    @patch('src.utils.fetcher.requests.get')
-    @patch('src.utils.fetcher.time.sleep')
-    @patch('src.utils.fetcher.Config')
+    @patch("src.utils.fetcher.requests.get")
+    @patch("src.utils.fetcher.time.sleep")
+    @patch("src.utils.fetcher.Config")
     def test_get_full_study_invalid_response(self, mock_config, mock_sleep, mock_get):
         """Test invalid response handling."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
+        mock_config_instance.get_clinical_trials_base_url.return_value = (
+            "https://api.example.com"
+        )
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -273,14 +295,16 @@ class TestGetFullStudy:
         with pytest.raises(ClinicalTrialsAPIError):
             get_full_study("NCT001")
 
-    @patch('src.utils.fetcher.requests.get')
-    @patch('src.utils.fetcher.time.sleep')
-    @patch('src.utils.fetcher.Config')
+    @patch("src.utils.fetcher.requests.get")
+    @patch("src.utils.fetcher.time.sleep")
+    @patch("src.utils.fetcher.Config")
     def test_get_full_study_non_dict_response(self, mock_config, mock_sleep, mock_get):
         """Test non-dict response handling."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
+        mock_config_instance.get_clinical_trials_base_url.return_value = (
+            "https://api.example.com"
+        )
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -296,14 +320,16 @@ class TestGetFullStudy:
 class TestCalculateTotalStudies:
     """Test calculate_total_studies function."""
 
-    @patch('src.utils.fetcher.requests.get')
-    @patch('src.utils.fetcher.time.sleep')
-    @patch('src.utils.fetcher.Config')
+    @patch("src.utils.fetcher.requests.get")
+    @patch("src.utils.fetcher.time.sleep")
+    @patch("src.utils.fetcher.Config")
     def test_calculate_total_success(self, mock_config, mock_sleep, mock_get):
         """Test successful total calculation."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
+        mock_config_instance.get_clinical_trials_base_url.return_value = (
+            "https://api.example.com"
+        )
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -318,14 +344,16 @@ class TestCalculateTotalStudies:
         assert result["total_pages"] == 15  # 1500 / 100
         assert result["page_size"] == 100
 
-    @patch('src.utils.fetcher.requests.get')
-    @patch('src.utils.fetcher.time.sleep')
-    @patch('src.utils.fetcher.Config')
+    @patch("src.utils.fetcher.requests.get")
+    @patch("src.utils.fetcher.time.sleep")
+    @patch("src.utils.fetcher.Config")
     def test_calculate_total_zero_results(self, mock_config, mock_sleep, mock_get):
         """Test calculation with zero results."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
+        mock_config_instance.get_clinical_trials_base_url.return_value = (
+            "https://api.example.com"
+        )
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -343,7 +371,7 @@ class TestCalculateTotalStudies:
 class TestHelperFunctions:
     """Test helper functions."""
 
-    @patch('src.utils.fetcher.get_full_study')
+    @patch("src.utils.fetcher.get_full_study")
     def test_fetch_single_study_success(self, mock_get_full_study):
         """Test successful single study fetch."""
         mock_get_full_study.return_value = {"study": "data"}
@@ -352,7 +380,7 @@ class TestHelperFunctions:
 
         assert result == {"study": "data"}
 
-    @patch('src.utils.fetcher.get_full_study')
+    @patch("src.utils.fetcher.get_full_study")
     def test_fetch_single_study_failure(self, mock_get_full_study):
         """Test single study fetch failure."""
         mock_get_full_study.side_effect = Exception("API error")
@@ -360,7 +388,7 @@ class TestHelperFunctions:
         with pytest.raises(Exception):
             _fetch_single_study_with_error_handling("NCT001")
 
-    @patch('src.utils.fetcher.search_trials')
+    @patch("src.utils.fetcher.search_trials")
     def test_search_single_page(self, mock_search_trials):
         """Test single page search."""
         mock_search_trials.return_value = {"studies": [{"id": "1"}]}

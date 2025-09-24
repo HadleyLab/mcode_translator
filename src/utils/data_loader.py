@@ -40,7 +40,9 @@ def load_ndjson_data(input_path: Path, data_type: str = "data") -> List[Dict[str
                 try:
                     data.append(json.loads(line))
                 except json.JSONDecodeError as e:
-                    logger.warning(f"Invalid JSON at line {line_num} in {input_path}: {e}")
+                    logger.warning(
+                        f"Invalid JSON at line {line_num} in {input_path}: {e}"
+                    )
                     continue
 
     if not data:

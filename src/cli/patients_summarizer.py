@@ -16,12 +16,10 @@ Features:
 import argparse
 import json
 import sys
-from pathlib import Path
 from typing import Dict, List, Optional
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
-from src.utils.config import Config
 from src.utils.logging_config import get_logger
 from src.workflows.patients_summarizer_workflow import PatientsSummarizerWorkflow
 
@@ -148,10 +146,14 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     if args.ingest:
         try:
             memory_storage = McodeMemoryStorage(source=args.memory_source)
-            logger.info(f"🧠 Initialized CORE Memory storage (source: {args.memory_source})")
+            logger.info(
+                f"🧠 Initialized CORE Memory storage (source: {args.memory_source})"
+            )
         except Exception as e:
             logger.error(f"Failed to initialize CORE Memory: {e}")
-            logger.info("Check your COREAI_API_KEY environment variable and core_memory_config.json")
+            logger.info(
+                "Check your COREAI_API_KEY environment variable and core_memory_config.json"
+            )
             sys.exit(1)
 
     # Prepare workflow parameters
@@ -176,24 +178,34 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
             summaries = []
             if result.data:
                 for patient_result in result.data:
-                    if isinstance(patient_result, dict) and "McodeResults" in patient_result:
+                    if (
+                        isinstance(patient_result, dict)
+                        and "McodeResults" in patient_result
+                    ):
                         mcode_results = patient_result["McodeResults"]
                         if "natural_language_summary" in mcode_results:
                             # Extract patient ID
                             patient_id = "unknown"
                             if "entry" in patient_result:
                                 for entry in patient_result["entry"]:
-                                    if (isinstance(entry, dict) and
-                                        "resource" in entry and
-                                        isinstance(entry["resource"], dict) and
-                                        entry["resource"].get("resourceType") == "Patient"):
-                                        patient_id = entry["resource"].get("id", "unknown")
+                                    if (
+                                        isinstance(entry, dict)
+                                        and "resource" in entry
+                                        and isinstance(entry["resource"], dict)
+                                        and entry["resource"].get("resourceType")
+                                        == "Patient"
+                                    ):
+                                        patient_id = entry["resource"].get(
+                                            "id", "unknown"
+                                        )
                                         break
 
                             summary = {
                                 "patient_id": patient_id,
                                 "summary": mcode_results["natural_language_summary"],
-                                "mcode_elements": mcode_results.get("mcode_mappings", []),
+                                "mcode_elements": mcode_results.get(
+                                    "mcode_mappings", []
+                                ),
                             }
                             summaries.append(summary)
 
@@ -238,6 +250,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         logger.error(f"Unexpected error: {e}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 

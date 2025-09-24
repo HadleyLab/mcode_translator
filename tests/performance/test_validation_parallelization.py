@@ -9,14 +9,10 @@ Tests for validation pipeline parallelization:
 - Performance comparison between sequential and parallel processing
 """
 
-import json
 import time
 import pytest
-from pathlib import Path
-from unittest.mock import patch
 
 from src.pipeline.pipeline import McodePipeline
-from src.shared.models import PipelineResult, McodeElement, ValidationResult, ProcessingMetadata
 from src.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -33,22 +29,20 @@ def trials_data():
             "protocolSection": {
                 "identificationModule": {
                     "nctId": f"NCT{10000000 + i}",
-                    "briefTitle": f"Synthetic Trial {i + 1} for Parallel Validation"
+                    "briefTitle": f"Synthetic Trial {i + 1} for Parallel Validation",
                 },
-                "statusModule": {
-                    "overallStatus": "RECRUITING"
-                },
+                "statusModule": {"overallStatus": "RECRUITING"},
                 "designModule": {
                     "studyType": "INTERVENTIONAL",
                     "primaryPurpose": "TREATMENT",
-                    "phases": ["Phase 2"]
+                    "phases": ["Phase 2"],
                 },
                 "conditionsModule": {
                     "conditions": [
                         {
                             "name": "Breast Cancer",
                             "term": "breast cancer",
-                            "qualifier": "Primary"
+                            "qualifier": "Primary",
                         }
                     ]
                 },
@@ -57,45 +51,34 @@ def trials_data():
                     "maximumAge": "75 Years",
                     "sex": "ALL",
                     "healthyVolunteers": False,
-                    "eligibilityCriteria": "Patients with breast cancer diagnosis."
+                    "eligibilityCriteria": "Patients with breast cancer diagnosis.",
                 },
                 "armsInterventionsModule": {
                     "interventions": [
                         {
                             "type": "DRUG",
                             "name": "Test Drug",
-                            "description": "Synthetic treatment drug"
+                            "description": "Synthetic treatment drug",
                         }
                     ]
                 },
                 "sponsorCollaboratorsModule": {
-                    "leadSponsor": {
-                        "name": "Test Sponsor Inc.",
-                        "class": "Industry"
-                    }
+                    "leadSponsor": {"name": "Test Sponsor Inc.", "class": "Industry"}
                 },
-                "designInfo": {
-                    "interventionModel": "SINGLE_ARM"
-                },
-                "enrollmentInfo": {
-                    "count": 100,
-                    "type": "ANTICIPATED"
-                }
+                "designInfo": {"interventionModel": "SINGLE_ARM"},
+                "enrollmentInfo": {"count": 100, "type": "ANTICIPATED"},
             },
-            "derivedSection": {
-                "interventionBrowseModule": {
-                    "meshes": []
-                }
-            }
+            "derivedSection": {"interventionBrowseModule": {"meshes": []}},
         }
         sample_trials.append(synthetic_trial)
-    
+
     return sample_trials
 
 
 def test_sequential_processing(trials_data):
     """Test sequential processing for baseline comparison."""
     import asyncio
+
     pipeline = McodePipeline()
 
     async def process_sequential():
@@ -112,12 +95,15 @@ def test_sequential_processing(trials_data):
     assert len(results) == len(trials_data), "Should process all trials"
     assert sequential_time >= 0, "Processing time should be non-negative"
     assert all(r is not None for r in results), "All results should be valid"
-    assert all(len(r.mcode_mappings) > 0 for r in results), "Each result should have mappings"
+    assert all(
+        len(r.mcode_mappings) > 0 for r in results
+    ), "Each result should have mappings"
 
 
 def test_parallel_processing(trials_data):
     """Test parallel processing with validation pipeline."""
     import asyncio
+
     pipeline = McodePipeline()
 
     async def process_trials():
@@ -131,7 +117,9 @@ def test_parallel_processing(trials_data):
     assert len(results) == len(trials_data), "Should process all trials"
     assert parallel_time >= 0, "Processing time should be non-negative"
     assert all(r is not None for r in results), "All results should be valid"
-    assert all(len(r.mcode_mappings) > 0 for r in results), "Each result should have mappings"
+    assert all(
+        len(r.mcode_mappings) > 0 for r in results
+    ), "Each result should have mappings"
 
 
 def test_parallel_validation_only(trials_data):
@@ -156,6 +144,7 @@ def test_parallel_validation_only(trials_data):
 
     assert len(validation_results) == len(trials_data), "Should validate all trials"
     assert validation_time >= 0, "Validation time should be non-negative"
-    assert isinstance(validation_results, list), "Should return list of validation results"
+    assert isinstance(
+        validation_results, list
+    ), "Should return list of validation results"
     assert all(validation_results), "All trials should validate successfully"
-

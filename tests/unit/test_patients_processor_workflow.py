@@ -3,9 +3,12 @@ Unit tests for PatientsProcessorWorkflow.
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 from src.workflows.patients_processor_workflow import PatientsProcessorWorkflow
+from src.services.demographics_extractor import DemographicsExtractor
+from src.services.fhir_extractors import FHIRResourceExtractors
+from src.services.clinical_note_generator import ClinicalNoteGenerator
 from src.utils.config import Config
 
 
@@ -34,31 +37,33 @@ class TestPatientsProcessorWorkflow:
                         "id": "patient_123",
                         "name": [{"given": ["John"], "family": "Doe"}],
                         "birthDate": "1980-01-01",
-                        "gender": "male"
+                        "gender": "male",
                     }
                 },
                 {
                     "resource": {
                         "resourceType": "Condition",
                         "code": {
-                            "coding": [{
-                                "system": "http://snomed.info/sct",
-                                "code": "254837009",
-                                "display": "Breast Cancer"
-                            }]
-                        }
+                            "coding": [
+                                {
+                                    "system": "http://snomed.info/sct",
+                                    "code": "254837009",
+                                    "display": "Breast Cancer",
+                                }
+                            ]
+                        },
                     }
-                }
-            ]
+                },
+            ],
         }
 
     def test_workflow_initialization(self, workflow):
         """Test workflow initializes correctly."""
         assert workflow is not None
-        assert hasattr(workflow, 'execute')
-        assert hasattr(workflow, 'summarizer')
+        assert hasattr(workflow, "execute")
+        assert hasattr(workflow, "summarizer")
 
-    @patch('src.workflows.patients_processor_workflow.TaskQueue')
+    @patch("src.workflows.patients_processor_workflow.TaskQueue")
     def test_execute_success(self, mock_task_queue, workflow, mock_patient_data):
         """Test successful patient processing execution."""
         # Mock task queue
@@ -86,8 +91,10 @@ class TestPatientsProcessorWorkflow:
         assert result.success is False
         assert "No patient data provided" in result.error_message
 
-    @patch('src.workflows.patients_processor_workflow.TaskQueue')
-    def test_execute_with_task_failures(self, mock_task_queue, workflow, mock_patient_data):
+    @patch("src.workflows.patients_processor_workflow.TaskQueue")
+    def test_execute_with_task_failures(
+        self, mock_task_queue, workflow, mock_patient_data
+    ):
         """Test execute handles task failures gracefully."""
         # Mock task queue
         mock_queue_instance = Mock()
@@ -106,7 +113,7 @@ class TestPatientsProcessorWorkflow:
         assert len(result.data) == 1
         assert "McodeProcessingError" in result.data[0]
 
-    @patch('src.workflows.patients_processor_workflow.TaskQueue')
+    @patch("src.workflows.patients_processor_workflow.TaskQueue")
     def test_execute_all_tasks_fail(self, mock_task_queue, workflow, mock_patient_data):
         """Test execute when all tasks fail."""
         # Mock task queue
@@ -127,7 +134,7 @@ class TestPatientsProcessorWorkflow:
 
     def test_execute_unexpected_error(self, workflow):
         """Test execute handles unexpected errors."""
-        with patch.object(workflow, '_create_result') as mock_create_result:
+        with patch.object(workflow, "_create_result") as mock_create_result:
             mock_create_result.side_effect = Exception("Unexpected error")
 
             with pytest.raises(Exception, match="Unexpected error"):
@@ -139,14 +146,16 @@ class TestPatientsProcessorWorkflow:
             patient=mock_patient_data,
             patient_index=0,
             trials_criteria=None,
-            store_in_memory=False
+            store_in_memory=False,
         )
 
         assert isinstance(result, dict)
         assert "filtered_mcode_elements" in result
         assert "mcode_processing_metadata" in result
 
-    def test_process_single_patient_with_memory_storage(self, workflow, mock_patient_data):
+    def test_process_single_patient_with_memory_storage(
+        self, workflow, mock_patient_data
+    ):
         """Test single patient processing with memory storage."""
         # Mock memory storage
         workflow.memory_storage = Mock()
@@ -156,13 +165,15 @@ class TestPatientsProcessorWorkflow:
             patient=mock_patient_data,
             patient_index=0,
             trials_criteria=None,
-            store_in_memory=True
+            store_in_memory=True,
         )
 
         assert isinstance(result, dict)
         workflow.memory_storage.store_patient_mcode_summary.assert_called_once()
 
-    def test_process_single_patient_memory_storage_failure(self, workflow, mock_patient_data):
+    def test_process_single_patient_memory_storage_failure(
+        self, workflow, mock_patient_data
+    ):
         """Test single patient processing when memory storage fails."""
         # Mock memory storage
         workflow.memory_storage = Mock()
@@ -172,13 +183,15 @@ class TestPatientsProcessorWorkflow:
             patient=mock_patient_data,
             patient_index=0,
             trials_criteria=None,
-            store_in_memory=True
+            store_in_memory=True,
         )
 
         assert isinstance(result, dict)
         workflow.memory_storage.store_patient_mcode_summary.assert_called_once()
 
-    def test_process_single_patient_with_trials_criteria(self, workflow, mock_patient_data):
+    def test_process_single_patient_with_trials_criteria(
+        self, workflow, mock_patient_data
+    ):
         """Test single patient processing with trial criteria filtering."""
         trials_criteria = {"CancerCondition": True}
 
@@ -186,7 +199,7 @@ class TestPatientsProcessorWorkflow:
             patient=mock_patient_data,
             patient_index=0,
             trials_criteria=trials_criteria,
-            store_in_memory=False
+            store_in_memory=False,
         )
 
         assert isinstance(result, dict)
@@ -200,7 +213,7 @@ class TestPatientsProcessorWorkflow:
             patient="invalid_data",
             patient_index=0,
             trials_criteria=None,
-            store_in_memory=False
+            store_in_memory=False,
         )
 
         assert isinstance(result, dict)  # Error returns dict with error info
@@ -213,12 +226,12 @@ class TestPatientsProcessorWorkflow:
             "id": "patient_123",
             "name": [{"given": ["John"], "family": "Doe"}],
             "birthDate": "1980-01-01",
-            "gender": "male"
+            "gender": "male",
         }
 
-        elements = workflow._extract_patient_mcode_elements({
-            "entry": [{"resource": patient_resource}]
-        })
+        elements = workflow._extract_patient_mcode_elements(
+            {"entry": [{"resource": patient_resource}]}
+        )
 
         assert isinstance(elements, dict)
         assert "name" in elements  # Demographics should be extracted
@@ -228,17 +241,19 @@ class TestPatientsProcessorWorkflow:
         condition_resource = {
             "resourceType": "Condition",
             "code": {
-                "coding": [{
-                    "system": "http://snomed.info/sct",
-                    "code": "254837009",
-                    "display": "Breast Cancer"
-                }]
-            }
+                "coding": [
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "254837009",
+                        "display": "Breast Cancer",
+                    }
+                ]
+            },
         }
 
-        elements = workflow._extract_patient_mcode_elements({
-            "entry": [{"resource": condition_resource}]
-        })
+        elements = workflow._extract_patient_mcode_elements(
+            {"entry": [{"resource": condition_resource}]}
+        )
 
         assert isinstance(elements, dict)
         assert "CancerCondition" in elements
@@ -250,18 +265,19 @@ class TestPatientsProcessorWorkflow:
         assert isinstance(elements, dict)
         assert len(elements) == 0
 
-    def test_extract_demographics_complete(self, workflow):
+    def test_extract_demographics_complete(self):
         """Test extracting complete demographics."""
+        extractor = DemographicsExtractor()
         patient_resource = {
             "name": [{"given": ["John"], "family": "Doe"}],
             "birthDate": "1980-01-01",
             "gender": "male",
             "maritalStatus": {"coding": [{"display": "Married"}]},
             "communication": [{"language": {"coding": [{"display": "English"}]}}],
-            "address": [{"city": "New York", "state": "NY", "country": "USA"}]
+            "address": [{"city": "New York", "state": "NY", "country": "USA"}],
         }
 
-        demographics = workflow._extract_demographics(patient_resource)
+        demographics = extractor.extract_demographics(patient_resource)
 
         assert demographics["name"] == "John Doe"
         assert demographics["birthDate"] == "1980-01-01"
@@ -270,237 +286,250 @@ class TestPatientsProcessorWorkflow:
         assert demographics["language"] == "English"
         assert "New York" in demographics["address"]
 
-    def test_extract_demographics_minimal(self, workflow):
+    def test_extract_demographics_minimal(self):
         """Test extracting minimal demographics."""
-        patient_resource = {
-            "name": [{"family": "Doe"}],
-            "gender": "female"
-        }
+        extractor = DemographicsExtractor()
+        patient_resource = {"name": [{"family": "Doe"}], "gender": "female"}
 
-        demographics = workflow._extract_demographics(patient_resource)
+        demographics = extractor.extract_demographics(patient_resource)
 
         assert demographics["name"] == "Doe"
         assert demographics["gender"] == "Female"
         assert demographics["birthDate"] == "Unknown"
         assert demographics["age"] == "Unknown"
 
-    def test_extract_condition_mcode_cancer(self, workflow):
+    def test_extract_condition_mcode_cancer(self):
         """Test extracting cancer condition mCODE."""
+        extractor = FHIRResourceExtractors()
         condition = {
             "code": {
-                "coding": [{
-                    "system": "http://snomed.info/sct",
-                    "code": "254837009",
-                    "display": "Breast Cancer"
-                }]
+                "coding": [
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "254837009",
+                        "display": "Breast Cancer",
+                    }
+                ]
             }
         }
 
-        result = workflow._extract_condition_mcode(condition)
+        result = extractor.extract_condition_mcode(condition)
 
         assert result is not None
         assert result["display"] == "Breast Cancer"
         assert result["code"] == "254837009"
 
-    def test_extract_condition_mcode_non_cancer(self, workflow):
+    def test_extract_condition_mcode_non_cancer(self):
         """Test extracting non-cancer condition mCODE."""
+        extractor = FHIRResourceExtractors()
         condition = {
             "code": {
-                "coding": [{
-                    "system": "http://snomed.info/sct",
-                    "code": "123456",
-                    "display": "Hypertension"
-                }]
+                "coding": [
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "123456",
+                        "display": "Hypertension",
+                    }
+                ]
             }
         }
 
-        result = workflow._extract_condition_mcode(condition)
+        result = extractor.extract_condition_mcode(condition)
 
         assert result is None
 
-    def test_extract_observation_mcode_receptor_status(self, workflow):
+    def test_extract_observation_mcode_receptor_status(self):
         """Test extracting receptor status from observation."""
+        extractor = FHIRResourceExtractors()
         observation = {
             "code": {"coding": [{"display": "Estrogen receptor status"}]},
             "valueCodeableConcept": {
                 "coding": [{"code": "positive", "display": "Positive"}]
-            }
+            },
         }
 
-        elements = workflow._extract_observation_mcode(observation)
+        elements = extractor.extract_observation_mcode(observation)
 
         assert "ERReceptorStatus" in elements
         assert elements["ERReceptorStatus"]["interpretation"] == "Positive"
 
-    def test_extract_observation_mcode_stage(self, workflow):
+    def test_extract_observation_mcode_stage(self):
         """Test extracting stage information from observation."""
+        extractor = FHIRResourceExtractors()
         observation = {
             "code": {"coding": [{"display": "TNM Stage"}]},
             "valueCodeableConcept": {
                 "coding": [{"code": "IIA", "display": "Stage IIA"}]
-            }
+            },
         }
 
-        elements = workflow._extract_observation_mcode(observation)
+        elements = extractor.extract_observation_mcode(observation)
 
         assert "TNMStage" in elements
         assert elements["TNMStage"]["display"] == "Stage IIA"
 
-    def test_extract_receptor_status(self, workflow):
+    def test_extract_receptor_status(self):
         """Test extracting receptor status details."""
+        extractor = FHIRResourceExtractors()
         observation = {
             "valueCodeableConcept": {
-                "coding": [{"system": "SNOMED", "code": "positive", "display": "Positive"}]
+                "coding": [
+                    {"system": "SNOMED", "code": "positive", "display": "Positive"}
+                ]
             }
         }
 
-        result = workflow._extract_receptor_status(observation)
+        result = extractor._extract_receptor_status(observation)
 
         assert result["system"] == "SNOMED"
         assert result["code"] == "positive"
         assert result["display"] == "Positive"
 
-    def test_extract_stage_info(self, workflow):
+    def test_extract_stage_info(self):
         """Test extracting stage information details."""
+        extractor = FHIRResourceExtractors()
         observation = {
             "valueCodeableConcept": {
                 "coding": [{"system": "SNOMED", "code": "IIA", "display": "Stage IIA"}]
             }
         }
 
-        result = workflow._extract_stage_info(observation)
+        result = extractor._extract_stage_info(observation)
 
         assert result["system"] == "SNOMED"
         assert result["code"] == "IIA"
         assert result["display"] == "Stage IIA"
 
-    def test_extract_procedure_mcode_surgery(self, workflow):
+    def test_extract_procedure_mcode_surgery(self):
         """Test extracting surgical procedure mCODE."""
+        extractor = FHIRResourceExtractors()
         procedure = {
             "code": {
-                "coding": [{
-                    "system": "SNOMED",
-                    "code": "12345",
-                    "display": "Mastectomy"
-                }]
+                "coding": [
+                    {"system": "SNOMED", "code": "12345", "display": "Mastectomy"}
+                ]
             },
-            "performedDateTime": "2023-01-01"
+            "performedDateTime": "2023-01-01",
         }
 
-        result = workflow._extract_procedure_mcode(procedure)
+        result = extractor.extract_procedure_mcode(procedure)
 
         assert result is not None
         assert result["display"] == "Mastectomy"
         assert result["date"] == "2023-01-01"
 
-    def test_extract_procedure_mcode_non_surgery(self, workflow):
+    def test_extract_procedure_mcode_non_surgery(self):
         """Test extracting non-surgical procedure mCODE."""
+        extractor = FHIRResourceExtractors()
         procedure = {
             "code": {
-                "coding": [{
-                    "system": "SNOMED",
-                    "code": "12345",
-                    "display": "Blood test"
-                }]
+                "coding": [
+                    {"system": "SNOMED", "code": "12345", "display": "Blood test"}
+                ]
             }
         }
 
-        result = workflow._extract_procedure_mcode(procedure)
+        result = extractor.extract_procedure_mcode(procedure)
 
         assert result is None
 
-    def test_extract_allergy_mcode(self, workflow):
+    def test_extract_allergy_mcode(self):
         """Test extracting allergy mCODE."""
+        extractor = FHIRResourceExtractors()
         allergy = {
             "code": {
-                "coding": [{
-                    "system": "SNOMED",
-                    "code": "12345",
-                    "display": "Penicillin allergy"
-                }]
+                "coding": [
+                    {
+                        "system": "SNOMED",
+                        "code": "12345",
+                        "display": "Penicillin allergy",
+                    }
+                ]
             },
             "criticality": "high",
-            "recordedDate": "2023-01-01"
+            "recordedDate": "2023-01-01",
         }
 
-        result = workflow._extract_allergy_mcode(allergy)
+        result = extractor.extract_allergy_mcode(allergy)
 
         assert result is not None
         assert result["display"] == "Penicillin allergy"
         assert result["criticality"] == "high"
         assert result["recordedDate"] == "2023-01-01"
 
-    def test_extract_immunization_mcode(self, workflow):
+    def test_extract_immunization_mcode(self):
         """Test extracting immunization mCODE."""
+        extractor = FHIRResourceExtractors()
         immunization = {
             "vaccineCode": {
-                "coding": [{
-                    "system": "CVX",
-                    "code": "123",
-                    "display": "COVID-19 vaccine"
-                }]
+                "coding": [
+                    {"system": "CVX", "code": "123", "display": "COVID-19 vaccine"}
+                ]
             },
             "occurrenceDateTime": "2023-01-01",
-            "status": "completed"
+            "status": "completed",
         }
 
-        result = workflow._extract_immunization_mcode(immunization)
+        result = extractor.extract_immunization_mcode(immunization)
 
         assert result is not None
         assert result["display"] == "COVID-19 vaccine"
         assert result["occurrenceDateTime"] == "2023-01-01"
         assert result["status"] == "completed"
 
-    def test_extract_family_history_mcode(self, workflow):
+    def test_extract_family_history_mcode(self):
         """Test extracting family history mCODE."""
+        extractor = FHIRResourceExtractors()
         family_history = {
             "relationship": {
-                "coding": [{
-                    "system": "SNOMED",
-                    "code": "12345",
-                    "display": "Mother"
-                }]
+                "coding": [{"system": "SNOMED", "code": "12345", "display": "Mother"}]
             },
-            "condition": [{
-                "code": {
-                    "coding": [{
-                        "system": "SNOMED",
-                        "code": "67890",
-                        "display": "Breast Cancer"
-                    }]
+            "condition": [
+                {
+                    "code": {
+                        "coding": [
+                            {
+                                "system": "SNOMED",
+                                "code": "67890",
+                                "display": "Breast Cancer",
+                            }
+                        ]
+                    }
                 }
-            }],
-            "born": "1950-01-01"
+            ],
+            "born": "1950-01-01",
         }
 
-        result = workflow._extract_family_history_mcode(family_history)
+        result = extractor.extract_family_history_mcode(family_history)
 
         assert result is not None
         assert result["relationship"]["display"] == "Mother"
         assert len(result["conditions"]) == 1
         assert result["born"] == "1950-01-01"
 
-    def test_extract_observation_mcode_comprehensive_vitals(self, workflow):
+    def test_extract_observation_mcode_comprehensive_vitals(self):
         """Test extracting comprehensive vital signs."""
+        extractor = FHIRResourceExtractors()
         observation = {
             "code": {"coding": [{"display": "Body weight"}]},
-            "valueQuantity": {"value": 70, "unit": "kg"}
+            "valueQuantity": {"value": 70, "unit": "kg"},
         }
 
-        elements = workflow._extract_observation_mcode_comprehensive(observation)
+        elements = extractor.extract_observation_mcode_comprehensive(observation)
 
         assert "BodyWeight" in elements
         assert elements["BodyWeight"]["value"] == 70
         assert elements["BodyWeight"]["unit"] == "kg"
 
-    def test_extract_observation_mcode_comprehensive_labs(self, workflow):
+    def test_extract_observation_mcode_comprehensive_labs(self):
         """Test extracting comprehensive lab results."""
+        extractor = FHIRResourceExtractors()
         observation = {
             "code": {"coding": [{"display": "Hemoglobin"}]},
-            "valueQuantity": {"value": 12.5, "unit": "g/dL"}
+            "valueQuantity": {"value": 12.5, "unit": "g/dL"},
         }
 
-        elements = workflow._extract_observation_mcode_comprehensive(observation)
+        elements = extractor.extract_observation_mcode_comprehensive(observation)
 
         assert "Hemoglobin" in elements
         assert elements["Hemoglobin"]["value"] == 12.5
@@ -511,7 +540,7 @@ class TestPatientsProcessorWorkflow:
         patient_mcode = {
             "CancerCondition": {"display": "Breast Cancer"},
             "ERReceptorStatus": {"interpretation": "Positive"},
-            "ComorbidCondition": {"display": "Hypertension"}
+            "ComorbidCondition": {"display": "Hypertension"},
         }
 
         trial_criteria = {"CancerCondition": True, "ERReceptorStatus": True}
@@ -528,7 +557,7 @@ class TestPatientsProcessorWorkflow:
             "CancerCondition": {
                 "system": "SNOMED",
                 "code": "12345",
-                "display": "Breast Cancer"
+                "display": "Breast Cancer",
             }
         }
 
@@ -544,7 +573,7 @@ class TestPatientsProcessorWorkflow:
         mcode_elements = {
             "ComorbidCondition": [
                 {"system": "SNOMED", "code": "12345", "display": "Hypertension"},
-                {"system": "SNOMED", "code": "67890", "display": "Diabetes"}
+                {"system": "SNOMED", "code": "67890", "display": "Diabetes"},
             ]
         }
 
@@ -553,46 +582,59 @@ class TestPatientsProcessorWorkflow:
         assert len(mappings) == 2
         assert all(m["mcode_element"] == "ComorbidCondition" for m in mappings)
 
-    def test_generate_natural_language_summary(self, workflow):
+    def test_generate_natural_language_summary(self):
         """Test generating clinical note summary."""
+        generator = ClinicalNoteGenerator()
         patient_id = "patient_123"
         mcode_elements = {
-            "CancerCondition": {"display": "Breast Cancer", "code": "12345", "system": "SNOMED"},
-            "ERReceptorStatus": {"display": "Positive", "code": "45678", "system": "SNOMED", "interpretation": "Positive"}
+            "CancerCondition": {
+                "display": "Breast Cancer",
+                "code": "12345",
+                "system": "SNOMED",
+            },
+            "ERReceptorStatus": {
+                "display": "Positive",
+                "code": "45678",
+                "system": "SNOMED",
+                "interpretation": "Positive",
+            },
         }
         demographics = {
             "name": "John Doe",
             "age": "43",
             "gender": "Male",
-            "birthDate": "1980-01-01"
+            "birthDate": "1980-01-01",
         }
 
-        summary = workflow._generate_natural_language_summary(
-            patient_id, mcode_elements, demographics
-        )
+        summary = generator.generate_summary(patient_id, mcode_elements, demographics)
 
         assert isinstance(summary, str)
         assert "John Doe" in summary
         assert "Breast Cancer" in summary
         assert "ER receptor status is Positive" in summary
 
-    def test_decode_birth_sex(self, workflow):
+    def test_decode_birth_sex(self):
         """Test decoding birth sex codes."""
-        assert workflow._decode_birth_sex("F") == "Female"
-        assert workflow._decode_birth_sex("M") == "Male"
-        assert workflow._decode_birth_sex("UNK") == "Unknown"
-        assert workflow._decode_birth_sex("OTH") == "Other"
+        generator = ClinicalNoteGenerator()
+        assert generator._decode_birth_sex("F") == "Female"
+        assert generator._decode_birth_sex("M") == "Male"
+        assert generator._decode_birth_sex("UNK") == "Unknown"
+        assert generator._decode_birth_sex("OTH") == "Other"
 
-    def test_decode_marital_status(self, workflow):
+    def test_decode_marital_status(self):
         """Test decoding marital status codes."""
-        assert workflow._decode_marital_status("M") == "Married"
-        assert workflow._decode_marital_status("S") == "Single"
-        assert workflow._decode_marital_status("D") == "Divorced"
-        assert workflow._decode_marital_status("UNK") == "Unknown"
+        generator = ClinicalNoteGenerator()
+        assert generator._decode_marital_status("M") == "Married"
+        assert generator._decode_marital_status("S") == "Single"
+        assert generator._decode_marital_status("D") == "Divorced"
+        assert generator._decode_marital_status("UNK") == "Unknown"
 
-    def test_format_mcode_element(self, workflow):
+    def test_format_mcode_element(self):
         """Test formatting mCODE elements consistently."""
-        result = workflow._format_mcode_element("CancerCondition", "http://snomed.info/sct", "12345")
+        generator = ClinicalNoteGenerator()
+        result = generator._format_mcode_element(
+            "CancerCondition", "http://snomed.info/sct", "12345"
+        )
 
         assert "mCODE: CancerCondition" in result
         assert "SNOMED:12345" in result
@@ -600,12 +642,14 @@ class TestPatientsProcessorWorkflow:
     def test_extract_patient_id_from_identifier(self, workflow):
         """Test extracting patient ID from identifier."""
         patient = {
-            "entry": [{
-                "resource": {
-                    "resourceType": "Patient",
-                    "identifier": [{"value": "PAT123"}]
+            "entry": [
+                {
+                    "resource": {
+                        "resourceType": "Patient",
+                        "identifier": [{"value": "PAT123"}],
+                    }
                 }
-            }]
+            ]
         }
 
         patient_id = workflow._extract_patient_id(patient)
@@ -615,12 +659,7 @@ class TestPatientsProcessorWorkflow:
     def test_extract_patient_id_from_resource_id(self, workflow):
         """Test extracting patient ID from resource ID."""
         patient = {
-            "entry": [{
-                "resource": {
-                    "resourceType": "Patient",
-                    "id": "patient_456"
-                }
-            }]
+            "entry": [{"resource": {"resourceType": "Patient", "id": "patient_456"}}]
         }
 
         patient_id = workflow._extract_patient_id(patient)
@@ -630,12 +669,14 @@ class TestPatientsProcessorWorkflow:
     def test_extract_patient_id_fallback_hash(self, workflow):
         """Test extracting patient ID falls back to hash."""
         patient = {
-            "entry": [{
-                "resource": {
-                    "resourceType": "Patient"
-                    # No identifier or id
+            "entry": [
+                {
+                    "resource": {
+                        "resourceType": "Patient"
+                        # No identifier or id
+                    }
                 }
-            }]
+            ]
         }
 
         patient_id = workflow._extract_patient_id(patient)

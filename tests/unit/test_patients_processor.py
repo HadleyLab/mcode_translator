@@ -7,13 +7,8 @@ including argument parsing, validation, workflow execution, and data handling.
 """
 
 import argparse
-import json
-import sys
-from io import StringIO
-from pathlib import Path
 from unittest.mock import MagicMock, patch, mock_open
 
-import pytest
 
 from src.cli.patients_processor import (
     create_parser,
@@ -85,7 +80,9 @@ class TestPatientsProcessorCLI:
     @patch("src.cli.patients_processor.PatientsProcessorWorkflow")
     @patch("src.cli.patients_processor.McodeCLI.create_config")
     @patch("src.cli.patients_processor.McodeCLI.setup_logging")
-    def test_main_successful_processing(self, mock_setup_logging, mock_create_config, mock_workflow_class, capsys):
+    def test_main_successful_processing(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class, capsys
+    ):
         """Test successful patient processing workflow."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -131,9 +128,9 @@ class TestPatientsProcessorCLI:
         )
 
         # Mock file operations
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("src.cli.patients_processor.load_ndjson_data") as mock_load, \
-             patch("builtins.open", mock_open()):
+        with patch("pathlib.Path.exists", return_value=True), patch(
+            "src.cli.patients_processor.load_ndjson_data"
+        ) as mock_load, patch("builtins.open", mock_open()):
 
             mock_load.return_value = [{"entry": []}]
 
@@ -151,7 +148,9 @@ class TestPatientsProcessorCLI:
     @patch("src.cli.patients_processor.PatientsProcessorWorkflow")
     @patch("src.cli.patients_processor.McodeCLI.create_config")
     @patch("src.cli.patients_processor.McodeCLI.setup_logging")
-    def test_main_missing_input_file(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_missing_input_file(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test error when input file is not specified."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -195,7 +194,9 @@ class TestPatientsProcessorCLI:
     @patch("src.cli.patients_processor.PatientsProcessorWorkflow")
     @patch("src.cli.patients_processor.McodeCLI.create_config")
     @patch("src.cli.patients_processor.McodeCLI.setup_logging")
-    def test_main_input_file_not_found(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_input_file_not_found(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test error when input file does not exist."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -221,8 +222,9 @@ class TestPatientsProcessorCLI:
         )
 
         # Mock Path.exists to return False
-        with patch("pathlib.Path.exists", return_value=False), \
-             patch("sys.exit") as mock_exit:
+        with patch("pathlib.Path.exists", return_value=False), patch(
+            "sys.exit"
+        ) as mock_exit:
 
             # Call main - should exit with error
             main(args)
@@ -238,7 +240,9 @@ class TestPatientsProcessorCLI:
     @patch("src.cli.patients_processor.PatientsProcessorWorkflow")
     @patch("src.cli.patients_processor.McodeCLI.create_config")
     @patch("src.cli.patients_processor.McodeCLI.setup_logging")
-    def test_main_with_trials_file(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_with_trials_file(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test processing with trial criteria file."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -278,8 +282,9 @@ class TestPatientsProcessorCLI:
         )
 
         # Mock file operations
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("src.cli.patients_processor.load_ndjson_data") as mock_load:
+        with patch("pathlib.Path.exists", return_value=True), patch(
+            "src.cli.patients_processor.load_ndjson_data"
+        ) as mock_load:
 
             mock_load.side_effect = [
                 [{"entry": []}],  # patients data
@@ -300,7 +305,9 @@ class TestPatientsProcessorCLI:
     @patch("src.cli.patients_processor.PatientsProcessorWorkflow")
     @patch("src.cli.patients_processor.McodeCLI.create_config")
     @patch("src.cli.patients_processor.McodeCLI.setup_logging")
-    def test_main_with_memory_storage(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_with_memory_storage(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test processing with CORE memory storage enabled."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -341,9 +348,11 @@ class TestPatientsProcessorCLI:
         )
 
         # Mock file operations and memory storage
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("src.cli.patients_processor.load_ndjson_data") as mock_load, \
-             patch("src.cli.patients_processor.McodeMemoryStorage") as mock_memory_class:
+        with patch("pathlib.Path.exists", return_value=True), patch(
+            "src.cli.patients_processor.load_ndjson_data"
+        ) as mock_load, patch(
+            "src.cli.patients_processor.McodeMemoryStorage"
+        ) as mock_memory_class:
 
             mock_load.return_value = [{"entry": []}]
             mock_memory = MagicMock()
@@ -362,7 +371,9 @@ class TestPatientsProcessorCLI:
     @patch("src.cli.patients_processor.PatientsProcessorWorkflow")
     @patch("src.cli.patients_processor.McodeCLI.create_config")
     @patch("src.cli.patients_processor.McodeCLI.setup_logging")
-    def test_main_workflow_failure(self, mock_setup_logging, mock_create_config, mock_workflow_class, capsys):
+    def test_main_workflow_failure(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class, capsys
+    ):
         """Test handling of workflow execution failure."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -397,9 +408,9 @@ class TestPatientsProcessorCLI:
         )
 
         # Mock file operations
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("src.cli.patients_processor.load_ndjson_data") as mock_load, \
-             patch("sys.exit") as mock_exit:
+        with patch("pathlib.Path.exists", return_value=True), patch(
+            "src.cli.patients_processor.load_ndjson_data"
+        ) as mock_load, patch("sys.exit") as mock_exit:
 
             mock_load.return_value = [{"entry": []}]
 
@@ -416,7 +427,9 @@ class TestPatientsProcessorCLI:
     @patch("src.cli.patients_processor.PatientsProcessorWorkflow")
     @patch("src.cli.patients_processor.McodeCLI.create_config")
     @patch("src.cli.patients_processor.McodeCLI.setup_logging")
-    def test_main_keyboard_interrupt_handling(self, mock_setup_logging, mock_create_config, mock_workflow_class, capsys):
+    def test_main_keyboard_interrupt_handling(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class, capsys
+    ):
         """Test handling of keyboard interrupt."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -442,9 +455,9 @@ class TestPatientsProcessorCLI:
         )
 
         # Mock file operations and workflow to raise KeyboardInterrupt
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("src.cli.patients_processor.load_ndjson_data") as mock_load, \
-             patch("sys.exit") as mock_exit:
+        with patch("pathlib.Path.exists", return_value=True), patch(
+            "src.cli.patients_processor.load_ndjson_data"
+        ) as mock_load, patch("sys.exit") as mock_exit:
 
             mock_load.return_value = [{"entry": []}]
             mock_workflow = MagicMock()
@@ -489,10 +502,11 @@ class TestPatientsProcessorCLI:
         )
 
         # Mock file operations
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("src.cli.patients_processor.load_ndjson_data") as mock_load, \
-             patch("sys.exit") as mock_exit, \
-             patch("traceback.print_exc") as mock_traceback:
+        with patch("pathlib.Path.exists", return_value=True), patch(
+            "src.cli.patients_processor.load_ndjson_data"
+        ) as mock_load, patch("sys.exit") as mock_exit, patch(
+            "traceback.print_exc"
+        ) as mock_traceback:
 
             mock_load.return_value = [{"entry": []}]
 
@@ -507,11 +521,13 @@ class TestPatientsProcessorCLI:
 
     def test_main_without_args_uses_sys_argv(self):
         """Test that main() without args uses sys.argv."""
-        with patch("sys.argv", ["patients_processor", "--help"]), \
-             patch("argparse.ArgumentParser.print_help") as mock_help, \
-             patch("sys.exit") as mock_exit, \
-             patch("src.cli.patients_processor.McodeCLI.create_config") as mock_create_config, \
-             patch("src.cli.patients_processor.McodeCLI.setup_logging") as mock_setup_logging:
+        with patch("sys.argv", ["patients_processor", "--help"]), patch(
+            "argparse.ArgumentParser.print_help"
+        ) as mock_help, patch("sys.exit"), patch(
+            "src.cli.patients_processor.McodeCLI.create_config"
+        ) as mock_create_config, patch(
+            "src.cli.patients_processor.McodeCLI.setup_logging"
+        ):
 
             # Mock configuration and logging
             mock_config = MagicMock()
@@ -536,16 +552,16 @@ class TestPatientsProcessorCLI:
                         "resource": {
                             "resourceType": "Patient",
                             "id": "123",
-                            "name": [{"given": ["John"], "family": "Doe"}]
+                            "name": [{"given": ["John"], "family": "Doe"}],
                         }
                     },
                     {
                         "resource": {
                             "resourceType": "Condition",
                             "id": "456",
-                            "code": {"coding": [{"display": "Breast Cancer"}]}
+                            "code": {"coding": [{"display": "Breast Cancer"}]},
                         }
-                    }
+                    },
                 ]
             }
         ]
@@ -559,7 +575,9 @@ class TestPatientsProcessorCLI:
             save_processed_data(test_data, "output.ndjson", mock_logger)
 
             # Verify file was opened for writing
-            mock_open_func.assert_called_once_with("output.ndjson", "w", encoding="utf-8")
+            mock_open_func.assert_called_once_with(
+                "output.ndjson", "w", encoding="utf-8"
+            )
 
             # Verify logger was called
             mock_logger.info.assert_called_with("💾 mCODE data saved to: output.ndjson")
@@ -574,7 +592,7 @@ class TestPatientsProcessorCLI:
                         "resource": {
                             "resourceType": "Patient",
                             "id": "456",
-                            "name": [{"given": ["Jane"], "family": "Doe"}]
+                            "name": [{"given": ["Jane"], "family": "Doe"}],
                         }
                     }
                 ]
@@ -585,7 +603,7 @@ class TestPatientsProcessorCLI:
         mock_logger = MagicMock()
 
         # Mock stdout
-        with patch("sys.stdout") as mock_stdout:
+        with patch("sys.stdout"):
             # Call save_processed_data without output file
             save_processed_data(test_data, None, mock_logger)
 
@@ -614,7 +632,9 @@ class TestPatientsProcessorCLI:
         assert any("📊 Total patients: 10" in call for call in calls)
         assert any("✅ Successful: 8" in call for call in calls)
         assert any("❌ Failed: 2" in call for call in calls)
-        assert any("📈 Success rate: 0.8%" in call for call in calls)  # Actual format from function
+        assert any(
+            "📈 Success rate: 0.8%" in call for call in calls
+        )  # Actual format from function
         assert any("🎯 Applied trial eligibility filtering" in call for call in calls)
         assert any("🧠 Stored in CORE Memory" in call for call in calls)
 
@@ -634,13 +654,19 @@ class TestPatientsProcessorCLI:
         print_processing_summary(metadata, ingested, trials_criteria, mock_logger)
 
         # Verify no trial filtering message
-        trial_calls = [call for call in mock_logger.info.call_args_list
-                      if "trial eligibility filtering" in str(call)]
+        trial_calls = [
+            call
+            for call in mock_logger.info.call_args_list
+            if "trial eligibility filtering" in str(call)
+        ]
         assert len(trial_calls) == 0
 
         # Verify storage disabled message
-        storage_calls = [call for call in mock_logger.info.call_args_list
-                        if "Storage disabled" in str(call)]
+        storage_calls = [
+            call
+            for call in mock_logger.info.call_args_list
+            if "Storage disabled" in str(call)
+        ]
         assert len(storage_calls) == 1
 
     def test_extract_mcode_criteria_from_trials_empty(self):
@@ -661,7 +687,7 @@ class TestPatientsProcessorCLI:
                         {
                             "mcode_element": "TNMStage",
                             "value": "T2N1M0",
-                        }
+                        },
                     ]
                 }
             }
@@ -693,7 +719,7 @@ class TestPatientsProcessorCLI:
                         {"mcode_element": "TNMStage", "value": "T3N0M0"},
                     ]
                 }
-            }
+            },
         ]
 
         result = extract_mcode_criteria_from_trials(trials_data)
@@ -728,7 +754,10 @@ class TestPatientsProcessorCLI:
                 {
                     "McodeResults": {
                         "mcode_mappings": [
-                            {"mcode_element": "CancerCondition", "value": "colon cancer"}
+                            {
+                                "mcode_element": "CancerCondition",
+                                "value": "colon cancer",
+                            }
                         ]
                     }
                 }

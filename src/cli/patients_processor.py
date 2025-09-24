@@ -9,12 +9,11 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Any, Optional
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
-from src.utils.config import Config
-from src.utils.data_loader import load_ndjson_data, extract_patient_id
+from src.utils.data_loader import load_ndjson_data
 from src.utils.logging_config import get_logger
 from src.workflows.patients_processor_workflow import PatientsProcessorWorkflow
 
@@ -38,18 +37,14 @@ Examples:
 
     # I/O arguments
     parser.add_argument(
-        "--in",
-        dest="input_file",
-        help="Input file with patient data (NDJSON format)"
+        "--in", dest="input_file", help="Input file with patient data (NDJSON format)"
     )
     parser.add_argument(
-        "--out",
-        dest="output_file",
-        help="Output file for mCODE data (NDJSON format)"
+        "--out", dest="output_file", help="Output file for mCODE data (NDJSON format)"
     )
     parser.add_argument(
         "--trials",
-        help="Path to NDJSON file containing trial data for eligibility filtering"
+        help="Path to NDJSON file containing trial data for eligibility filtering",
     )
 
     return parser
@@ -90,7 +85,9 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         try:
             trials_list = load_ndjson_data(trials_path, "trials")
             trials_criteria = extract_mcode_criteria_from_trials(trials_list)
-            logger.info(f"📋 Extracted mCODE criteria from {len(trials_criteria)} trial elements")
+            logger.info(
+                f"📋 Extracted mCODE criteria from {len(trials_criteria)} trial elements"
+            )
         except Exception as e:
             logger.error(f"Failed to load trials file: {e}")
             sys.exit(1)
@@ -110,7 +107,9 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     if args.ingest:
         try:
             memory_storage = McodeMemoryStorage(source=args.memory_source)
-            logger.info(f"🧠 Initialized CORE Memory storage (source: {args.memory_source})")
+            logger.info(
+                f"🧠 Initialized CORE Memory storage (source: {args.memory_source})"
+            )
         except Exception as e:
             logger.error(f"Failed to initialize CORE Memory: {e}")
             sys.exit(1)
@@ -123,7 +122,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
             patients_data=patients_list,
             trials_criteria=trials_criteria,
             store_in_memory=args.ingest,
-            workers=args.workers
+            workers=args.workers,
         )
 
         if not result.success:
@@ -146,6 +145,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         logger.error(f"Unexpected error: {e}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -160,8 +160,10 @@ def save_processed_data(data: List[Any], output_file: Optional[str], logger) -> 
         # Extract patient ID
         patient_id = "unknown"
         for entry in patient_bundle["entry"]:
-            if (isinstance(entry, dict) and
-                entry.get("resource", {}).get("resourceType") == "Patient"):
+            if (
+                isinstance(entry, dict)
+                and entry.get("resource", {}).get("resourceType") == "Patient"
+            ):
                 patient_id = entry["resource"].get("id", "unknown")
                 break
 
@@ -176,23 +178,34 @@ def save_processed_data(data: List[Any], output_file: Optional[str], logger) -> 
 
             if resource_type == "Patient":
                 name = resource.get("name", [{}])[0] if resource.get("name") else {}
-                mcode_entries.append({
-                    "resource_type": "Patient",
-                    "id": resource.get("id"),
-                    "name": name,
-                })
-            elif resource_type in ["Condition", "Observation", "MedicationStatement", "Procedure"]:
-                mcode_entries.append({
-                    "resource_type": resource_type,
-                    "id": resource.get("id"),
-                    "clinical_data": resource,
-                })
+                mcode_entries.append(
+                    {
+                        "resource_type": "Patient",
+                        "id": resource.get("id"),
+                        "name": name,
+                    }
+                )
+            elif resource_type in [
+                "Condition",
+                "Observation",
+                "MedicationStatement",
+                "Procedure",
+            ]:
+                mcode_entries.append(
+                    {
+                        "resource_type": resource_type,
+                        "id": resource.get("id"),
+                        "clinical_data": resource,
+                    }
+                )
 
-        mcode_data.append({
-            "patient_id": patient_id,
-            "mcode_elements": mcode_entries,
-            "original_patient_data": patient_bundle,
-        })
+        mcode_data.append(
+            {
+                "patient_id": patient_id,
+                "mcode_elements": mcode_entries,
+                "original_patient_data": patient_bundle,
+            }
+        )
 
     # Output as NDJSON
     if output_file:

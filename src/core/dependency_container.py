@@ -8,8 +8,9 @@ and creating configured pipeline components.
 from typing import Any, Dict, Optional
 
 from src.pipeline import McodePipeline
+
 # Removed unified_pipeline imports - using simplified pipeline directly
-from src.storage.mcode_memory_storage import McodeMemoryStorage, DataStorage
+from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
 
 

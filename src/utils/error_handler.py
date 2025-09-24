@@ -7,7 +7,7 @@ consistent error reporting and logging across the mCODE Translator application.
 
 import logging
 import sys
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional
 
 from src.utils.logging_config import get_logger
 
@@ -25,16 +25,19 @@ class McodeError(Exception):
 
 class ConfigurationError(McodeError):
     """Configuration-related errors."""
+
     pass
 
 
 class DataProcessingError(McodeError):
     """Data processing errors."""
+
     pass
 
 
 class APIError(McodeError):
     """API-related errors."""
+
     pass
 
 
@@ -43,7 +46,7 @@ def handle_error(
     context: str = "",
     logger_instance: Optional[logging.Logger] = None,
     exit_code: Optional[int] = None,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> None:
     """
     Handle errors consistently across the application.
@@ -62,6 +65,7 @@ def handle_error(
 
     if verbose:
         import traceback
+
         log.debug(f"Full traceback:\n{traceback.format_exc()}")
 
     if exit_code is not None:
@@ -69,10 +73,7 @@ def handle_error(
 
 
 def handle_cli_error(
-    error: Exception,
-    context: str = "",
-    verbose: bool = False,
-    exit_code: int = 1
+    error: Exception, context: str = "", verbose: bool = False, exit_code: int = 1
 ) -> None:
     """
     Handle CLI command errors with user-friendly output.
@@ -88,6 +89,7 @@ def handle_cli_error(
 
     if verbose:
         import traceback
+
         print(f"Full traceback:\n{traceback.format_exc()}", file=sys.stderr)
 
     sys.exit(exit_code)
@@ -98,7 +100,7 @@ def safe_execute(
     *args,
     error_msg: str = "Operation failed",
     logger_instance: Optional[logging.Logger] = None,
-    **kwargs
+    **kwargs,
 ) -> Any:
     """
     Execute a function safely with consistent error handling.
@@ -150,19 +152,25 @@ def validate_required(value: Any, name: str, error_msg: Optional[str] = None) ->
         raise ValueError(msg)
 
 
-def log_operation_start(operation: str, logger_instance: Optional[logging.Logger] = None) -> None:
+def log_operation_start(
+    operation: str, logger_instance: Optional[logging.Logger] = None
+) -> None:
     """Log the start of an operation."""
     log = logger_instance or logger
     log.info(f"🚀 Starting: {operation}")
 
 
-def log_operation_success(operation: str, logger_instance: Optional[logging.Logger] = None) -> None:
+def log_operation_success(
+    operation: str, logger_instance: Optional[logging.Logger] = None
+) -> None:
     """Log the successful completion of an operation."""
     log = logger_instance or logger
     log.info(f"✅ Completed: {operation}")
 
 
-def log_operation_failure(operation: str, error: Exception, logger_instance: Optional[logging.Logger] = None) -> None:
+def log_operation_failure(
+    operation: str, error: Exception, logger_instance: Optional[logging.Logger] = None
+) -> None:
     """Log the failure of an operation."""
     log = logger_instance or logger
     log.error(f"❌ Failed: {operation} - {error}")

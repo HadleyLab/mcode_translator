@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from dotenv import load_dotenv
 
@@ -72,7 +72,7 @@ class Config:
             ConfigurationError: If timeout is not configured for the model.
         """
         model_config = self.get_llm_config(model_name)
-        timeout = getattr(model_config, 'timeout_seconds', None)
+        timeout = getattr(model_config, "timeout_seconds", None)
         if timeout is None:
             raise ConfigurationError(
                 f"Timeout not configured for model '{model_name}'. "

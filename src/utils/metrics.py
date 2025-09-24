@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Optional
+from typing import Any, Dict, List
 import json
 import time
 from datetime import datetime
@@ -109,7 +109,12 @@ class MatchingMetrics:
 class BenchmarkMetrics:
     """Calculates and stores precision, recall, and F1-score for benchmark validation."""
 
-    def __init__(self, true_positives: int = 0, false_positives: int = 0, false_negatives: int = 0):
+    def __init__(
+        self,
+        true_positives: int = 0,
+        false_positives: int = 0,
+        false_negatives: int = 0,
+    ):
         self.tp = true_positives
         self.fp = false_positives
         self.fn = false_negatives
@@ -123,12 +128,18 @@ class BenchmarkMetrics:
         """
         precision = self.tp / (self.tp + self.fp) if (self.tp + self.fp) > 0 else 0
         recall = self.tp / (self.tp + self.fn) if (self.tp + self.fn) > 0 else 0
-        f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+        f1 = (
+            2 * (precision * recall) / (precision + recall)
+            if (precision + recall) > 0
+            else 0
+        )
 
         return {"precision": precision, "recall": recall, "f1_score": f1}
 
     @staticmethod
-    def compare_mcode_elements(predicted: List[Dict[str, Any]], ground_truth: List[Dict[str, Any]]) -> 'BenchmarkMetrics':
+    def compare_mcode_elements(
+        predicted: List[Dict[str, Any]], ground_truth: List[Dict[str, Any]]
+    ) -> "BenchmarkMetrics":
         """
         Compares predicted mCODE elements against ground truth and calculates metrics.
 
@@ -192,13 +203,24 @@ class PerformanceMetrics:
             "tokens_used": self.tokens_used,
             "estimated_cost_usd": self.estimated_cost,
             "elements_processed": self.elements_processed,
-            "start_time": datetime.fromtimestamp(self.start_time).isoformat() if self.start_time else None,
-            "end_time": datetime.fromtimestamp(self.end_time).isoformat() if self.end_time else None,
+            "start_time": (
+                datetime.fromtimestamp(self.start_time).isoformat()
+                if self.start_time
+                else None
+            ),
+            "end_time": (
+                datetime.fromtimestamp(self.end_time).isoformat()
+                if self.end_time
+                else None
+            ),
             # Derived metrics
-            "processing_time_per_element": self.processing_time / max(self.elements_processed, 1),
+            "processing_time_per_element": self.processing_time
+            / max(self.elements_processed, 1),
             "tokens_per_element": self.tokens_used / max(self.elements_processed, 1),
-            "cost_per_element_usd": self.estimated_cost / max(self.elements_processed, 1),
-            "elements_per_second": self.elements_processed / max(self.processing_time, 0.001),
+            "cost_per_element_usd": self.estimated_cost
+            / max(self.elements_processed, 1),
+            "elements_per_second": self.elements_processed
+            / max(self.processing_time, 0.001),
             "tokens_per_second": self.tokens_used / max(self.processing_time, 0.001),
         }
 

@@ -2,11 +2,11 @@
 Data factories for generating test data with various scenarios.
 Provides realistic test datasets for both valid and invalid cases.
 """
+
 import json
 import random
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 
 
 @dataclass
@@ -15,10 +15,7 @@ class TrialFactory:
 
     @staticmethod
     def create_basic_trial(
-        nct_id: str = None,
-        title: str = None,
-        status: str = "Recruiting",
-        **kwargs
+        nct_id: str = None, title: str = None, status: str = "Recruiting", **kwargs
     ) -> Dict[str, Any]:
         """Create a basic clinical trial."""
         if nct_id is None:
@@ -30,24 +27,28 @@ class TrialFactory:
             "status": status,
             "phases": kwargs.get("phases", ["Phase 2"]),
             "conditions": kwargs.get("conditions", ["Cancer"]),
-            "eligibility": {
-                "criteria": kwargs.get("criteria", "Age >= 18 years")
-            },
-            "interventions": kwargs.get("interventions", [
-                {
-                    "type": "Drug",
-                    "name": "Test Drug",
-                    "description": "Experimental therapy"
-                }
-            ]),
-            "locations": kwargs.get("locations", [
-                {
-                    "facility": "Test Hospital",
-                    "city": "Test City",
-                    "state": "Test State",
-                    "country": "United States"
-                }
-            ])
+            "eligibility": {"criteria": kwargs.get("criteria", "Age >= 18 years")},
+            "interventions": kwargs.get(
+                "interventions",
+                [
+                    {
+                        "type": "Drug",
+                        "name": "Test Drug",
+                        "description": "Experimental therapy",
+                    }
+                ],
+            ),
+            "locations": kwargs.get(
+                "locations",
+                [
+                    {
+                        "facility": "Test Hospital",
+                        "city": "Test City",
+                        "state": "Test State",
+                        "country": "United States",
+                    }
+                ],
+            ),
         }
 
         # Add any additional fields
@@ -61,12 +62,14 @@ class TrialFactory:
             title="Phase 2 Study of Targeted Therapy in Breast Cancer",
             conditions=["Breast Cancer", "HER2 Positive Breast Cancer"],
             criteria="Inclusion: Female patients with HER2+ breast cancer, Age 18-75\nExclusion: Prior chemotherapy, Brain metastases",
-            interventions=[{
-                "type": "Drug",
-                "name": "Trastuzumab",
-                "description": "HER2-targeted monoclonal antibody"
-            }],
-            **kwargs
+            interventions=[
+                {
+                    "type": "Drug",
+                    "name": "Trastuzumab",
+                    "description": "HER2-targeted monoclonal antibody",
+                }
+            ],
+            **kwargs,
         )
 
     @staticmethod
@@ -76,12 +79,14 @@ class TrialFactory:
             title="Immunotherapy Trial for Advanced Lung Cancer",
             conditions=["Non-Small Cell Lung Cancer", "Adenocarcinoma"],
             criteria="Inclusion: Stage IIIB/IV NSCLC, ECOG 0-1\nExclusion: EGFR mutation positive, Prior immunotherapy",
-            interventions=[{
-                "type": "Drug",
-                "name": "Pembrolizumab",
-                "description": "PD-1 inhibitor immunotherapy"
-            }],
-            **kwargs
+            interventions=[
+                {
+                    "type": "Drug",
+                    "name": "Pembrolizumab",
+                    "description": "PD-1 inhibitor immunotherapy",
+                }
+            ],
+            **kwargs,
         )
 
     @staticmethod
@@ -95,7 +100,9 @@ class TrialFactory:
         return trial
 
     @staticmethod
-    def create_large_trial(num_conditions: int = 50, num_locations: int = 100) -> Dict[str, Any]:
+    def create_large_trial(
+        num_conditions: int = 50, num_locations: int = 100
+    ) -> Dict[str, Any]:
         """Create a large trial for performance testing."""
         conditions = [f"Condition {i}" for i in range(num_conditions)]
         locations = [
@@ -103,15 +110,16 @@ class TrialFactory:
                 "facility": f"Hospital {i}",
                 "city": f"City {i}",
                 "state": f"State {i % 10}",
-                "country": "United States"
-            } for i in range(num_locations)
+                "country": "United States",
+            }
+            for i in range(num_locations)
         ]
 
         return TrialFactory.create_basic_trial(
             title="Large Multi-Center Clinical Trial",
             conditions=conditions,
             locations=locations,
-            criteria="Complex eligibility criteria with multiple conditions"
+            criteria="Complex eligibility criteria with multiple conditions",
         )
 
 
@@ -121,10 +129,7 @@ class PatientFactory:
 
     @staticmethod
     def create_basic_patient(
-        patient_id: str = None,
-        gender: str = None,
-        birth_date: str = None,
-        **kwargs
+        patient_id: str = None, gender: str = None, birth_date: str = None, **kwargs
     ) -> Dict[str, Any]:
         """Create a basic patient bundle."""
         if patient_id is None:
@@ -150,35 +155,47 @@ class PatientFactory:
                         "id": patient_id,
                         "gender": gender,
                         "birthDate": birth_date,
-                        "extension": kwargs.get("extensions", [])
+                        "extension": kwargs.get("extensions", []),
                     }
                 }
-            ]
+            ],
         }
 
         # Add conditions if specified
         conditions = kwargs.get("conditions", [])
         for i, condition in enumerate(conditions):
-            patient["entry"].append({
-                "resource": {
-                    "resourceType": "Condition",
-                    "id": f"condition_{i}",
-                    "subject": {"reference": f"Patient/{patient_id}"},
-                    "code": condition.get("code", {
-                        "coding": [{
-                            "system": "http://snomed.info/sct",
-                            "code": "12345",
-                            "display": "Test Condition"
-                        }]
-                    }),
-                    "clinicalStatus": condition.get("clinical_status", {
-                        "coding": [{
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active"
-                        }]
-                    })
+            patient["entry"].append(
+                {
+                    "resource": {
+                        "resourceType": "Condition",
+                        "id": f"condition_{i}",
+                        "subject": {"reference": f"Patient/{patient_id}"},
+                        "code": condition.get(
+                            "code",
+                            {
+                                "coding": [
+                                    {
+                                        "system": "http://snomed.info/sct",
+                                        "code": "12345",
+                                        "display": "Test Condition",
+                                    }
+                                ]
+                            },
+                        ),
+                        "clinicalStatus": condition.get(
+                            "clinical_status",
+                            {
+                                "coding": [
+                                    {
+                                        "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                                        "code": "active",
+                                    }
+                                ]
+                            },
+                        ),
+                    }
                 }
-            })
+            )
 
         return patient
 
@@ -187,22 +204,28 @@ class PatientFactory:
         """Create a patient with breast cancer."""
         return PatientFactory.create_basic_patient(
             gender="female",
-            conditions=[{
-                "code": {
-                    "coding": [{
-                        "system": "http://snomed.info/sct",
-                        "code": "254837009",
-                        "display": "Malignant neoplasm of breast"
-                    }]
-                },
-                "clinical_status": {
-                    "coding": [{
-                        "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                        "code": "active"
-                    }]
+            conditions=[
+                {
+                    "code": {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "254837009",
+                                "display": "Malignant neoplasm of breast",
+                            }
+                        ]
+                    },
+                    "clinical_status": {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                                "code": "active",
+                            }
+                        ]
+                    },
                 }
-            }],
-            **kwargs
+            ],
+            **kwargs,
         )
 
     @staticmethod
@@ -210,16 +233,20 @@ class PatientFactory:
         """Create a patient with lung cancer."""
         return PatientFactory.create_basic_patient(
             gender="male",
-            conditions=[{
-                "code": {
-                    "coding": [{
-                        "system": "http://snomed.info/sct",
-                        "code": "187875005",
-                        "display": "Malignant neoplasm of lung"
-                    }]
+            conditions=[
+                {
+                    "code": {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "187875005",
+                                "display": "Malignant neoplasm of lung",
+                            }
+                        ]
+                    }
                 }
-            }],
-            **kwargs
+            ],
+            **kwargs,
         )
 
     @staticmethod
@@ -240,7 +267,7 @@ class PatientFactory:
         bundle = {
             "resourceType": "Bundle",
             "id": f"multi_patient_bundle_{random.randint(1000, 9999)}",
-            "entry": []
+            "entry": [],
         }
 
         for i in range(num_patients):
@@ -259,21 +286,19 @@ class McodeFactory:
         element_type: str = "PrimaryCancerCondition",
         system: str = "http://snomed.info/sct",
         code: str = "254837009",
-        display: str = "Malignant neoplasm of breast"
+        display: str = "Malignant neoplasm of breast",
     ) -> Dict[str, Any]:
         """Create a basic mCODE element."""
         return {
             "element": element_type,
             "system": system,
             "code": code,
-            "display": display
+            "display": display,
         }
 
     @staticmethod
     def create_mcode_response(
-        elements: List[Dict[str, Any]] = None,
-        confidence: float = 0.95,
-        **kwargs
+        elements: List[Dict[str, Any]] = None, confidence: float = 0.95, **kwargs
     ) -> Dict[str, Any]:
         """Create a complete mCODE mapping response."""
         if elements is None:
@@ -285,12 +310,11 @@ class McodeFactory:
                 "confidence": confidence,
                 "processing_time": kwargs.get("processing_time", 1.5),
                 "model_version": kwargs.get("model_version", "1.0.0"),
-                "token_usage": kwargs.get("token_usage", {
-                    "input_tokens": 150,
-                    "output_tokens": 75,
-                    "total_tokens": 225
-                })
-            }
+                "token_usage": kwargs.get(
+                    "token_usage",
+                    {"input_tokens": 150, "output_tokens": 75, "total_tokens": 225},
+                ),
+            },
         }
 
     @staticmethod
@@ -314,7 +338,9 @@ class TestDataManager:
         self.created_files = []
         self.temp_data = {}
 
-    def create_temp_trial_file(self, trial_data: Dict[str, Any], filename: str = None) -> str:
+    def create_temp_trial_file(
+        self, trial_data: Dict[str, Any], filename: str = None
+    ) -> str:
         """Create a temporary trial data file."""
         if filename is None:
             filename = f"temp_trial_{random.randint(1000, 9999)}.json"
@@ -325,13 +351,15 @@ class TestDataManager:
         temp_dir = tempfile.gettempdir()
         filepath = os.path.join(temp_dir, filename)
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(trial_data, f, indent=2)
 
         self.created_files.append(filepath)
         return filepath
 
-    def create_temp_patient_file(self, patient_data: Dict[str, Any], filename: str = None) -> str:
+    def create_temp_patient_file(
+        self, patient_data: Dict[str, Any], filename: str = None
+    ) -> str:
         """Create a temporary patient data file."""
         if filename is None:
             filename = f"temp_patient_{random.randint(1000, 9999)}.json"
@@ -342,7 +370,7 @@ class TestDataManager:
         temp_dir = tempfile.gettempdir()
         filepath = os.path.join(temp_dir, filename)
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(patient_data, f, indent=2)
 
         self.created_files.append(filepath)

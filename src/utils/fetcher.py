@@ -3,9 +3,8 @@ Simple Clinical Trials Fetcher Utility
 Provides basic functions for fetching clinical trial data from ClinicalTrials.gov API.
 """
 
-import json
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import requests
 
@@ -19,6 +18,7 @@ logger = get_logger(__name__)
 
 class ClinicalTrialsAPIError(Exception):
     """Base exception for ClinicalTrialsAPI errors"""
+
     pass
 
 
@@ -106,7 +106,9 @@ def get_full_studies_batch(nct_ids: List[str], max_workers: int = 4) -> Dict[str
     if not nct_ids:
         return {}
 
-    logger.info(f"🔄 Batch fetching {len(nct_ids)} studies with {max_workers} concurrent workers")
+    logger.info(
+        f"🔄 Batch fetching {len(nct_ids)} studies with {max_workers} concurrent workers"
+    )
 
     # Create tasks for concurrent processing
     tasks = []
@@ -114,7 +116,7 @@ def get_full_studies_batch(nct_ids: List[str], max_workers: int = 4) -> Dict[str
         task = create_task(
             task_id=f"fetch_{nct_id}",
             func=_fetch_single_study_with_error_handling,
-            nct_id=nct_id
+            nct_id=nct_id,
         )
         tasks.append(task)
 
@@ -167,7 +169,7 @@ def search_trials_parallel(
     fields=None,
     max_results: int = 1000,
     page_size: int = 100,
-    max_workers: int = 4
+    max_workers: int = 4,
 ) -> Dict[str, Any]:
     """
     Search for clinical trials with parallel pagination for large result sets.
@@ -182,7 +184,7 @@ def search_trials_parallel(
     Returns:
         Dictionary containing all search results with pagination metadata
     """
-    config = Config()
+    Config()
 
     # First, get total count to determine pagination needs
     try:
@@ -196,7 +198,9 @@ def search_trials_parallel(
         actual_max_results = min(max_results, total_studies)
         total_pages = (actual_max_results + page_size - 1) // page_size
 
-        logger.info(f"🔄 Parallel search: {total_studies} total studies, fetching {actual_max_results} with {total_pages} pages")
+        logger.info(
+            f"🔄 Parallel search: {total_studies} total studies, fetching {actual_max_results} with {total_pages} pages"
+        )
 
         # Create tasks for concurrent pagination
         tasks = []
@@ -210,7 +214,7 @@ def search_trials_parallel(
                 search_expr=search_expr,
                 fields=fields,
                 max_results=current_page_size,
-                page_token=None  # We'll handle pagination differently
+                page_token=None,  # We'll handle pagination differently
             )
             tasks.append(task)
 
@@ -243,11 +247,13 @@ def search_trials_parallel(
                 "failed_pages": failed_pages,
                 "page_size": page_size,
                 "max_results_requested": max_results,
-                "actual_results": len(all_studies)
-            }
+                "actual_results": len(all_studies),
+            },
         }
 
-        logger.info(f"📊 Parallel search complete: {len(all_studies)} studies from {successful_pages}/{total_pages} pages")
+        logger.info(
+            f"📊 Parallel search complete: {len(all_studies)} studies from {successful_pages}/{total_pages} pages"
+        )
         return result
 
     except Exception as e:
@@ -256,10 +262,7 @@ def search_trials_parallel(
 
 
 def _search_single_page(
-    search_expr: str,
-    fields=None,
-    max_results: int = 100,
-    page_token: str = None
+    search_expr: str, fields=None, max_results: int = 100, page_token: str = None
 ) -> Dict[str, Any]:
     """
     Search a single page of results (helper for parallel processing).
@@ -280,7 +283,7 @@ def search_multiple_queries(
     search_queries: List[str],
     fields=None,
     max_results_per_query: int = 100,
-    max_workers: int = 4
+    max_workers: int = 4,
 ) -> Dict[str, Dict[str, Any]]:
     """
     Execute multiple search queries concurrently.
@@ -303,12 +306,13 @@ def search_multiple_queries(
     tasks = []
     for query in search_queries:
         import hashlib
+
         task = create_task(
             task_id=f"query_{hashlib.md5(query.encode('utf-8')).hexdigest()[:8]}",
             func=search_trials,
             search_expr=query,
             fields=fields,
-            max_results=max_results_per_query
+            max_results=max_results_per_query,
         )
         tasks.append(task)
 
@@ -332,7 +336,9 @@ def search_multiple_queries(
             results[query] = {"error": str(result.error)}
             failed += 1
 
-    logger.info(f"📊 Multi-query search complete: {successful} successful, {failed} failed")
+    logger.info(
+        f"📊 Multi-query search complete: {successful} successful, {failed} failed"
+    )
     return results
 
 

@@ -9,7 +9,6 @@ including argument parsing, workflow execution, data validation, and error handl
 import argparse
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from src.cli.trials_fetcher import (
     create_parser,
@@ -82,7 +81,9 @@ class TestTrialsFetcherCLI:
     @patch("src.cli.trials_fetcher.TrialsFetcherWorkflow")
     @patch("src.cli.trials_fetcher.McodeCLI.create_config")
     @patch("src.cli.trials_fetcher.McodeCLI.setup_logging")
-    def test_main_successful_fetch_by_condition(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_successful_fetch_by_condition(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test successful trial fetching by medical condition."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -115,7 +116,7 @@ class TestTrialsFetcherCLI:
         mock_result.metadata = {
             "total_fetched": 5,
             "fetch_type": "condition_search",
-            "duration_seconds": 2.34
+            "duration_seconds": 2.34,
         }
         mock_workflow.execute.return_value = mock_result
         mock_workflow_class.return_value = mock_workflow
@@ -129,7 +130,7 @@ class TestTrialsFetcherCLI:
             cli_args=args,
             condition="breast cancer",
             limit=5,
-            output_path="trials.ndjson"
+            output_path="trials.ndjson",
         )
 
         # Verify logging was set up
@@ -139,7 +140,9 @@ class TestTrialsFetcherCLI:
     @patch("src.cli.trials_fetcher.TrialsFetcherWorkflow")
     @patch("src.cli.trials_fetcher.McodeCLI.create_config")
     @patch("src.cli.trials_fetcher.McodeCLI.setup_logging")
-    def test_main_successful_fetch_by_nct_id(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_successful_fetch_by_nct_id(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test successful trial fetching by specific NCT ID."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -172,7 +175,7 @@ class TestTrialsFetcherCLI:
         mock_result.metadata = {
             "total_fetched": 1,
             "fetch_type": "single_trial",
-            "duration_seconds": 1.23
+            "duration_seconds": 1.23,
         }
         mock_workflow.execute.return_value = mock_result
         mock_workflow_class.return_value = mock_workflow
@@ -183,15 +186,15 @@ class TestTrialsFetcherCLI:
         # Verify workflow was executed with NCT ID
         mock_workflow_class.assert_called_once_with(mock_config, memory_storage=False)
         mock_workflow.execute.assert_called_once_with(
-            cli_args=args,
-            nct_id="NCT12345678",
-            output_path="trial.ndjson"
+            cli_args=args, nct_id="NCT12345678", output_path="trial.ndjson"
         )
 
     @patch("src.cli.trials_fetcher.TrialsFetcherWorkflow")
     @patch("src.cli.trials_fetcher.McodeCLI.create_config")
     @patch("src.cli.trials_fetcher.McodeCLI.setup_logging")
-    def test_main_successful_fetch_by_nct_ids(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_successful_fetch_by_nct_ids(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test successful trial fetching by multiple NCT IDs."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -224,7 +227,7 @@ class TestTrialsFetcherCLI:
         mock_result.metadata = {
             "total_fetched": 3,
             "fetch_type": "multiple_trials",
-            "duration_seconds": 3.45
+            "duration_seconds": 3.45,
         }
         mock_workflow.execute.return_value = mock_result
         mock_workflow_class.return_value = mock_workflow
@@ -235,8 +238,7 @@ class TestTrialsFetcherCLI:
         # Verify workflow was executed with NCT IDs list
         mock_workflow_class.assert_called_once_with(mock_config, memory_storage=False)
         mock_workflow.execute.assert_called_once_with(
-            cli_args=args,
-            nct_ids=["NCT12345678", "NCT87654321", "NCT11111111"]
+            cli_args=args, nct_ids=["NCT12345678", "NCT87654321", "NCT11111111"]
         )
 
     @patch("src.cli.trials_fetcher.McodeCLI.create_config")
@@ -268,8 +270,9 @@ class TestTrialsFetcherCLI:
         )
 
         # Mock parser.error to prevent actual exit
-        with patch("src.cli.trials_fetcher.create_parser") as mock_create_parser, \
-             patch("sys.exit") as mock_exit:
+        with patch("src.cli.trials_fetcher.create_parser") as mock_create_parser, patch(
+            "sys.exit"
+        ):
 
             mock_parser = MagicMock()
             mock_parser.error.side_effect = SystemExit(2)
@@ -282,12 +285,16 @@ class TestTrialsFetcherCLI:
                 pass  # Expected when required args are missing
 
             # Verify parser.error was called
-            mock_parser.error.assert_called_once_with("Must specify one of: --condition, --nct-id, or --nct-ids")
+            mock_parser.error.assert_called_once_with(
+                "Must specify one of: --condition, --nct-id, or --nct-ids"
+            )
 
     @patch("src.cli.trials_fetcher.TrialsFetcherWorkflow")
     @patch("src.cli.trials_fetcher.McodeCLI.create_config")
     @patch("src.cli.trials_fetcher.McodeCLI.setup_logging")
-    def test_main_workflow_failure(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_workflow_failure(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test handling of workflow execution failure."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -336,7 +343,9 @@ class TestTrialsFetcherCLI:
     @patch("src.cli.trials_fetcher.TrialsFetcherWorkflow")
     @patch("src.cli.trials_fetcher.McodeCLI.create_config")
     @patch("src.cli.trials_fetcher.McodeCLI.setup_logging")
-    def test_main_keyboard_interrupt_handling(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_keyboard_interrupt_handling(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test handling of keyboard interrupt during execution."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -384,7 +393,7 @@ class TestTrialsFetcherCLI:
         metadata = {
             "total_fetched": 15,
             "fetch_type": "condition_search",
-            "duration_seconds": 5.67
+            "duration_seconds": 5.67,
         }
 
         with patch("builtins.print") as mock_print:
@@ -399,10 +408,7 @@ class TestTrialsFetcherCLI:
 
     def test_print_fetch_summary_stdout_output(self):
         """Test printing fetch summary for stdout output."""
-        metadata = {
-            "total_fetched": 8,
-            "fetch_type": "single_trial"
-        }
+        metadata = {"total_fetched": 8, "fetch_type": "single_trial"}
 
         with patch("builtins.print") as mock_print:
             print_fetch_summary(metadata, None)
@@ -435,7 +441,9 @@ class TestTrialsFetcherCLI:
     @patch("src.cli.trials_fetcher.TrialsFetcherWorkflow")
     @patch("src.cli.trials_fetcher.McodeCLI.create_config")
     @patch("src.cli.trials_fetcher.McodeCLI.setup_logging")
-    def test_main_with_concurrency_args(self, mock_setup_logging, mock_create_config, mock_workflow_class):
+    def test_main_with_concurrency_args(
+        self, mock_setup_logging, mock_create_config, mock_workflow_class
+    ):
         """Test that concurrency arguments are properly passed."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -468,7 +476,7 @@ class TestTrialsFetcherCLI:
         mock_result.metadata = {
             "total_fetched": 20,
             "fetch_type": "condition_search",
-            "duration_seconds": 8.90
+            "duration_seconds": 8.90,
         }
         mock_workflow.execute.return_value = mock_result
         mock_workflow_class.return_value = mock_workflow
@@ -482,7 +490,7 @@ class TestTrialsFetcherCLI:
             cli_args=args,
             condition="diabetes",
             limit=20,
-            output_path="diabetes_trials.ndjson"
+            output_path="diabetes_trials.ndjson",
         )
 
         # Verify logging was set up with verbose level

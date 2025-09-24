@@ -3,6 +3,7 @@ Comprehensive unit tests for BaseWorkflow and workflow hierarchy.
 Tests cover initialization, CORE memory integration, error handling,
 and abstract method implementations.
 """
+
 import pytest
 from unittest.mock import patch, MagicMock
 from datetime import datetime
@@ -16,7 +17,7 @@ from src.workflows.base_workflow import (
     SummarizerWorkflow,
     TrialsSummarizerWorkflow,
     PatientsSummarizerWorkflow,
-    WorkflowError
+    WorkflowError,
 )
 from src.shared.models import WorkflowResult, ProcessingMetadata
 
@@ -86,7 +87,7 @@ class TestBaseWorkflow:
 
     def test_init_with_default_config(self, mock_memory_storage):
         """Test initialization with default config."""
-        with patch('src.workflows.base_workflow.Config') as mock_config_class:
+        with patch("src.workflows.base_workflow.Config") as mock_config_class:
             mock_config_instance = MagicMock()
             mock_config_class.return_value = mock_config_instance
 
@@ -103,7 +104,9 @@ class TestBaseWorkflow:
 
     def test_init_with_default_memory(self):
         """Test initialization with default memory storage."""
-        with patch('src.workflows.base_workflow.McodeMemoryStorage') as mock_storage_class:
+        with patch(
+            "src.workflows.base_workflow.McodeMemoryStorage"
+        ) as mock_storage_class:
             mock_storage_instance = MagicMock()
             mock_storage_class.return_value = mock_storage_instance
 
@@ -133,7 +136,7 @@ class TestBaseWorkflow:
 
         assert workflow.validate_inputs(test_param="value") is True
 
-    @patch('src.workflows.base_workflow.get_logger')
+    @patch("src.workflows.base_workflow.get_logger")
     def test_logger_initialization(self, mock_get_logger):
         """Test logger is properly initialized."""
         mock_logger = MagicMock()
@@ -141,7 +144,7 @@ class TestBaseWorkflow:
 
         workflow = ConcreteTestWorkflow()
 
-        mock_get_logger.assert_called_once_with('ConcreteTestWorkflow')
+        mock_get_logger.assert_called_once_with("ConcreteTestWorkflow")
         assert workflow.logger == mock_logger
 
 
@@ -153,12 +156,16 @@ class TestBaseWorkflowMemoryIntegration:
         """Create workflow with mocked memory storage."""
         return ConcreteTestWorkflow(memory_storage=mock_memory_storage)
 
-    def test_store_to_core_memory_success(self, workflow_with_memory, mock_memory_storage):
+    def test_store_to_core_memory_success(
+        self, workflow_with_memory, mock_memory_storage
+    ):
         """Test successful storage to CORE memory."""
         test_data = {"key": "value"}
         test_metadata = {"meta": "data"}
 
-        result = workflow_with_memory.store_to_core_memory("test_key", test_data, test_metadata)
+        result = workflow_with_memory.store_to_core_memory(
+            "test_key", test_data, test_metadata
+        )
 
         assert result is True
         mock_memory_storage.store.assert_called_once()
@@ -171,7 +178,9 @@ class TestBaseWorkflowMemoryIntegration:
         assert stored_data["memory_space"] == "test_space"
         assert "timestamp" in stored_data
 
-    def test_store_to_core_memory_without_metadata(self, workflow_with_memory, mock_memory_storage):
+    def test_store_to_core_memory_without_metadata(
+        self, workflow_with_memory, mock_memory_storage
+    ):
         """Test storage without metadata."""
         test_data = {"key": "value"}
 
@@ -181,7 +190,9 @@ class TestBaseWorkflowMemoryIntegration:
         stored_data = mock_memory_storage.store.call_args[0][1]
         assert stored_data["metadata"] == {}
 
-    def test_store_to_core_memory_failure(self, workflow_with_memory, mock_memory_storage):
+    def test_store_to_core_memory_failure(
+        self, workflow_with_memory, mock_memory_storage
+    ):
         """Test storage failure handling."""
         mock_memory_storage.store.return_value = False
 
@@ -189,7 +200,9 @@ class TestBaseWorkflowMemoryIntegration:
 
         assert result is False
 
-    def test_store_to_core_memory_exception(self, workflow_with_memory, mock_memory_storage):
+    def test_store_to_core_memory_exception(
+        self, workflow_with_memory, mock_memory_storage
+    ):
         """Test storage exception handling."""
         mock_memory_storage.store.side_effect = Exception("Storage error")
 
@@ -205,14 +218,18 @@ class TestBaseWorkflowMemoryIntegration:
 
         assert result is False
 
-    def test_retrieve_from_core_memory_success(self, workflow_with_memory, mock_memory_storage):
+    def test_retrieve_from_core_memory_success(
+        self, workflow_with_memory, mock_memory_storage
+    ):
         """Test successful retrieval from CORE memory."""
         result = workflow_with_memory.retrieve_from_core_memory("test_key")
 
         assert result == {"test": "data"}
         mock_memory_storage.retrieve.assert_called_once_with("test_space:test_key")
 
-    def test_retrieve_from_core_memory_not_found(self, workflow_with_memory, mock_memory_storage):
+    def test_retrieve_from_core_memory_not_found(
+        self, workflow_with_memory, mock_memory_storage
+    ):
         """Test retrieval when data not found."""
         mock_memory_storage.retrieve.return_value = None
 
@@ -220,7 +237,9 @@ class TestBaseWorkflowMemoryIntegration:
 
         assert result is None
 
-    def test_retrieve_from_core_memory_exception(self, workflow_with_memory, mock_memory_storage):
+    def test_retrieve_from_core_memory_exception(
+        self, workflow_with_memory, mock_memory_storage
+    ):
         """Test retrieval exception handling."""
         mock_memory_storage.retrieve.side_effect = Exception("Retrieval error")
 
@@ -245,7 +264,7 @@ class TestBaseWorkflowMemoryIntegration:
         # Should be ISO format string
         assert isinstance(timestamp, str)
         # Should be parseable as datetime
-        datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+        datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
 
 
 class TestWorkflowResultCreation:
@@ -259,9 +278,7 @@ class TestWorkflowResultCreation:
     def test_create_result_success(self, workflow):
         """Test creating successful result."""
         result = workflow._create_result(
-            success=True,
-            data={"test": "data"},
-            metadata={"meta": "info"}
+            success=True, data={"test": "data"}, metadata={"meta": "info"}
         )
 
         assert isinstance(result, WorkflowResult)
@@ -273,9 +290,7 @@ class TestWorkflowResultCreation:
     def test_create_result_failure(self, workflow):
         """Test creating failed result."""
         result = workflow._create_result(
-            success=False,
-            error_message="Test error",
-            metadata={"error_code": 500}
+            success=False, error_message="Test error", metadata={"error_code": 500}
         )
 
         assert result.success is False
@@ -292,13 +307,11 @@ class TestWorkflowResultCreation:
             processing_time_seconds=1.5,
             model_used="test_model",
             prompt_used="test_prompt",
-            token_usage=None
+            token_usage=None,
         )
 
         result = workflow._create_result(
-            success=True,
-            data={"processed": True},
-            metadata=processing_meta
+            success=True, data={"processed": True}, metadata=processing_meta
         )
 
         assert result.success is True
@@ -401,9 +414,7 @@ class TestWorkflowIntegrationScenarios:
 
         # Store data
         store_result = workflow.store_to_core_memory(
-            "integration_key",
-            {"integration": "data"},
-            {"test": "metadata"}
+            "integration_key", {"integration": "data"}, {"test": "metadata"}
         )
         assert store_result is True
 
@@ -415,7 +426,7 @@ class TestWorkflowIntegrationScenarios:
         assert mock_memory_storage.store.called
         assert mock_memory_storage.retrieve.called
 
-    @patch('src.workflows.base_workflow.BaseWorkflow._get_timestamp')
+    @patch("src.workflows.base_workflow.BaseWorkflow._get_timestamp")
     def test_timestamp_in_storage(self, mock_get_timestamp, mock_memory_storage):
         """Test that timestamp is included in storage data."""
         mock_get_timestamp.return_value = "2024-01-01T12:00:00"
@@ -443,28 +454,34 @@ class TestWorkflowIntegrationScenarios:
 
 
 # Parametrized tests for different workflow types
-@pytest.mark.parametrize("workflow_class,memory_space", [
-    (ConcreteFetcherWorkflow, "raw_data"),
-    (ConcreteTrialsProcessorWorkflow, "trials"),
-    (ConcretePatientsProcessorWorkflow, "patients"),
-    (ConcreteTrialsSummarizerWorkflow, "trials_summaries"),
-    (ConcretePatientsSummarizerWorkflow, "patients_summaries"),
-])
+@pytest.mark.parametrize(
+    "workflow_class,memory_space",
+    [
+        (ConcreteFetcherWorkflow, "raw_data"),
+        (ConcreteTrialsProcessorWorkflow, "trials"),
+        (ConcretePatientsProcessorWorkflow, "patients"),
+        (ConcreteTrialsSummarizerWorkflow, "trials_summaries"),
+        (ConcretePatientsSummarizerWorkflow, "patients_summaries"),
+    ],
+)
 def test_workflow_memory_spaces(workflow_class, memory_space):
     """Test that all workflow types have correct memory spaces."""
     workflow = workflow_class()
     assert workflow.memory_space == memory_space
 
 
-@pytest.mark.parametrize("workflow_class", [
-    FetcherWorkflow,
-    ProcessorWorkflow,
-    TrialsProcessorWorkflow,
-    PatientsProcessorWorkflow,
-    SummarizerWorkflow,
-    TrialsSummarizerWorkflow,
-    PatientsSummarizerWorkflow,
-])
+@pytest.mark.parametrize(
+    "workflow_class",
+    [
+        FetcherWorkflow,
+        ProcessorWorkflow,
+        TrialsProcessorWorkflow,
+        PatientsProcessorWorkflow,
+        SummarizerWorkflow,
+        TrialsSummarizerWorkflow,
+        PatientsSummarizerWorkflow,
+    ],
+)
 def test_workflow_inheritance_from_base(workflow_class):
     """Test that all workflow classes inherit from BaseWorkflow."""
     assert issubclass(workflow_class, BaseWorkflow)
@@ -490,10 +507,7 @@ class TestWorkflowEdgeCases:
         workflow = ConcreteTestWorkflow()
 
         result = workflow._create_result(
-            success=True,
-            data=None,
-            error_message=None,
-            metadata=None
+            success=True, data=None, error_message=None, metadata=None
         )
 
         assert result.success is True
@@ -521,6 +535,7 @@ class TestWorkflowEdgeCases:
 
     def test_validate_inputs_override(self):
         """Test that subclasses can override validate_inputs."""
+
         class CustomWorkflow(ConcreteTestWorkflow):
             def validate_inputs(self, **kwargs):
                 return kwargs.get("valid", False)

@@ -60,7 +60,9 @@ class ArmGroup(BaseModel):
     label: Optional[str] = Field(None, description="Arm group label")
     type: Optional[str] = Field(None, description="Arm group type")
     description: Optional[str] = Field(None, description="Arm group description")
-    interventionNames: Optional[List[str]] = Field(None, description="Intervention names")
+    interventionNames: Optional[List[str]] = Field(
+        None, description="Intervention names"
+    )
 
 
 class Intervention(BaseModel):
@@ -84,13 +86,23 @@ class ProtocolSection(BaseModel):
     armsInterventionsModule: Optional[Dict[str, Any]] = Field(
         None, description="Trial interventions - flexible structure"
     )
-    statusModule: Optional[Dict[str, Any]] = Field(None, description="Status information")
-    sponsorCollaboratorsModule: Optional[Dict[str, Any]] = Field(None, description="Sponsor info")
-    oversightModule: Optional[Dict[str, Any]] = Field(None, description="Oversight info")
-    descriptionModule: Optional[Dict[str, Any]] = Field(None, description="Description info")
+    statusModule: Optional[Dict[str, Any]] = Field(
+        None, description="Status information"
+    )
+    sponsorCollaboratorsModule: Optional[Dict[str, Any]] = Field(
+        None, description="Sponsor info"
+    )
+    oversightModule: Optional[Dict[str, Any]] = Field(
+        None, description="Oversight info"
+    )
+    descriptionModule: Optional[Dict[str, Any]] = Field(
+        None, description="Description info"
+    )
     designModule: Optional[Dict[str, Any]] = Field(None, description="Design info")
     outcomesModule: Optional[Dict[str, Any]] = Field(None, description="Outcomes info")
-    contactsLocationsModule: Optional[Dict[str, Any]] = Field(None, description="Contacts info")
+    contactsLocationsModule: Optional[Dict[str, Any]] = Field(
+        None, description="Contacts info"
+    )
 
 
 class ClinicalTrialData(BaseModel):
@@ -101,7 +113,9 @@ class ClinicalTrialData(BaseModel):
     studyType: Optional[str] = Field(None, description="Study type")
     overallStatus: Optional[str] = Field(None, description="Trial status")
     phase: Optional[str] = Field(None, description="Trial phase")
-    resultsSection: Optional[Dict[str, Any]] = Field(None, description="Results section")
+    resultsSection: Optional[Dict[str, Any]] = Field(
+        None, description="Results section"
+    )
 
     # Allow extra fields to match API response
     model_config = {"extra": "allow"}
@@ -437,7 +451,9 @@ class WorkflowInput(BaseModel):
     model: Optional[str] = Field(None, description="LLM model to use")
     prompt: Optional[str] = Field(None, description="Prompt template to use")
     workers: int = Field(1, ge=1, description="Number of concurrent workers")
-    store_in_memory: bool = Field(False, description="Whether to store results in CORE memory")
+    store_in_memory: bool = Field(
+        False, description="Whether to store results in CORE memory"
+    )
 
     model_config = {"extra": "allow"}
 
@@ -445,29 +461,39 @@ class WorkflowInput(BaseModel):
 class TrialsProcessorInput(WorkflowInput):
     """Input validation for trials processor workflow."""
 
-    trials_data: List[Dict[str, Any]] = Field(..., description="List of trial data to process")
-    trials_criteria: Optional[Dict[str, Any]] = Field(None, description="Trial eligibility criteria")
+    trials_data: List[Dict[str, Any]] = Field(
+        ..., description="List of trial data to process"
+    )
+    trials_criteria: Optional[Dict[str, Any]] = Field(
+        None, description="Trial eligibility criteria"
+    )
 
 
 class PatientsProcessorInput(WorkflowInput):
     """Input validation for patients processor workflow."""
 
-    patients_data: List[Dict[str, Any]] = Field(..., description="List of patient data to process")
-    trials_criteria: Optional[Dict[str, Any]] = Field(None, description="Trial eligibility criteria")
+    patients_data: List[Dict[str, Any]] = Field(
+        ..., description="List of patient data to process"
+    )
+    trials_criteria: Optional[Dict[str, Any]] = Field(
+        None, description="Trial eligibility criteria"
+    )
 
 
 class TrialsSummarizerInput(WorkflowInput):
     """Input validation for trials summarizer workflow."""
 
-    trials_data: List[Dict[str, Any]] = Field(..., description="List of trial data to summarize")
+    trials_data: List[Dict[str, Any]] = Field(
+        ..., description="List of trial data to summarize"
+    )
 
 
 class PatientsSummarizerInput(WorkflowInput):
     """Input validation for patients summarizer workflow."""
 
-    patients_data: List[Dict[str, Any]] = Field(..., description="List of patient data to summarize")
-
-
+    patients_data: List[Dict[str, Any]] = Field(
+        ..., description="List of patient data to summarize"
+    )
 
 
 def create_mcode_results_structure(pipeline_result) -> Dict[str, Any]:

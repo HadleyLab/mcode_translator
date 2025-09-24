@@ -13,19 +13,17 @@ Tests cover:
 
 import pytest
 import time
-import threading
 from concurrent.futures import ThreadPoolExecutor
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from src.utils.concurrency import (
     WorkerPool,
     TaskQueue,
-    Task,
     create_task,
     run_concurrent,
     get_fetcher_pool,
     get_processor_pool,
-    get_optimizer_pool
+    get_optimizer_pool,
 )
 
 
@@ -66,6 +64,7 @@ class TestWorkerPool:
 
     def test_task_execution(self):
         """Test basic task execution."""
+
         def simple_task(x, y=10):
             return x + y
 
@@ -80,6 +79,7 @@ class TestWorkerPool:
 
     def test_task_execution_with_error(self):
         """Test task execution with error."""
+
         def failing_task():
             raise ValueError("Test error")
 
@@ -95,14 +95,12 @@ class TestWorkerPool:
 
     def test_multiple_tasks(self):
         """Test executing multiple tasks."""
+
         def multiply_task(x):
             time.sleep(0.01)  # Simulate work
             return x * 2
 
-        tasks = [
-            create_task(f"task_{i}", multiply_task, i)
-            for i in range(5)
-        ]
+        tasks = [create_task(f"task_{i}", multiply_task, i) for i in range(5)]
 
         pool = WorkerPool(max_workers=3, name="TestPool")
         with pool:
@@ -127,6 +125,7 @@ class TestTaskQueue:
 
     def test_single_task_execution(self):
         """Test executing a single task."""
+
         def add_task(a, b):
             return a + b
 
@@ -140,14 +139,12 @@ class TestTaskQueue:
 
     def test_multiple_tasks_execution(self):
         """Test executing multiple tasks."""
+
         def power_task(base, exp=2):
             time.sleep(0.01)  # Simulate work
-            return base ** exp
+            return base**exp
 
-        tasks = [
-            create_task(f"power_{i}", power_task, i, exp=2)
-            for i in range(1, 6)
-        ]
+        tasks = [create_task(f"power_{i}", power_task, i, exp=2) for i in range(1, 6)]
 
         queue = TaskQueue(max_workers=3, name="TestQueue")
         results = queue.execute_tasks(tasks)
@@ -169,26 +166,24 @@ class TestTaskQueue:
             time.sleep(delay)
             return f"completed_{delay}"
 
-        tasks = [
-            create_task(f"slow_{i}", slow_task, 0.01 * i)
-            for i in range(1, 4)
-        ]
+        tasks = [create_task(f"slow_{i}", slow_task, 0.01 * i) for i in range(1, 4)]
 
         queue = TaskQueue(max_workers=2, name="TestQueue")
-        results = queue.execute_tasks(tasks, progress_callback=progress_callback)
+        queue.execute_tasks(tasks, progress_callback=progress_callback)
 
         assert len(progress_calls) == 3
         assert progress_calls[-1] == (3, 3, True)  # Final call
 
     def test_error_handling(self):
         """Test error handling in task execution."""
+
         def error_task():
             raise RuntimeError("Test runtime error")
 
         tasks = [
             create_task("good_task", lambda: "success"),
             create_task("error_task", error_task),
-            create_task("another_good", lambda: "success2")
+            create_task("another_good", lambda: "success2"),
         ]
 
         queue = TaskQueue(max_workers=2, name="TestQueue")
@@ -211,6 +206,7 @@ class TestConcurrencyUtilities:
 
     def test_create_task(self):
         """Test task creation utility."""
+
         def sample_func(a, b=10):
             return a + b
 
@@ -223,11 +219,14 @@ class TestConcurrencyUtilities:
 
     def test_run_concurrent(self):
         """Test run_concurrent utility function."""
+
         def double_func(x):
             return x * 2
 
         items = [1, 2, 3, 4, 5]
-        results = run_concurrent(double_func, items, max_workers=3, task_prefix="double")
+        results = run_concurrent(
+            double_func, items, max_workers=3, task_prefix="double"
+        )
 
         assert len(results) == 5
         for i, result in enumerate(results):
@@ -237,6 +236,7 @@ class TestConcurrencyUtilities:
 
     def test_run_concurrent_with_errors(self):
         """Test run_concurrent with some failing tasks."""
+
         def risky_func(x):
             if x == 3:
                 raise ValueError("Test error")
@@ -286,7 +286,7 @@ class TestGlobalPools:
 class TestIntegration:
     """Integration tests for concurrency with real workflows."""
 
-    @patch('src.utils.fetcher.get_full_study')
+    @patch("src.utils.fetcher.get_full_study")
     def test_fetcher_concurrency_integration(self, mock_get_full_study):
         """Test fetcher workflow with concurrent processing."""
         # Mock the API call
@@ -317,7 +317,7 @@ class TestIntegration:
         trial_data = [
             {"nct_id": "NCT001", "title": "Trial 1"},
             {"nct_id": "NCT002", "title": "Trial 2"},
-            {"nct_id": "NCT003", "title": "Trial 3"}
+            {"nct_id": "NCT003", "title": "Trial 3"},
         ]
 
         # Create workflow with test config
@@ -330,7 +330,7 @@ class TestIntegration:
             cv_folds=2,
             prompts=["direct_mcode_evidence_based_concise"],
             models=["deepseek-coder"],
-            max_combinations=1
+            max_combinations=1,
         )
 
         assert result.success
@@ -348,6 +348,7 @@ class TestConcurrencyEdgeCases:
 
     def test_task_timeout(self):
         """Test task execution with timeout."""
+
         def slow_task():
             time.sleep(2)
             return "completed"
@@ -375,6 +376,7 @@ class TestConcurrencyEdgeCases:
 
     def test_task_with_no_args(self):
         """Test task with no arguments."""
+
         def no_arg_task():
             return "success"
 

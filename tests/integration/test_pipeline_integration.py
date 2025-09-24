@@ -2,12 +2,11 @@
 Integration tests for pipeline components with real data sources.
 Tests end-to-end functionality without mocking external dependencies.
 """
+
 import pytest
 import json
-import os
 from pathlib import Path
 from unittest.mock import patch
-from src.pipeline import McodePipeline
 from src.services.summarizer import McodeSummarizer
 from src.core.dependency_container import DependencyContainer
 
@@ -21,14 +20,14 @@ class TestPipelineIntegration:
     def sample_trial_data(self):
         """Load real sample trial data."""
         data_path = Path(__file__).parent.parent / "data" / "sample_trial.json"
-        with open(data_path, 'r') as f:
+        with open(data_path, "r") as f:
             return json.load(f)
 
     @pytest.fixture
     def sample_patient_data(self):
         """Load real sample patient data."""
         data_path = Path(__file__).parent.parent / "data" / "sample_patient.json"
-        with open(data_path, 'r') as f:
+        with open(data_path, "r") as f:
             return json.load(f)
 
     @pytest.fixture
@@ -36,7 +35,9 @@ class TestPipelineIntegration:
         """Create dependency container for integration tests."""
         return DependencyContainer()
 
-    async def test_mcode_pipeline_with_real_trial_data(self, sample_trial_data, container):
+    async def test_mcode_pipeline_with_real_trial_data(
+        self, sample_trial_data, container
+    ):
         """Test McodePipeline processing real trial data."""
         pipeline = container.create_clinical_trial_pipeline()
 
@@ -65,8 +66,10 @@ class TestPipelineIntegration:
         assert isinstance(summary, str)
         assert len(summary) > 0
 
-    @patch('src.utils.core_memory_client.CoreMemoryClient.ingest')
-    async def test_pipeline_with_memory_storage(self, mock_ingest, sample_trial_data, container):
+    @patch("src.utils.core_memory_client.CoreMemoryClient.ingest")
+    async def test_pipeline_with_memory_storage(
+        self, mock_ingest, sample_trial_data, container
+    ):
         """Test pipeline with memory storage integration."""
         mock_ingest.return_value = {"status": "success"}
 
@@ -77,7 +80,7 @@ class TestPipelineIntegration:
         result = await pipeline.process(sample_trial_data)
 
         # Store result
-        trial_id = sample_trial_data['protocolSection']['identificationModule']['nctId']
+        trial_id = sample_trial_data["protocolSection"]["identificationModule"]["nctId"]
         # Convert PipelineResult to dict format expected by storage
         pipeline_result_dict = result.model_dump()
 
@@ -85,9 +88,13 @@ class TestPipelineIntegration:
             "original_trial_data": sample_trial_data,
             "pipeline_result": pipeline_result_dict,
             "trial_metadata": {
-                "brief_title": sample_trial_data.get("protocolSection", {}).get("identificationModule", {}).get("briefTitle"),
-                "overall_status": sample_trial_data.get("protocolSection", {}).get("statusModule", {}).get("overallStatus"),
-            }
+                "brief_title": sample_trial_data.get("protocolSection", {})
+                .get("identificationModule", {})
+                .get("briefTitle"),
+                "overall_status": sample_trial_data.get("protocolSection", {})
+                .get("statusModule", {})
+                .get("overallStatus"),
+            },
         }
         storage.store_trial_mcode_summary(trial_id, storage_data)
 
@@ -103,16 +110,22 @@ class TestPipelineIntegration:
 
         coordinator = DataFlowCoordinator()
 
-        trial_ids = [sample_trial_data["protocolSection"]["identificationModule"]["nctId"]]
+        trial_ids = [
+            sample_trial_data["protocolSection"]["identificationModule"]["nctId"]
+        ]
 
         # This would normally fetch from real APIs, but we'll mock the fetch
-        with patch.object(coordinator, '_fetch_trial_data') as mock_fetch:
-            mock_fetch.return_value = type('WorkflowResult', (), {
-                'success': True,
-                'data': [sample_trial_data],
-                'errors': [],
-                'metadata': {}
-            })()
+        with patch.object(coordinator, "_fetch_trial_data") as mock_fetch:
+            mock_fetch.return_value = type(
+                "WorkflowResult",
+                (),
+                {
+                    "success": True,
+                    "data": [sample_trial_data],
+                    "errors": [],
+                    "metadata": {},
+                },
+            )()
 
             result = coordinator.process_clinical_trials_complete_flow(trial_ids)
 

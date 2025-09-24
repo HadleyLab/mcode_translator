@@ -12,7 +12,6 @@ from src.shared.models import (
     ClinicalTrialData,
     McodeElement,
     PipelineResult,
-    ProcessingMetadata,
     ValidationResult,
 )
 from src.utils.config import Config
@@ -27,10 +26,7 @@ class McodePipeline:
     """
 
     def __init__(
-        self,
-        model_name: str = None,
-        prompt_name: str = None,
-        config: Config = None
+        self, model_name: str = None, prompt_name: str = None, config: Config = None
     ):
         """
         Initialize with existing infrastructure.
@@ -41,7 +37,9 @@ class McodePipeline:
             config: Existing Config instance
         """
         self.logger = get_logger(__name__)
-        self.logger.info(f"🔧 McodePipeline initializing with model: {model_name}, prompt: {prompt_name}")
+        self.logger.info(
+            f"🔧 McodePipeline initializing with model: {model_name}, prompt: {prompt_name}"
+        )
 
         self.config = config or Config()
         self.model_name = model_name or "deepseek-coder"
@@ -49,9 +47,7 @@ class McodePipeline:
 
         # Leverage existing components
         self.document_ingestor = DocumentIngestor()
-        self.llm_service = LLMService(
-            self.config, self.model_name, self.prompt_name
-        )
+        self.llm_service = LLMService(self.config, self.model_name, self.prompt_name)
         self.logger.info("✅ McodePipeline initialized successfully")
 
     async def process(self, trial_data: Dict[str, Any]) -> PipelineResult:
@@ -64,7 +60,9 @@ class McodePipeline:
         Returns:
             PipelineResult with existing validated models
         """
-        self.logger.info(f"🚀 Pipeline.process called with trial data keys: {list(trial_data.keys())[:5]}...")
+        self.logger.info(
+            f"🚀 Pipeline.process called with trial data keys: {list(trial_data.keys())[:5]}..."
+        )
 
         # Validate input using existing ClinicalTrialData model - STRICT: No fallback, fail fast
         validated_trial = ClinicalTrialData(**trial_data)
@@ -77,11 +75,15 @@ class McodePipeline:
         # Stage 2: Async LLM processing (existing utils) - STRICT: No fallback, fail fast
         all_elements = []
         for i, section in enumerate(sections):
-            self.logger.info(f"🔍 Processing section {i+1}/{len(sections)}: '{section.name}' (content length: {len(section.content) if section.content else 0})")
+            self.logger.info(
+                f"🔍 Processing section {i+1}/{len(sections)}: '{section.name}' (content length: {len(section.content) if section.content else 0})"
+            )
             if section.content and section.content.strip():
                 self.logger.info(f"🚀 Calling LLM service for section {i+1}")
                 elements = await self.llm_service.map_to_mcode(section.content)
-                self.logger.info(f"✅ LLM service returned {len(elements)} elements for section {i+1}")
+                self.logger.info(
+                    f"✅ LLM service returned {len(elements)} elements for section {i+1}"
+                )
                 all_elements.extend(elements)
             else:
                 self.logger.info(f"⚠️ Skipping empty section {i+1}")
@@ -106,10 +108,12 @@ class McodePipeline:
                 "prompt_used": self.prompt_name,
             },
             original_data=trial_data,
-            error=None
+            error=None,
         )
 
-    async def process_batch(self, trials_data: List[Dict[str, Any]]) -> List[PipelineResult]:
+    async def process_batch(
+        self, trials_data: List[Dict[str, Any]]
+    ) -> List[PipelineResult]:
         """
         Process multiple trials efficiently.
 

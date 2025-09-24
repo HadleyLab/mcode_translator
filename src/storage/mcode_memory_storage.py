@@ -6,7 +6,7 @@ This module provides a unified interface for storing processed mCODE data
 structure and codes for later retrieval and analysis.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from src.services.summarizer import McodeSummarizer
 from src.utils.config import Config

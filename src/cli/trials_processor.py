@@ -14,9 +14,12 @@ from typing import List, Dict, Any, Optional
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
-from src.utils.config import Config
 from src.utils.data_loader import load_ndjson_data, extract_trial_id
-from src.utils.error_handler import handle_cli_error, log_operation_start, log_operation_success
+from src.utils.error_handler import (
+    handle_cli_error,
+    log_operation_start,
+    log_operation_success,
+)
 from src.utils.logging_config import get_logger
 from src.workflows.trials_processor_workflow import ClinicalTrialsProcessorWorkflow
 
@@ -39,14 +42,11 @@ Examples:
     McodeCLI.add_processor_args(parser)
 
     # Essential input/output arguments
-    parser.add_argument(
-        "input_file",
-        help="Path to NDJSON file containing trial data"
-    )
+    parser.add_argument("input_file", help="Path to NDJSON file containing trial data")
     parser.add_argument(
         "--out",
         dest="output_file",
-        help="Path to save processed mCODE data (NDJSON format)"
+        help="Path to save processed mCODE data (NDJSON format)",
     )
 
     return parser
@@ -92,7 +92,9 @@ def save_processed_data(data: List[Any], output_file: Optional[str], logger) -> 
         logger.info("📤 mCODE data written to stdout")
 
 
-def print_processing_summary(metadata: Optional[Dict[str, Any]], ingested: bool, logger) -> None:
+def print_processing_summary(
+    metadata: Optional[Dict[str, Any]], ingested: bool, logger
+) -> None:
     """Print processing summary."""
     if not metadata:
         return
@@ -149,7 +151,9 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     if args.ingest:
         try:
             memory_storage = McodeMemoryStorage(source=args.memory_source)
-            logger.info(f"🧠 Initialized CORE Memory storage (source: {args.memory_source})")
+            logger.info(
+                f"🧠 Initialized CORE Memory storage (source: {args.memory_source})"
+            )
         except Exception as e:
             logger.error(f"Failed to initialize CORE Memory: {e}")
             sys.exit(1)
@@ -164,13 +168,15 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
             prompt=args.prompt,
             store_in_memory=args.ingest,
             workers=args.workers,
-            cli_args=args
+            cli_args=args,
         )
 
         if not result.success:
-            handle_cli_error(ValueError(f"Trials processing failed: {result.error_message}"))
+            handle_cli_error(
+                ValueError(f"Trials processing failed: {result.error_message}")
+            )
 
-        log_operation_success(f"Trials processing completed successfully")
+        log_operation_success("Trials processing completed successfully")
 
         # Save results
         if result.data:
@@ -183,7 +189,9 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         logger.info("Operation cancelled by user")
         sys.exit(130)
     except Exception as e:
-        handle_cli_error(e, "Unexpected error during trials processing", verbose=args.verbose)
+        handle_cli_error(
+            e, "Unexpected error during trials processing", verbose=args.verbose
+        )
 
 
 if __name__ == "__main__":

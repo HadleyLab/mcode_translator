@@ -1,8 +1,8 @@
 """
 Unit tests for McodeSummarizer with mocked dependencies.
 """
+
 import pytest
-from unittest.mock import Mock, patch
 from src.services.summarizer import McodeSummarizer
 
 
@@ -22,7 +22,9 @@ class TestMcodeSummarizer:
         """Test formatting mCODE display."""
         summarizer = McodeSummarizer()
 
-        result = summarizer._format_mcode_display("PrimaryCancerCondition", "http://snomed.info/sct", "12345")
+        result = summarizer._format_mcode_display(
+            "PrimaryCancerCondition", "http://snomed.info/sct", "12345"
+        )
         expected = "(mCODE: PrimaryCancerCondition, SNOMED:12345)"
 
         assert result == expected
@@ -46,7 +48,7 @@ class TestMcodeSummarizer:
             element_name="CancerCondition",
             value="Malignant neoplasm of breast",
             codes="SNOMED:254837009",
-            date_qualifier=" documented on 2023-01-01"
+            date_qualifier=" documented on 2023-01-01",
         )
 
         assert "Patient's diagnosis" in result
@@ -67,22 +69,26 @@ class TestMcodeSummarizer:
                         "id": "12345",
                         "gender": "female",
                         "birthDate": "1980-01-01",
-                        "name": [{"family": "Doe", "given": ["Jane"]}]
+                        "name": [{"family": "Doe", "given": ["Jane"]}],
                     }
                 }
-            ]
+            ],
         }
 
-        elements = summarizer._extract_patient_elements(patient_data, include_dates=True)
+        elements = summarizer._extract_patient_elements(
+            patient_data, include_dates=True
+        )
 
         assert isinstance(elements, list)
         assert len(elements) >= 1
 
         # Check for Patient element
-        patient_element = next((e for e in elements if e.get('element_name') == 'Patient'), None)
+        patient_element = next(
+            (e for e in elements if e.get("element_name") == "Patient"), None
+        )
         assert patient_element is not None
-        assert "Jane Doe" in patient_element['value']
-        assert "ID: 12345" in patient_element['value']
+        assert "Jane Doe" in patient_element["value"]
+        assert "ID: 12345" in patient_element["value"]
 
     def test_extract_trial_elements(self):
         """Test extracting trial elements using new abstracted interface."""
@@ -92,11 +98,9 @@ class TestMcodeSummarizer:
             "protocolSection": {
                 "identificationModule": {
                     "nctId": "NCT12345678",
-                    "briefTitle": "Test Trial"
+                    "briefTitle": "Test Trial",
                 },
-                "statusModule": {
-                    "overallStatus": "Recruiting"
-                }
+                "statusModule": {"overallStatus": "Recruiting"},
             }
         }
 
@@ -106,14 +110,18 @@ class TestMcodeSummarizer:
         assert len(elements) >= 1
 
         # Check for Trial element
-        trial_element = next((e for e in elements if e.get('element_name') == 'Trial'), None)
+        trial_element = next(
+            (e for e in elements if e.get("element_name") == "Trial"), None
+        )
         assert trial_element is not None
-        assert "Clinical Trial" in trial_element['value']
+        assert "Clinical Trial" in trial_element["value"]
 
         # Check for TrialTitle element
-        title_element = next((e for e in elements if e.get('element_name') == 'TrialTitle'), None)
+        title_element = next(
+            (e for e in elements if e.get("element_name") == "TrialTitle"), None
+        )
         assert title_element is not None
-        assert "Test Trial" in title_element['value']
+        assert "Test Trial" in title_element["value"]
 
     def test_create_patient_summary(self):
         """Test creating patient summary."""
@@ -128,7 +136,7 @@ class TestMcodeSummarizer:
                         "id": "12345",
                         "gender": "female",
                         "birthDate": "1980-01-01",
-                        "name": [{"family": "Doe", "given": ["Jane"]}]
+                        "name": [{"family": "Doe", "given": ["Jane"]}],
                     }
                 },
                 {
@@ -139,13 +147,13 @@ class TestMcodeSummarizer:
                                 {
                                     "system": "http://snomed.info/sct",
                                     "code": "254837009",
-                                    "display": "Malignant neoplasm of breast"
+                                    "display": "Malignant neoplasm of breast",
                                 }
                             ]
-                        }
+                        },
                     }
-                }
-            ]
+                },
+            ],
         }
 
         result = summarizer.create_patient_summary(patient_data)
@@ -164,14 +172,10 @@ class TestMcodeSummarizer:
             "protocolSection": {
                 "identificationModule": {
                     "nctId": "NCT12345678",
-                    "briefTitle": "Test Trial"
+                    "briefTitle": "Test Trial",
                 },
-                "conditionsModule": {
-                    "conditions": [{"name": "Breast Cancer"}]
-                },
-                "eligibilityModule": {
-                    "eligibilityCriteria": "Age >= 18"
-                }
+                "conditionsModule": {"conditions": [{"name": "Breast Cancer"}]},
+                "eligibilityModule": {"eligibilityCriteria": "Age >= 18"},
             }
         }
 
@@ -188,9 +192,9 @@ class TestMcodeSummarizer:
         summarizer = McodeSummarizer()
 
         elements = [
-            {'element_name': 'TrialTitle', 'value': 'Test Trial', 'priority': 16},
-            {'element_name': 'Trial', 'value': 'Clinical Trial', 'priority': 15},
-            {'element_name': 'TrialStatus', 'value': 'recruiting', 'priority': 19}
+            {"element_name": "TrialTitle", "value": "Test Trial", "priority": 16},
+            {"element_name": "Trial", "value": "Clinical Trial", "priority": 15},
+            {"element_name": "TrialStatus", "value": "recruiting", "priority": 19},
         ]
 
         grouped = summarizer._group_elements_by_priority(elements, "Trial")
@@ -198,9 +202,9 @@ class TestMcodeSummarizer:
         assert isinstance(grouped, list)
         assert len(grouped) == 3
         # Should be sorted by priority (lower number = higher priority)
-        assert grouped[0]['element_name'] == 'Trial'
-        assert grouped[1]['element_name'] == 'TrialTitle'
-        assert grouped[2]['element_name'] == 'TrialStatus'
+        assert grouped[0]["element_name"] == "Trial"
+        assert grouped[1]["element_name"] == "TrialTitle"
+        assert grouped[2]["element_name"] == "TrialStatus"
 
     def test_create_patient_summary_empty_data(self):
         """Test creating patient summary with empty data."""
@@ -260,7 +264,11 @@ class TestMcodeSummarizer:
             ("http://hl7.org/fhir/sid/icd-10", "C50", "ICD:C50"),
             ("http://www.ama-assn.org/go/cpt", "12345", "CPT:12345"),
             ("http://hl7.org/fhir/sid/ndc", "12345-678-90", "NDC:12345-678-90"),
-            ("http://fdasis.nlm.nih.gov", "12345", "FDASIS.NLM.NIH.GOV:12345"),  # Actual implementation
+            (
+                "http://fdasis.nlm.nih.gov",
+                "12345",
+                "FDASIS.NLM.NIH.GOV:12345",
+            ),  # Actual implementation
             ("urn:oid:2.16.840.1.113883.6.238", "2106-3", "CDC-RACE:2106-3"),
             ("http://identifiers.org/chebi", "CHEBI:12345", "CHEBI:12345"),
             ("http://identifiers.org/mesh", "D001943", "MeSH:D001943"),
@@ -290,14 +298,18 @@ class TestMcodeSummarizer:
         assert "SNOMED:407377005" in result  # Default "Other gender" code
 
         # Test BirthDate default code
-        result = summarizer._create_abstracted_sentence("Patient", "BirthDate", "1980-01-01")
+        result = summarizer._create_abstracted_sentence(
+            "Patient", "BirthDate", "1980-01-01"
+        )
         assert "SNOMED:184099003" in result
 
     def test_create_abstracted_sentence_no_mcode_annotations(self):
         """Test sentence creation without mCODE annotations."""
         summarizer = McodeSummarizer(include_mcode=False)
 
-        result = summarizer._create_abstracted_sentence("Patient", "CancerCondition", "Breast Cancer")
+        result = summarizer._create_abstracted_sentence(
+            "Patient", "CancerCondition", "Breast Cancer"
+        )
         # The current implementation doesn't fully remove mCODE from all templates
         # This test verifies the behavior - mCODE may still appear in some cases
         # For now, just check that the sentence is created
@@ -310,9 +322,13 @@ class TestMcodeSummarizer:
 
         # Mock a template that references undefined variable
         original_template = summarizer.element_configs["CancerCondition"]["template"]
-        summarizer.element_configs["CancerCondition"]["template"] = "{undefined_var} has {value}"
+        summarizer.element_configs["CancerCondition"][
+            "template"
+        ] = "{undefined_var} has {value}"
 
-        result = summarizer._create_abstracted_sentence("Patient", "CancerCondition", "Breast Cancer")
+        result = summarizer._create_abstracted_sentence(
+            "Patient", "CancerCondition", "Breast Cancer"
+        )
 
         # Should fall back to generic format
         assert "patient's cancercondition" in result.lower()
@@ -326,30 +342,33 @@ class TestMcodeSummarizer:
         summarizer = McodeSummarizer(detail_level="minimal")  # threshold = 7
 
         elements = [
-            {'element_name': 'Patient', 'value': 'John Doe'},  # priority 1
-            {'element_name': 'CancerCondition', 'value': 'Breast Cancer'},  # priority 7
-            {'element_name': 'TrialTitle', 'value': 'Test Trial'},  # priority 16 (should be filtered)
+            {"element_name": "Patient", "value": "John Doe"},  # priority 1
+            {"element_name": "CancerCondition", "value": "Breast Cancer"},  # priority 7
+            {
+                "element_name": "TrialTitle",
+                "value": "Test Trial",
+            },  # priority 16 (should be filtered)
         ]
 
         filtered = summarizer._group_elements_by_priority(elements, "Patient")
 
         # Should only include elements with priority <= 7
-        element_names = [e['element_name'] for e in filtered]
-        assert 'Patient' in element_names
-        assert 'CancerCondition' in element_names
-        assert 'TrialTitle' not in element_names
+        element_names = [e["element_name"] for e in filtered]
+        assert "Patient" in element_names
+        assert "CancerCondition" in element_names
+        assert "TrialTitle" not in element_names
 
     def test_group_elements_by_priority_max_elements(self):
         """Test max elements limit."""
         summarizer = McodeSummarizer(detail_level="minimal")  # max_elements = 5
 
         elements = [
-            {'element_name': 'Patient', 'value': 'John Doe'},
-            {'element_name': 'Age', 'value': '45'},
-            {'element_name': 'Gender', 'value': 'female'},
-            {'element_name': 'BirthDate', 'value': '1980-01-01'},
-            {'element_name': 'Race', 'value': 'White'},
-            {'element_name': 'Ethnicity', 'value': 'Hispanic'},  # Should be excluded
+            {"element_name": "Patient", "value": "John Doe"},
+            {"element_name": "Age", "value": "45"},
+            {"element_name": "Gender", "value": "female"},
+            {"element_name": "BirthDate", "value": "1980-01-01"},
+            {"element_name": "Race", "value": "White"},
+            {"element_name": "Ethnicity", "value": "Hispanic"},  # Should be excluded
         ]
 
         filtered = summarizer._group_elements_by_priority(elements, "Patient")
@@ -365,7 +384,7 @@ class TestMcodeSummarizer:
                 {
                     "resource": {
                         "resourceType": "Observation",
-                        "code": {"coding": [{"display": "Blood Pressure"}]}
+                        "code": {"coding": [{"display": "Blood Pressure"}]},
                     }
                 }
             ]
@@ -384,7 +403,7 @@ class TestMcodeSummarizer:
                     "resource": {
                         "resourceType": "Patient",
                         "id": "123",
-                        "name": [{"family": "Doe", "given": ["John"]}]
+                        "name": [{"family": "Doe", "given": ["John"]}],
                     }
                 },
                 {
@@ -392,19 +411,27 @@ class TestMcodeSummarizer:
                         "resourceType": "Observation",
                         "code": {"coding": [{"display": "TNM Staging"}]},
                         "valueCodeableConcept": {
-                            "coding": [{"system": "http://snomed.info/sct", "code": "123", "display": "T4N1M0"}]
+                            "coding": [
+                                {
+                                    "system": "http://snomed.info/sct",
+                                    "code": "123",
+                                    "display": "T4N1M0",
+                                }
+                            ]
                         },
-                        "effectiveDateTime": "2023-01-01"
+                        "effectiveDateTime": "2023-01-01",
                     }
-                }
+                },
             ]
         }
 
         elements = summarizer._extract_patient_elements(patient_data, True)
 
-        tnm_element = next((e for e in elements if e.get('element_name') == 'TNMStageGroup'), None)
+        tnm_element = next(
+            (e for e in elements if e.get("element_name") == "TNMStageGroup"), None
+        )
         assert tnm_element is not None
-        assert "T4N1M0" in tnm_element['value']
+        assert "T4N1M0" in tnm_element["value"]
 
     def test_create_trial_summary_missing_nct_id(self):
         """Test trial summary creation with missing NCT ID."""
@@ -412,12 +439,8 @@ class TestMcodeSummarizer:
 
         trial_data = {
             "protocolSection": {
-                "identificationModule": {
-                    "briefTitle": "Test Trial"
-                },
-                "statusModule": {
-                    "overallStatus": "Recruiting"
-                }
+                "identificationModule": {"briefTitle": "Test Trial"},
+                "statusModule": {"overallStatus": "Recruiting"},
             }
         }
 
@@ -434,7 +457,7 @@ class TestMcodeSummarizer:
                     "resource": {
                         "resourceType": "Patient",
                         "id": "123",
-                        "name": [{"family": "Doe", "given": ["John", "Q"]}]
+                        "name": [{"family": "Doe", "given": ["John", "Q"]}],
                     }
                 }
             ]

@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 from src.core.dependency_container import create_trial_pipeline
 from src.pipeline import McodePipeline
 from src.shared.models import WorkflowResult
-from src.utils.fetcher import get_full_study, get_full_studies_batch
+from src.utils.fetcher import get_full_studies_batch
 from src.utils.logging_config import get_logger
 
 
@@ -152,7 +152,11 @@ class DataFlowCoordinator:
                     fetched_trials.append(result)
                     self.logger.debug(f"✅ Fetched: {trial_id}")
                 else:
-                    error_msg = result.get("error", "Unknown error") if isinstance(result, dict) else str(result)
+                    error_msg = (
+                        result.get("error", "Unknown error")
+                        if isinstance(result, dict)
+                        else str(result)
+                    )
                     self.logger.warning(f"❌ Failed to fetch {trial_id}: {error_msg}")
                     failed_fetches.append({"trial_id": trial_id, "error": error_msg})
 
@@ -165,7 +169,9 @@ class DataFlowCoordinator:
                 )
 
             success_rate = len(fetched_trials) / len(trial_ids) if trial_ids else 0
-            self.logger.info(f"📊 Batch fetch complete: {len(fetched_trials)}/{len(trial_ids)} successful ({success_rate:.1%})")
+            self.logger.info(
+                f"📊 Batch fetch complete: {len(fetched_trials)}/{len(trial_ids)} successful ({success_rate:.1%})"
+            )
 
             return WorkflowResult(
                 success=True,
@@ -176,7 +182,7 @@ class DataFlowCoordinator:
                     "total_failed": len(failed_fetches),
                     "success_rate": success_rate,
                     "failed_fetches": failed_fetches,
-                    "processing_method": "batch_api_calls"
+                    "processing_method": "batch_api_calls",
                 },
             )
 
@@ -234,15 +240,23 @@ class DataFlowCoordinator:
                 except Exception as e:
                     self.logger.error(f"Failed to process trial: {e}")
                     # Create a failed result
-                    batch_results.append(type('FailedResult', (), {
-                        'success': False,
-                        'error_message': str(e),
-                        'mcode_mappings': [],
-                        'validation_results': {}
-                    })())
+                    batch_results.append(
+                        type(
+                            "FailedResult",
+                            (),
+                            {
+                                "success": False,
+                                "error_message": str(e),
+                                "mcode_mappings": [],
+                                "validation_results": {},
+                            },
+                        )()
+                    )
 
             # Count successful results in this batch
-            successful_in_batch = sum(1 for r in batch_results if getattr(r, 'success', False))
+            successful_in_batch = sum(
+                1 for r in batch_results if getattr(r, "success", False)
+            )
             total_successful += successful_in_batch
             total_processed += len(batch)
 

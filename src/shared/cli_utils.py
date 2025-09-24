@@ -6,7 +6,6 @@ used across all command-line interfaces.
 """
 
 import argparse
-from typing import List, Optional
 
 
 class McodeCLI:
@@ -47,7 +46,6 @@ class McodeCLI:
             default="mcode_translator",
             help="Source identifier for CORE Memory storage (default: mcode_translator)",
         )
-
 
     @staticmethod
     def add_fetcher_args(parser: argparse.ArgumentParser) -> None:

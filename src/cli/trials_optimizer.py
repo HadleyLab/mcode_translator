@@ -10,27 +10,27 @@ configuration files only - no CORE Memory storage required.
 import argparse
 import asyncio
 import sys
-import time
 from pathlib import Path
 from typing import Optional
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 from src.shared.cli_utils import McodeCLI
-from src.utils.config import Config
 from src.workflows.trials_optimizer_workflow import TrialsOptimizerWorkflow
 
 
 class SummaryHandler(FileSystemEventHandler):
     """Event handler for real-time summary of optimization runs."""
+
     def __init__(self, workflow):
         self.workflow = workflow
 
     def on_created(self, event):
-        if event.is_directory or not event.src_path.endswith('.json'):
+        if event.is_directory or not event.src_path.endswith(".json"):
             return
         print("\n📊 Real-time summary updated:")
         self.workflow.summarize_benchmark_validations()
+
 
 def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser for trials optimizer."""
@@ -69,20 +69,15 @@ Examples:
     parser.add_argument(
         "--async-queue",
         action="store_true",
-        help="Use async task queue instead of threaded (experimental)"
+        help="Use async task queue instead of threaded (experimental)",
     )
 
     # Required arguments for file-based optimization
     parser.add_argument(
-        "--trials-file",
-        help="Path to NDJSON file containing trial data for testing"
+        "--trials-file", help="Path to NDJSON file containing trial data for testing"
     )
 
-    parser.add_argument(
-        "--cv-folds",
-        type=int,
-        help="Number of cross validation folds"
-    )
+    parser.add_argument("--cv-folds", type=int, help="Number of cross validation folds")
 
     # Additional arguments
     parser.add_argument(
@@ -91,8 +86,8 @@ Examples:
 
     parser.add_argument(
         "--models",
-        type=lambda s: [item.strip() for item in s.split(',')],
-        help="Comma-separated list of LLM models to test"
+        type=lambda s: [item.strip() for item in s.split(",")],
+        help="Comma-separated list of LLM models to test",
     )
 
     parser.add_argument(
@@ -107,7 +102,7 @@ Examples:
 
     parser.add_argument(
         "--save-mcode-elements",
-        help="Save all processed mCODE elements to JSON file for analysis (includes biological analysis report)"
+        help="Save all processed mCODE elements to JSON file for analysis (includes biological analysis report)",
     )
 
     return parser
@@ -184,7 +179,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         except json.JSONDecodeError:
             # Try to parse as NDJSON (one JSON object per line)
             trials_data = []
-            for line in file_content.split('\n'):
+            for line in file_content.split("\n"):
                 line = line.strip()
                 if line:
                     trial_data = json.loads(line)
@@ -200,10 +195,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         sys.exit(1)
 
     # Prepare workflow parameters
-    workflow_kwargs = {
-        "trials_data": trials_data,
-        "cv_folds": args.cv_folds
-    }
+    workflow_kwargs = {"trials_data": trials_data, "cv_folds": args.cv_folds}
 
     # Parse prompts and models - use defaults if not specified
     if args.prompts:
@@ -222,7 +214,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     if args.save_config:
         workflow_kwargs["output_config"] = args.save_config
 
-    if getattr(args, 'save_mcode_elements', None):
+    if getattr(args, "save_mcode_elements", None):
         workflow_kwargs["save_mcode_elements"] = args.save_mcode_elements
 
     # Pass CLI arguments for concurrency configuration
@@ -253,7 +245,6 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     observer.schedule(event_handler, runs_dir, recursive=False)
     observer.start()
     print("👀 Watching for new run results in real-time...")
-
 
     # Initialize and execute workflow
     try:

@@ -1,11 +1,11 @@
 """
 Integration tests for cross-module interactions.
 """
+
 import pytest
 from unittest.mock import patch, MagicMock
 from src.core.data_flow_coordinator import DataFlowCoordinator
 from src.core.dependency_container import DependencyContainer
-from src.workflows.trials_fetcher_workflow import TrialsFetcherWorkflow
 from src.workflows.patients_fetcher_workflow import PatientsFetcherWorkflow
 
 
@@ -21,24 +21,38 @@ class TestCrossModuleIntegration:
     @pytest.fixture
     def sample_patient_data(self):
         """Load sample patient data for testing."""
-        return {"entry": [{"resource": {"resourceType": "Patient", "id": "patient_123"}}]}
+        return {
+            "entry": [{"resource": {"resourceType": "Patient", "id": "patient_123"}}]
+        }
 
     @pytest.fixture
     def container(self):
         """Create dependency container."""
         return DependencyContainer()
 
-    @patch('src.core.data_flow_coordinator.get_full_studies_batch')
-    def test_data_flow_coordinator_with_workflows(self, mock_get_full_studies_batch, container, sample_trial_data, sample_patient_data):
+    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    def test_data_flow_coordinator_with_workflows(
+        self,
+        mock_get_full_studies_batch,
+        container,
+        sample_trial_data,
+        sample_patient_data,
+    ):
         """Test DataFlowCoordinator with mocked workflows."""
         mock_get_full_studies_batch.return_value = {"NCT123456": sample_trial_data}
-        with patch.object(PatientsFetcherWorkflow, 'execute', return_value=MagicMock(success=True, data=[sample_patient_data])) as mock_patient_fetch:
+        with patch.object(
+            PatientsFetcherWorkflow,
+            "execute",
+            return_value=MagicMock(success=True, data=[sample_patient_data]),
+        ):
 
             coordinator = DataFlowCoordinator()
             coordinator.container = container
 
             # Test trial processing flow
-            trial_result = coordinator.process_clinical_trials_complete_flow(trial_ids=["NCT123456"])
+            trial_result = coordinator.process_clinical_trials_complete_flow(
+                trial_ids=["NCT123456"]
+            )
             assert trial_result is not None
             mock_get_full_studies_batch.assert_called_once()
 

@@ -1,7 +1,7 @@
 """
 Unit tests for metrics module.
 """
-import json
+
 import pytest
 from unittest.mock import patch
 from src.utils.metrics import MatchingMetrics, BenchmarkMetrics, PerformanceMetrics
@@ -77,7 +77,10 @@ class TestMatchingMetrics:
         metrics.record_match(match_reasons, genomic_variants)
 
         assert metrics.total_matches == 1
-        assert metrics.match_reasons["Shared treatments: chemotherapy, hormone therapy"] == 1
+        assert (
+            metrics.match_reasons["Shared treatments: chemotherapy, hormone therapy"]
+            == 1
+        )
         assert metrics.treatment_match_counts["chemotherapy"] == 1
         assert metrics.treatment_match_counts["hormone therapy"] == 1
 
@@ -105,7 +108,7 @@ class TestMatchingMetrics:
         assert len(summary["top_genes"]) <= 5
         assert len(summary["top_biomarkers"]) <= 5
 
-    @patch('src.utils.metrics.get_logger')
+    @patch("src.utils.metrics.get_logger")
     def test_log_summary(self, mock_get_logger):
         """Test logging summary."""
         mock_logger = mock_get_logger.return_value
@@ -142,8 +145,12 @@ class TestBenchmarkMetrics:
         result = metrics.calculate_metrics()
 
         expected_precision = 10 / (10 + 2)  # 10/12
-        expected_recall = 10 / (10 + 3)     # 10/13
-        expected_f1 = 2 * (expected_precision * expected_recall) / (expected_precision + expected_recall)
+        expected_recall = 10 / (10 + 3)  # 10/13
+        expected_f1 = (
+            2
+            * (expected_precision * expected_recall)
+            / (expected_precision + expected_recall)
+        )
 
         assert result["precision"] == expected_precision
         assert result["recall"] == expected_recall
@@ -162,13 +169,13 @@ class TestBenchmarkMetrics:
         metrics = BenchmarkMetrics(5, 0, 5)  # tp, fp, fn
         result = metrics.calculate_metrics()
         assert result["precision"] == 1.0
-        assert result["recall"] == 5/10
+        assert result["recall"] == 5 / 10
         assert result["f1_score"] > 0
 
         # No false negatives
         metrics = BenchmarkMetrics(5, 5, 0)  # tp, fp, fn
         result = metrics.calculate_metrics()
-        assert result["precision"] == 5/10
+        assert result["precision"] == 5 / 10
         assert result["recall"] == 1.0
         assert result["f1_score"] > 0
 
@@ -177,13 +184,13 @@ class TestBenchmarkMetrics:
         predicted = [
             {"element_type": "CancerCondition", "code": "C123"},
             {"element_type": "TNMStageGroup", "code": "T2N0M0"},
-            {"element_type": "Procedure", "code": "P456"}
+            {"element_type": "Procedure", "code": "P456"},
         ]
 
         ground_truth = [
             {"element_type": "CancerCondition", "code": "C123"},
             {"element_type": "TNMStageGroup", "code": "T2N0M0"},
-            {"element_type": "MedicationRequest", "code": "M789"}
+            {"element_type": "MedicationRequest", "code": "M789"},
         ]
 
         metrics = BenchmarkMetrics.compare_mcode_elements(predicted, ground_truth)
@@ -236,6 +243,7 @@ class TestPerformanceMetrics:
         assert metrics.start_time is not None
 
         import time
+
         time.sleep(0.01)  # Small delay
 
         metrics.stop_tracking(tokens_used=1000, elements_processed=10)
@@ -260,6 +268,7 @@ class TestPerformanceMetrics:
         metrics = PerformanceMetrics()
         metrics.start_tracking()
         import time
+
         time.sleep(0.01)
         metrics.stop_tracking(tokens_used=2000, elements_processed=20)
 
@@ -280,7 +289,10 @@ class TestPerformanceMetrics:
         assert "tokens_per_second" in result
 
         # Check derived calculations
-        assert result["processing_time_per_element"] == result["processing_time_seconds"] / 20
+        assert (
+            result["processing_time_per_element"]
+            == result["processing_time_seconds"] / 20
+        )
         assert result["tokens_per_element"] == 2000 / 20
         assert result["cost_per_element_usd"] == result["estimated_cost_usd"] / 20
         assert result["elements_per_second"] == 20 / result["processing_time_seconds"]
@@ -291,13 +303,17 @@ class TestPerformanceMetrics:
         metrics = PerformanceMetrics()
         metrics.start_tracking()
         import time
+
         time.sleep(0.01)
         metrics.stop_tracking(tokens_used=1000, elements_processed=0)
 
         result = metrics.get_metrics()
 
         # Should handle division by zero gracefully
-        assert result["processing_time_per_element"] == result["processing_time_seconds"] / 1
+        assert (
+            result["processing_time_per_element"]
+            == result["processing_time_seconds"] / 1
+        )
         assert result["tokens_per_element"] == 1000 / 1
         assert result["cost_per_element_usd"] == result["estimated_cost_usd"] / 1
         assert result["elements_per_second"] == 0 / result["processing_time_seconds"]

@@ -1,6 +1,5 @@
 import os
-from typing import Dict, List, Optional
-from urllib.parse import urlparse
+from typing import Dict
 
 import requests
 
@@ -120,7 +119,9 @@ def download_synthetic_patient_archives_concurrent(
             },
         }
 
-    logger.info(f"🔄 Starting concurrent download of {len(archives_config)} archive types with {max_workers} workers")
+    logger.info(
+        f"🔄 Starting concurrent download of {len(archives_config)} archive types with {max_workers} workers"
+    )
 
     # Prepare download tasks
     download_tasks = []
@@ -146,7 +147,7 @@ def download_synthetic_patient_archives_concurrent(
                 func=_download_single_archive,
                 url=url,
                 dest_path=archive_path,
-                archive_name=archive_name
+                archive_name=archive_name,
             )
             download_tasks.append(task)
             archive_paths[archive_name] = archive_path
@@ -165,7 +166,9 @@ def download_synthetic_patient_archives_concurrent(
         else:
             logger.error(f"❌ Failed to download {archive_name}: {result.error}")
 
-    task_results = task_queue.execute_tasks(download_tasks, progress_callback=progress_callback)
+    task_results = task_queue.execute_tasks(
+        download_tasks, progress_callback=progress_callback
+    )
 
     # Process results
     successful_downloads = 0
@@ -183,7 +186,9 @@ def download_synthetic_patient_archives_concurrent(
                 os.remove(archive_path)
                 del archive_paths[archive_name]
 
-    logger.info(f"📊 Concurrent download complete: {successful_downloads} successful, {failed_downloads} failed")
+    logger.info(
+        f"📊 Concurrent download complete: {successful_downloads} successful, {failed_downloads} failed"
+    )
     return archive_paths
 
 
@@ -213,7 +218,7 @@ def _download_single_archive(url: str, dest_path: str, archive_name: str) -> str
         response.raise_for_status()
 
         # Get file size for progress tracking
-        total_size = int(response.headers.get('content-length', 0))
+        total_size = int(response.headers.get("content-length", 0))
 
         with open(dest_path, "wb") as f:
             downloaded = 0
@@ -224,7 +229,7 @@ def _download_single_archive(url: str, dest_path: str, archive_name: str) -> str
 
                     # Log progress for large files
                     if total_size > 10 * 1024 * 1024:  # > 10MB
-                        progress = (downloaded / total_size) * 100 if total_size > 0 else 0
+                        (downloaded / total_size) * 100 if total_size > 0 else 0
                         logger.debug(".1f")
 
         logger.debug(f"Successfully downloaded {archive_name} ({downloaded} bytes)")
@@ -256,7 +261,9 @@ def download_multiple_files(
     Returns:
         Dict mapping filename to local path
     """
-    logger.info(f"🔄 Downloading {len(file_urls)} files concurrently with {max_workers} workers")
+    logger.info(
+        f"🔄 Downloading {len(file_urls)} files concurrently with {max_workers} workers"
+    )
 
     # Prepare download tasks
     download_tasks = []
@@ -275,7 +282,7 @@ def download_multiple_files(
             func=_download_single_file,
             url=url,
             dest_path=dest_path,
-            filename=filename
+            filename=filename,
         )
         download_tasks.append(task)
         downloaded_paths[filename] = dest_path
@@ -294,7 +301,9 @@ def download_multiple_files(
         else:
             logger.error(f"❌ Failed to download {filename}: {result.error}")
 
-    task_results = task_queue.execute_tasks(download_tasks, progress_callback=progress_callback)
+    task_results = task_queue.execute_tasks(
+        download_tasks, progress_callback=progress_callback
+    )
 
     # Process results and clean up failed downloads
     successful_downloads = 0
@@ -312,7 +321,9 @@ def download_multiple_files(
                 os.remove(dest_path)
                 del downloaded_paths[filename]
 
-    logger.info(f"📊 Multi-file download complete: {successful_downloads} successful, {failed_downloads} failed")
+    logger.info(
+        f"📊 Multi-file download complete: {successful_downloads} successful, {failed_downloads} failed"
+    )
     return downloaded_paths
 
 

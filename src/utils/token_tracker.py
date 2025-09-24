@@ -2,7 +2,6 @@
 Token tracking utilities for standardized token usage reporting across all LLM calls
 """
 
-import json
 from dataclasses import asdict, dataclass
 from threading import Lock
 from typing import Any, Dict, Optional

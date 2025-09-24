@@ -8,9 +8,8 @@ instead of using hardcoded configurations in the source code.
 import json
 import os
 from dataclasses import dataclass, field
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 # Import centralized logging configuration
 from src.utils.logging_config import get_logger
@@ -139,7 +138,7 @@ class LLMLoader:
             # Convert to LLMConfig object
             return LLMConfig.from_dict(llm_config)
 
-        except ValueError as e:
+        except ValueError:
             # Re-raise validation errors to be handled by caller
             raise
         except Exception as e:

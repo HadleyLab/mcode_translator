@@ -30,6 +30,9 @@ pydantic>=2.0.0
 # Standard library enhancements
 typing-extensions>=4.5.0
 
+# CLI framework
+click>=8.1.0
+
 # Development and testing (optional, comment out for production)
 # pytest>=7.0.0
 # pytest-cov>=4.0.0

@@ -18,9 +18,9 @@ class TestTrialsOptimizerWorkflow:
         return Config()
 
     @pytest.fixture
-    def workflow(self, config):
+    def workflow(self):
         """Create a test workflow instance."""
-        return TrialsOptimizerWorkflow(config)
+        return TrialsOptimizerWorkflow()
 
     @pytest.fixture
     def mock_trials_data(self):
@@ -30,7 +30,7 @@ class TestTrialsOptimizerWorkflow:
                 "protocolSection": {
                     "identificationModule": {
                         "nctId": "NCT00123456",
-                        "briefTitle": "Mock Breast Cancer Trial 1"
+                        "briefTitle": "Mock Breast Cancer Trial 1",
                     }
                 }
             },
@@ -38,7 +38,7 @@ class TestTrialsOptimizerWorkflow:
                 "protocolSection": {
                     "identificationModule": {
                         "nctId": "NCT00234567",
-                        "briefTitle": "Mock Breast Cancer Trial 2"
+                        "briefTitle": "Mock Breast Cancer Trial 2",
                     }
                 }
             },
@@ -46,10 +46,10 @@ class TestTrialsOptimizerWorkflow:
                 "protocolSection": {
                     "identificationModule": {
                         "nctId": "NCT00345678",
-                        "briefTitle": "Mock Breast Cancer Trial 3"
+                        "briefTitle": "Mock Breast Cancer Trial 3",
                     }
                 }
-            }
+            },
         ]
 
     def test_workflow_initialization(self, workflow):
@@ -63,7 +63,9 @@ class TestTrialsOptimizerWorkflow:
         models = ["model1", "model2"]
         max_combinations = 3
 
-        combinations = workflow._generate_combinations(prompts, models, max_combinations)
+        combinations = workflow.cross_validator.generate_combinations(
+            prompts, models, max_combinations
+        )
 
         assert len(combinations) == 3  # Limited by max_combinations
         assert all("prompt" in combo and "model" in combo for combo in combinations)
@@ -74,22 +76,27 @@ class TestTrialsOptimizerWorkflow:
         models = ["model1"]
         max_combinations = 10
 
-        combinations = workflow._generate_combinations(prompts, models, max_combinations)
+        combinations = workflow.cross_validator.generate_combinations(
+            prompts, models, max_combinations
+        )
 
         assert len(combinations) == 2  # All combinations
         expected_combinations = [
             {"prompt": "prompt1", "model": "model1"},
-            {"prompt": "prompt2", "model": "model1"}
+            {"prompt": "prompt2", "model": "model1"},
         ]
         assert combinations == expected_combinations
 
     @pytest.mark.asyncio
-    @patch('src.workflows.trials_optimizer_workflow.McodePipeline')
-    async def test_test_single_trial_success(self, mock_pipeline_class, workflow, mock_trials_data):
+    @patch("src.workflows.trials_optimizer_workflow.McodePipeline")
+    async def test_test_single_trial_success(
+        self, mock_pipeline_class, workflow, mock_trials_data
+    ):
         """Test individual trial processing with successful pipeline."""
         # Mock pipeline
         from unittest.mock import AsyncMock
         from src.shared.models import McodeElement
+
         mock_pipeline = AsyncMock()
         mock_result = Mock()
         # Create proper mock McodeElement objects
@@ -100,7 +107,7 @@ class TestTrialsOptimizerWorkflow:
                 display="Breast Cancer",
                 system="ICD-10",
                 confidence_score=0.9,
-                evidence_text="Patient has breast cancer"
+                evidence_text="Patient has breast cancer",
             ),
             McodeElement(
                 element_type="CancerTreatment",
@@ -108,12 +115,14 @@ class TestTrialsOptimizerWorkflow:
                 display="Chemotherapy",
                 system="Treatment",
                 confidence_score=0.8,
-                evidence_text="Patient receives chemotherapy"
-            )
+                evidence_text="Patient receives chemotherapy",
+            ),
         ]
         mock_result.mcode_mappings = mock_elements
         mock_result.validation_results = Mock(compliance_score=0.8)
-        mock_result.source_references = [Mock()] * 3  # Add source references for higher score
+        mock_result.source_references = [
+            Mock()
+        ] * 3  # Add source references for higher score
         mock_pipeline.process.return_value = mock_result
         mock_pipeline_class.return_value = mock_pipeline
 
@@ -134,11 +143,14 @@ class TestTrialsOptimizerWorkflow:
         assert result["score"] > 0  # Should have positive score
 
     @pytest.mark.asyncio
-    @patch('src.workflows.trials_optimizer_workflow.McodePipeline')
-    async def test_test_single_trial_pipeline_failure(self, mock_pipeline_class, workflow, mock_trials_data):
+    @patch("src.workflows.trials_optimizer_workflow.McodePipeline")
+    async def test_test_single_trial_pipeline_failure(
+        self, mock_pipeline_class, workflow, mock_trials_data
+    ):
         """Test individual trial processing handles pipeline failures gracefully."""
         # Mock pipeline that raises exception
         from unittest.mock import AsyncMock
+
         mock_pipeline = AsyncMock()
         mock_pipeline.process.side_effect = Exception("Pipeline error")
         mock_pipeline_class.return_value = mock_pipeline
@@ -175,13 +187,25 @@ class TestTrialsOptimizerWorkflow:
     def test_validate_combination(self, workflow):
         """Test combination validation."""
         # Valid combination
-        assert workflow.validate_combination("direct_mcode_evidence_based_concise", "deepseek-coder") is True
+        assert (
+            workflow.validate_combination(
+                "direct_mcode_evidence_based_concise", "deepseek-coder"
+            )
+            is True
+        )
 
         # Invalid prompt
-        assert workflow.validate_combination("invalid_prompt", "deepseek-coder") is False
+        assert (
+            workflow.validate_combination("invalid_prompt", "deepseek-coder") is False
+        )
 
         # Invalid model
-        assert workflow.validate_combination("direct_mcode_evidence_based_concise", "invalid_model") is False
+        assert (
+            workflow.validate_combination(
+                "direct_mcode_evidence_based_concise", "invalid_model"
+            )
+            is False
+        )
 
     def test_get_available_prompts(self, workflow):
         """Test getting available prompts."""
@@ -198,22 +222,53 @@ class TestTrialsOptimizerWorkflow:
         assert "deepseek-coder" in models
 
     @pytest.mark.asyncio
-    @patch('src.workflows.trials_optimizer_workflow.McodePipeline')
-    async def test_execute_success(self, mock_pipeline_class, workflow, mock_trials_data):
+    @patch("src.workflows.trials_optimizer_workflow.McodePipeline")
+    async def test_execute_success(
+        self, mock_pipeline_class, workflow, mock_trials_data
+    ):
         """Test successful workflow execution."""
         # Mock pipeline for successful processing
         from unittest.mock import AsyncMock
+
         mock_pipeline = AsyncMock()
         mock_result = Mock()
         mock_result.mcode_mappings = [
-            {"element_type": "CancerCondition", "display": "Breast Cancer", "confidence_score": 0.9},
-            {"element_type": "CancerTreatment", "display": "Chemotherapy", "confidence_score": 0.8},
-            {"element_type": "PatientDemographics", "display": "Female", "confidence_score": 0.7},
+            {
+                "element_type": "CancerCondition",
+                "display": "Breast Cancer",
+                "confidence_score": 0.9,
+            },
+            {
+                "element_type": "CancerTreatment",
+                "display": "Chemotherapy",
+                "confidence_score": 0.8,
+            },
+            {
+                "element_type": "PatientDemographics",
+                "display": "Female",
+                "confidence_score": 0.7,
+            },
             {"element_type": "TNMStage", "display": "T2N1M0", "confidence_score": 0.6},
-            {"element_type": "GeneticMarker", "display": "HER2+", "confidence_score": 0.8},
-            {"element_type": "CancerCondition", "display": "Metastatic", "confidence_score": 0.7},
-            {"element_type": "CancerTreatment", "display": "Targeted Therapy", "confidence_score": 0.9},
-            {"element_type": "PatientDemographics", "display": "Age 45", "confidence_score": 0.8}
+            {
+                "element_type": "GeneticMarker",
+                "display": "HER2+",
+                "confidence_score": 0.8,
+            },
+            {
+                "element_type": "CancerCondition",
+                "display": "Metastatic",
+                "confidence_score": 0.7,
+            },
+            {
+                "element_type": "CancerTreatment",
+                "display": "Targeted Therapy",
+                "confidence_score": 0.9,
+            },
+            {
+                "element_type": "PatientDemographics",
+                "display": "Age 45",
+                "confidence_score": 0.8,
+            },
         ]
         mock_result.validation_results = Mock(compliance_score=0.85)
         mock_pipeline.process.return_value = mock_result
@@ -224,7 +279,7 @@ class TestTrialsOptimizerWorkflow:
             cv_folds=3,
             prompts=["direct_mcode_evidence_based_concise"],
             models=["deepseek-coder"],
-            max_combinations=1
+            max_combinations=1,
         )
 
         assert result.success is True
@@ -241,16 +296,22 @@ class TestTrialsOptimizerWorkflow:
         assert "No trial data provided" in result.error_message
 
     @pytest.mark.asyncio
-    @patch('src.workflows.trials_optimizer_workflow.McodePipeline')
-    @patch('src.workflows.trials_optimizer_workflow.TrialsOptimizerWorkflow._set_default_llm_spec')
-    async def test_execute_calls_set_default_spec(self, mock_set_default, mock_pipeline_class, workflow, mock_trials_data):
+    @patch("src.workflows.trials_optimizer_workflow.McodePipeline")
+    @patch(
+        "src.workflows.trials_optimizer_workflow.TrialsOptimizerWorkflow._set_default_llm_spec"
+    )
+    async def test_execute_calls_set_default_spec(
+        self, mock_set_default, mock_pipeline_class, workflow, mock_trials_data
+    ):
         """Test that execute calls set default LLM spec on success."""
         # Mock successful pipeline with good score
         from unittest.mock import AsyncMock
+
         mock_pipeline = AsyncMock()
         mock_result = Mock()
         # Create proper McodeElement objects
         from src.shared.models import McodeElement
+
         mock_mappings = [
             McodeElement(
                 element_type="CancerCondition",
@@ -258,7 +319,7 @@ class TestTrialsOptimizerWorkflow:
                 display="Breast Cancer",
                 system="ICD-10",
                 confidence_score=0.9,
-                evidence_text="Patient has breast cancer"
+                evidence_text="Patient has breast cancer",
             ),
             McodeElement(
                 element_type="CancerTreatment",
@@ -266,7 +327,7 @@ class TestTrialsOptimizerWorkflow:
                 display="Chemotherapy",
                 system="Treatment",
                 confidence_score=0.8,
-                evidence_text="Patient receives chemotherapy"
+                evidence_text="Patient receives chemotherapy",
             ),
             McodeElement(
                 element_type="PatientDemographics",
@@ -274,7 +335,7 @@ class TestTrialsOptimizerWorkflow:
                 display="Female",
                 system="Demographics",
                 confidence_score=0.7,
-                evidence_text="Patient is female"
+                evidence_text="Patient is female",
             ),
             McodeElement(
                 element_type="TNMStage",
@@ -282,7 +343,7 @@ class TestTrialsOptimizerWorkflow:
                 display="T2N1M0",
                 system="TNM",
                 confidence_score=0.6,
-                evidence_text="Tumor stage T2N1M0"
+                evidence_text="Tumor stage T2N1M0",
             ),
             McodeElement(
                 element_type="GeneticMarker",
@@ -290,7 +351,7 @@ class TestTrialsOptimizerWorkflow:
                 display="HER2+",
                 system="Biomarker",
                 confidence_score=0.8,
-                evidence_text="HER2 positive"
+                evidence_text="HER2 positive",
             ),
             McodeElement(
                 element_type="CancerCondition",
@@ -298,7 +359,7 @@ class TestTrialsOptimizerWorkflow:
                 display="Metastatic",
                 system="ICD-10",
                 confidence_score=0.7,
-                evidence_text="Metastatic disease"
+                evidence_text="Metastatic disease",
             ),
             McodeElement(
                 element_type="CancerTreatment",
@@ -306,7 +367,7 @@ class TestTrialsOptimizerWorkflow:
                 display="Targeted Therapy",
                 system="Treatment",
                 confidence_score=0.9,
-                evidence_text="Targeted therapy prescribed"
+                evidence_text="Targeted therapy prescribed",
             ),
             McodeElement(
                 element_type="PatientDemographics",
@@ -314,7 +375,7 @@ class TestTrialsOptimizerWorkflow:
                 display="Age 45",
                 system="Demographics",
                 confidence_score=0.8,
-                evidence_text="Patient age 45"
+                evidence_text="Patient age 45",
             ),
             McodeElement(
                 element_type="CancerCondition",
@@ -322,7 +383,7 @@ class TestTrialsOptimizerWorkflow:
                 display="Invasive Ductal",
                 system="ICD-10",
                 confidence_score=0.8,
-                evidence_text="Invasive ductal carcinoma"
+                evidence_text="Invasive ductal carcinoma",
             ),
             McodeElement(
                 element_type="CancerTreatment",
@@ -330,8 +391,8 @@ class TestTrialsOptimizerWorkflow:
                 display="Surgery",
                 system="Treatment",
                 confidence_score=0.9,
-                evidence_text="Surgical intervention"
-            )
+                evidence_text="Surgical intervention",
+            ),
         ]
         mock_result.mcode_mappings = mock_mappings
         mock_result.validation_results = Mock(compliance_score=0.9)
@@ -344,7 +405,7 @@ class TestTrialsOptimizerWorkflow:
             cv_folds=3,
             prompts=["direct_mcode_evidence_based_concise"],
             models=["deepseek-coder"],
-            max_combinations=1
+            max_combinations=1,
         )
 
         # Should have called set default spec since score > 0
@@ -355,16 +416,39 @@ class TestTrialsOptimizerWorkflow:
         """Test CV folds adjustment when more folds than trials."""
         trials_count = len(mock_trials_data)  # 3 trials
 
-        with patch('src.workflows.trials_optimizer_workflow.McodePipeline') as mock_pipeline_class:
+        with patch(
+            "src.workflows.trials_optimizer_workflow.McodePipeline"
+        ) as mock_pipeline_class:
             from unittest.mock import AsyncMock
+
             mock_pipeline = AsyncMock()
             mock_result = Mock()
             mock_result.mcode_mappings = [
-                {"element_type": "CancerCondition", "display": "Breast Cancer", "confidence_score": 0.9},
-                {"element_type": "CancerTreatment", "display": "Chemotherapy", "confidence_score": 0.8},
-                {"element_type": "PatientDemographics", "display": "Female", "confidence_score": 0.7},
-                {"element_type": "TNMStage", "display": "T2N1M0", "confidence_score": 0.6},
-                {"element_type": "GeneticMarker", "display": "HER2+", "confidence_score": 0.8}
+                {
+                    "element_type": "CancerCondition",
+                    "display": "Breast Cancer",
+                    "confidence_score": 0.9,
+                },
+                {
+                    "element_type": "CancerTreatment",
+                    "display": "Chemotherapy",
+                    "confidence_score": 0.8,
+                },
+                {
+                    "element_type": "PatientDemographics",
+                    "display": "Female",
+                    "confidence_score": 0.7,
+                },
+                {
+                    "element_type": "TNMStage",
+                    "display": "T2N1M0",
+                    "confidence_score": 0.6,
+                },
+                {
+                    "element_type": "GeneticMarker",
+                    "display": "HER2+",
+                    "confidence_score": 0.8,
+                },
             ]
             mock_result.validation_results = Mock(compliance_score=0.8)
             mock_pipeline.process.return_value = mock_result
@@ -375,7 +459,7 @@ class TestTrialsOptimizerWorkflow:
                 cv_folds=5,  # More folds than trials
                 prompts=["direct_mcode_evidence_based_concise"],
                 models=["deepseek-coder"],
-                max_combinations=1
+                max_combinations=1,
             )
 
             # Should adjust folds to match trial count

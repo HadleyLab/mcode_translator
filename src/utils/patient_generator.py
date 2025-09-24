@@ -14,9 +14,8 @@ import json
 import os
 import random
 import zipfile
-from itertools import islice
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional
 
 from .config import Config
 from .logging_config import get_logger
@@ -460,7 +459,9 @@ class PatientGenerator:
                     if patient_id not in exclude_ids:
                         return patient
                 except Exception as e:
-                    self.logger.warning(f"Skipping invalid patient file {fname}: {str(e)}")
+                    self.logger.warning(
+                        f"Skipping invalid patient file {fname}: {str(e)}"
+                    )
                     continue
             raise ValueError("Could not find available patient after exclusions")
 
@@ -565,11 +566,6 @@ class PatientGenerator:
         self._patient_files = []
         self._current_index = 0
         self._loaded = False
-
-
-
-
-
 
 
 def create_patient_generator(

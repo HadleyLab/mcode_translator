@@ -1,18 +1,21 @@
 """
 Shared test fixtures and configuration for mcode_translator tests.
 """
+
 import pytest
 import tempfile
 import os
-from pathlib import Path
-from typing import Dict, Any, List, Generator
+from typing import Dict, Any, Generator
 import sys
 
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
+
     # Load from heysol_api_client/.env relative to project root
-    env_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'heysol_api_client', '.env')
+    env_file = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "heysol_api_client", ".env"
+    )
     load_dotenv(env_file)
     print(f"Loaded environment from: {env_file}")
 except ImportError:
@@ -22,10 +25,11 @@ except Exception as e:
     print(f"Error loading .env file: {e}")
 
 # Add src directory to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Setup color logging for all tests
 from src.utils.logging_config import setup_logging, get_logger
+
 setup_logging(level="DEBUG")
 
 # Import data factories
@@ -35,11 +39,12 @@ try:
         PatientFactory,
         McodeFactory,
         TestDataManager,
-        test_data_manager
+        test_data_manager,
     )
 except ImportError:
     # Fallback for direct execution
     import sys
+
     sys.path.insert(0, os.path.dirname(__file__))
     try:
         from data.factories import (
@@ -47,7 +52,7 @@ except ImportError:
             PatientFactory,
             McodeFactory,
             TestDataManager,
-            test_data_manager
+            test_data_manager,
         )
     except ImportError:
         # Create dummy classes if factories don't exist
@@ -66,16 +71,26 @@ except ImportError:
 
             @staticmethod
             def create_large_trial():
-                return {"nct_id": "NCT99999999", "title": "Large Trial", "conditions": ["Cancer"] * 100}
+                return {
+                    "nct_id": "NCT99999999",
+                    "title": "Large Trial",
+                    "conditions": ["Cancer"] * 100,
+                }
 
         class PatientFactory:
             @staticmethod
             def create_breast_cancer_patient():
-                return {"resourceType": "Bundle", "entry": [{"resource": {"resourceType": "Patient", "id": "12345"}}]}
+                return {
+                    "resourceType": "Bundle",
+                    "entry": [{"resource": {"resourceType": "Patient", "id": "12345"}}],
+                }
 
             @staticmethod
             def create_lung_cancer_patient():
-                return {"resourceType": "Bundle", "entry": [{"resource": {"resourceType": "Patient", "id": "67890"}}]}
+                return {
+                    "resourceType": "Bundle",
+                    "entry": [{"resource": {"resourceType": "Patient", "id": "67890"}}],
+                }
 
             @staticmethod
             def create_invalid_patient(field):
@@ -83,7 +98,13 @@ except ImportError:
 
             @staticmethod
             def create_patient_bundle(count):
-                return {"resourceType": "Bundle", "entry": [{"resource": {"resourceType": "Patient", "id": f"patient_{i}"}} for i in range(count)]}
+                return {
+                    "resourceType": "Bundle",
+                    "entry": [
+                        {"resource": {"resourceType": "Patient", "id": f"patient_{i}"}}
+                        for i in range(count)
+                    ],
+                }
 
         class McodeFactory:
             @staticmethod
@@ -96,66 +117,80 @@ except ImportError:
 
         test_data_manager = TestDataManager()
 
+
 # Test data fixtures
 @pytest.fixture
 def trial_factory():
     """Factory for creating trial test data."""
     return TrialFactory()
 
+
 @pytest.fixture
 def patient_factory():
     """Factory for creating patient test data."""
     return PatientFactory()
+
 
 @pytest.fixture
 def mcode_factory():
     """Factory for creating mCODE test data."""
     return McodeFactory()
 
+
 @pytest.fixture
 def test_data_manager_fixture():
     """Test data manager for cleanup."""
     return test_data_manager
+
 
 @pytest.fixture
 def breast_cancer_trial():
     """Sample breast cancer trial."""
     return TrialFactory.create_breast_cancer_trial()
 
+
 @pytest.fixture
 def lung_cancer_trial():
     """Sample lung cancer trial."""
     return TrialFactory.create_lung_cancer_trial()
+
 
 @pytest.fixture
 def breast_cancer_patient():
     """Sample breast cancer patient."""
     return PatientFactory.create_breast_cancer_patient()
 
+
 @pytest.fixture
 def lung_cancer_patient():
     """Sample lung cancer patient."""
     return PatientFactory.create_lung_cancer_patient()
+
 
 @pytest.fixture
 def invalid_trial():
     """Invalid trial for error testing."""
     return TrialFactory.create_invalid_trial("nct_id")
 
+
 @pytest.fixture
 def invalid_patient():
     """Invalid patient for error testing."""
     return PatientFactory.create_invalid_patient("gender")
+
 
 @pytest.fixture
 def large_trial():
     """Large trial for performance testing."""
     return TrialFactory.create_large_trial()
 
+
 @pytest.fixture
 def large_patient_bundle():
     """Large patient bundle for performance testing."""
     return PatientFactory.create_patient_bundle(50)
+
+
 @pytest.fixture
 def sample_trial_data() -> Dict[str, Any]:
     """Sample clinical trial data for testing."""
@@ -167,8 +202,9 @@ def sample_trial_data() -> Dict[str, Any]:
         },
         "conditions": ["Breast Cancer"],
         "phases": ["Phase 2"],
-        "interventions": [{"type": "Drug", "name": "Sample Drug"}]
+        "interventions": [{"type": "Drug", "name": "Sample Drug"}],
     }
+
 
 @pytest.fixture
 def sample_patient_data() -> Dict[str, Any]:
@@ -181,10 +217,10 @@ def sample_patient_data() -> Dict[str, Any]:
                     "resourceType": "Patient",
                     "id": "12345",
                     "gender": "female",
-                    "birthDate": "1980-01-01"
+                    "birthDate": "1980-01-01",
                 }
             }
-        ]
+        ],
     }
 
 
@@ -195,12 +231,11 @@ def temp_cache_dir() -> Generator[str, None, None]:
         yield tmpdir
 
 
-
-
 @pytest.fixture
 def mock_memory_storage():
     """Mock memory storage for testing."""
     from unittest.mock import MagicMock
+
     mock = MagicMock()
     mock.store.return_value = True
     mock.retrieve.return_value = {"test": "data"}
@@ -211,14 +246,14 @@ def mock_memory_storage():
 def mock_config():
     """Mock configuration for testing."""
     from unittest.mock import MagicMock
+
     return MagicMock()
+
+
 @pytest.fixture
 def test_logger():
     """Logger fixture for tests that need logging."""
     return get_logger("test_logger")
-
-
-
 
 
 # Test data factories
@@ -238,12 +273,11 @@ def create_test_trial(nct_id: str = "NCT12345678", **kwargs) -> Dict[str, Any]:
         "status": kwargs.get("status", "Recruiting"),
         "phases": kwargs.get("phases", ["Phase 2"]),
         "conditions": kwargs.get("conditions", ["Cancer"]),
-        "eligibility": {
-            "criteria": kwargs.get("criteria", "Age >= 18")
-        }
+        "eligibility": {"criteria": kwargs.get("criteria", "Age >= 18")},
     }
     base_trial.update(kwargs)
     return base_trial
+
 
 def create_test_patient(patient_id: str = "12345", **kwargs) -> Dict[str, Any]:
     """Factory for creating test patient data.
@@ -264,30 +298,37 @@ def create_test_patient(patient_id: str = "12345", **kwargs) -> Dict[str, Any]:
                     "resourceType": "Patient",
                     "id": patient_id,
                     "gender": kwargs.get("gender", "female"),
-                    "birthDate": kwargs.get("birth_date", "1980-01-01")
+                    "birthDate": kwargs.get("birth_date", "1980-01-01"),
                 }
             }
-        ]
+        ],
     }
     base_patient.update(kwargs)
     return base_patient
+
 
 # Pytest markers for test categorization
 def pytest_configure(config):
     """Configure pytest markers."""
     config.addinivalue_line("markers", "live: mark test as using real data/services")
     config.addinivalue_line("markers", "slow: mark test as slow running")
-    config.addinivalue_line("markers", "performance: mark test as performance benchmark")
+    config.addinivalue_line(
+        "markers", "performance: mark test as performance benchmark"
+    )
     config.addinivalue_line("markers", "integration: mark test as integration test")
     config.addinivalue_line("markers", "unit: mark test as unit test")
+
 
 # Environment variable for enabling live tests (enabled by default)
 LIVE_TESTS_ENABLED = os.getenv("ENABLE_LIVE_TESTS", "true").lower() == "true"
 
+
 def pytest_collection_modifyitems(config, items):
     """Skip live tests unless explicitly enabled."""
     if not LIVE_TESTS_ENABLED:
-        skip_live = pytest.mark.skip(reason="Live tests disabled. Set ENABLE_LIVE_TESTS=true to run.")
+        skip_live = pytest.mark.skip(
+            reason="Live tests disabled. Set ENABLE_LIVE_TESTS=true to run."
+        )
         for item in items:
             if "live" in item.keywords:
                 item.add_marker(skip_live)

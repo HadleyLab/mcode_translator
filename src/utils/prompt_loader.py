@@ -6,7 +6,6 @@ instead of using hardcoded prompts in the source code.
 """
 
 import json
-import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -158,7 +157,7 @@ class PromptLoader:
             else:
                 return prompt_content
 
-        except ValueError as e:
+        except ValueError:
             # Re-raise validation errors to be handled by caller
             raise
         except Exception as e:
@@ -182,7 +181,7 @@ class PromptLoader:
 
         if not prompt_type:
             logger.warning(
-                f"Prompt type not specified in config, skipping validation for prompt"
+                "Prompt type not specified in config, skipping validation for prompt"
             )
             return
 
@@ -228,7 +227,7 @@ class PromptLoader:
 
         if not prompt_type:
             logger.warning(
-                f"Prompt type not specified in config, skipping response structure validation for prompt"
+                "Prompt type not specified in config, skipping response structure validation for prompt"
             )
             return
 

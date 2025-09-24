@@ -8,11 +8,9 @@ archives without any processing or core memory storage.
 
 import argparse
 import sys
-from pathlib import Path
 from typing import Optional
 
 from src.shared.cli_utils import McodeCLI
-from src.utils.config import Config
 from src.workflows.patients_fetcher_workflow import PatientsFetcherWorkflow
 
 
@@ -125,7 +123,9 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
                 if args.output_file:
                     print(f"💾 Results saved to: {args.output_file}")
                 else:
-                    print(f"📤 Results written to stdout: {total_fetched} records (NDJSON format)")
+                    print(
+                        f"📤 Results written to stdout: {total_fetched} records (NDJSON format)"
+                    )
 
                 # Print additional details
                 fetch_type = metadata.get("fetch_type")

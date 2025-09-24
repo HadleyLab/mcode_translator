@@ -2,15 +2,18 @@
 Unit tests for Pydantic data models.
 """
 
-from datetime import datetime
-
 import pytest
 
-from src.shared.models import (BenchmarkResult, ClinicalTrialData, FHIRBundle,
-                               FHIRPatient, McodeElement, PatientData,
-                               PipelineResult, ProcessingMetadata,
-                               SourceReference, TokenUsage, ValidationResult,
-                               WorkflowResult)
+from src.shared.models import (
+    BenchmarkResult,
+    ClinicalTrialData,
+    McodeElement,
+    PatientData,
+    PipelineResult,
+    TokenUsage,
+    ValidationResult,
+    WorkflowResult,
+)
 
 
 class TestClinicalTrialData:

@@ -1,6 +1,7 @@
 """
 Test color logging configuration and functionality.
 """
+
 import pytest
 
 

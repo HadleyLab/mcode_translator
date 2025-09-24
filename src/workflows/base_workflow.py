@@ -5,19 +5,12 @@ This module provides the foundation for all workflow implementations,
 ensuring consistent interfaces, error handling, and CORE memory integration.
 """
 
-import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
 from src.shared.models import (
     WorkflowResult,
-    WorkflowInput,
     ProcessingMetadata,
-    TrialsProcessorInput,
-    PatientsProcessorInput,
-    TrialsSummarizerInput,
-    PatientsSummarizerInput,
 )
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
@@ -38,7 +31,11 @@ class BaseWorkflow(ABC):
     and CORE memory integration. All workflows can store to CORE memory.
     """
 
-    def __init__(self, config: Optional[Config] = None, memory_storage: Optional[McodeMemoryStorage] = None):
+    def __init__(
+        self,
+        config: Optional[Config] = None,
+        memory_storage: Optional[McodeMemoryStorage] = None,
+    ):
         """
         Initialize the workflow with configuration and CORE memory.
 
@@ -65,7 +62,9 @@ class BaseWorkflow(ABC):
         """
         pass
 
-    def store_to_core_memory(self, key: str, data: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> bool:
+    def store_to_core_memory(
+        self, key: str, data: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None
+    ) -> bool:
         """
         Store data to CORE memory in this workflow's designated space.
 
@@ -91,14 +90,18 @@ class BaseWorkflow(ABC):
                 "metadata": metadata or {},
                 "workflow_type": self.__class__.__name__,
                 "memory_space": self.memory_space,
-                "timestamp": self._get_timestamp()
+                "timestamp": self._get_timestamp(),
             }
 
             success = self.memory_storage.store(namespaced_key, storage_data)
             if success:
-                self.logger.info(f"✅ Stored {key} to CORE memory space '{self.memory_space}'")
+                self.logger.info(
+                    f"✅ Stored {key} to CORE memory space '{self.memory_space}'"
+                )
             else:
-                self.logger.warning(f"❌ Failed to store {key} to CORE memory space '{self.memory_space}'")
+                self.logger.warning(
+                    f"❌ Failed to store {key} to CORE memory space '{self.memory_space}'"
+                )
 
             return success
 
@@ -124,7 +127,9 @@ class BaseWorkflow(ABC):
             namespaced_key = f"{self.memory_space}:{key}"
             data = self.memory_storage.retrieve(namespaced_key)
             if data:
-                self.logger.debug(f"✅ Retrieved {key} from CORE memory space '{self.memory_space}'")
+                self.logger.debug(
+                    f"✅ Retrieved {key} from CORE memory space '{self.memory_space}'"
+                )
             return data
         except Exception as e:
             self.logger.error(f"❌ Error retrieving {key} from CORE memory: {e}")
@@ -133,6 +138,7 @@ class BaseWorkflow(ABC):
     def _get_timestamp(self) -> str:
         """Get current timestamp for storage metadata."""
         from datetime import datetime
+
         return datetime.utcnow().isoformat()
 
     @abstractmethod

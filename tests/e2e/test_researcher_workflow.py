@@ -7,8 +7,6 @@ Tests the complete researcher workflow from trial discovery to summary generatio
 """
 
 import json
-import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -30,20 +28,16 @@ class TestResearcherWorkflowE2E:
                 "identificationModule": {
                     "nctId": "NCT12345678",
                     "briefTitle": "Phase 2 Study of Test Drug in Breast Cancer",
-                    "officialTitle": "A Phase 2 Study of Test Drug in Patients with Breast Cancer"
+                    "officialTitle": "A Phase 2 Study of Test Drug in Patients with Breast Cancer",
                 },
-                "statusModule": {
-                    "overallStatus": "Recruiting"
-                },
-                "designModule": {
-                    "phases": ["Phase 2"]
-                },
+                "statusModule": {"overallStatus": "Recruiting"},
+                "designModule": {"phases": ["Phase 2"]},
                 "conditionsModule": {
                     "conditions": [
                         {
                             "name": "Breast Cancer",
                             "code": "254837009",
-                            "codeSystem": "http://snomed.info/sct"
+                            "codeSystem": "http://snomed.info/sct",
                         }
                     ]
                 },
@@ -51,17 +45,17 @@ class TestResearcherWorkflowE2E:
                     "eligibilityCriteria": "Inclusion Criteria:\n- Age >= 18 years\n- Histologically confirmed breast cancer",
                     "minimumAge": "18 Years",
                     "sex": "All",
-                    "healthyVolunteers": False
+                    "healthyVolunteers": False,
                 },
                 "armsInterventionsModule": {
                     "interventions": [
                         {
                             "type": "Drug",
                             "name": "Test Drug",
-                            "description": "Experimental targeted therapy"
+                            "description": "Experimental targeted therapy",
                         }
                     ]
-                }
+                },
             }
         }
 
@@ -85,33 +79,29 @@ class TestResearcherWorkflowE2E:
                 {
                     "element_type": "PrimaryCancerCondition",
                     "confidence": 0.95,
-                    "evidence": "Trial conditions include breast cancer"
+                    "evidence": "Trial conditions include breast cancer",
                 },
                 {
                     "element_type": "CancerStage",
                     "confidence": 0.90,
-                    "evidence": "Phase 2 trial for breast cancer"
-                }
+                    "evidence": "Phase 2 trial for breast cancer",
+                },
             ]
         }
         mock_processing_result.__dict__ = {
             "McodeResults": mock_processing_result.McodeResults,
-            "protocolSection": {
-                "identificationModule": {"nctId": "NCT12345678"}
-            }
+            "protocolSection": {"identificationModule": {"nctId": "NCT12345678"}},
         }
 
         # Mock summarization response
         mock_summary_result = MagicMock()
         mock_summary_result.McodeResults = {
             "natural_language_summary": "This Phase 2 clinical trial evaluates Test Drug in patients with breast cancer. The study includes patients aged 18 and older with histologically confirmed breast cancer. Participants receive experimental targeted therapy as intervention.",
-            "mcode_mappings": mock_processing_result.McodeResults["mcode_mappings"]
+            "mcode_mappings": mock_processing_result.McodeResults["mcode_mappings"],
         }
         mock_summary_result.__dict__ = {
             "McodeResults": mock_summary_result.McodeResults,
-            "protocolSection": {
-                "identificationModule": {"nctId": "NCT12345678"}
-            }
+            "protocolSection": {"identificationModule": {"nctId": "NCT12345678"}},
         }
 
         # Configure mock service
@@ -135,8 +125,10 @@ class TestResearcherWorkflowE2E:
         mock_storage.store_trial_summary.return_value = True
         return mock_storage
 
-    @patch('src.utils.fetcher.requests.get')
-    def test_researcher_workflow_trial_discovery(self, mock_get, sample_trial_data, mock_api_response, tmp_path):
+    @patch("src.utils.fetcher.requests.get")
+    def test_researcher_workflow_trial_discovery(
+        self, mock_get, sample_trial_data, mock_api_response, tmp_path
+    ):
         """Test the trial discovery phase of researcher workflow."""
         # Setup API mock
         mock_get.return_value = mock_api_response
@@ -146,6 +138,7 @@ class TestResearcherWorkflowE2E:
 
         # Test CLI execution
         import argparse
+
         args = argparse.Namespace(
             condition=None,
             nct_id="NCT12345678",
@@ -154,12 +147,11 @@ class TestResearcherWorkflowE2E:
             output_file=str(output_file),
             verbose=False,
             log_level="INFO",
-            config=None
+            config=None,
         )
 
         # Capture stdout since CLI prints to stdout
         import io
-        import sys
         from contextlib import redirect_stdout
 
         stdout_capture = io.StringIO()
@@ -170,20 +162,29 @@ class TestResearcherWorkflowE2E:
         assert output_file.exists()
 
         # Verify output contains expected data
-        with open(output_file, 'r') as f:
+        with open(output_file, "r") as f:
             content = f.read().strip()
             assert content
             trial_data = json.loads(content)
-            assert trial_data["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
+            assert (
+                trial_data["protocolSection"]["identificationModule"]["nctId"]
+                == "NCT12345678"
+            )
 
         # Verify success message in stdout
         output = stdout_capture.getvalue()
         assert "✅ Trials fetch completed successfully!" in output
         assert "Total trials fetched: 1" in output
 
-    @patch('src.pipeline.llm_service.LLMService')
-    @patch('src.storage.mcode_memory_storage.McodeMemoryStorage')
-    def test_researcher_workflow_trial_analysis(self, mock_memory_storage_class, mock_llm_service_class, sample_trial_data, tmp_path):
+    @patch("src.pipeline.llm_service.LLMService")
+    @patch("src.storage.mcode_memory_storage.McodeMemoryStorage")
+    def test_researcher_workflow_trial_analysis(
+        self,
+        mock_memory_storage_class,
+        mock_llm_service_class,
+        sample_trial_data,
+        tmp_path,
+    ):
         """Test the trial analysis phase of researcher workflow."""
         from src.shared.models import McodeElement
 
@@ -193,6 +194,7 @@ class TestResearcherWorkflowE2E:
         mock_memory_storage_class.return_value = mock_memory
 
         mock_llm = MagicMock()
+
         # Mock the async map_to_mcode method to return McodeElement instances
         async def mock_map_to_mcode(text):
             return [
@@ -202,23 +204,25 @@ class TestResearcherWorkflowE2E:
                     system="http://snomed.info/sct",
                     display="Breast Cancer",
                     confidence_score=0.95,
-                    evidence_text="Trial conditions include breast cancer"
+                    evidence_text="Trial conditions include breast cancer",
                 )
             ]
+
         mock_llm.map_to_mcode = mock_map_to_mcode
         mock_llm_service_class.return_value = mock_llm
 
         # Create input file with trial data
         input_file = tmp_path / "input_trials.ndjson"
-        with open(input_file, 'w') as f:
+        with open(input_file, "w") as f:
             json.dump(sample_trial_data, f)
-            f.write('\n')
+            f.write("\n")
 
         # Create output file
         output_file = tmp_path / "mcode_trials.ndjson"
 
         # Test CLI execution
         import argparse
+
         args = argparse.Namespace(
             input_file=str(input_file),
             output_file=str(output_file),
@@ -229,7 +233,7 @@ class TestResearcherWorkflowE2E:
             workers=1,
             verbose=False,
             log_level="INFO",
-            config=None
+            config=None,
         )
 
         trials_processor_main(args)
@@ -238,7 +242,7 @@ class TestResearcherWorkflowE2E:
         assert output_file.exists()
 
         # Verify output contains expected mCODE data
-        with open(output_file, 'r') as f:
+        with open(output_file, "r") as f:
             content = f.read().strip()
             assert content
             mcode_data = json.loads(content)
@@ -247,9 +251,15 @@ class TestResearcherWorkflowE2E:
             assert "mcode_mappings" in mcode_data["mcode_elements"]
             assert len(mcode_data["mcode_elements"]["mcode_mappings"]) > 0
 
-    @patch('src.services.summarizer.McodeSummarizer')
-    @patch('src.storage.mcode_memory_storage.McodeMemoryStorage')
-    def test_researcher_workflow_summary_generation(self, mock_memory_storage_class, mock_summarizer_class, sample_trial_data, tmp_path):
+    @patch("src.services.summarizer.McodeSummarizer")
+    @patch("src.storage.mcode_memory_storage.McodeMemoryStorage")
+    def test_researcher_workflow_summary_generation(
+        self,
+        mock_memory_storage_class,
+        mock_summarizer_class,
+        sample_trial_data,
+        tmp_path,
+    ):
         """Test the summary generation phase of researcher workflow."""
         # Setup mocks
         mock_memory = MagicMock()
@@ -269,21 +279,22 @@ class TestResearcherWorkflowE2E:
                     {
                         "element_type": "PrimaryCancerCondition",
                         "confidence": 0.95,
-                        "evidence": "Trial conditions include breast cancer"
+                        "evidence": "Trial conditions include breast cancer",
                     }
                 ]
             },
-            "original_trial_data": sample_trial_data
+            "original_trial_data": sample_trial_data,
         }
-        with open(input_file, 'w') as f:
+        with open(input_file, "w") as f:
             json.dump(mcode_trial_data, f)
-            f.write('\n')
+            f.write("\n")
 
         # Create output file
         output_file = tmp_path / "summaries.ndjson"
 
         # Test CLI execution
         import argparse
+
         args = argparse.Namespace(
             input_file=str(input_file),
             output_file=str(output_file),
@@ -294,7 +305,7 @@ class TestResearcherWorkflowE2E:
             workers=1,
             verbose=False,
             log_level="INFO",
-            config=None
+            config=None,
         )
 
         trials_summarizer_main(args)
@@ -303,7 +314,7 @@ class TestResearcherWorkflowE2E:
         assert output_file.exists()
 
         # Verify output contains expected summary data
-        with open(output_file, 'r') as f:
+        with open(output_file, "r") as f:
             content = f.read().strip()
             assert content
             summary_data = json.loads(content)
@@ -311,13 +322,20 @@ class TestResearcherWorkflowE2E:
             assert "summary" in summary_data
             assert "mcode_elements" in summary_data
 
-    @patch('src.services.summarizer.McodeSummarizer')
-    @patch('src.pipeline.llm_service.LLMService')
-    @patch('src.storage.mcode_memory_storage.McodeMemoryStorage')
-    @patch('src.utils.fetcher.requests.get')
-    def test_complete_researcher_workflow_integration(self, mock_get, mock_memory_storage_class,
-                                                     mock_llm_service_class, mock_summarizer_class,
-                                                     sample_trial_data, mock_api_response, tmp_path):
+    @patch("src.services.summarizer.McodeSummarizer")
+    @patch("src.pipeline.llm_service.LLMService")
+    @patch("src.storage.mcode_memory_storage.McodeMemoryStorage")
+    @patch("src.utils.fetcher.requests.get")
+    def test_complete_researcher_workflow_integration(
+        self,
+        mock_get,
+        mock_memory_storage_class,
+        mock_llm_service_class,
+        mock_summarizer_class,
+        sample_trial_data,
+        mock_api_response,
+        tmp_path,
+    ):
         """Test the complete end-to-end researcher workflow integration."""
         from src.shared.models import McodeElement
 
@@ -332,6 +350,7 @@ class TestResearcherWorkflowE2E:
 
         # Setup LLM service mock
         mock_llm = MagicMock()
+
         async def mock_map_to_mcode(text):
             return [
                 McodeElement(
@@ -340,9 +359,10 @@ class TestResearcherWorkflowE2E:
                     system="http://snomed.info/sct",
                     display="Breast Cancer",
                     confidence_score=0.95,
-                    evidence_text="Trial conditions include breast cancer"
+                    evidence_text="Trial conditions include breast cancer",
                 )
             ]
+
         mock_llm.map_to_mcode = mock_map_to_mcode
         mock_llm_service_class.return_value = mock_llm
 
@@ -358,14 +378,21 @@ class TestResearcherWorkflowE2E:
 
         # Step 1: Fetch trials
         import argparse
+
         fetch_args = argparse.Namespace(
-            condition=None, nct_id="NCT12345678", nct_ids=None, limit=10,
-            output_file=str(trials_file), verbose=False, log_level="INFO", config=None
+            condition=None,
+            nct_id="NCT12345678",
+            nct_ids=None,
+            limit=10,
+            output_file=str(trials_file),
+            verbose=False,
+            log_level="INFO",
+            config=None,
         )
 
         import io
-        import sys
         from contextlib import redirect_stdout
+
         stdout_capture = io.StringIO()
         with redirect_stdout(stdout_capture):
             trials_fetcher_main(fetch_args)
@@ -374,9 +401,16 @@ class TestResearcherWorkflowE2E:
 
         # Step 2: Process trials
         process_args = argparse.Namespace(
-            input_file=str(trials_file), output_file=str(mcode_file), ingest=True,
-            memory_source="test", model="deepseek-coder", prompt="direct_mcode_evidence_based_concise",
-            workers=1, verbose=False, log_level="INFO", config=None
+            input_file=str(trials_file),
+            output_file=str(mcode_file),
+            ingest=True,
+            memory_source="test",
+            model="deepseek-coder",
+            prompt="direct_mcode_evidence_based_concise",
+            workers=1,
+            verbose=False,
+            log_level="INFO",
+            config=None,
         )
 
         trials_processor_main(process_args)
@@ -384,16 +418,23 @@ class TestResearcherWorkflowE2E:
 
         # Step 3: Generate summaries
         summary_args = argparse.Namespace(
-            input_file=str(mcode_file), output_file=str(summary_file), ingest=True,
-            memory_source="test", model="deepseek-coder", prompt="direct_mcode_evidence_based_concise",
-            workers=1, verbose=False, log_level="INFO", config=None
+            input_file=str(mcode_file),
+            output_file=str(summary_file),
+            ingest=True,
+            memory_source="test",
+            model="deepseek-coder",
+            prompt="direct_mcode_evidence_based_concise",
+            workers=1,
+            verbose=False,
+            log_level="INFO",
+            config=None,
         )
 
         trials_summarizer_main(summary_args)
         assert summary_file.exists()
 
         # Verify data flow between steps
-        with open(summary_file, 'r') as f:
+        with open(summary_file, "r") as f:
             final_output = json.loads(f.read().strip())
             assert final_output["trial_id"] == "NCT12345678"
             assert "summary" in final_output
@@ -405,16 +446,24 @@ class TestResearcherWorkflowE2E:
         nonexistent_file = tmp_path / "nonexistent.ndjson"
 
         import argparse
+
         args = argparse.Namespace(
-            input_file=str(nonexistent_file), output_file=None, ingest=False,
-            memory_source="test", model="gpt-4", prompt="direct_mcode_evidence_based_concise",
-            workers=1, verbose=False, log_level="INFO", config=None
+            input_file=str(nonexistent_file),
+            output_file=None,
+            ingest=False,
+            memory_source="test",
+            model="gpt-4",
+            prompt="direct_mcode_evidence_based_concise",
+            workers=1,
+            verbose=False,
+            log_level="INFO",
+            config=None,
         )
 
         with pytest.raises(SystemExit):
             trials_processor_main(args)
 
-    @patch('src.cli.trials_fetcher.TrialsFetcherWorkflow')
+    @patch("src.cli.trials_fetcher.TrialsFetcherWorkflow")
     def test_researcher_workflow_invalid_nct_id(self, mock_workflow_class):
         """Test handling of invalid NCT ID in trial discovery."""
         # Setup mock workflow to return failure
@@ -422,19 +471,26 @@ class TestResearcherWorkflowE2E:
         mock_workflow.execute.return_value = WorkflowResult(
             success=False,
             error_message="Invalid NCT ID format",
-            metadata={"fetch_type": "single_nct"}
+            metadata={"fetch_type": "single_nct"},
         )
         mock_workflow_class.return_value = mock_workflow
 
         import argparse
+
         args = argparse.Namespace(
-            condition=None, nct_id="INVALID", nct_ids=None, limit=10,
-            output_file=None, verbose=False, log_level="INFO", config=None
+            condition=None,
+            nct_id="INVALID",
+            nct_ids=None,
+            limit=10,
+            output_file=None,
+            verbose=False,
+            log_level="INFO",
+            config=None,
         )
 
         import io
-        import sys
         from contextlib import redirect_stdout
+
         stdout_capture = io.StringIO()
         with redirect_stdout(stdout_capture):
             with pytest.raises(SystemExit) as exc_info:

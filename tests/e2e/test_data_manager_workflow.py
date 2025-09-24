@@ -8,8 +8,6 @@ Tests the complete data manager workflow from bulk data import to storage:
 
 import argparse
 import json
-import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -17,7 +15,6 @@ import pytest
 from mcode_translate import main as mcode_translate_main
 from src.cli.patients_processor import main as patients_processor_main
 from src.cli.patients_summarizer import main as patients_summarizer_main
-from src.shared.models import WorkflowResult
 
 
 class TestDataManagerWorkflowE2E:
@@ -36,7 +33,7 @@ class TestDataManagerWorkflowE2E:
                         "id": "12345",
                         "name": [{"family": "Smith", "given": ["Jane"]}],
                         "gender": "female",
-                        "birthDate": "1975-03-15"
+                        "birthDate": "1975-03-15",
                     }
                 },
                 {
@@ -44,15 +41,17 @@ class TestDataManagerWorkflowE2E:
                         "resourceType": "Condition",
                         "id": "condition-1",
                         "code": {
-                            "coding": [{
-                                "system": "http://snomed.info/sct",
-                                "code": "254837009",
-                                "display": "Malignant neoplasm of breast"
-                            }]
-                        }
+                            "coding": [
+                                {
+                                    "system": "http://snomed.info/sct",
+                                    "code": "254837009",
+                                    "display": "Malignant neoplasm of breast",
+                                }
+                            ]
+                        },
                     }
-                }
-            ]
+                },
+            ],
         }
 
     @pytest.fixture
@@ -60,7 +59,9 @@ class TestDataManagerWorkflowE2E:
         """Mock HTTP response for data downloads."""
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.iter_content.return_value = [b"fake zip content" * 1000]  # Mock zip content
+        mock_response.iter_content.return_value = [
+            b"fake zip content" * 1000
+        ]  # Mock zip content
         mock_response.headers = {"content-length": "10000"}
         return mock_response
 
@@ -71,8 +72,10 @@ class TestDataManagerWorkflowE2E:
         mock_storage.store_patient_mcode_summary.return_value = True
         return mock_storage
 
-    @patch('src.utils.data_downloader.requests.get')
-    def test_data_manager_workflow_bulk_import(self, mock_get, mock_download_response, tmp_path):
+    @patch("src.utils.data_downloader.requests.get")
+    def test_data_manager_workflow_bulk_import(
+        self, mock_get, mock_download_response, tmp_path
+    ):
         """Test the bulk data import phase of data manager workflow."""
         # Setup mock
         mock_get.return_value = mock_download_response
@@ -93,10 +96,13 @@ class TestDataManagerWorkflowE2E:
             # Simulate command line args for download-data
             test_args = [
                 "download-data",
-                "--archives", "breast_cancer_10_years",
-                "--output-dir", str(download_dir),
-                "--workers", "1",
-                "--force"
+                "--archives",
+                "breast_cancer_10_years",
+                "--output-dir",
+                str(download_dir),
+                "--workers",
+                "1",
+                "--force",
             ]
 
             # Mock sys.argv
@@ -120,13 +126,15 @@ class TestDataManagerWorkflowE2E:
         # Verify mock was called
         mock_get.assert_called()
 
-    def test_data_manager_workflow_validation_and_processing(self, sample_patient_data, tmp_path):
+    def test_data_manager_workflow_validation_and_processing(
+        self, sample_patient_data, tmp_path
+    ):
         """Test the validation and processing phase of data manager workflow."""
         # Create input file with patient data
         input_file = tmp_path / "patients.ndjson"
-        with open(input_file, 'w') as f:
+        with open(input_file, "w") as f:
             json.dump(sample_patient_data, f)
-            f.write('\n')
+            f.write("\n")
 
         # Create output file
         output_file = tmp_path / "mcode_patients.ndjson"
@@ -143,7 +151,7 @@ class TestDataManagerWorkflowE2E:
             workers=1,
             verbose=False,
             log_level="INFO",
-            config=None
+            config=None,
         )
 
         patients_processor_main(args)
@@ -152,13 +160,16 @@ class TestDataManagerWorkflowE2E:
         assert output_file.exists()
 
         # Verify output contains expected mCODE data structure
-        with open(output_file, 'r') as f:
+        with open(output_file, "r") as f:
             content = f.read().strip()
             assert content
             mcode_data = json.loads(content)
             assert "trial_id" in mcode_data or "patient_id" in mcode_data
             assert "mcode_elements" in mcode_data
-            assert "original_trial_data" in mcode_data or "original_patient_data" in mcode_data
+            assert (
+                "original_trial_data" in mcode_data
+                or "original_patient_data" in mcode_data
+            )
 
     def test_data_manager_workflow_storage(self, sample_patient_data, tmp_path):
         """Test the storage phase of data manager workflow."""
@@ -168,13 +179,13 @@ class TestDataManagerWorkflowE2E:
             "patient_id": "12345",
             "mcode_elements": {
                 "Patient": {"name": "Jane Smith", "gender": "female"},
-                "CancerCondition": {"display": "Malignant neoplasm of breast"}
+                "CancerCondition": {"display": "Malignant neoplasm of breast"},
             },
-            "original_patient_data": sample_patient_data
+            "original_patient_data": sample_patient_data,
         }
-        with open(input_file, 'w') as f:
+        with open(input_file, "w") as f:
             json.dump(mcode_patient_data, f)
-            f.write('\n')
+            f.write("\n")
 
         # Create output file
         output_file = tmp_path / "patient_summaries.ndjson"
@@ -191,7 +202,7 @@ class TestDataManagerWorkflowE2E:
             dry_run=False,
             verbose=False,
             log_level="INFO",
-            config=None
+            config=None,
         )
 
         patients_summarizer_main(args)
@@ -200,7 +211,7 @@ class TestDataManagerWorkflowE2E:
         assert output_file.exists()
 
         # Verify output contains expected summary data structure
-        with open(output_file, 'r') as f:
+        with open(output_file, "r") as f:
             content = f.read().strip()
             assert content
             summary_data = json.loads(content)
@@ -208,8 +219,10 @@ class TestDataManagerWorkflowE2E:
             assert "summary" in summary_data
             assert "mcode_elements" in summary_data
 
-    @patch('src.utils.data_downloader.requests.get')
-    def test_complete_data_manager_workflow_integration(self, mock_get, sample_patient_data, tmp_path):
+    @patch("src.utils.data_downloader.requests.get")
+    def test_complete_data_manager_workflow_integration(
+        self, mock_get, sample_patient_data, tmp_path
+    ):
         """Test the complete end-to-end data manager workflow integration."""
         # Setup download mock
         mock_response = MagicMock()
@@ -227,15 +240,17 @@ class TestDataManagerWorkflowE2E:
 
         # Step 1: Bulk Data Import (simulate download completion)
         # Create a mock downloaded file
-        archive_file = download_dir / "breast_cancer" / "10_years" / "breast_cancer_10_years.zip"
+        archive_file = (
+            download_dir / "breast_cancer" / "10_years" / "breast_cancer_10_years.zip"
+        )
         archive_file.parent.mkdir(parents=True)
-        with open(archive_file, 'wb') as f:
+        with open(archive_file, "wb") as f:
             f.write(b"fake zip content" * 1000)
 
         # Create mock patient data file (simulating extraction from archive)
-        with open(patients_file, 'w') as f:
+        with open(patients_file, "w") as f:
             json.dump(sample_patient_data, f)
-            f.write('\n')
+            f.write("\n")
 
         # Step 2: Validation and Processing
         processor_args = argparse.Namespace(
@@ -249,7 +264,7 @@ class TestDataManagerWorkflowE2E:
             workers=1,
             verbose=False,
             log_level="INFO",
-            config=None
+            config=None,
         )
 
         patients_processor_main(processor_args)
@@ -261,13 +276,13 @@ class TestDataManagerWorkflowE2E:
             "patient_id": "12345",
             "mcode_elements": {
                 "Patient": {"name": "Jane Smith", "gender": "female"},
-                "CancerCondition": {"display": "Malignant neoplasm of breast"}
+                "CancerCondition": {"display": "Malignant neoplasm of breast"},
             },
-            "original_patient_data": sample_patient_data
+            "original_patient_data": sample_patient_data,
         }
-        with open(mcode_file, 'w') as f:
+        with open(mcode_file, "w") as f:
             json.dump(mcode_data, f)
-            f.write('\n')
+            f.write("\n")
 
         summarizer_args = argparse.Namespace(
             input_file=str(mcode_file),
@@ -280,14 +295,14 @@ class TestDataManagerWorkflowE2E:
             dry_run=False,
             verbose=False,
             log_level="INFO",
-            config=None
+            config=None,
         )
 
         patients_summarizer_main(summarizer_args)
         assert summary_file.exists()
 
         # Verify data flow between steps
-        with open(summary_file, 'r') as f:
+        with open(summary_file, "r") as f:
             final_output = json.loads(f.read().strip())
             assert "patient_id" in final_output
             assert "summary" in final_output
@@ -299,6 +314,7 @@ class TestDataManagerWorkflowE2E:
         nonexistent_file = tmp_path / "nonexistent.ndjson"
 
         import argparse
+
         args = argparse.Namespace(
             input_file=str(nonexistent_file),
             output_file=None,
@@ -310,13 +326,13 @@ class TestDataManagerWorkflowE2E:
             workers=1,
             verbose=False,
             log_level="INFO",
-            config=None
+            config=None,
         )
 
         with pytest.raises(SystemExit):
             patients_processor_main(args)
 
-    @patch('src.utils.data_downloader.requests.get')
+    @patch("src.utils.data_downloader.requests.get")
     def test_data_manager_workflow_download_failure(self, mock_get):
         """Test handling of download failures in data manager workflow."""
         # Setup mock to simulate download failure
@@ -330,7 +346,9 @@ class TestDataManagerWorkflowE2E:
         from src.utils.data_downloader import _download_single_archive
 
         with pytest.raises(Exception, match="404 Not Found"):
-            _download_single_archive("http://fake.url/archive.zip", "/tmp/test.zip", "test_archive")
+            _download_single_archive(
+                "http://fake.url/archive.zip", "/tmp/test.zip", "test_archive"
+            )
 
     def test_data_manager_workflow_empty_data_validation(self, tmp_path):
         """Test validation of empty or invalid data files."""
@@ -339,6 +357,7 @@ class TestDataManagerWorkflowE2E:
         empty_file.touch()
 
         import argparse
+
         args = argparse.Namespace(
             input_file=str(empty_file),
             output_file=None,
@@ -350,7 +369,7 @@ class TestDataManagerWorkflowE2E:
             workers=1,
             verbose=False,
             log_level="INFO",
-            config=None
+            config=None,
         )
 
         # Should handle empty file gracefully or raise appropriate error

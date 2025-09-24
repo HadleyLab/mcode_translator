@@ -5,7 +5,7 @@ This module provides functions for standardizing the structure of NLP feature
 extraction results, including biomarkers, features, and variants.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 def standardize_features(features: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

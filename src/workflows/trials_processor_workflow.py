@@ -6,18 +6,16 @@ and stores the resulting summaries to CORE Memory.
 """
 
 import asyncio
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from src.pipeline import McodePipeline
-from src.services.summarizer import McodeSummarizer
 from src.shared.models import enhance_trial_with_mcode_results
 from src.storage.mcode_memory_storage import McodeMemoryStorage
-from src.utils.api_manager import APIManager
-from src.utils.concurrency import AsyncQueue, create_task
-from src.utils.logging_config import get_logger
 
 from .base_workflow import TrialsProcessorWorkflow, WorkflowResult
+from .trial_extractor import TrialExtractor
+from .trial_summarizer import TrialSummarizer
+from .cache_manager import TrialCacheManager
 
 
 class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
@@ -38,11 +36,10 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         super().__init__(config, memory_storage)
         self.pipeline = None
 
-        # Initialize caching for workflow-level results
-        api_manager = APIManager()
-        self.workflow_cache = api_manager.get_cache("trials_processor")
-        self.mcode_cache = api_manager.get_cache("mcode_extraction")
-        self.summary_cache = api_manager.get_cache("trial_summaries")
+        # Initialize component classes
+        self.extractor = TrialExtractor()
+        self.summarizer = TrialSummarizer()
+        self.cache_manager = TrialCacheManager()
 
     def execute(self, **kwargs) -> WorkflowResult:
         """
@@ -140,9 +137,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
 
                 for i, result in enumerate(results):
                     if isinstance(result, Exception):
-                        self.logger.error(
-                            f"Task {i+1} failed with exception: {result}"
-                        )
+                        self.logger.error(f"Task {i+1} failed with exception: {result}")
                         failed_count += 1
                         # Add error trial
                         error_trial = {"McodeProcessingError": str(result)}
@@ -171,7 +166,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
 
             # Log final summary
             if successful_count > 0:
-                self.logger.info(f"✅ Trials processing completed successfully!")
+                self.logger.info("✅ Trials processing completed successfully!")
             else:
                 self.logger.error(f"❌ All {total_count} trials failed processing")
 
@@ -185,7 +180,8 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                     "success_rate": success_rate,
                     "model_used": model,
                     "prompt_used": prompt,
-                    "stored_in_memory": store_in_memory and self.memory_storage is not None,
+                    "stored_in_memory": store_in_memory
+                    and self.memory_storage is not None,
                 },
             )
 
@@ -196,113 +192,42 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         self, trial: Dict[str, Any], model: str, prompt: str
     ) -> Optional[Dict[str, Any]]:
         """Get cached processed trial result if available."""
-        trial_id = self._extract_trial_id(trial)
-        import hashlib
-        cache_key_data = {
-            "function": "processed_trial",
-            "trial_id": trial_id,
-            "model": model,
-            "prompt": prompt,
-            "trial_hash": hashlib.md5(str(trial).encode('utf-8')).hexdigest()[:8],
-        }
-
-        cached_result = self.workflow_cache.get_by_key(cache_key_data)
-        if cached_result is not None:
-            self.logger.debug(f"Cache HIT for processed trial {trial_id}")
-            return cached_result
-        return None
+        return self.cache_manager.get_cached_trial_result(trial, model, prompt)
 
     def _cache_trial_result(
         self, processed_trial: Dict[str, Any], model: str, prompt: str
     ) -> None:
         """Cache processed trial result."""
-        trial_id = self._extract_trial_id(processed_trial)
-        import hashlib
-        cache_key_data = {
-            "function": "processed_trial",
-            "trial_id": trial_id,
-            "model": model,
-            "prompt": prompt,
-            "trial_hash": hashlib.md5(str(processed_trial).encode('utf-8')).hexdigest()[:8],
-        }
+        self.cache_manager.cache_trial_result(processed_trial, model, prompt)
 
-        # Convert McodeElement objects to dicts for JSON serialization
-        serializable_trial = self._make_trial_serializable(processed_trial)
-        self.workflow_cache.set_by_key(serializable_trial, cache_key_data)
-        self.logger.debug(f"Cached processed trial {trial_id}")
-
-    def _make_trial_serializable(self, trial: Dict[str, Any]) -> Dict[str, Any]:
-        """Convert McodeElement objects to dictionaries for JSON serialization."""
-        import copy
-
-        serializable_trial = copy.deepcopy(trial)
-
-        # Convert McodeResults if present
-        if "McodeResults" in serializable_trial:
-            mcode_results = serializable_trial["McodeResults"]
-            if "mcode_mappings" in mcode_results:
-                # Convert McodeElement objects to dicts
-                mappings = []
-                for mapping in mcode_results["mcode_mappings"]:
-                    if hasattr(mapping, "model_dump"):  # Pydantic model
-                        mappings.append(mapping.model_dump())
-                    else:  # Already a dict
-                        mappings.append(mapping)
-                mcode_results["mcode_mappings"] = mappings
-
-        return serializable_trial
+    # Removed _make_trial_serializable - now in TrialCacheManager
 
     def _extract_trial_mcode_elements_cached(
         self, trial: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Extract trial mCODE elements with caching."""
-        trial_id = self._extract_trial_id(trial)
-        import hashlib
-        cache_key_data = {
-            "function": "mcode_extraction",
-            "trial_id": trial_id,
-            "trial_hash": hashlib.md5(str(trial).encode('utf-8')).hexdigest()[:8],
-        }
-
-        cached_result = self.mcode_cache.get_by_key(cache_key_data)
-        if cached_result is not None:
-            self.logger.debug(f"Cache HIT for mCODE extraction {trial_id}")
-            return cached_result
-
-        # Extract mCODE elements
-        mcode_elements = self._extract_trial_mcode_elements(trial)
-
-        # Cache the result
-        self.mcode_cache.set_by_key(mcode_elements, cache_key_data)
-        self.logger.debug(f"Cached mCODE extraction for {trial_id}")
-
-        return mcode_elements
+        """Extract trial mCODE elements (no caching - pure computation)."""
+        # mCODE extraction is pure computation, not API calls, so no caching
+        return self.extractor.extract_trial_mcode_elements(trial)
 
     def _generate_trial_natural_language_summary_cached(
         self, trial_id: str, mcode_elements: Dict[str, Any], trial_data: Dict[str, Any]
     ) -> str:
         """Generate natural language summary with caching."""
-        import hashlib
-        cache_key_data = {
-            "function": "natural_language_summary",
-            "trial_id": trial_id,
-            "mcode_hash": hashlib.md5(str(mcode_elements).encode('utf-8')).hexdigest()[:8],
-            "trial_hash": hashlib.md5(str(trial_data).encode('utf-8')).hexdigest()[:8],
-        }
-
-        cached_result = self.summary_cache.get_by_key(cache_key_data)
+        cached_result = self.cache_manager.get_cached_natural_language_summary(
+            trial_id, mcode_elements, trial_data
+        )
         if cached_result is not None:
-            self.logger.debug(f"Cache HIT for natural language summary {trial_id}")
             return cached_result
 
-        # Generate summary
-        summary = self._generate_trial_natural_language_summary(
+        # Generate summary using the summarizer
+        summary = self.summarizer.generate_trial_natural_language_summary(
             trial_id, mcode_elements, trial_data
         )
 
         # Cache the result
-        self.summary_cache.set_by_key(summary, cache_key_data)
-        self.logger.debug(f"Cached natural language summary for {trial_id}")
+        self.cache_manager.cache_natural_language_summary(
+            summary, trial_id, mcode_elements, trial_data
+        )
 
         return summary
 
@@ -312,356 +237,12 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             return trial["protocolSection"]["identificationModule"]["nctId"]
         except (KeyError, TypeError):
             import hashlib
+
             return f"unknown_trial_{hashlib.md5(str(trial).encode('utf-8')).hexdigest()[:8]}"
 
-    def _extract_trial_mcode_elements(self, trial: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract mCODE elements from clinical trial data."""
-        mcode_elements = {}
+    # Removed old _extract_trial_mcode_elements method - now using TrialExtractor class
 
-        try:
-            protocol_section = trial.get("protocolSection", {})
-            if not isinstance(protocol_section, dict):
-                return mcode_elements
-
-            # Extract all mCODE-relevant sections
-            extractors = [
-                ("identificationModule", self._extract_trial_identification),
-                ("eligibilityModule", self._extract_trial_eligibility_mcode),
-                ("conditionsModule", self._extract_trial_conditions_mcode),
-                ("armsInterventionsModule", self._extract_trial_interventions_mcode),
-                ("designModule", self._extract_trial_design_mcode),
-                ("statusModule", self._extract_trial_temporal_mcode),
-                ("sponsorCollaboratorsModule", self._extract_trial_sponsor_mcode),
-            ]
-
-            for module_key, extractor_func in extractors:
-                module_data = protocol_section.get(module_key, {})
-                if isinstance(module_data, dict):
-                    mcode_elements.update(extractor_func(module_data))
-
-        except Exception as e:
-            self.logger.error(f"Error extracting trial mCODE elements: {e}")
-
-        return mcode_elements
-
-    def _extract_trial_identification(
-        self, identification: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Extract trial identification information."""
-        elements = {}
-
-        nct_id = identification.get("nctId")
-        if nct_id:
-            elements["TrialIdentifier"] = {
-                "system": "https://clinicaltrials.gov",
-                "code": nct_id,
-                "display": f"Clinical Trial {nct_id}",
-            }
-
-        brief_title = identification.get("briefTitle")
-        if brief_title:
-            elements["TrialTitle"] = {
-                "display": brief_title,
-            }
-
-        official_title = identification.get("officialTitle")
-        if official_title:
-            elements["TrialOfficialTitle"] = {
-                "display": official_title,
-            }
-
-        return elements
-
-    def _extract_trial_eligibility_mcode(
-        self, eligibility: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Extract eligibility criteria in mCODE space for patient matching."""
-        elements = {}
-
-        # Type guard: ensure eligibility is a dict
-        if not isinstance(eligibility, dict):
-            self.logger.warning(f"Expected dict for eligibility, got {type(eligibility)}")
-            return elements
-
-        # Age criteria mapping to mCODE
-        min_age = eligibility.get("minimumAge")
-        max_age = eligibility.get("maximumAge")
-        if min_age or max_age:
-            elements["TrialAgeCriteria"] = {
-                "minimumAge": min_age,
-                "maximumAge": max_age,
-                "ageUnit": "Years",  # Standardize to years
-            }
-
-        # Sex criteria mapping to mCODE AdministrativeGender
-        sex = eligibility.get("sex")
-        if sex:
-            elements["TrialSexCriteria"] = {
-                "system": "http://hl7.org/fhir/administrative-gender",
-                "code": sex.lower(),
-                "display": sex.capitalize(),
-            }
-
-        # Healthy volunteers criteria
-        healthy_volunteers = eligibility.get("healthyVolunteers")
-        if healthy_volunteers is not None:
-            elements["TrialHealthyVolunteers"] = {
-                "allowed": healthy_volunteers,
-                "display": (
-                    "Accepts healthy volunteers"
-                    if healthy_volunteers
-                    else "Does not accept healthy volunteers"
-                ),
-            }
-
-        # Eligibility criteria text for detailed matching
-        criteria_text = eligibility.get("eligibilityCriteria")
-        if criteria_text:
-            elements["TrialEligibilityCriteria"] = {
-                "text": criteria_text,
-                "display": "Detailed eligibility criteria for patient matching",
-            }
-
-        return elements
-
-    def _extract_trial_conditions_mcode(
-        self, conditions: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Extract trial conditions as mCODE CancerCondition for matching."""
-        elements = {}
-
-        # Type guard: ensure conditions is a dict
-        if not isinstance(conditions, dict):
-            self.logger.warning(f"Expected dict for conditions, got {type(conditions)}")
-            return elements
-
-        condition_list = conditions.get("conditions", [])
-        if condition_list:
-            cancer_conditions = []
-            comorbid_conditions = []
-
-            for condition in condition_list:
-                # Handle both dict and string formats for conditions
-                if isinstance(condition, dict):
-                    condition_name = condition.get("name", "").lower()
-                    condition_code = condition.get("code", "Unknown")
-                elif isinstance(condition, str):
-                    # Handle case where condition is just a string
-                    condition_name = condition.lower()
-                    condition_code = "Unknown"
-                    self.logger.debug(f"Condition is string format: {condition}")
-                else:
-                    self.logger.warning(f"Unexpected condition type {type(condition)}: {condition}")
-                    continue
-
-                # Check if it's a cancer condition
-                if any(
-                    cancer_term in condition_name
-                    for cancer_term in [
-                        "cancer",
-                        "carcinoma",
-                        "neoplasm",
-                        "tumor",
-                        "malignant",
-                        "leukemia",
-                        "lymphoma",
-                        "sarcoma",
-                        "glioma",
-                        "melanoma",
-                        "breast cancer",
-                    ]
-                ):
-                    cancer_conditions.append(
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": condition_code,
-                            "display": condition_name if condition_name else "Unknown cancer condition",
-                            "interpretation": "Confirmed",
-                        }
-                    )
-                else:
-                    comorbid_conditions.append(
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": condition_code,
-                            "display": condition_name if condition_name else "Unknown condition",
-                        }
-                    )
-
-            if cancer_conditions:
-                elements["TrialCancerConditions"] = cancer_conditions
-            if comorbid_conditions:
-                elements["TrialComorbidConditions"] = comorbid_conditions
-
-        return elements
-
-    def _extract_trial_interventions_mcode(
-        self, interventions: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Extract trial interventions as mCODE CancerRelatedMedicationStatement."""
-        elements = {}
-
-        # Type guard: ensure interventions is a dict
-        if not isinstance(interventions, dict):
-            self.logger.warning(f"Expected dict for interventions, got {type(interventions)}")
-            return elements
-
-        intervention_list = interventions.get("interventions", [])
-        if intervention_list:
-            medication_interventions = []
-            other_interventions = []
-
-            for intervention in intervention_list:
-                # Type guard: ensure intervention is a dict
-                if not isinstance(intervention, dict):
-                    self.logger.warning(f"Expected dict for intervention, got {type(intervention)}: {intervention}")
-                    continue
-
-                intervention_type = intervention.get("type", "").lower()
-                intervention_name = intervention.get("name", "")
-                description = intervention.get("description", "")
-
-                if intervention_type in ["drug", "biological", "device"]:
-                    medication_interventions.append(
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "Unknown",  # Would need RxNorm mapping
-                            "display": intervention_name,
-                            "description": description,
-                            "interventionType": intervention_type,
-                        }
-                    )
-                else:
-                    other_interventions.append(
-                        {
-                            "display": intervention_name,
-                            "description": description,
-                            "interventionType": intervention_type,
-                        }
-                    )
-
-            if medication_interventions:
-                elements["TrialMedicationInterventions"] = medication_interventions
-            if other_interventions:
-                elements["TrialOtherInterventions"] = other_interventions
-
-        return elements
-
-    def _extract_trial_design_mcode(self, design: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract trial design elements for mCODE mapping."""
-        elements = {}
-
-        # Type guard: ensure design is a dict
-        if not isinstance(design, dict):
-            self.logger.warning(f"Expected dict for design, got {type(design)}")
-            return elements
-
-        # Study type
-        study_type = design.get("studyType")
-        if study_type:
-            elements["TrialStudyType"] = {
-                "display": study_type,
-                "code": study_type.lower().replace(" ", "_"),
-            }
-
-        # Phase information
-        phase = design.get("phases", [])
-        if phase:
-            elements["TrialPhase"] = {
-                "display": ", ".join(phase),
-                "phases": phase,
-            }
-
-        # Primary purpose
-        primary_purpose = design.get("primaryPurpose")
-        if primary_purpose:
-            elements["TrialPrimaryPurpose"] = {
-                "display": primary_purpose,
-                "code": primary_purpose.lower().replace(" ", "_"),
-            }
-
-        # Enrollment information
-        enrollment_info = design.get("enrollmentInfo", {})
-        if enrollment_info:
-            elements["TrialEnrollment"] = {
-                "count": enrollment_info.get("count"),
-                "type": enrollment_info.get("type"),
-            }
-
-        return elements
-
-    def _extract_trial_temporal_mcode(self, status: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract temporal information for trial phases and timelines."""
-        elements = {}
-
-        # Type guard: ensure status is a dict
-        if not isinstance(status, dict):
-            self.logger.warning(f"Expected dict for status, got {type(status)}")
-            return elements
-
-        # Overall status
-        overall_status = status.get("overallStatus")
-        if overall_status:
-            elements["TrialStatus"] = {
-                "display": overall_status,
-                "code": overall_status.lower().replace(" ", "_"),
-            }
-
-        # Start date
-        start_date = status.get("startDateStruct", {}).get("date")
-        if start_date:
-            elements["TrialStartDate"] = {
-                "date": start_date,
-                "display": f"Trial started on {start_date}",
-            }
-
-        # Completion date
-        completion_date = status.get("completionDateStruct", {}).get("date")
-        if completion_date:
-            elements["TrialCompletionDate"] = {
-                "date": completion_date,
-                "display": f"Trial completed on {completion_date}",
-            }
-
-        # Primary completion date
-        primary_completion_date = status.get("primaryCompletionDateStruct", {}).get(
-            "date"
-        )
-        if primary_completion_date:
-            elements["TrialPrimaryCompletionDate"] = {
-                "date": primary_completion_date,
-                "display": f"Primary completion on {primary_completion_date}",
-            }
-
-        return elements
-
-    def _extract_trial_sponsor_mcode(self, sponsor: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract sponsor and organization information."""
-        elements = {}
-
-        # Type guard: ensure sponsor is a dict
-        if not isinstance(sponsor, dict):
-            self.logger.warning(f"Expected dict for sponsor, got {type(sponsor)}")
-            return elements
-
-        # Lead sponsor
-        lead_sponsor = sponsor.get("leadSponsor", {})
-        if lead_sponsor:
-            elements["TrialLeadSponsor"] = {
-                "name": lead_sponsor.get("name"),
-                "class": lead_sponsor.get("class"),
-            }
-
-        # Responsible party
-        responsible_party = sponsor.get("responsibleParty", {})
-        if responsible_party:
-            elements["TrialResponsibleParty"] = {
-                "name": responsible_party.get("name"),
-                "type": responsible_party.get("type"),
-                "affiliation": responsible_party.get("affiliation"),
-            }
-
-        return elements
+    # Removed all old extraction methods - now using TrialExtractor class
 
     def _extract_trial_metadata(self, trial: Dict[str, Any]) -> Dict[str, Any]:
         """Extract comprehensive trial metadata for storage."""
@@ -740,21 +321,10 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
     def _generate_trial_natural_language_summary(
         self, trial_id: str, mcode_elements: Dict[str, Any], trial_data: Dict[str, Any]
     ) -> str:
-        """Generate comprehensive natural language summary for clinical trial using McodeSummarizer."""
-        try:
-            # Use the McodeSummarizer service
-            summarizer = McodeSummarizer(include_dates=True)
-            summary = summarizer.create_trial_summary(trial_data)
-            self.logger.info(
-                f"Generated comprehensive trial summary for {trial_id}: {summary[:200]}..."
-            )
-            self.logger.debug(f"Full trial summary length: {len(summary)} characters")
-            return summary
-
-        except Exception as e:
-            self.logger.error(f"Error generating trial natural language summary: {e}")
-            self.logger.debug(f"Trial data for error: {trial_data}")
-            return f"Clinical Trial {trial_id}: Error generating comprehensive summary - {str(e)}"
+        """Generate comprehensive natural language summary for clinical trial."""
+        return self.summarizer.generate_trial_natural_language_summary(
+            trial_id, mcode_elements, trial_data
+        )
 
     def _convert_trial_mcode_to_mappings_format(
         self, mcode_elements: Dict[str, Any]
@@ -862,7 +432,9 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         import asyncio
 
         async def process_async():
-            return await self._process_single_trial_async(trial, model, prompt, index, store_in_memory)
+            return await self._process_single_trial_async(
+                trial, model, prompt, index, store_in_memory
+            )
 
         return asyncio.run(process_async())
 
@@ -982,18 +554,11 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
 
     def clear_workflow_caches(self) -> None:
         """Clear all workflow-related caches."""
-        self.workflow_cache.clear_cache()
-        self.mcode_cache.clear_cache()
-        self.summary_cache.clear_cache()
-        self.logger.info("Cleared all workflow caches")
+        self.cache_manager.clear_all_caches()
 
     def get_cache_stats(self) -> Dict[str, Any]:
         """Get statistics for all workflow caches."""
-        return {
-            "workflow_cache": self.workflow_cache.get_stats(),
-            "mcode_cache": self.mcode_cache.get_stats(),
-            "summary_cache": self.summary_cache.get_stats(),
-        }
+        return self.cache_manager.get_cache_stats()
 
     def get_processing_stats(self) -> Dict[str, Any]:
         """

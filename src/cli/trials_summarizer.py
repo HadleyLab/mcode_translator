@@ -12,7 +12,6 @@ from typing import Dict, List, Optional
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
-from src.utils.config import Config
 from src.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -40,12 +39,10 @@ Examples:
     parser.add_argument(
         "--in",
         dest="input_file",
-        help="Input file with mCODE trial data (NDJSON format)"
+        help="Input file with mCODE trial data (NDJSON format)",
     )
     parser.add_argument(
-        "--out",
-        dest="output_file",
-        help="Output file for summaries (NDJSON format)"
+        "--out", dest="output_file", help="Output file for summaries (NDJSON format)"
     )
 
     return parser
@@ -114,7 +111,9 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     if args.ingest:
         try:
             memory_storage = McodeMemoryStorage(source=args.memory_source)
-            logger.info(f"🧠 Initialized CORE Memory storage (source: {args.memory_source})")
+            logger.info(
+                f"🧠 Initialized CORE Memory storage (source: {args.memory_source})"
+            )
         except Exception as e:
             logger.error(f"Failed to initialize CORE Memory: {e}")
             sys.exit(1)
@@ -123,9 +122,9 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     trial_data = []
     for mcode_trial in mcode_trials:
         trial_data.append(
-            mcode_trial.get("original_trial_data") or
-            mcode_trial.get("trial_data") or
-            mcode_trial
+            mcode_trial.get("original_trial_data")
+            or mcode_trial.get("trial_data")
+            or mcode_trial
         )
 
     # Execute workflow
@@ -137,7 +136,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
             model=args.model,
             prompt=args.prompt,
             store_in_memory=args.ingest,
-            workers=args.workers
+            workers=args.workers,
         )
 
         if not result.success:
@@ -167,6 +166,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         logger.error(f"Unexpected error: {e}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -191,11 +191,13 @@ def extract_summaries(data) -> List[Dict]:
             if ident := protocol.get("identificationModule"):
                 trial_id = ident.get("nctId", "unknown")
 
-        summaries.append({
-            "trial_id": trial_id,
-            "summary": mcode_results["natural_language_summary"],
-            "mcode_elements": mcode_results.get("mcode_mappings", []),
-        })
+        summaries.append(
+            {
+                "trial_id": trial_id,
+                "summary": mcode_results["natural_language_summary"],
+                "mcode_elements": mcode_results.get("mcode_mappings", []),
+            }
+        )
 
     return summaries
 

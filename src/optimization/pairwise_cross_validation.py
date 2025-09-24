@@ -5,8 +5,6 @@ Implements full pairwise comparisons: prompts × models × trials
 Each combination serves as both gold standard and comparator.
 """
 
-import argparse
-import asyncio
 import json
 import statistics
 import time
@@ -15,13 +13,11 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 
-import numpy as np
-from scipy.stats import kendalltau, ttest_ind
 
 from src.pipeline import McodePipeline
-from src.shared.models import BenchmarkResult, McodeElement, PipelineResult
+from src.shared.models import BenchmarkResult, McodeElement
 from src.shared.types import TaskStatus
 from src.utils.concurrency import TaskQueue
 from src.utils.llm_loader import LLMLoader
@@ -168,28 +164,35 @@ class PairwiseCrossValidator:
         self.logger.info(f"🔄 Generated {len(tasks)} pairwise comparison tasks")
         return tasks
 
-    def run_pairwise_validation(self, tasks: List[PairwiseComparisonTask], max_workers: int = 5) -> None:
+    def run_pairwise_validation(
+        self, tasks: List[PairwiseComparisonTask], max_workers: int = 5
+    ) -> None:
         """Run pairwise validation with concurrent processing."""
         self.logger.info("🔬 Running pairwise validation")
         start_time = time.time()
 
         # Initialize task queue if not already done
         if self.task_queue is None:
-            self.task_queue = TaskQueue(max_workers=max_workers, name="PairwiseValidator")
+            self.task_queue = TaskQueue(
+                max_workers=max_workers, name="PairwiseValidator"
+            )
 
         # Convert tasks to Task objects for TaskQueue
         from src.utils.concurrency import Task
+
         queue_tasks = []
         for task in tasks:
             queue_task = Task(
                 id=task.task_id,
                 func=self._process_pairwise_task_async,
                 args=(task,),
-                kwargs={}
+                kwargs={},
             )
             queue_tasks.append(queue_task)
 
-        self.logger.info(f"🚀 Starting concurrent processing with {max_workers} workers")
+        self.logger.info(
+            f"🚀 Starting concurrent processing with {max_workers} workers"
+        )
 
         def progress_callback(completed, total, result):
             if completed % 10 == 0:
@@ -197,7 +200,9 @@ class PairwiseCrossValidator:
                 self.logger.info(f"📊 Progress: {completed}/{total} ({progress:.1f}%)")
 
         # Execute tasks concurrently
-        task_results = self.task_queue.execute_tasks(queue_tasks, progress_callback=progress_callback)
+        task_results = self.task_queue.execute_tasks(
+            queue_tasks, progress_callback=progress_callback
+        )
 
         # Process results
         successful_tasks = 0
@@ -237,7 +242,7 @@ class PairwiseCrossValidator:
                     trial_id=task.trial_id,
                     pipeline_result=pipeline_result,
                     execution_time_seconds=0.0,  # Will be set later
-                    status="success"
+                    status="success",
                 )
 
                 task.gold_result = benchmark
@@ -258,7 +263,7 @@ class PairwiseCrossValidator:
                     trial_id=task.trial_id,
                     pipeline_result=pipeline_result,
                     execution_time_seconds=0.0,  # Will be set later
-                    status="success"
+                    status="success",
                 )
 
                 task.comp_result = benchmark
@@ -278,7 +283,9 @@ class PairwiseCrossValidator:
             task.error_message = str(e)
             raise
 
-    def _process_pairwise_task_async(self, task: PairwiseComparisonTask) -> Dict[str, Any]:
+    def _process_pairwise_task_async(
+        self, task: PairwiseComparisonTask
+    ) -> Dict[str, Any]:
         """Async version of pairwise task processing for TaskQueue."""
         try:
             self._process_pairwise_task(task)
@@ -317,14 +324,18 @@ class PairwiseCrossValidator:
                 if m.element_type and m.code:
                     gold_strings.append(f"{m.element_type}={json.dumps(m.code)}")
                 else:
-                    self.logger.warning(f"Invalid gold mapping: element_type={m.element_type}, code={m.code}")
+                    self.logger.warning(
+                        f"Invalid gold mapping: element_type={m.element_type}, code={m.code}"
+                    )
 
             comp_strings = []
             for m in comp_mappings:
                 if m.element_type and m.code:
                     comp_strings.append(f"{m.element_type}={json.dumps(m.code)}")
                 else:
-                    self.logger.warning(f"Invalid comp mapping: element_type={m.element_type}, code={m.code}")
+                    self.logger.warning(
+                        f"Invalid comp mapping: element_type={m.element_type}, code={m.code}"
+                    )
 
             gold_set = set(gold_strings)
             comp_set = set(comp_strings)
@@ -357,12 +368,24 @@ class PairwiseCrossValidator:
 
             # Get detailed examples with better formatting
             true_positive_examples = list(intersection)[:5]  # Limit to 5 examples
-            false_positive_examples = list(comp_set - gold_set)[:5]  # Limit to 5 examples
-            false_negative_examples = list(gold_set - comp_set)[:5]  # Limit to 5 examples
+            false_positive_examples = list(comp_set - gold_set)[
+                :5
+            ]  # Limit to 5 examples
+            false_negative_examples = list(gold_set - comp_set)[
+                :5
+            ]  # Limit to 5 examples
 
             # Additional metrics for quality assessment
-            gold_confidence_avg = sum(m.confidence_score or 0 for m in gold_mappings) / len(gold_mappings) if gold_mappings else 0
-            comp_confidence_avg = sum(m.confidence_score or 0 for m in comp_mappings) / len(comp_mappings) if comp_mappings else 0
+            gold_confidence_avg = (
+                sum(m.confidence_score or 0 for m in gold_mappings) / len(gold_mappings)
+                if gold_mappings
+                else 0
+            )
+            comp_confidence_avg = (
+                sum(m.confidence_score or 0 for m in comp_mappings) / len(comp_mappings)
+                if comp_mappings
+                else 0
+            )
 
             return {
                 "mapping_jaccard_similarity": jaccard,
@@ -398,7 +421,7 @@ class PairwiseCrossValidator:
                 "true_positive_examples": [],
                 "false_positive_examples": [],
                 "false_negative_examples": [],
-                "error": str(e)
+                "error": str(e),
             }
 
     def _extract_trial_id(self, trial_data: Dict[str, Any], index: int) -> str:
@@ -460,7 +483,9 @@ class PairwiseCrossValidator:
                             "max": max(values),
                         }
                     except (TypeError, ValueError) as e:
-                        self.logger.warning(f"Could not calculate statistics for {metric_name}: {e}")
+                        self.logger.warning(
+                            f"Could not calculate statistics for {metric_name}: {e}"
+                        )
 
         # Calculate per-configuration statistics
         for config_key, metrics_list in config_stats.items():
@@ -479,11 +504,15 @@ class PairwiseCrossValidator:
                             config_metrics[metric_name] = {
                                 "mean": statistics.mean(values),
                                 "median": statistics.median(values),
-                                "stdev": statistics.stdev(values) if len(values) > 1 else 0,
+                                "stdev": (
+                                    statistics.stdev(values) if len(values) > 1 else 0
+                                ),
                                 "count": len(values),
                             }
                         except (TypeError, ValueError) as e:
-                            self.logger.warning(f"Could not calculate config statistics for {metric_name}: {e}")
+                            self.logger.warning(
+                                f"Could not calculate config statistics for {metric_name}: {e}"
+                            )
 
             analysis["configuration_analysis"][config_key] = config_metrics
 
@@ -578,7 +607,9 @@ class PairwiseCrossValidator:
 
             # Executive Summary
             f.write("## Executive Summary\n\n")
-            f.write("This report analyzes the performance of different mCODE (minimal Common Oncology Data Elements) extraction strategies across multiple LLM models and prompt configurations. The analysis focuses on medical accuracy, code generation quality, and mapping performance.\n\n")
+            f.write(
+                "This report analyzes the performance of different mCODE (minimal Common Oncology Data Elements) extraction strategies across multiple LLM models and prompt configurations. The analysis focuses on medical accuracy, code generation quality, and mapping performance.\n\n"
+            )
 
             # Summary section
             summary = self.summary_stats.get("summary", {})
@@ -595,22 +626,32 @@ class PairwiseCrossValidator:
             # Prompt Strategy Analysis
             f.write("## Prompt Strategy Analysis\n\n")
             f.write("### SNOMED-Enabled Prompts ⭐\n")
-            f.write("**Strategy**: Integrated SNOMED CT code reference table with evidence-based extraction\n")
+            f.write(
+                "**Strategy**: Integrated SNOMED CT code reference table with evidence-based extraction\n"
+            )
             f.write("**Key Features**:\n")
-            f.write("- Pre-defined SNOMED CT codes for common cancer conditions, treatments, and demographics\n")
-            f.write("- Generates actual medical codes instead of null/placeholder values\n")
+            f.write(
+                "- Pre-defined SNOMED CT codes for common cancer conditions, treatments, and demographics\n"
+            )
+            f.write(
+                "- Generates actual medical codes instead of null/placeholder values\n"
+            )
             f.write("- Higher code coverage and medical accuracy\n")
             f.write("- Maintains strict evidence-based approach\n\n")
 
             f.write("### Evidence-Based Prompts 🔍\n")
-            f.write("**Strategy**: Strict fidelity to source text with conservative mapping\n")
+            f.write(
+                "**Strategy**: Strict fidelity to source text with conservative mapping\n"
+            )
             f.write("**Key Features**:\n")
             f.write("- Only extracts information explicitly stated in source\n")
             f.write("- No inference or extrapolation\n")
             f.write("- Prioritizes accuracy over completeness\n\n")
 
             f.write("### Other Prompts 📝\n")
-            f.write("**Strategy**: Various approaches including structured, comprehensive, and minimal extraction\n")
+            f.write(
+                "**Strategy**: Various approaches including structured, comprehensive, and minimal extraction\n"
+            )
             f.write("**Key Features**:\n")
             f.write("- Different levels of detail and structure\n")
             f.write("- Varying approaches to medical terminology handling\n\n")
@@ -636,9 +677,13 @@ class PairwiseCrossValidator:
             f.write("- Confidence scores indicate reliable extraction\n\n")
 
             f.write("### Performance Patterns\n")
-            f.write("- Different models show varying performance with different prompt strategies\n")
+            f.write(
+                "- Different models show varying performance with different prompt strategies\n"
+            )
             f.write("- Mapping F1-score provides comprehensive quality metric\n")
-            f.write("- Jaccard similarity measures overlap between extraction methods\n\n")
+            f.write(
+                "- Jaccard similarity measures overlap between extraction methods\n\n"
+            )
 
     def print_summary(self) -> None:
         """Print summary of pairwise validation results to console."""
@@ -683,14 +728,18 @@ class PairwiseCrossValidator:
                 ],
                 key=lambda x: x[1],
                 reverse=True,
-            )[:5]  # Show top 5 instead of 3
+            )[
+                :5
+            ]  # Show top 5 instead of 3
 
             if best_configs:
                 self.logger.info("\n🏆 Top Configuration Pairs by Mapping F1-Score:")
                 for config_key, f1_score in best_configs:
                     # Highlight SNOMED-enabled prompts
                     if "evidence_based_with_codes" in config_key:
-                        self.logger.info(f"   ⭐ {config_key}: {f1_score:.3f} (SNOMED-enabled)")
+                        self.logger.info(
+                            f"   ⭐ {config_key}: {f1_score:.3f} (SNOMED-enabled)"
+                        )
                     else:
                         self.logger.info(f"   {config_key}: {f1_score:.3f}")
 
@@ -706,15 +755,19 @@ class PairwiseCrossValidator:
 
         for config_key in config_analysis.keys():
             # Extract prompt name from config key (format: prompt_model_vs_prompt_model)
-            prompt_parts = config_key.split('_vs_')[0].split('_')
+            prompt_parts = config_key.split("_vs_")[0].split("_")
             if len(prompt_parts) >= 2:
-                prompt_name = '_'.join(prompt_parts[:-1])  # Remove model part
-                model_name = prompt_parts[-1]
+                prompt_name = "_".join(prompt_parts[:-1])  # Remove model part
+                prompt_parts[-1]
 
                 if prompt_name not in prompt_performance:
                     prompt_performance[prompt_name] = []
 
-                f1_score = config_analysis[config_key].get("mapping_f1_score", {}).get("mean", 0)
+                f1_score = (
+                    config_analysis[config_key]
+                    .get("mapping_f1_score", {})
+                    .get("mean", 0)
+                )
                 prompt_performance[prompt_name].append(f1_score)
 
                 # Categorize prompts
@@ -731,20 +784,30 @@ class PairwiseCrossValidator:
 
         if snomed_prompts:
             snomed_avg = sum(f1 for _, f1 in snomed_prompts) / len(snomed_prompts)
-            self.logger.info(f"⭐ SNOMED-Enabled Prompts: {snomed_avg:.3f} avg F1 ({len(snomed_prompts)} configs)")
+            self.logger.info(
+                f"⭐ SNOMED-Enabled Prompts: {snomed_avg:.3f} avg F1 ({len(snomed_prompts)} configs)"
+            )
             self.logger.info("   → Includes integrated SNOMED CT code reference table")
-            self.logger.info("   → Generates actual medical codes instead of null values")
+            self.logger.info(
+                "   → Generates actual medical codes instead of null values"
+            )
             self.logger.info("   → Higher code coverage and medical accuracy")
 
         if evidence_based_prompts:
-            evidence_avg = sum(f1 for _, f1 in evidence_based_prompts) / len(evidence_based_prompts)
-            self.logger.info(f"🔍 Evidence-Based Prompts: {evidence_avg:.3f} avg F1 ({len(evidence_based_prompts)} configs)")
+            evidence_avg = sum(f1 for _, f1 in evidence_based_prompts) / len(
+                evidence_based_prompts
+            )
+            self.logger.info(
+                f"🔍 Evidence-Based Prompts: {evidence_avg:.3f} avg F1 ({len(evidence_based_prompts)} configs)"
+            )
             self.logger.info("   → Strict fidelity to source text only")
             self.logger.info("   → Conservative mapping approach")
 
         if other_prompts:
             other_avg = sum(f1 for _, f1 in other_prompts) / len(other_prompts)
-            self.logger.info(f"📝 Other Prompts: {other_avg:.3f} avg F1 ({len(other_prompts)} configs)")
+            self.logger.info(
+                f"📝 Other Prompts: {other_avg:.3f} avg F1 ({len(other_prompts)} configs)"
+            )
 
         # Show best SNOMED vs non-SNOMED comparison
         if snomed_prompts and (evidence_based_prompts or other_prompts):
@@ -753,8 +816,16 @@ class PairwiseCrossValidator:
             if all_non_snomed:
                 best_non_snomed = max(all_non_snomed, key=lambda x: x[1])
                 if best_non_snomed[1] > 0:
-                    improvement = ((best_snomed[1] - best_non_snomed[1]) / best_non_snomed[1]) * 100
-                    self.logger.info(f"\n📈 Best SNOMED vs Best Non-SNOMED: {improvement:+.1f}% improvement")
-                    self.logger.info("   → Demonstrates value of integrated medical coding")
+                    improvement = (
+                        (best_snomed[1] - best_non_snomed[1]) / best_non_snomed[1]
+                    ) * 100
+                    self.logger.info(
+                        f"\n📈 Best SNOMED vs Best Non-SNOMED: {improvement:+.1f}% improvement"
+                    )
+                    self.logger.info(
+                        "   → Demonstrates value of integrated medical coding"
+                    )
                 else:
-                    self.logger.info("\n📈 Best SNOMED vs Best Non-SNOMED: N/A (non-SNOMED F1 is zero)")
+                    self.logger.info(
+                        "\n📈 Best SNOMED vs Best Non-SNOMED: N/A (non-SNOMED F1 is zero)"
+                    )

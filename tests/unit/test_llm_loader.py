@@ -1,10 +1,9 @@
 """
 Unit tests for llm_loader module.
 """
+
 import json
 import os
-import tempfile
-from pathlib import Path
 from unittest.mock import Mock, patch, mock_open
 import pytest
 from src.utils.llm_loader import (
@@ -13,7 +12,6 @@ from src.utils.llm_loader import (
     load_llm,
     reload_llms_config,
     get_default_llm,
-    llm_loader,
 )
 
 
@@ -151,7 +149,6 @@ class TestLLMConfig:
 class TestLLMLoader:
     """Test LLMLoader class."""
 
-
     def test_init_custom_path(self):
         """Test initialization with custom path."""
         custom_path = "/custom/path/llms.json"
@@ -159,10 +156,12 @@ class TestLLMLoader:
 
         assert str(loader.llms_config_path) == custom_path
 
-    @patch('src.utils.llm_loader.Path')
-    @patch('builtins.open', new_callable=mock_open)
-    @patch('src.utils.llm_loader.json.load')
-    def test_load_llms_config_nested_structure(self, mock_json_load, mock_file, mock_path):
+    @patch("src.utils.llm_loader.Path")
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("src.utils.llm_loader.json.load")
+    def test_load_llms_config_nested_structure(
+        self, mock_json_load, mock_file, mock_path
+    ):
         """Test loading config with nested structure."""
         mock_path_instance = Mock()
         mock_path_instance.exists.return_value = True
@@ -186,10 +185,12 @@ class TestLLMLoader:
         }
         assert config == expected
 
-    @patch('src.utils.llm_loader.Path')
-    @patch('builtins.open', new_callable=mock_open)
-    @patch('src.utils.llm_loader.json.load')
-    def test_load_llms_config_flat_structure(self, mock_json_load, mock_file, mock_path):
+    @patch("src.utils.llm_loader.Path")
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("src.utils.llm_loader.json.load")
+    def test_load_llms_config_flat_structure(
+        self, mock_json_load, mock_file, mock_path
+    ):
         """Test loading config with flat structure."""
         mock_path_instance = Mock()
         mock_path_instance.exists.return_value = True
@@ -209,7 +210,7 @@ class TestLLMLoader:
         }
         assert config == expected
 
-    @patch('src.utils.llm_loader.Path')
+    @patch("src.utils.llm_loader.Path")
     def test_load_llms_config_file_not_found(self, mock_path):
         """Test loading config when file doesn't exist."""
         mock_path_instance = Mock()
@@ -222,9 +223,9 @@ class TestLLMLoader:
         # Should return empty dict when file not found
         assert config == {}
 
-    @patch('src.utils.llm_loader.Path')
-    @patch('builtins.open', new_callable=mock_open)
-    @patch('src.utils.llm_loader.json.load')
+    @patch("src.utils.llm_loader.Path")
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("src.utils.llm_loader.json.load")
     def test_load_llms_config_json_error(self, mock_json_load, mock_file, mock_path):
         """Test loading config with JSON error."""
         mock_path_instance = Mock()
@@ -295,7 +296,9 @@ class TestLLMLoader:
             }
         }
 
-        with pytest.raises(ValueError, match="Environment variable 'MISSING_VAR' is not set"):
+        with pytest.raises(
+            ValueError, match="Environment variable 'MISSING_VAR' is not set"
+        ):
             loader.get_llm("test-llm")
 
     @patch.dict(os.environ, {"TEST_API_KEY": "test-key"})
@@ -310,7 +313,7 @@ class TestLLMLoader:
             "llm2": {
                 "name": "LLM2",
                 "api_key_env_var": "TEST_API_KEY",
-            }
+            },
         }
 
         result = loader.get_all_llms()
@@ -331,7 +334,7 @@ class TestLLMLoader:
             "llm2": {
                 "name": "LLM2",
                 "api_key_env_var": "",  # Will fail
-            }
+            },
         }
 
         with pytest.raises(ValueError):
@@ -349,9 +352,7 @@ class TestLLMLoader:
     def test_get_llm_metadata(self):
         """Test getting LLM metadata."""
         loader = LLMLoader.__new__(LLMLoader)
-        loader.llms_config = {
-            "test-llm": {"name": "Test LLM", "meta": "data"}
-        }
+        loader.llms_config = {"test-llm": {"name": "Test LLM", "meta": "data"}}
 
         result = loader.get_llm_metadata("test-llm")
 
@@ -421,7 +422,9 @@ class TestLLMLoader:
                 "name": "Other LLM",
             }
         }
-        loader.get_llm = Mock(side_effect=[Exception("deepseek failed"), LLMConfig(name="Other LLM")])
+        loader.get_llm = Mock(
+            side_effect=[Exception("deepseek failed"), LLMConfig(name="Other LLM")]
+        )
 
         result = loader.get_default_llm()
 
@@ -441,7 +444,7 @@ class TestLLMLoader:
 class TestGlobalFunctions:
     """Test global convenience functions."""
 
-    @patch('src.utils.llm_loader.llm_loader')
+    @patch("src.utils.llm_loader.llm_loader")
     def test_load_llm(self, mock_global_loader):
         """Test load_llm function."""
         mock_config = LLMConfig(name="Test LLM")
@@ -452,14 +455,14 @@ class TestGlobalFunctions:
         assert result == mock_config
         mock_global_loader.get_llm.assert_called_with("test-llm")
 
-    @patch('src.utils.llm_loader.llm_loader')
+    @patch("src.utils.llm_loader.llm_loader")
     def test_reload_llms_config(self, mock_global_loader):
         """Test reload_llms_config function."""
         reload_llms_config()
 
         mock_global_loader.reload_config.assert_called_once()
 
-    @patch('src.utils.llm_loader.llm_loader')
+    @patch("src.utils.llm_loader.llm_loader")
     def test_get_default_llm(self, mock_global_loader):
         """Test get_default_llm function."""
         mock_config = LLMConfig(name="Default LLM")

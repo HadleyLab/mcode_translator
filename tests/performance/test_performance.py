@@ -2,10 +2,10 @@
 Performance tests and benchmarks for mcode_translator components.
 Uses pytest-benchmark for measuring execution times and memory usage.
 """
+
 import pytest
 import json
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch
 from src.services.summarizer import McodeSummarizer
 from src.utils.token_tracker import TokenTracker, TokenUsage
 
@@ -21,49 +21,46 @@ class TestPerformanceBenchmarks:
             "protocolSection": {
                 "identificationModule": {
                     "nctId": "NCT12345678",
-                    "briefTitle": "Large Scale Clinical Trial for Performance Testing"
+                    "briefTitle": "Large Scale Clinical Trial for Performance Testing",
                 },
-                "statusModule": {
-                    "overallStatus": "RECRUITING"
-                },
+                "statusModule": {"overallStatus": "RECRUITING"},
                 "designModule": {
                     "phases": ["PHASE1", "PHASE2", "PHASE3"],
                     "studyType": "INTERVENTIONAL",
-                    "primaryPurpose": "TREATMENT"
+                    "primaryPurpose": "TREATMENT",
                 },
                 "conditionsModule": {
-                    "conditions": ["Cancer", "Breast Cancer", "Lung Cancer", "Prostate Cancer"] * 10
+                    "conditions": [
+                        "Cancer",
+                        "Breast Cancer",
+                        "Lung Cancer",
+                        "Prostate Cancer",
+                    ]
+                    * 10
                 },
                 "eligibilityModule": {
-                    "eligibilityCriteria": "Inclusion Criteria:\n" + "\n".join([
-                        f"- Age {i*5}-{i*5+4} years" for i in range(20)
-                    ]) + "\n\nExclusion Criteria:\n" + "\n".join([
-                        f"- Prior treatment {i}" for i in range(50)
-                    ]),
+                    "eligibilityCriteria": "Inclusion Criteria:\n"
+                    + "\n".join([f"- Age {i*5}-{i*5+4} years" for i in range(20)])
+                    + "\n\nExclusion Criteria:\n"
+                    + "\n".join([f"- Prior treatment {i}" for i in range(50)]),
                     "minimumAge": "18 Years",
                     "maximumAge": "75 Years",
-                    "sex": "ALL"
+                    "sex": "ALL",
                 },
                 "armsInterventionsModule": {
                     "interventions": [
                         {
                             "type": "DRUG",
                             "name": f"Test Drug {i}",
-                            "description": f"Experimental therapy {i} with detailed description" * 20
-                        } for i in range(10)
+                            "description": f"Experimental therapy {i} with detailed description"
+                            * 20,
+                        }
+                        for i in range(10)
                     ]
                 },
-                "sponsorCollaboratorsModule": {
-                    "leadSponsor": {
-                        "name": "Test Sponsor"
-                    }
-                }
+                "sponsorCollaboratorsModule": {"leadSponsor": {"name": "Test Sponsor"}},
             },
-            "derivedSection": {
-                "interventionBrowseModule": {
-                    "meshes": []
-                }
-            }
+            "derivedSection": {"interventionBrowseModule": {"meshes": []}},
         }
 
     @pytest.fixture
@@ -79,34 +76,36 @@ class TestPerformanceBenchmarks:
                         "id": f"patient-{i}",
                         "gender": "female" if i % 2 == 0 else "male",
                         "birthDate": f"19{i%100:02d}-01-01",
-                        "name": [
-                            {
-                                "family": f"Doe-{i}",
-                                "given": [f"John-{i}"]
-                            }
-                        ]
+                        "name": [{"family": f"Doe-{i}", "given": [f"John-{i}"]}],
                     }
-                } for i in range(100)
-            ] + [
+                }
+                for i in range(100)
+            ]
+            + [
                 {
                     "resource": {
                         "resourceType": "Condition",
                         "id": f"condition-{i}",
                         "subject": {"reference": f"Patient/patient-{i%100}"},
                         "code": {
-                            "coding": [{
-                                "system": "http://snomed.info/sct",
-                                "code": f"12345{i}",
-                                "display": f"Test Condition {i}"
-                            }]
-                        }
+                            "coding": [
+                                {
+                                    "system": "http://snomed.info/sct",
+                                    "code": f"12345{i}",
+                                    "display": f"Test Condition {i}",
+                                }
+                            ]
+                        },
                     }
-                } for i in range(500)
-            ]
+                }
+                for i in range(500)
+            ],
         }
 
-    @patch.object(McodeSummarizer, 'create_trial_summary')
-    def test_summarizer_trial_summary_performance(self, mock_summary, benchmark, large_trial_data):
+    @patch.object(McodeSummarizer, "create_trial_summary")
+    def test_summarizer_trial_summary_performance(
+        self, mock_summary, benchmark, large_trial_data
+    ):
         """Benchmark trial summary generation performance."""
         mock_summary.return_value = "Mock trial summary for performance testing."
         summarizer = McodeSummarizer()
@@ -117,10 +116,14 @@ class TestPerformanceBenchmarks:
         result = benchmark(run_summary)
 
         assert result == "Mock trial summary for performance testing."
-        assert benchmark.stats.stats.mean < 0.1, f"Trial summary should complete quickly, got {benchmark.stats.stats.mean:.2f}s"
+        assert (
+            benchmark.stats.stats.mean < 0.1
+        ), f"Trial summary should complete quickly, got {benchmark.stats.stats.mean:.2f}s"
 
-    @patch.object(McodeSummarizer, 'create_patient_summary')
-    def test_summarizer_patient_summary_performance(self, mock_summary, benchmark, large_patient_bundle):
+    @patch.object(McodeSummarizer, "create_patient_summary")
+    def test_summarizer_patient_summary_performance(
+        self, mock_summary, benchmark, large_patient_bundle
+    ):
         """Benchmark patient summary generation performance."""
         mock_summary.return_value = "Mock patient summary for performance testing."
         summarizer = McodeSummarizer()
@@ -131,7 +134,9 @@ class TestPerformanceBenchmarks:
         result = benchmark(run_summary)
 
         assert result == "Mock patient summary for performance testing."
-        assert benchmark.stats.stats.mean < 0.1, f"Patient summary should complete quickly, got {benchmark.stats.stats.mean:.2f}s"
+        assert (
+            benchmark.stats.stats.mean < 0.1
+        ), f"Patient summary should complete quickly, got {benchmark.stats.stats.mean:.2f}s"
 
     def test_token_tracker_add_usage_performance(self, benchmark):
         """Benchmark token usage tracking performance."""
@@ -140,19 +145,19 @@ class TestPerformanceBenchmarks:
         def add_usage_batch():
             for i in range(500):  # Reduced for faster test
                 usage = TokenUsage(
-                    prompt_tokens=i * 10,
-                    completion_tokens=i * 5,
-                    total_tokens=i * 15
+                    prompt_tokens=i * 10, completion_tokens=i * 5, total_tokens=i * 15
                 )
                 tracker.add_usage(usage, f"component_{i % 10}")
 
-        result = benchmark(add_usage_batch)
+        benchmark(add_usage_batch)
 
         total_usage = tracker.get_total_usage()
         assert total_usage.total_tokens > 0
 
         # Performance assertion: should handle operations quickly
-        assert benchmark.stats.stats.mean < 0.5, f"Token tracking should complete in < 0.5s, got {benchmark.stats.stats.mean:.2f}s"
+        assert (
+            benchmark.stats.stats.mean < 0.5
+        ), f"Token tracking should complete in < 0.5s, got {benchmark.stats.stats.mean:.2f}s"
 
     def test_token_tracker_get_stats_performance(self, benchmark):
         """Benchmark getting token usage statistics."""
@@ -161,9 +166,7 @@ class TestPerformanceBenchmarks:
         # Pre-populate with data
         for i in range(100):
             usage = TokenUsage(
-                prompt_tokens=i * 10,
-                completion_tokens=i * 5,
-                total_tokens=i * 15
+                prompt_tokens=i * 10, completion_tokens=i * 5, total_tokens=i * 15
             )
             tracker.add_usage(usage, f"component_{i % 5}")
 
@@ -172,7 +175,9 @@ class TestPerformanceBenchmarks:
 
         result = benchmark(get_stats)
         assert result.total_tokens > 0
-        assert benchmark.stats.stats.mean < 0.01, f"Stats should be fast, got {benchmark.stats.stats.mean:.4f}s"
+        assert (
+            benchmark.stats.stats.mean < 0.01
+        ), f"Stats should be fast, got {benchmark.stats.stats.mean:.4f}s"
 
     def test_api_cache_performance(self, benchmark, temp_cache_dir):
         """Benchmark API cache operations."""
@@ -192,10 +197,13 @@ class TestPerformanceBenchmarks:
         assert result == test_data
 
         # Performance assertion: cache operations should be fast
-        assert benchmark.stats.stats.mean < 0.1, f"Cache operations should complete in < 0.1s, got {benchmark.stats.stats.mean:.3f}s"
+        assert (
+            benchmark.stats.stats.mean < 0.1
+        ), f"Cache operations should complete in < 0.1s, got {benchmark.stats.stats.mean:.3f}s"
 
     def test_json_processing_performance(self, benchmark, large_trial_data):
         """Benchmark JSON serialization/deserialization."""
+
         def json_ops():
             # Serialize
             json_str = json.dumps(large_trial_data)
@@ -204,11 +212,14 @@ class TestPerformanceBenchmarks:
 
         result = benchmark(json_ops)
         assert result == large_trial_data
-        assert benchmark.stats.stats.mean < 0.1, f"JSON ops should be fast, got {benchmark.stats.stats.mean:.3f}s"
+        assert (
+            benchmark.stats.stats.mean < 0.1
+        ), f"JSON ops should be fast, got {benchmark.stats.stats.mean:.3f}s"
 
     @pytest.mark.skip("Memory tracking requires special setup")
     def test_memory_usage_tracking(self, benchmark):
         """Benchmark memory usage with large data structures."""
+
         def create_large_structure():
             # Create a large nested structure
             return {
@@ -216,8 +227,9 @@ class TestPerformanceBenchmarks:
                     {
                         "id": f"trial_{i}",
                         "data": "x" * 100,  # Reduced
-                        "metadata": [{"size": i}] * 10  # Reduced
-                    } for i in range(50)  # Reduced
+                        "metadata": [{"size": i}] * 10,  # Reduced
+                    }
+                    for i in range(50)  # Reduced
                 ]
             }
 
@@ -227,6 +239,7 @@ class TestPerformanceBenchmarks:
 
     def test_mcode_mapping_performance(self, benchmark):
         """Benchmark basic mCODE mapping setup performance."""
+
         # Simple performance test without complex mocking
         def create_mapper():
             # Just test the object creation performance
@@ -234,13 +247,15 @@ class TestPerformanceBenchmarks:
                 "model_name": "test-model",
                 "temperature": 0.7,
                 "max_tokens": 1000,
-                "test_data": "x" * 500  # Reduced
+                "test_data": "x" * 500,  # Reduced
             }
 
         result = benchmark(create_mapper)
         assert result["model_name"] == "test-model"
         assert len(result["test_data"]) == 500
-        assert benchmark.stats.stats.mean < 0.01, f"Mapper creation should be fast, got {benchmark.stats.stats.mean:.4f}s"
+        assert (
+            benchmark.stats.stats.mean < 0.01
+        ), f"Mapper creation should be fast, got {benchmark.stats.stats.mean:.4f}s"
 
     def test_string_formatting_performance(self, benchmark):
         """Benchmark string formatting operations."""
@@ -249,7 +264,7 @@ class TestPerformanceBenchmarks:
             "name": "John Doe",
             "age": 45,
             "condition": "Breast Cancer",
-            "facility": "Memorial Hospital"
+            "facility": "Memorial Hospital",
         }
 
         def format_string():
@@ -258,7 +273,9 @@ class TestPerformanceBenchmarks:
         result = benchmark(format_string)
         assert "John Doe" in result
         assert "Breast Cancer" in result
-        assert benchmark.stats.stats.mean < 0.001, f"Formatting should be very fast, got {benchmark.stats.stats.mean:.4f}s"
+        assert (
+            benchmark.stats.stats.mean < 0.001
+        ), f"Formatting should be very fast, got {benchmark.stats.stats.mean:.4f}s"
 
     def test_list_comprehension_performance(self, benchmark):
         """Benchmark list comprehension operations."""
@@ -271,10 +288,13 @@ class TestPerformanceBenchmarks:
         assert len(result) == 2500
         assert result[0] == 1
         assert result[1] == 5
-        assert benchmark.stats.stats.mean < 0.05, f"List comp should be fast, got {benchmark.stats.stats.mean:.3f}s"
+        assert (
+            benchmark.stats.stats.mean < 0.05
+        ), f"List comp should be fast, got {benchmark.stats.stats.mean:.3f}s"
 
     def test_dict_operations_performance(self, benchmark):
         """Benchmark dictionary operations."""
+
         def dict_ops():
             d = {}
             # Fill dictionary
@@ -291,4 +311,6 @@ class TestPerformanceBenchmarks:
         result = benchmark(dict_ops)
         assert len(result) == 500
         assert result["key_0"] == "updated_0"
-        assert benchmark.stats.stats.mean < 0.05, f"Dict ops should be fast, got {benchmark.stats.stats.mean:.3f}s"
+        assert (
+            benchmark.stats.stats.mean < 0.05
+        ), f"Dict ops should be fast, got {benchmark.stats.stats.mean:.3f}s"
