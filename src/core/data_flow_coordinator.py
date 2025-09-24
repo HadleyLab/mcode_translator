@@ -8,10 +8,12 @@ and storage using the new unified architecture.
 
 from typing import Any, Dict, List, Optional
 
+from src.core.batch_processor import BatchProcessor
+from src.core.data_fetcher import DataFetcher
 from src.core.dependency_container import create_trial_pipeline
+from src.core.flow_summary_generator import FlowSummaryGenerator
 from src.pipeline import McodePipeline
 from src.shared.models import WorkflowResult
-from src.utils.fetcher import get_full_studies_batch
 from src.utils.logging_config import get_logger
 
 
@@ -47,6 +49,11 @@ class DataFlowCoordinator:
         else:
             self.pipeline = pipeline
 
+        # Initialize specialized components
+        self.data_fetcher = DataFetcher()
+        self.batch_processor = BatchProcessor(self.pipeline)
+        self.summary_generator = FlowSummaryGenerator()
+
     def process_clinical_trials_complete_flow(
         self,
         trial_ids: List[str],
@@ -75,7 +82,7 @@ class DataFlowCoordinator:
         self.logger.info(f"   📦 Batch size: {batch_size}")
 
         # Phase 1: Fetch trial data
-        fetch_result = self._fetch_trial_data(trial_ids)
+        fetch_result = self.data_fetcher.fetch_trial_data(trial_ids)
         if not fetch_result.success:
             self.logger.error("❌ Data fetching failed")
             return fetch_result
@@ -84,7 +91,7 @@ class DataFlowCoordinator:
         self.logger.info(f"✅ Successfully fetched {len(fetched_trials)} trials")
 
         # Phase 2: Validate and process in batches
-        processing_result = self._process_trials_in_batches(
+        processing_result = self.batch_processor.process_trials_in_batches(
             fetched_trials,
             validate_data=validate_data,
             store_results=store_results,
@@ -92,7 +99,7 @@ class DataFlowCoordinator:
         )
 
         # Phase 3: Generate comprehensive summary
-        summary = self._generate_flow_summary(
+        summary = self.summary_generator.generate_flow_summary(
             trial_ids=trial_ids,
             fetch_result=fetch_result,
             processing_result=processing_result,
@@ -127,228 +134,6 @@ class DataFlowCoordinator:
             },
         )
 
-    def _fetch_trial_data(self, trial_ids: List[str]) -> WorkflowResult:
-        """
-        Phase 1: Fetch clinical trial data from ClinicalTrials.gov API.
-
-        Args:
-            trial_ids: List of NCT IDs to fetch
-
-        Returns:
-            WorkflowResult with fetched trial data
-        """
-        self.logger.info("📥 Phase 1: Fetching clinical trial data")
-
-        try:
-            # Use batch processing for better performance
-            self.logger.info(f"🔄 Batch fetching {len(trial_ids)} trials")
-            batch_results = get_full_studies_batch(trial_ids, max_workers=8)
-
-            fetched_trials = []
-            failed_fetches = []
-
-            for trial_id, result in batch_results.items():
-                if isinstance(result, dict) and "error" not in result:
-                    fetched_trials.append(result)
-                    self.logger.debug(f"✅ Fetched: {trial_id}")
-                else:
-                    error_msg = (
-                        result.get("error", "Unknown error")
-                        if isinstance(result, dict)
-                        else str(result)
-                    )
-                    self.logger.warning(f"❌ Failed to fetch {trial_id}: {error_msg}")
-                    failed_fetches.append({"trial_id": trial_id, "error": error_msg})
-
-            if not fetched_trials:
-                return WorkflowResult(
-                    success=False,
-                    error_message="No trials could be fetched",
-                    data={},
-                    metadata={"failed_fetches": failed_fetches},
-                )
-
-            success_rate = len(fetched_trials) / len(trial_ids) if trial_ids else 0
-            self.logger.info(
-                f"📊 Batch fetch complete: {len(fetched_trials)}/{len(trial_ids)} successful ({success_rate:.1%})"
-            )
-
-            return WorkflowResult(
-                success=True,
-                data=fetched_trials,
-                metadata={
-                    "total_requested": len(trial_ids),
-                    "total_fetched": len(fetched_trials),
-                    "total_failed": len(failed_fetches),
-                    "success_rate": success_rate,
-                    "failed_fetches": failed_fetches,
-                    "processing_method": "batch_api_calls",
-                },
-            )
-
-        except Exception as e:
-            return WorkflowResult(
-                success=False, error_message=f"Data fetching failed: {str(e)}", data={}
-            )
-
-    def _process_trials_in_batches(
-        self,
-        trials_data: List[Dict[str, Any]],
-        validate_data: bool = True,
-        store_results: bool = True,
-        batch_size: int = 5,
-    ) -> WorkflowResult:
-        """
-        Phase 2: Process trials in batches using the unified pipeline.
-
-        Args:
-            trials_data: List of trial data to process
-            validate_data: Whether to validate data
-            store_results: Whether to store results
-            batch_size: Size of processing batches
-
-        Returns:
-            WorkflowResult with batch processing results
-        """
-        self.logger.info("🔬 Phase 2: Processing trials in batches")
-
-        if not trials_data:
-            return WorkflowResult(
-                success=False, error_message="No trial data to process", data={}
-            )
-
-        # Process in batches to manage memory and provide progress updates
-        all_results = []
-        total_processed = 0
-        total_successful = 0
-
-        for i in range(0, len(trials_data), batch_size):
-            batch = trials_data[i : i + batch_size]
-            batch_number = (i // batch_size) + 1
-            total_batches = (len(trials_data) + batch_size - 1) // batch_size
-
-            self.logger.info(
-                f"Processing batch {batch_number}/{total_batches} ({len(batch)} trials)"
-            )
-
-            # Process batch using simplified pipeline
-            batch_results = []
-            for trial_data in batch:
-                try:
-                    result = self.pipeline.process(trial_data)
-                    batch_results.append(result)
-                except Exception as e:
-                    self.logger.error(f"Failed to process trial: {e}")
-                    # Create a failed result
-                    batch_results.append(
-                        type(
-                            "FailedResult",
-                            (),
-                            {
-                                "success": False,
-                                "error_message": str(e),
-                                "mcode_mappings": [],
-                                "validation_results": {},
-                            },
-                        )()
-                    )
-
-            # Count successful results in this batch
-            successful_in_batch = sum(
-                1 for r in batch_results if getattr(r, "success", False)
-            )
-            total_successful += successful_in_batch
-            total_processed += len(batch)
-
-            all_results.append(
-                {
-                    "batch_number": batch_number,
-                    "batch_size": len(batch),
-                    "results": batch_results,
-                    "successful": successful_in_batch,
-                    "failed": len(batch) - successful_in_batch,
-                }
-            )
-
-            self.logger.info(
-                f"✅ Batch {batch_number} completed: {successful_in_batch}/{len(batch)} successful"
-            )
-
-        return WorkflowResult(
-            success=total_successful > 0,
-            data=all_results,
-            metadata={
-                "total_trials": len(trials_data),
-                "total_processed": total_processed,
-                "total_successful": total_successful,
-                "total_failed": total_processed - total_successful,
-                "success_rate": (
-                    total_successful / total_processed if total_processed > 0 else 0
-                ),
-                "batches_processed": len(all_results),
-            },
-        )
-
-    def _generate_flow_summary(
-        self,
-        trial_ids: List[str],
-        fetch_result: WorkflowResult,
-        processing_result: WorkflowResult,
-    ) -> Dict[str, Any]:
-        """
-        Phase 3: Generate comprehensive flow summary.
-
-        Args:
-            trial_ids: Original list of requested trial IDs
-            fetch_result: Results from data fetching phase
-            processing_result: Results from processing phase
-
-        Returns:
-            Comprehensive summary dictionary
-        """
-        fetch_metadata = fetch_result.metadata
-        processing_metadata = processing_result.metadata
-
-        total_requested = len(trial_ids)
-        total_fetched = fetch_metadata.get("total_fetched", 0)
-        total_processed = processing_metadata.get("total_processed", 0)
-        total_successful = processing_metadata.get("total_successful", 0)
-
-        # Calculate overall success rate
-        if total_requested > 0:
-            fetch_success_rate = total_fetched / total_requested
-            processing_success_rate = (
-                total_successful / total_fetched if total_fetched > 0 else 0
-            )
-            overall_success_rate = total_successful / total_requested
-        else:
-            fetch_success_rate = 0.0
-            processing_success_rate = 0.0
-            overall_success_rate = 0.0
-
-        return {
-            "total_requested": total_requested,
-            "total_fetched": total_fetched,
-            "total_processed": total_processed,
-            "total_successful": total_successful,
-            "total_failed": total_processed - total_successful,
-            "fetch_success_rate": fetch_success_rate,
-            "processing_success_rate": processing_success_rate,
-            "overall_success_rate": overall_success_rate,
-            "failed_fetches": fetch_metadata.get("failed_fetches", []),
-            "flow_phases": {
-                "fetch": {
-                    "completed": fetch_result.success,
-                    "trials_fetched": total_fetched,
-                    "success_rate": fetch_success_rate,
-                },
-                "process": {
-                    "completed": processing_result.success,
-                    "trials_processed": total_processed,
-                    "success_rate": processing_success_rate,
-                },
-            },
-        }
 
     def get_flow_statistics(self) -> Dict[str, Any]:
         """

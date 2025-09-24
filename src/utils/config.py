@@ -8,6 +8,12 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# HeySol API client constants
+DEFAULT_BASE_URL = "https://core.heysol.ai/api/v1"
+DEFAULT_MCP_URL = "https://core.heysol.ai/api/v1/mcp?source=heysol-api-client"
+DEFAULT_PROFILE_URL = "https://core.heysol.ai/api/profile"
+DEFAULT_SOURCE = "heysol-python-client"
+
 # Import LLM loader for file-based LLM library
 from .llm_loader import LLMConfig, llm_loader
 
@@ -481,3 +487,5 @@ class Config:
             raise ConfigurationError(
                 f"Failed to read modular config file {filename}: {str(e)}"
             )
+
+

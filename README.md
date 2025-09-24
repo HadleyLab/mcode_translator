@@ -67,6 +67,13 @@
 
 ## 🆕 Recent Updates
 
+### v2.2.0 - CLI Refactoring & Architecture Simplification
+- **✅ Eliminated Argparse Complexity**: Removed dual CLI system, now uses Click-only interface
+- **✅ Removed Command Dispatcher**: Simplified CLI architecture by eliminating unnecessary abstraction layer
+- **✅ Modularized Args Handling**: Replaced custom Args classes with SimpleNamespace for cleaner code
+- **✅ Preserved All Functionality**: All existing CLI commands and workflows remain fully functional
+- **✅ Enhanced Maintainability**: Reduced code duplication and improved developer experience
+
 ### v2.1.0 - DeepSeek Fixes & Code Cleanup
 - **✅ Fixed DeepSeek JSON Parsing**: Resolved incorrect JSON structure errors from deepseek-coder model
 - **✅ Enhanced Error Handling**: Added robust JSON parsing with fail-fast behavior for malformed responses
@@ -129,13 +136,13 @@ export COREAI_API_KEY="your_core_memory_key_here"
 
 ```bash
 # Process a clinical trial
-python -m src.cli.mcode_translate fetch-trials --nct-ids NCT04348955
+python mcode_translate.py fetch-trials --nct-ids NCT04348955
 
 # Search by condition
-python -m src.cli.mcode_translate fetch-trials --condition "breast cancer" --limit 3
+python mcode_translate.py fetch-trials --condition "breast cancer" --limit 3
 
 # Optimize processing parameters
-python -m src.cli.mcode_translate optimize-trials --trials-file raw_trials.ndjson --cv-folds 3
+python mcode_translate.py optimize-trials --trials-file raw_trials.ndjson --cv-folds 3
 ```
 
 **Expected Output:**
@@ -182,13 +189,13 @@ for mapping in result.data.mcode_mappings:
 ### CLI Commands
 ```bash
 # Fetch clinical trials
-python -m src.cli.trials_fetcher --condition "lung cancer" -o trials.json
+python mcode_translate.py fetch-trials --condition "lung cancer" --out trials.json
 
 # Process with mCODE mapping
-python -m src.cli.trials_processor trials.json --ingest
+python mcode_translate.py process-trials --in trials.json --store-in-memory
 
 # Optimize parameters
-python -m src.cli.trials_optimizer --save-config optimal.json
+python mcode_translate.py optimize-trials --trials-file trials.json --cv-folds 3
 ```
 
 ---

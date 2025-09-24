@@ -439,15 +439,31 @@ class McodeSummarizer:
         """Extract mCODE elements from patient data using abstracted processing."""
         elements = []
 
-        # Get patient resource
-        patient_resource = None
-        for entry in patient_data.get("entry", []):
-            if entry.get("resource", {}).get("resourceType") == "Patient":
-                patient_resource = entry["resource"]
-                break
-
+        # Get patient resource and extract basic info
+        patient_resource = self._find_patient_resource(patient_data)
         if not patient_resource:
             return elements
+
+        # Extract basic patient demographics
+        patient_elements = self._extract_patient_demographics(patient_resource)
+        elements.extend(patient_elements)
+
+        # Process clinical data from other resources
+        clinical_elements = self._extract_clinical_resources(patient_data, include_dates)
+        elements.extend(clinical_elements)
+
+        return elements
+
+    def _find_patient_resource(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Find the Patient resource in the FHIR bundle."""
+        for entry in patient_data.get("entry", []):
+            if entry.get("resource", {}).get("resourceType") == "Patient":
+                return entry["resource"]
+        return {}
+
+    def _extract_patient_demographics(self, patient_resource: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Extract basic patient demographics from Patient resource."""
+        elements = []
 
         # Basic patient info
         patient_id = patient_resource.get("id", "")
@@ -463,10 +479,8 @@ class McodeSummarizer:
             }
         )
 
-        # Demographics with default codes
+        # Gender
         gender = patient_resource.get("gender", "")
-        birth_date = patient_resource.get("birthDate", "")
-
         if gender:
             elements.append(
                 {
@@ -481,6 +495,8 @@ class McodeSummarizer:
                 }
             )
 
+        # Birth date
+        birth_date = patient_resource.get("birthDate", "")
         if birth_date:
             elements.append(
                 {
@@ -491,71 +507,91 @@ class McodeSummarizer:
                 }
             )
 
-        # Process clinical data from other resources
+        return elements
+
+    def _extract_clinical_resources(self, patient_data: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
+        """Extract clinical elements from non-Patient resources."""
+        elements = []
+
         for entry in patient_data.get("entry", []):
             resource = entry.get("resource", {})
             resource_type = resource.get("resourceType")
 
             if resource_type == "Condition":
-                # Extract cancer condition
-                code_info = resource.get("code", {}).get("coding", [{}])[0]
-                display = code_info.get("display", "")
-                system = code_info.get("system", "")
-                code = code_info.get("code", "")
-                onset_date = resource.get("onsetDateTime", "")
-
-                if display:
-                    codes = (
-                        f"{self._format_mcode_display('', system, code)}"
-                        if system and code
-                        else ""
-                    )
-                    date_qualifier = (
-                        f" documented on {self._format_date_simple(onset_date)}"
-                        if onset_date and include_dates
-                        else ""
-                    )
-
-                    elements.append(
-                        {
-                            "element_name": "CancerCondition",
-                            "value": display,
-                            "codes": codes,
-                            "date_qualifier": date_qualifier,
-                        }
-                    )
-
+                condition_elements = self._extract_condition_elements(resource, include_dates)
+                elements.extend(condition_elements)
             elif resource_type == "Observation":
-                # Extract TNM staging
-                code_info = resource.get("code", {}).get("coding", [{}])[0]
-                display = code_info.get("display", "")
-                value_info = resource.get("valueCodeableConcept", {})
-                value_coding = value_info.get("coding", [{}])[0] if value_info else {}
-                value_display = value_coding.get("display", "")
-                value_system = value_coding.get("system", "")
-                value_code = value_coding.get("code", "")
-                effective_date = resource.get("effectiveDateTime", "")
+                observation_elements = self._extract_observation_elements(resource, include_dates)
+                elements.extend(observation_elements)
 
-                if value_display and "T4" in value_display:
-                    codes = (
-                        f"{self._format_mcode_display('', value_system, value_code)}"
-                        if value_system and value_code
-                        else ""
-                    )
-                    date_qualifier = (
-                        f" documented on {self._format_date_simple(effective_date)}"
-                        if effective_date and include_dates
-                        else ""
-                    )
+        return elements
 
-                    elements.append(
-                        {
-                            "element_name": "TNMStageGroup",
-                            "value": value_display,
-                            "codes": codes,
-                            "date_qualifier": date_qualifier,
-                        }
-                    )
+    def _extract_condition_elements(self, resource: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
+        """Extract elements from Condition resources."""
+        elements = []
+
+        code_info = resource.get("code", {}).get("coding", [{}])[0]
+        display = code_info.get("display", "")
+        system = code_info.get("system", "")
+        code = code_info.get("code", "")
+        onset_date = resource.get("onsetDateTime", "")
+
+        if display:
+            codes = (
+                f"{self._format_mcode_display('', system, code)}"
+                if system and code
+                else ""
+            )
+            date_qualifier = (
+                f" documented on {self._format_date_simple(onset_date)}"
+                if onset_date and include_dates
+                else ""
+            )
+
+            elements.append(
+                {
+                    "element_name": "CancerCondition",
+                    "value": display,
+                    "codes": codes,
+                    "date_qualifier": date_qualifier,
+                }
+            )
+
+        return elements
+
+    def _extract_observation_elements(self, resource: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
+        """Extract elements from Observation resources."""
+        elements = []
+
+        code_info = resource.get("code", {}).get("coding", [{}])[0]
+        display = code_info.get("display", "")
+        value_info = resource.get("valueCodeableConcept", {})
+        value_coding = value_info.get("coding", [{}])[0] if value_info else {}
+        value_display = value_coding.get("display", "")
+        value_system = value_coding.get("system", "")
+        value_code = value_coding.get("code", "")
+        effective_date = resource.get("effectiveDateTime", "")
+
+        if value_display and "T4" in value_display:
+            codes = (
+                f"{self._format_mcode_display('', value_system, value_code)}"
+                if value_system and value_code
+                else ""
+            )
+            date_qualifier = (
+                f" documented on {self._format_date_simple(effective_date)}"
+                if effective_date and include_dates
+                else ""
+            )
+
+            elements.append(
+                {
+                    "element_name": "TNMStageGroup",
+                    "value": value_display,
+                    "codes": codes,
+                    "date_qualifier": date_qualifier,
+                }
+            )
 
         return elements
 

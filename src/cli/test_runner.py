@@ -1,18 +1,20 @@
 """
-Test runner utilities for mCODE Translator CLI.
+Test runner functions for mCODE Translator CLI.
 
-This module provides functions for running various test suites
-and generating coverage reports.
+This module provides functions to run various test suites
+and generate coverage reports.
 """
 
 import os
 import subprocess
-from typing import Optional
+from typing import Optional, Tuple
 
 
 def run_command(
-    cmd: str, cwd: Optional[str] = None, env: Optional[dict] = None
-) -> tuple[bool, str, str]:
+    cmd: str,
+    cwd: Optional[str] = None,
+    env: Optional[dict] = None
+) -> Tuple[bool, str, str]:
     """Run a command and return the result."""
     try:
         result = subprocess.run(
@@ -27,10 +29,10 @@ def run_unit_tests(args) -> bool:
     """Run unit tests."""
     print("🧪 Running Unit Tests...")
     cmd = "python -m pytest tests/unit/ -v --tb=short"
+    if getattr(args, "fail_fast", False):
+        cmd += " -x"
     if getattr(args, "coverage", False):
         cmd += " --cov=src --cov-report=html --cov-report=term-missing"
-    if getattr(args, "fail_fast", False):
-        cmd += " --exitfirst"
 
     success, stdout, stderr = run_command(cmd)
     print(stdout)

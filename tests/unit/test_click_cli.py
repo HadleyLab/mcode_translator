@@ -24,19 +24,21 @@ class TestClickCLI:
         result = runner.invoke(cli, ["--help"])
         assert result.exit_code == 0
         assert "mCODE Translator CLI" in result.output
-        assert "fetch-trials" in result.output
-        assert "process-trials" in result.output
+        assert "trials" in result.output
+        assert "patients" in result.output
+        assert "data" in result.output
+        assert "test" in result.output
 
     def test_fetch_trials_missing_required_args(self, runner):
-        """Test fetch-trials command with missing required arguments."""
-        result = runner.invoke(cli, ["fetch-trials"])
+        """Test trials fetch command with missing required arguments."""
+        result = runner.invoke(cli, ["trials", "fetch"])
         assert result.exit_code == 2  # Click usage error
         assert "Must specify one of" in result.output
 
     @patch("src.cli.trials_fetcher.main")
     def test_fetch_trials_with_condition(self, mock_main, runner):
-        """Test fetch-trials command with condition."""
-        result = runner.invoke(cli, ["fetch-trials", "--condition", "breast cancer"])
+        """Test trials fetch command with condition."""
+        result = runner.invoke(cli, ["trials", "fetch", "--condition", "breast cancer"])
         assert result.exit_code == 0
         mock_main.assert_called_once()
         args = mock_main.call_args[0][0]
@@ -44,8 +46,8 @@ class TestClickCLI:
 
     @patch("src.cli.trials_fetcher.main")
     def test_fetch_trials_with_nct_id(self, mock_main, runner):
-        """Test fetch-trials command with NCT ID."""
-        result = runner.invoke(cli, ["fetch-trials", "--nct-id", "NCT12345678"])
+        """Test trials fetch command with NCT ID."""
+        result = runner.invoke(cli, ["trials", "fetch", "--nct-id", "NCT12345678"])
         assert result.exit_code == 0
         mock_main.assert_called_once()
         args = mock_main.call_args[0][0]
@@ -53,39 +55,39 @@ class TestClickCLI:
 
     @patch("src.cli.trials_processor.main")
     def test_process_trials(self, mock_main, runner):
-        """Test process-trials command."""
-        result = runner.invoke(cli, ["process-trials", "input.json"])
+        """Test trials process command."""
+        result = runner.invoke(cli, ["trials", "process", "input.json"])
         assert result.exit_code == 0
         mock_main.assert_called_once()
         args = mock_main.call_args[0][0]
         assert args.input_file == "input.json"
 
     def test_process_trials_missing_input(self, runner):
-        """Test process-trials command with missing input file."""
-        result = runner.invoke(cli, ["process-trials"])
+        """Test trials process command with missing input file."""
+        result = runner.invoke(cli, ["trials", "process"])
         assert result.exit_code == 2
         assert "Missing argument" in result.output
 
     @patch("src.cli.trials_summarizer.main")
     def test_summarize_trials(self, mock_main, runner):
-        """Test summarize-trials command."""
-        result = runner.invoke(cli, ["summarize-trials", "--in", "input.json"])
+        """Test trials summarize command."""
+        result = runner.invoke(cli, ["trials", "summarize", "--in", "input.json"])
         assert result.exit_code == 0
         mock_main.assert_called_once()
         args = mock_main.call_args[0][0]
         assert args.input_file == "input.json"
 
     def test_summarize_trials_missing_input(self, runner):
-        """Test summarize-trials command with missing input file."""
-        result = runner.invoke(cli, ["summarize-trials"])
+        """Test trials summarize command with missing input file."""
+        result = runner.invoke(cli, ["trials", "summarize"])
         assert result.exit_code == 2
         assert "Must specify input file" in result.output
 
     @patch("src.cli.patients_fetcher.main")
     def test_fetch_patients(self, mock_main, runner):
-        """Test fetch-patients command."""
+        """Test patients fetch command."""
         result = runner.invoke(
-            cli, ["fetch-patients", "--archive", "breast_cancer_10_years"]
+            cli, ["patients", "fetch", "--archive", "breast_cancer_10_years"]
         )
         assert result.exit_code == 0
         mock_main.assert_called_once()
@@ -94,86 +96,86 @@ class TestClickCLI:
 
     @patch("src.cli.patients_processor.main")
     def test_process_patients(self, mock_main, runner):
-        """Test process-patients command."""
-        result = runner.invoke(cli, ["process-patients", "--in", "patients.json"])
+        """Test patients process command."""
+        result = runner.invoke(cli, ["patients", "process", "--in", "patients.json"])
         assert result.exit_code == 0
         mock_main.assert_called_once()
         args = mock_main.call_args[0][0]
         assert args.input_file == "patients.json"
 
     def test_process_patients_missing_input(self, runner):
-        """Test process-patients command with missing input file."""
-        result = runner.invoke(cli, ["process-patients"])
+        """Test patients process command with missing input file."""
+        result = runner.invoke(cli, ["patients", "process"])
         assert result.exit_code == 2
         assert "Must specify input file" in result.output
 
     @patch("src.cli.patients_summarizer.main")
     def test_summarize_patients(self, mock_main, runner):
-        """Test summarize-patients command."""
-        result = runner.invoke(cli, ["summarize-patients", "--in", "patients.json"])
+        """Test patients summarize command."""
+        result = runner.invoke(cli, ["patients", "summarize", "--in", "patients.json"])
         assert result.exit_code == 0
         mock_main.assert_called_once()
         args = mock_main.call_args[0][0]
         assert args.input_file == "patients.json"
 
     def test_summarize_patients_missing_input(self, runner):
-        """Test summarize-patients command with missing input file."""
-        result = runner.invoke(cli, ["summarize-patients"])
+        """Test patients summarize command with missing input file."""
+        result = runner.invoke(cli, ["patients", "summarize"])
         assert result.exit_code == 2
         assert "Must specify input file" in result.output
 
-    @patch("src.cli.data_downloader.list_available_archives")
+    @patch("src.cli.data_commands.list_available_archives")
     def test_download_data_list(self, mock_list, runner):
-        """Test download-data command with --list option."""
-        result = runner.invoke(cli, ["download-data", "--list"])
+        """Test data download command with --list option."""
+        result = runner.invoke(cli, ["data", "download", "--list"])
         assert result.exit_code == 0
         mock_list.assert_called_once()
 
     def test_download_data_missing_args(self, runner):
-        """Test download-data command with missing required arguments."""
-        result = runner.invoke(cli, ["download-data"])
+        """Test data download command with missing required arguments."""
+        result = runner.invoke(cli, ["data", "download"])
         assert result.exit_code == 2
         assert "Must specify --archives or --all" in result.output
 
-    @patch("src.cli.data_downloader.download_archives")
-    @patch("src.cli.data_downloader.get_default_archives_config")
+    @patch("src.cli.data_commands.download_archives")
+    @patch("src.cli.data_commands.get_default_archives_config")
     def test_download_data_all(self, mock_config, mock_download, runner):
-        """Test download-data command with --all option."""
+        """Test data download command with --all option."""
         mock_config.return_value = {"test": {"archive": "url"}}
         mock_download.return_value = {"test_archive": "/path/to/archive"}
 
-        result = runner.invoke(cli, ["download-data", "--all"])
+        result = runner.invoke(cli, ["data", "download", "--all"])
         assert result.exit_code == 0
         mock_download.assert_called_once()
 
     @patch("src.cli.test_runner.run_unit_tests")
     def test_run_tests_unit(self, mock_run, runner):
-        """Test run-tests command with unit suite."""
+        """Test test run command with unit suite."""
         mock_run.return_value = True
-        result = runner.invoke(cli, ["run-tests", "unit"])
+        result = runner.invoke(cli, ["test", "run", "unit"])
         assert result.exit_code == 0
         assert "All tests passed!" in result.output
         mock_run.assert_called_once()
 
     @patch("src.cli.test_runner.run_unit_tests")
     def test_run_tests_unit_failure(self, mock_run, runner):
-        """Test run-tests command with unit suite failure."""
+        """Test test run command with unit suite failure."""
         mock_run.return_value = False
-        result = runner.invoke(cli, ["run-tests", "unit"])
+        result = runner.invoke(cli, ["test", "run", "unit"])
         assert result.exit_code == 1
         assert "Some tests failed!" in result.output
 
     def test_run_tests_invalid_suite(self, runner):
-        """Test run-tests command with invalid suite."""
-        result = runner.invoke(cli, ["run-tests", "invalid"])
+        """Test test run command with invalid suite."""
+        result = runner.invoke(cli, ["test", "run", "invalid"])
         assert result.exit_code == 2
         assert "Invalid value for" in result.output
 
     def test_run_tests_missing_src_directory(self, runner, tmp_path):
-        """Test run-tests command when not in project root."""
+        """Test test run command when not in project root."""
         # Change to a temporary directory without src/
         with runner.isolated_filesystem():
-            result = runner.invoke(cli, ["run-tests", "unit"])
+            result = runner.invoke(cli, ["test", "run", "unit"])
             assert result.exit_code == 1
             assert "project root directory" in result.output
 

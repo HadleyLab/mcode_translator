@@ -12,7 +12,7 @@ from src.services.summarizer import McodeSummarizer
 from src.utils.config import Config
 from typing import Protocol
 
-from src.utils.core_memory_client import CoreMemoryClient, CoreMemoryError
+from src.utils.onco_core_memory import CoreMemoryClient, CoreMemoryError
 from src.utils.logging_config import get_logger
 
 
