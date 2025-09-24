@@ -170,10 +170,18 @@ class TestPatientsFetcherCLI:
 
     def test_patients_fetcher_missing_archive_arg(self):
         """Test error when archive argument is missing."""
-        parser = create_patients_parser()
+        from unittest.mock import patch
 
-        with pytest.raises(SystemExit):
-            parser.parse_args([])  # No arguments provided
+        with patch('src.shared.cli_utils.McodeCLI.setup_logging'), \
+             patch('src.shared.cli_utils.McodeCLI.create_config'), \
+             pytest.raises(SystemExit):
+            # Create args with no archive
+            args = argparse.Namespace(
+                verbose=False, log_level='INFO', config=None,
+                archive=None, patient_id=None, limit=10,
+                list_archives=False, output_file=None
+            )
+            patients_fetcher_main(args)
 
 
 class TestTrialsFetcherCLI:

@@ -94,7 +94,9 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
 
     # Validate arguments
     if not args.archive:
-        parser.error("Must specify --archive (or use --list-archives)")
+        print("❌ Error: Must specify --archive (or use --list-archives)")
+        print("Use --help for more information")
+        sys.exit(1)
 
     # Prepare workflow parameters
     workflow_kwargs = {"archive_path": args.archive, "limit": args.limit}
