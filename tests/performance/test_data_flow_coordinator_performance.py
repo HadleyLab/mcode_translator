@@ -53,7 +53,7 @@ class TestDataFlowCoordinatorPerformance:
         """Create coordinator for testing."""
         return DataFlowCoordinator(pipeline=mock_pipeline)
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_fetch_trial_data_performance(
         self, mock_batch_fetch, benchmark, large_trial_dataset
     ):
@@ -121,7 +121,7 @@ class TestDataFlowCoordinatorPerformance:
         # Performance measurement: log timing for analysis (no strict assertion)
         print(f"Summary generation performance: {benchmark.stats.stats.mean:.6f}s")
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_complete_flow_performance_small(
         self, mock_batch_fetch, benchmark, mock_pipeline
     ):
@@ -152,7 +152,7 @@ class TestDataFlowCoordinatorPerformance:
         # Performance measurement: log timing for analysis (no strict assertion)
         print(f"Small flow performance: {benchmark.stats.stats.mean:.3f}s")
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_complete_flow_performance_medium(
         self, mock_batch_fetch, benchmark, mock_pipeline
     ):

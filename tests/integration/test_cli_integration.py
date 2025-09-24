@@ -298,7 +298,7 @@ class TestMcodeCLIIntegration:
         assert "--verbose" in help_text or "-v" in help_text
         assert "--config" in help_text
 
-    @patch("src.shared.cli_utils.Config")
+    @patch("src.utils.config.Config")
     def test_cli_utils_create_config(self, mock_config_class):
         """Test config creation."""
         mock_config = Mock()

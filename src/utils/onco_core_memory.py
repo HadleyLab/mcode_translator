@@ -14,8 +14,8 @@ from heysol.exceptions import HeySolError, ValidationError
 __all__ = [
     "OncoCoreClient",
     "OncoCoreError",
-    "CoreMemoryClient",
-    "CoreMemoryError",
+    "OncoCoreClient",
+    "HeySolError",
 ]
 """
 HeySol API client implementation with both direct API and MCP support.
@@ -372,8 +372,3 @@ class OncoCoreClient:
             self.api_client.close()
         if self.mcp_client:
             self.mcp_client.close()
-
-
-# Aliases for backward compatibility
-CoreMemoryClient = OncoCoreClient
-CoreMemoryError = HeySolError

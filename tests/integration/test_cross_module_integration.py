@@ -30,7 +30,7 @@ class TestCrossModuleIntegration:
         """Create dependency container."""
         return DependencyContainer()
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_data_flow_coordinator_with_workflows(
         self,
         mock_get_full_studies_batch,

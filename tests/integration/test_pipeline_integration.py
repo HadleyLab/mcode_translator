@@ -35,6 +35,7 @@ class TestPipelineIntegration:
         """Create dependency container for integration tests."""
         return DependencyContainer()
 
+    @pytest.mark.asyncio
     async def test_mcode_pipeline_with_real_trial_data(
         self, sample_trial_data, container
     ):
@@ -66,15 +67,21 @@ class TestPipelineIntegration:
         assert isinstance(summary, str)
         assert len(summary) > 0
 
-    @patch("src.utils.core_memory_client.CoreMemoryClient.ingest")
+    @pytest.mark.asyncio
     async def test_pipeline_with_memory_storage(
-        self, mock_ingest, sample_trial_data, container
+        self, sample_trial_data, container
     ):
         """Test pipeline with memory storage integration."""
-        mock_ingest.return_value = {"status": "success"}
+        from unittest.mock import Mock
 
         pipeline = container.create_clinical_trial_pipeline()
         storage = container.create_memory_storage()
+
+        # Mock the client
+        mock_client = Mock()
+        mock_client.ingest.return_value = {"status": "success"}
+        mock_client.search.return_value = {"episodes": [], "facts": []}
+        storage._client = mock_client
 
         # Process trial
         result = await pipeline.process(sample_trial_data)
@@ -102,7 +109,7 @@ class TestPipelineIntegration:
         search_results = storage.search_similar_trials(f"trial {trial_id}")
         assert search_results is not None
 
-        mock_ingest.assert_called()
+        mock_client.ingest.assert_called()
 
     def test_data_flow_coordinator_integration(self, sample_trial_data):
         """Test DataFlowCoordinator with real data."""
@@ -115,7 +122,7 @@ class TestPipelineIntegration:
         ]
 
         # This would normally fetch from real APIs, but we'll mock the fetch
-        with patch.object(coordinator, "_fetch_trial_data") as mock_fetch:
+        with patch("src.core.data_fetcher.DataFetcher.fetch_trial_data") as mock_fetch:
             mock_fetch.return_value = type(
                 "WorkflowResult",
                 (),

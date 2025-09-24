@@ -12,7 +12,8 @@ from src.services.summarizer import McodeSummarizer
 from src.utils.config import Config
 from typing import Protocol
 
-from src.utils.onco_core_memory import CoreMemoryClient, CoreMemoryError
+from src.utils.onco_core_memory import OncoCoreClient, HeySolError
+from heysol.config import HeySolConfig
 from src.utils.logging_config import get_logger
 
 
@@ -61,11 +62,16 @@ class McodeMemoryStorage:
         self._client = None
 
     @property
-    def client(self) -> CoreMemoryClient:
+    def client(self) -> OncoCoreClient:
         """Lazy initialization of the CORE Memory client."""
         if self._client is None:
-            self._client = CoreMemoryClient(
-                api_key=self.api_key, base_url=self.base_url, source=self.source
+            config = HeySolConfig(
+                api_key=self.api_key,
+                base_url=self.base_url,
+                source=self.source
+            )
+            self._client = OncoCoreClient(
+                api_key=self.api_key, base_url=self.base_url, config=config
             )
         return self._client
 
@@ -119,7 +125,7 @@ class McodeMemoryStorage:
             self.client.ingest(summary)
             self.logger.info(f"✅ Stored trial {trial_id} mCODE summary in CORE Memory")
             return True
-        except CoreMemoryError as e:
+        except HeySolError as e:
             self.logger.error(f"❌ Failed to store trial {trial_id}: {e}")
             return False
         except Exception as e:
@@ -156,7 +162,7 @@ class McodeMemoryStorage:
                 f"✅ Stored patient {patient_id} mCODE summary in CORE Memory"
             )
             return True
-        except CoreMemoryError as e:
+        except HeySolError as e:
             self.logger.error(f"❌ Failed to store patient {patient_id}: {e}")
             return False
         except Exception as e:
@@ -176,7 +182,7 @@ class McodeMemoryStorage:
         """
         try:
             return self.client.search(query, limit=limit)
-        except CoreMemoryError as e:
+        except HeySolError as e:
             self.logger.error(f"❌ Search failed: {e}")
             return {"episodes": [], "facts": []}
 
@@ -190,6 +196,6 @@ class McodeMemoryStorage:
         try:
             spaces = self.client.get_spaces()
             return {"spaces": spaces, "total_spaces": len(spaces)}
-        except CoreMemoryError as e:
+        except HeySolError as e:
             self.logger.error(f"❌ Failed to get memory stats: {e}")
             return {"spaces": [], "total_spaces": 0}

@@ -12,7 +12,7 @@ class TestStorageIntegration:
     """Integration tests for storage interactions."""
 
     @pytest.fixture
-    def mock_core_memory_client(self):
+    def mock_onco_core_memory(self):
         """Mock CORE Memory client."""
         mock = MagicMock()
         mock.create_memory.return_value = {"id": "test_id"}
@@ -60,67 +60,67 @@ class TestStorageIntegration:
         }
 
     def test_store_trial_mcode_summary(
-        self, mock_core_memory_client, sample_trial_data
+        self, mock_onco_core_memory, sample_trial_data
     ):
         """Test storing trial mCODE summary."""
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
             success = storage.store_trial_mcode_summary("NCT123456", sample_trial_data)
             assert success
-            mock_core_memory_client.ingest.assert_called_once()
+            mock_onco_core_memory.ingest.assert_called_once()
 
     def test_store_patient_mcode_summary(
-        self, mock_core_memory_client, sample_patient_data
+        self, mock_onco_core_memory, sample_patient_data
     ):
         """Test storing patient mCODE summary."""
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
             success = storage.store_patient_mcode_summary(
                 "patient_123", sample_patient_data
             )
             assert success
-            mock_core_memory_client.ingest.assert_called_once()
+            mock_onco_core_memory.ingest.assert_called_once()
 
-    def test_search_similar_trials(self, mock_core_memory_client):
+    def test_search_similar_trials(self, mock_onco_core_memory):
         """Test searching for similar trials."""
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
-            mock_core_memory_client.search.return_value = [
+            mock_onco_core_memory.search.return_value = [
                 {"id": "test_id", "data": "test_data"}
             ]
             results = storage.search_similar_trials("breast cancer")
             assert results is not None
             assert len(results) == 1
             assert results[0]["id"] == "test_id"
-            mock_core_memory_client.search.assert_called_once()
+            mock_onco_core_memory.search.assert_called_once()
 
-    def test_store_trial_mcode_summary_with_empty_data(self, mock_core_memory_client):
+    def test_store_trial_mcode_summary_with_empty_data(self, mock_onco_core_memory):
         """Test storing trial with empty data."""
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
             success = storage.store_trial_mcode_summary("NCT123456", {})
             assert success
-            mock_core_memory_client.ingest.assert_called_once()
+            mock_onco_core_memory.ingest.assert_called_once()
 
     def test_store_patient_mcode_summary_with_minimal_data(
-        self, mock_core_memory_client
+        self, mock_onco_core_memory
     ):
         """Test storing patient with minimal required data."""
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
             minimal_data = {
@@ -131,41 +131,41 @@ class TestStorageIntegration:
             }
             success = storage.store_patient_mcode_summary("patient_123", minimal_data)
             assert success
-            mock_core_memory_client.ingest.assert_called_once()
+            mock_onco_core_memory.ingest.assert_called_once()
 
-    def test_search_similar_trials_empty_results(self, mock_core_memory_client):
+    def test_search_similar_trials_empty_results(self, mock_onco_core_memory):
         """Test searching with no results."""
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
-            mock_core_memory_client.search.return_value = []
+            mock_onco_core_memory.search.return_value = []
             results = storage.search_similar_trials("nonexistent condition")
             assert results == []
-            mock_core_memory_client.search.assert_called_once()
+            mock_onco_core_memory.search.assert_called_once()
 
-    def test_storage_error_handling_connection_failure(self, mock_core_memory_client):
+    def test_storage_error_handling_connection_failure(self, mock_onco_core_memory):
         """Test handling of storage connection failures."""
-        mock_core_memory_client.ingest.side_effect = Exception("Connection failed")
+        mock_onco_core_memory.ingest.side_effect = Exception("Connection failed")
 
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
             success = storage.store_trial_mcode_summary("NCT123456", {"data": "test"})
             assert not success  # Should handle error gracefully
 
-    def test_storage_error_handling_search_failure(self, mock_core_memory_client):
+    def test_storage_error_handling_search_failure(self, mock_onco_core_memory):
         """Test handling of search failures."""
-        from src.utils.onco_core_memory import CoreMemoryError
+        from src.utils.onco_core_memory import HeySolError
 
-        mock_core_memory_client.search.side_effect = CoreMemoryError("Search failed")
+        mock_onco_core_memory.search.side_effect = HeySolError("Search failed")
 
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
             results = storage.search_similar_trials("breast cancer")
@@ -175,12 +175,12 @@ class TestStorageIntegration:
             }  # Should return empty results on error
 
     def test_batch_storage_operations(
-        self, mock_core_memory_client, sample_trial_data, sample_patient_data
+        self, mock_onco_core_memory, sample_trial_data, sample_patient_data
     ):
         """Test batch storage operations."""
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
 
@@ -215,13 +215,13 @@ class TestStorageIntegration:
                 assert success
 
             # Verify all operations were called
-            assert mock_core_memory_client.ingest.call_count == 4
+            assert mock_onco_core_memory.ingest.call_count == 4
 
-    def test_storage_data_validation(self, mock_core_memory_client):
+    def test_storage_data_validation(self, mock_onco_core_memory):
         """Test data validation before storage."""
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
 
@@ -236,12 +236,12 @@ class TestStorageIntegration:
             assert not success
 
     def test_concurrent_storage_access(
-        self, mock_core_memory_client, sample_trial_data
+        self, mock_onco_core_memory, sample_trial_data
     ):
         """Test concurrent storage access patterns."""
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
 
@@ -256,13 +256,13 @@ class TestStorageIntegration:
 
             # All operations should succeed
             assert all(operations)
-            assert mock_core_memory_client.ingest.call_count == 5
+            assert mock_onco_core_memory.ingest.call_count == 5
 
-    def test_storage_memory_limits(self, mock_core_memory_client):
+    def test_storage_memory_limits(self, mock_onco_core_memory):
         """Test handling of large data sets."""
         with patch(
-            "src.storage.mcode_memory_storage.CoreMemoryClient",
-            return_value=mock_core_memory_client,
+            "src.storage.mcode_memory_storage.OncoCoreClient",
+            return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
 
@@ -275,4 +275,4 @@ class TestStorageIntegration:
 
             success = storage.store_trial_mcode_summary("NCT123456", large_trial_data)
             assert success
-            mock_core_memory_client.ingest.assert_called_once()
+            mock_onco_core_memory.ingest.assert_called_once()
