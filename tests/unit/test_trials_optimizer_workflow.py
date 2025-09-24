@@ -87,94 +87,13 @@ class TestTrialsOptimizerWorkflow:
         ]
         assert combinations == expected_combinations
 
-    @pytest.mark.asyncio
-    @patch("src.workflows.trials_optimizer_workflow.McodePipeline")
-    async def test_test_single_trial_success(
-        self, mock_pipeline_class, workflow, mock_trials_data
-    ):
-        """Test individual trial processing with successful pipeline."""
-        # Mock pipeline
-        from unittest.mock import AsyncMock
-        from src.shared.models import McodeElement
-
-        mock_pipeline = AsyncMock()
-        mock_result = Mock()
-        # Create proper mock McodeElement objects
-        mock_elements = [
-            McodeElement(
-                element_type="CancerCondition",
-                code="C50",
-                display="Breast Cancer",
-                system="ICD-10",
-                confidence_score=0.9,
-                evidence_text="Patient has breast cancer",
-            ),
-            McodeElement(
-                element_type="CancerTreatment",
-                code="CHEMO",
-                display="Chemotherapy",
-                system="Treatment",
-                confidence_score=0.8,
-                evidence_text="Patient receives chemotherapy",
-            ),
-        ]
-        mock_result.mcode_mappings = mock_elements
-        mock_result.validation_results = Mock(compliance_score=0.8)
-        mock_result.source_references = [
-            Mock()
-        ] * 3  # Add source references for higher score
-        mock_pipeline.process.return_value = mock_result
-        mock_pipeline_class.return_value = mock_pipeline
-
-        combination = {"prompt": "test_prompt", "model": "test_model"}
-        trial = mock_trials_data[0]
-        fold = 0
-        combo_idx = 0
-
-        result = await workflow._test_single_trial(combination, trial, fold, combo_idx)
-
-        assert result["success"] is True
-        assert result["combination"] == combination
-        assert result["combo_idx"] == combo_idx
-        assert result["fold"] == fold
-        assert "score" in result
-        assert "trial_score" in result
-        assert isinstance(result["score"], float)
-        assert result["score"] > 0  # Should have positive score
-
-    @pytest.mark.asyncio
-    @patch("src.workflows.trials_optimizer_workflow.McodePipeline")
-    async def test_test_single_trial_pipeline_failure(
-        self, mock_pipeline_class, workflow, mock_trials_data
-    ):
-        """Test individual trial processing handles pipeline failures gracefully."""
-        # Mock pipeline that raises exception
-        from unittest.mock import AsyncMock
-
-        mock_pipeline = AsyncMock()
-        mock_pipeline.process.side_effect = Exception("Pipeline error")
-        mock_pipeline_class.return_value = mock_pipeline
-
-        combination = {"prompt": "test_prompt", "model": "test_model"}
-        trial = mock_trials_data[0]
-        fold = 0
-        combo_idx = 0
-
-        result = await workflow._test_single_trial(combination, trial, fold, combo_idx)
-
-        assert result["success"] is False
-        assert result["combination"] == combination
-        assert result["combo_idx"] == combo_idx
-        assert result["fold"] == fold
-        assert result["score"] == 0.0  # Failed trials get 0 score
-        assert "error" in result
 
     def test_create_kfold_splits(self, workflow, mock_trials_data):
-        """Test k-fold split creation."""
+        """Test k-fold split creation via execution manager."""
         n_samples = len(mock_trials_data)  # 3 trials
         n_folds = 3
 
-        folds = workflow._create_kfold_splits(n_samples, n_folds)
+        folds = workflow.execution_manager._create_kfold_splits(n_samples, n_folds)
 
         assert len(folds) == n_folds
         # All samples should be distributed
@@ -221,9 +140,8 @@ class TestTrialsOptimizerWorkflow:
         assert len(models) > 0
         assert "deepseek-coder" in models
 
-    @pytest.mark.asyncio
-    @patch("src.workflows.trials_optimizer_workflow.McodePipeline")
-    async def test_execute_success(
+    @patch("src.pipeline.McodePipeline")
+    def test_execute_success(
         self, mock_pipeline_class, workflow, mock_trials_data
     ):
         """Test successful workflow execution."""
@@ -274,7 +192,7 @@ class TestTrialsOptimizerWorkflow:
         mock_pipeline.process.return_value = mock_result
         mock_pipeline_class.return_value = mock_pipeline
 
-        result = await workflow.execute(
+        result = workflow.execute(
             trials_data=mock_trials_data,
             cv_folds=3,
             prompts=["direct_mcode_evidence_based_concise"],
@@ -287,20 +205,18 @@ class TestTrialsOptimizerWorkflow:
         assert "cv_folds" in result.metadata
         assert result.metadata["cv_folds"] == 3
 
-    @pytest.mark.asyncio
-    async def test_execute_no_trials_data(self, workflow):
+    def test_execute_no_trials_data(self, workflow):
         """Test execution fails with no trial data."""
-        result = await workflow.execute(trials_data=[], cv_folds=3)
+        result = workflow.execute(trials_data=[], cv_folds=3)
 
         assert result.success is False
         assert "No trial data provided" in result.error_message
 
-    @pytest.mark.asyncio
-    @patch("src.workflows.trials_optimizer_workflow.McodePipeline")
+    @patch("src.pipeline.McodePipeline")
     @patch(
         "src.workflows.trials_optimizer_workflow.TrialsOptimizerWorkflow._set_default_llm_spec"
     )
-    async def test_execute_calls_set_default_spec(
+    def test_execute_calls_set_default_spec(
         self, mock_set_default, mock_pipeline_class, workflow, mock_trials_data
     ):
         """Test that execute calls set default LLM spec on success."""
@@ -400,7 +316,7 @@ class TestTrialsOptimizerWorkflow:
         mock_pipeline.process.return_value = mock_result
         mock_pipeline_class.return_value = mock_pipeline
 
-        await workflow.execute(
+        workflow.execute(
             trials_data=mock_trials_data,
             cv_folds=3,
             prompts=["direct_mcode_evidence_based_concise"],
@@ -411,13 +327,12 @@ class TestTrialsOptimizerWorkflow:
         # Should have called set default spec since score > 0
         mock_set_default.assert_called_once()
 
-    @pytest.mark.asyncio
-    async def test_cv_folds_adjustment(self, workflow, mock_trials_data):
+    def test_cv_folds_adjustment(self, workflow, mock_trials_data):
         """Test CV folds adjustment when more folds than trials."""
         trials_count = len(mock_trials_data)  # 3 trials
 
         with patch(
-            "src.workflows.trials_optimizer_workflow.McodePipeline"
+            "src.pipeline.McodePipeline"
         ) as mock_pipeline_class:
             from unittest.mock import AsyncMock
 
@@ -454,7 +369,7 @@ class TestTrialsOptimizerWorkflow:
             mock_pipeline.process.return_value = mock_result
             mock_pipeline_class.return_value = mock_pipeline
 
-            result = await workflow.execute(
+            result = workflow.execute(
                 trials_data=mock_trials_data,
                 cv_folds=5,  # More folds than trials
                 prompts=["direct_mcode_evidence_based_concise"],

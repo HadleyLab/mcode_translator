@@ -71,7 +71,7 @@ class TestDataFlowCoordinator:
         assert coordinator.pipeline == mock_pipeline
         assert coordinator.config == config
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_process_clinical_trials_complete_flow_success(
         self, mock_batch_fetch, mock_pipeline, sample_trial_ids, sample_trial_data
     ):
@@ -93,7 +93,7 @@ class TestDataFlowCoordinator:
         assert result.data["summary"]["total_fetched"] == 2
         assert result.data["summary"]["total_successful"] == 2  # Mock pipeline succeeds
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_process_clinical_trials_complete_flow_fetch_failure(
         self, mock_batch_fetch, mock_pipeline, sample_trial_ids
     ):
@@ -122,7 +122,7 @@ class TestDataFlowCoordinator:
         assert result.success is False
         assert "No trials could be fetched" in result.error_message
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_process_clinical_trials_complete_flow_processing_failure(
         self, mock_batch_fetch, sample_trial_ids, sample_trial_data
     ):
@@ -145,7 +145,7 @@ class TestDataFlowCoordinator:
         assert len(result.data["fetched_trials"]) == 2
         assert result.data["summary"]["total_successful"] == 0  # All processing failed
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_fetch_trial_data_success(
         self, mock_batch_fetch, sample_trial_ids, sample_trial_data
     ):
@@ -166,7 +166,7 @@ class TestDataFlowCoordinator:
         assert result.metadata["total_fetched"] == 2
         assert len(result.metadata["failed_fetches"]) == 1
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_fetch_trial_data_all_fail(self, mock_batch_fetch, sample_trial_ids):
         """Test trial data fetching when all fetches fail."""
         mock_batch_fetch.return_value = {
@@ -182,7 +182,7 @@ class TestDataFlowCoordinator:
         assert result.error_message == "No trials could be fetched"
         assert len(result.data) == 0
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_fetch_trial_data_exception(self, mock_batch_fetch, sample_trial_ids):
         """Test trial data fetching with exception."""
         mock_batch_fetch.side_effect = Exception("Network error")
@@ -217,15 +217,18 @@ class TestDataFlowCoordinator:
 
     def test_process_trials_in_batches_with_failures(self, sample_trial_data):
         """Test batch processing with some processing failures."""
+        # Create a proper mock result class
+        class MockResult:
+            def __init__(self, success=True, mcode_mappings=None, validation_results=None, error_message=None):
+                self.success = success
+                self.mcode_mappings = mcode_mappings or []
+                self.validation_results = validation_results or {}
+                self.error_message = error_message
+
         mock_pipeline = Mock()
         # First call succeeds, second fails
         mock_pipeline.process.side_effect = [
-            Mock(
-                success=True,
-                mcode_mappings=[],
-                validation_results={},
-                error_message=None,
-            ),
+            MockResult(success=True, mcode_mappings=[], validation_results={}),
             Exception("Processing failed"),
         ]
 
@@ -352,7 +355,7 @@ class TestDataFlowCoordinatorIntegration:
     def test_full_workflow_integration(self, sample_trial_ids):
         """Test full workflow with mocked external calls."""
         with patch(
-            "src.core.data_flow_coordinator.get_full_studies_batch"
+            "src.core.data_fetcher.get_full_studies_batch"
         ) as mock_batch, patch(
             "src.core.data_flow_coordinator.create_trial_pipeline"
         ) as mock_create_pipeline:
@@ -364,8 +367,14 @@ class TestDataFlowCoordinatorIntegration:
             }
 
             # Mock pipeline
+            class MockResult:
+                def __init__(self, success=True, mcode_mappings=None, validation_results=None):
+                    self.success = success
+                    self.mcode_mappings = mcode_mappings or []
+                    self.validation_results = validation_results or {}
+
             mock_pipeline = Mock()
-            mock_pipeline.process.return_value = Mock(
+            mock_pipeline.process.return_value = MockResult(
                 success=True, mcode_mappings=[], validation_results={}
             )
             mock_create_pipeline.return_value = mock_pipeline
@@ -398,7 +407,7 @@ class TestDataFlowCoordinatorErrorHandling:
         assert result.metadata["total_successful"] == 1
         assert result.metadata["total_failed"] == 1
 
-    @patch("src.core.data_flow_coordinator.get_full_studies_batch")
+    @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_fetch_with_mixed_results(self, mock_batch_fetch, sample_trial_ids):
         """Test fetching with mix of success and failure."""
         mock_batch_fetch.return_value = {

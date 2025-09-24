@@ -159,7 +159,7 @@ class TestStorageIntegration:
 
     def test_storage_error_handling_search_failure(self, mock_core_memory_client):
         """Test handling of search failures."""
-        from src.utils.core_memory_client import CoreMemoryError
+        from src.utils.onco_core_memory import CoreMemoryError
 
         mock_core_memory_client.search.side_effect = CoreMemoryError("Search failed")
 

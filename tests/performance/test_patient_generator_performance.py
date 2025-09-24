@@ -59,7 +59,7 @@ class TestPatientGeneratorPerformance:
 
         result = benchmark(init_generator)
         assert result is not None
-        assert len(result._patient_files) == 10
+        assert len(result) == 10
 
     def test_patient_iteration_speed(self, sample_zip_archive, benchmark):
         """Benchmark patient iteration performance."""
