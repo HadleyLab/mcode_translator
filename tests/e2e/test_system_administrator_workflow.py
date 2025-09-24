@@ -85,8 +85,8 @@ class TestSystemAdministratorWorkflowE2E:
         sys.stdout = captured_output = StringIO()
 
         try:
-            # Test fetch-trials command with verbose logging (but no actual execution)
-            test_args = ["fetch-trials", "--help"]
+            # Test trials command with verbose logging (but no actual execution)
+            test_args = ["trials", "fetch", "--help"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -122,8 +122,8 @@ class TestSystemAdministratorWorkflowE2E:
         sys.stdout = captured_output = StringIO()
 
         try:
-            # Test run-tests help command
-            test_args = ["run-tests", "--help"]
+            # Test test help command
+            test_args = ["test", "run", "--help"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -160,8 +160,8 @@ class TestSystemAdministratorWorkflowE2E:
         sys.stdout = captured_output = StringIO()
 
         try:
-            # Test run-tests help to verify coverage option exists
-            test_args = ["run-tests", "--help"]
+            # Test test help to verify coverage option exists
+            test_args = ["test", "run", "--help"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -193,8 +193,8 @@ class TestSystemAdministratorWorkflowE2E:
         sys.stdout = captured_output = StringIO()
 
         try:
-            # Test download-data command with list option
-            test_args = ["download-data", "--list"]
+            # Test data command with list option
+            test_args = ["data", "download", "--list"]
 
             # Mock sys.argv
             original_argv = sys.argv
@@ -202,6 +202,8 @@ class TestSystemAdministratorWorkflowE2E:
 
             try:
                 mcode_translate_main()
+            except SystemExit:
+                pass  # Expected for CLI commands
             finally:
                 sys.argv = original_argv
 
@@ -212,7 +214,7 @@ class TestSystemAdministratorWorkflowE2E:
 
         # Verify archive listing was shown
         assert (
-            "Available Synthetic Patient Archives" in output or "📚 Available" in output
+            "Available synthetic patient archives" in output or "📚 Available" in output
         )
 
     def test_system_administrator_workflow_error_handling_and_recovery(self, tmp_path):
@@ -297,8 +299,8 @@ class TestSystemAdministratorWorkflowE2E:
         # Test multiple CLI commands to verify system administrator workflow
         commands_to_test = [
             ["--help"],
-            ["run-tests", "--help"],
-            ["download-data", "--help"],
+            ["test", "run", "--help"],
+            ["data", "download", "--help"],
         ]
 
         all_outputs = []
@@ -334,7 +336,7 @@ class TestSystemAdministratorWorkflowE2E:
 
         # Verify system administrator functionality is available
         assert (
-            "run-tests" in combined_output
-            or "download-data" in combined_output
+            "test" in combined_output
+            or "data" in combined_output
             or "mCODE Translator" in combined_output
         )

@@ -148,19 +148,19 @@ class TestClickCLI:
         assert result.exit_code == 0
         mock_download.assert_called_once()
 
-    @patch("src.cli.test_runner.run_unit_tests")
-    def test_run_tests_unit(self, mock_run, runner):
+    @patch("src.cli.test_runner.run_command")
+    def test_run_tests_unit(self, mock_run_command, runner):
         """Test test run command with unit suite."""
-        mock_run.return_value = True
+        mock_run_command.return_value = (True, "Tests passed", "")
         result = runner.invoke(cli, ["test", "run", "unit"])
         assert result.exit_code == 0
         assert "All tests passed!" in result.output
-        mock_run.assert_called_once()
+        mock_run_command.assert_called_once()
 
-    @patch("src.cli.test_runner.run_unit_tests")
-    def test_run_tests_unit_failure(self, mock_run, runner):
+    @patch("src.cli.test_runner.run_command")
+    def test_run_tests_unit_failure(self, mock_run_command, runner):
         """Test test run command with unit suite failure."""
-        mock_run.return_value = False
+        mock_run_command.return_value = (False, "", "Tests failed")
         result = runner.invoke(cli, ["test", "run", "unit"])
         assert result.exit_code == 1
         assert "Some tests failed!" in result.output

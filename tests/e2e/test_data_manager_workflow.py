@@ -93,9 +93,10 @@ class TestDataManagerWorkflowE2E:
         sys.stdout = captured_output = StringIO()
 
         try:
-            # Simulate command line args for download-data
+            # Simulate command line args for data download
             test_args = [
-                "download-data",
+                "data",
+                "download",
                 "--archives",
                 "breast_cancer_10_years",
                 "--output-dir",
@@ -111,6 +112,8 @@ class TestDataManagerWorkflowE2E:
 
             try:
                 mcode_translate_main()
+            except SystemExit:
+                pass  # Expected for CLI commands
             finally:
                 sys.argv = original_argv
 

@@ -18,7 +18,7 @@ def mock_pipeline():
     """Mock pipeline for testing."""
     pipeline = Mock()
     pipeline.process.return_value = Mock(
-        success=True, mcode_mappings=[], validation_results={}, error_message=None
+        success=True, mcode_mappings=[], validation_results={}, error=None
     )
     return pipeline
 
@@ -386,7 +386,7 @@ class TestDataFlowCoordinatorErrorHandling:
         mock_pipeline = Mock()
         mock_pipeline.process.side_effect = [
             Exception("Process error"),
-            Mock(success=True),
+            type("SuccessResult", (), {"success": True, "error": None})(),
         ]
 
         coordinator = DataFlowCoordinator(pipeline=mock_pipeline)

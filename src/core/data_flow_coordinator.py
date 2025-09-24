@@ -14,6 +14,7 @@ from src.core.dependency_container import create_trial_pipeline
 from src.core.flow_summary_generator import FlowSummaryGenerator
 from src.pipeline import McodePipeline
 from src.shared.models import WorkflowResult
+from src.utils.fetcher import get_full_studies_batch
 from src.utils.logging_config import get_logger
 
 
@@ -124,6 +125,7 @@ class DataFlowCoordinator:
                 "processing_results": processing_result.data,
                 "summary": summary,
             },
+            error_message=None,
             metadata={
                 "flow_type": "complete_data_flow",
                 "phases_completed": ["fetch", "validate", "process", "store"],
@@ -132,6 +134,72 @@ class DataFlowCoordinator:
                 "trials_processed": summary.get("total_processed", 0),
                 "success_rate": summary.get("overall_success_rate", 0.0),
             },
+        )
+
+    def _fetch_trial_data(self, trial_ids: List[str]) -> WorkflowResult:
+        """
+        Fetch trial data for given NCT IDs.
+
+        Args:
+            trial_ids: List of NCT IDs to fetch
+
+        Returns:
+            WorkflowResult with fetched trial data
+        """
+        return self.data_fetcher.fetch_trial_data(trial_ids)
+
+    def _process_trials_in_batches(
+        self,
+        trial_data: List[Dict[str, Any]],
+        batch_size: int = 5,
+        validate_data: bool = True,
+        store_results: bool = True,
+    ) -> WorkflowResult:
+        """
+        Process trial data in batches.
+
+        Args:
+            trial_data: List of trial data to process
+            batch_size: Size of each batch
+            validate_data: Whether to validate data
+            store_results: Whether to store results
+
+        Returns:
+            WorkflowResult with processing results
+        """
+        if not trial_data:
+            return WorkflowResult(
+                success=False,
+                error_message="No trial data to process",
+                data=[],
+                metadata={"total_processed": 0, "total_successful": 0, "total_failed": 0},
+            )
+
+        return self.batch_processor.process_trials_in_batches(
+            trial_data, validate_data=validate_data, store_results=store_results, batch_size=batch_size
+        )
+
+    def _generate_flow_summary(
+        self,
+        trial_ids: List[str],
+        fetch_result: WorkflowResult,
+        processing_result: WorkflowResult,
+    ) -> Dict[str, Any]:
+        """
+        Generate comprehensive flow summary.
+
+        Args:
+            trial_ids: Original trial IDs requested
+            fetch_result: Result from data fetching
+            processing_result: Result from data processing
+
+        Returns:
+            Dictionary with flow summary statistics
+        """
+        return self.summary_generator.generate_flow_summary(
+            trial_ids=trial_ids,
+            fetch_result=fetch_result,
+            processing_result=processing_result,
         )
 
 
