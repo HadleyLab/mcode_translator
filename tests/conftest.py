@@ -198,6 +198,21 @@ def temp_cache_dir() -> Generator[str, None, None]:
 
 
 @pytest.fixture
+def mock_memory_storage():
+    """Mock memory storage for testing."""
+    from unittest.mock import MagicMock
+    mock = MagicMock()
+    mock.store.return_value = True
+    mock.retrieve.return_value = {"test": "data"}
+    return mock
+
+
+@pytest.fixture
+def mock_config():
+    """Mock configuration for testing."""
+    from unittest.mock import MagicMock
+    return MagicMock()
+@pytest.fixture
 def test_logger():
     """Logger fixture for tests that need logging."""
     return get_logger("test_logger")

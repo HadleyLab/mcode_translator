@@ -287,6 +287,7 @@ class TestPatientGeneratorPatientOperations:
             generator = PatientGenerator.__new__(PatientGenerator)
             generator._patient_files = ['file1.json']
             generator._load_patient_from_file = Mock(side_effect=Exception("Load failed"))
+            generator.logger = Mock()
 
             with pytest.raises(PatientNotFoundError):
                 generator.get_patient_by_id("nonexistent")
@@ -313,6 +314,7 @@ class TestPatientGeneratorPatientOperations:
                 "entry": [{"resource": {"resourceType": "Patient", "id": "patient-123"}}]
             })
             generator.extract_patient_id = Mock(return_value="patient-123")
+            generator.logger = Mock()
 
             result = generator.get_patient_ids()
 
@@ -392,6 +394,7 @@ class TestPatientGeneratorLoadPatientFromFile:
                 with patch('src.utils.patient_generator.Config'):
                     generator = PatientGenerator.__new__(PatientGenerator)
                     generator.archive_path = tmp.name
+                    generator.logger = Mock()
 
                     with pytest.raises(ValueError):
                         generator._load_patient_from_file('invalid.json')

@@ -83,14 +83,35 @@ class TestTrialsOptimizerWorkflow:
         ]
         assert combinations == expected_combinations
 
+    @pytest.mark.asyncio
     @patch('src.workflows.trials_optimizer_workflow.McodePipeline')
     async def test_test_single_trial_success(self, mock_pipeline_class, workflow, mock_trials_data):
         """Test individual trial processing with successful pipeline."""
         # Mock pipeline
-        mock_pipeline = Mock()
+        from unittest.mock import AsyncMock
+        from src.shared.models import McodeElement
+        mock_pipeline = AsyncMock()
         mock_result = Mock()
-        # Create proper mock structure for quality score calculation
-        mock_result.mcode_mappings = []  # Will be treated as list
+        # Create proper mock McodeElement objects
+        mock_elements = [
+            McodeElement(
+                element_type="CancerCondition",
+                code="C50",
+                display="Breast Cancer",
+                system="ICD-10",
+                confidence_score=0.9,
+                evidence_text="Patient has breast cancer"
+            ),
+            McodeElement(
+                element_type="CancerTreatment",
+                code="CHEMO",
+                display="Chemotherapy",
+                system="Treatment",
+                confidence_score=0.8,
+                evidence_text="Patient receives chemotherapy"
+            )
+        ]
+        mock_result.mcode_mappings = mock_elements
         mock_result.validation_results = Mock(compliance_score=0.8)
         mock_result.source_references = [Mock()] * 3  # Add source references for higher score
         mock_pipeline.process.return_value = mock_result
@@ -112,11 +133,13 @@ class TestTrialsOptimizerWorkflow:
         assert isinstance(result["score"], float)
         assert result["score"] > 0  # Should have positive score
 
+    @pytest.mark.asyncio
     @patch('src.workflows.trials_optimizer_workflow.McodePipeline')
     async def test_test_single_trial_pipeline_failure(self, mock_pipeline_class, workflow, mock_trials_data):
         """Test individual trial processing handles pipeline failures gracefully."""
         # Mock pipeline that raises exception
-        mock_pipeline = Mock()
+        from unittest.mock import AsyncMock
+        mock_pipeline = AsyncMock()
         mock_pipeline.process.side_effect = Exception("Pipeline error")
         mock_pipeline_class.return_value = mock_pipeline
 
@@ -174,13 +197,24 @@ class TestTrialsOptimizerWorkflow:
         assert len(models) > 0
         assert "deepseek-coder" in models
 
+    @pytest.mark.asyncio
     @patch('src.workflows.trials_optimizer_workflow.McodePipeline')
     async def test_execute_success(self, mock_pipeline_class, workflow, mock_trials_data):
         """Test successful workflow execution."""
         # Mock pipeline for successful processing
-        mock_pipeline = Mock()
+        from unittest.mock import AsyncMock
+        mock_pipeline = AsyncMock()
         mock_result = Mock()
-        mock_result.mcode_mappings = [Mock()] * 8
+        mock_result.mcode_mappings = [
+            {"element_type": "CancerCondition", "display": "Breast Cancer", "confidence_score": 0.9},
+            {"element_type": "CancerTreatment", "display": "Chemotherapy", "confidence_score": 0.8},
+            {"element_type": "PatientDemographics", "display": "Female", "confidence_score": 0.7},
+            {"element_type": "TNMStage", "display": "T2N1M0", "confidence_score": 0.6},
+            {"element_type": "GeneticMarker", "display": "HER2+", "confidence_score": 0.8},
+            {"element_type": "CancerCondition", "display": "Metastatic", "confidence_score": 0.7},
+            {"element_type": "CancerTreatment", "display": "Targeted Therapy", "confidence_score": 0.9},
+            {"element_type": "PatientDemographics", "display": "Age 45", "confidence_score": 0.8}
+        ]
         mock_result.validation_results = Mock(compliance_score=0.85)
         mock_pipeline.process.return_value = mock_result
         mock_pipeline_class.return_value = mock_pipeline
@@ -198,6 +232,7 @@ class TestTrialsOptimizerWorkflow:
         assert "cv_folds" in result.metadata
         assert result.metadata["cv_folds"] == 3
 
+    @pytest.mark.asyncio
     async def test_execute_no_trials_data(self, workflow):
         """Test execution fails with no trial data."""
         result = await workflow.execute(trials_data=[], cv_folds=3)
@@ -205,19 +240,99 @@ class TestTrialsOptimizerWorkflow:
         assert result.success is False
         assert "No trial data provided" in result.error_message
 
+    @pytest.mark.asyncio
     @patch('src.workflows.trials_optimizer_workflow.McodePipeline')
     @patch('src.workflows.trials_optimizer_workflow.TrialsOptimizerWorkflow._set_default_llm_spec')
     async def test_execute_calls_set_default_spec(self, mock_set_default, mock_pipeline_class, workflow, mock_trials_data):
         """Test that execute calls set default LLM spec on success."""
         # Mock successful pipeline with good score
-        mock_pipeline = Mock()
+        from unittest.mock import AsyncMock
+        mock_pipeline = AsyncMock()
         mock_result = Mock()
-        # Create proper mock mcode_mappings list
-        mock_mappings = []
-        for i in range(10):  # 10 mappings for good score
-            mapping = Mock()
-            mapping.mcode_mappings = []  # Make it iterable
-            mock_mappings.append(mapping)
+        # Create proper McodeElement objects
+        from src.shared.models import McodeElement
+        mock_mappings = [
+            McodeElement(
+                element_type="CancerCondition",
+                code="C50",
+                display="Breast Cancer",
+                system="ICD-10",
+                confidence_score=0.9,
+                evidence_text="Patient has breast cancer"
+            ),
+            McodeElement(
+                element_type="CancerTreatment",
+                code="CHEMO",
+                display="Chemotherapy",
+                system="Treatment",
+                confidence_score=0.8,
+                evidence_text="Patient receives chemotherapy"
+            ),
+            McodeElement(
+                element_type="PatientDemographics",
+                code="FEMALE",
+                display="Female",
+                system="Demographics",
+                confidence_score=0.7,
+                evidence_text="Patient is female"
+            ),
+            McodeElement(
+                element_type="TNMStage",
+                code="T2N1M0",
+                display="T2N1M0",
+                system="TNM",
+                confidence_score=0.6,
+                evidence_text="Tumor stage T2N1M0"
+            ),
+            McodeElement(
+                element_type="GeneticMarker",
+                code="HER2",
+                display="HER2+",
+                system="Biomarker",
+                confidence_score=0.8,
+                evidence_text="HER2 positive"
+            ),
+            McodeElement(
+                element_type="CancerCondition",
+                code="C78",
+                display="Metastatic",
+                system="ICD-10",
+                confidence_score=0.7,
+                evidence_text="Metastatic disease"
+            ),
+            McodeElement(
+                element_type="CancerTreatment",
+                code="TARGETED",
+                display="Targeted Therapy",
+                system="Treatment",
+                confidence_score=0.9,
+                evidence_text="Targeted therapy prescribed"
+            ),
+            McodeElement(
+                element_type="PatientDemographics",
+                code="AGE45",
+                display="Age 45",
+                system="Demographics",
+                confidence_score=0.8,
+                evidence_text="Patient age 45"
+            ),
+            McodeElement(
+                element_type="CancerCondition",
+                code="C50.9",
+                display="Invasive Ductal",
+                system="ICD-10",
+                confidence_score=0.8,
+                evidence_text="Invasive ductal carcinoma"
+            ),
+            McodeElement(
+                element_type="CancerTreatment",
+                code="SURGERY",
+                display="Surgery",
+                system="Treatment",
+                confidence_score=0.9,
+                evidence_text="Surgical intervention"
+            )
+        ]
         mock_result.mcode_mappings = mock_mappings
         mock_result.validation_results = Mock(compliance_score=0.9)
         mock_result.source_references = [Mock()] * 5
@@ -235,14 +350,22 @@ class TestTrialsOptimizerWorkflow:
         # Should have called set default spec since score > 0
         mock_set_default.assert_called_once()
 
+    @pytest.mark.asyncio
     async def test_cv_folds_adjustment(self, workflow, mock_trials_data):
         """Test CV folds adjustment when more folds than trials."""
         trials_count = len(mock_trials_data)  # 3 trials
 
         with patch('src.workflows.trials_optimizer_workflow.McodePipeline') as mock_pipeline_class:
-            mock_pipeline = Mock()
+            from unittest.mock import AsyncMock
+            mock_pipeline = AsyncMock()
             mock_result = Mock()
-            mock_result.mcode_mappings = [Mock()] * 5
+            mock_result.mcode_mappings = [
+                {"element_type": "CancerCondition", "display": "Breast Cancer", "confidence_score": 0.9},
+                {"element_type": "CancerTreatment", "display": "Chemotherapy", "confidence_score": 0.8},
+                {"element_type": "PatientDemographics", "display": "Female", "confidence_score": 0.7},
+                {"element_type": "TNMStage", "display": "T2N1M0", "confidence_score": 0.6},
+                {"element_type": "GeneticMarker", "display": "HER2+", "confidence_score": 0.8}
+            ]
             mock_result.validation_results = Mock(compliance_score=0.8)
             mock_pipeline.process.return_value = mock_result
             mock_pipeline_class.return_value = mock_pipeline

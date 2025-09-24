@@ -11,6 +11,7 @@ from src.optimization.pairwise_cross_validation import (
     PairwiseCrossValidator,
     PairwiseComparisonTask,
 )
+from src.shared.types import TaskStatus
 
 
 class TestPairwiseComparisonTask:
@@ -31,7 +32,7 @@ class TestPairwiseComparisonTask:
         assert task.gold_model == "model1"
         assert task.comp_prompt == "prompt2"
         assert task.comp_model == "model2"
-        assert task.status.value == "pending"  # Default status
+        assert task.status.value == "Pending"  # Default status
 
     def test_task_default_values(self):
         """Test default values in PairwiseComparisonTask."""
@@ -43,7 +44,7 @@ class TestPairwiseComparisonTask:
         assert task.gold_model == ""
         assert task.comp_prompt == ""
         assert task.comp_model == ""
-        assert task.status.value == "pending"
+        assert task.status.value == "Pending"
         assert task.error_message == ""
         assert task.comparison_metrics == {}
         assert task.start_time == 0.0
@@ -82,6 +83,7 @@ class TestPairwiseCrossValidatorInit:
 class TestPairwiseCrossValidatorMethods:
     """Test PairwiseCrossValidator methods."""
 
+    @pytest.fixture
     @patch('src.optimization.pairwise_cross_validation.PromptLoader')
     @patch('src.optimization.pairwise_cross_validation.LLMLoader')
     def setup_validator(self, mock_llm_loader, mock_prompt_loader):
@@ -235,7 +237,7 @@ class TestPairwiseCrossValidatorMethods:
 
         # Create mock successful task
         mock_task = Mock()
-        mock_task.status.value = "success"
+        mock_task.status = TaskStatus.SUCCESS
         mock_task.comparison_metrics = {
             "mapping_f1_score": 0.85,
             "mapping_precision": 0.9,
@@ -262,13 +264,12 @@ class TestPairwiseCrossValidatorMethods:
         # Should not raise exception
         validator.print_summary()
 
-    @patch('src.optimization.pairwise_cross_validation.get_logger')
-    def test_print_summary_with_stats(self, mock_get_logger, setup_validator):
+    def test_print_summary_with_stats(self, setup_validator):
         """Test printing summary with statistics."""
         validator, _, _ = setup_validator
 
         mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
+        validator.logger = mock_logger
 
         # Set up mock summary stats
         validator.summary_stats = {

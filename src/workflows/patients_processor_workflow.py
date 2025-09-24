@@ -190,7 +190,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
             # Store to CORE memory if requested
             if store_in_memory and self.memory_storage:
                 try:
-                    patient_id = self.extract_patient_id(patient)
+                    patient_id = self._extract_patient_id(patient)
                     self.logger.debug(f"Extracted patient ID: {patient_id}")
 
                     # Prepare mCODE data for storage
@@ -264,9 +264,13 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
         except Exception as e:
             self.logger.error(f"Failed to process patient {patient_index+1}: {e}")
             # Add error information to patient
-            error_patient = patient.copy()
-            error_patient["McodeProcessingError"] = str(e)
-            return error_patient
+            if isinstance(patient, dict):
+                error_patient = patient.copy()
+                error_patient["McodeProcessingError"] = str(e)
+                return error_patient
+            else:
+                # For non-dict patients, return a dict with error info
+                return {"McodeProcessingError": str(e), "original_patient": str(patient)}
 
     def _extract_patient_mcode_elements(
         self, patient: Dict[str, Any]

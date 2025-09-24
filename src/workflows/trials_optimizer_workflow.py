@@ -456,55 +456,80 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         prompt_name = combination["prompt"]
         model_name = combination["model"]
 
-        # Initialize performance tracking
-        perf_metrics = PerformanceMetrics()
-        perf_metrics.start_tracking()
+        try:
+            # Initialize performance tracking
+            perf_metrics = PerformanceMetrics()
+            perf_metrics.start_tracking()
 
-        # Initialize pipeline with this combination - STRICT: No fallback, fail fast
-        pipeline = McodePipeline(prompt_name=prompt_name, model_name=model_name)
+            # Initialize pipeline with this combination - STRICT: No fallback, fail fast
+            pipeline = McodePipeline(prompt_name=prompt_name, model_name=model_name)
 
-        # Process single trial asynchronously - STRICT: No fallback, fail fast
-        result = await pipeline.process(trial)
+            # Process single trial asynchronously - STRICT: No fallback, fail fast
+            result = await pipeline.process(trial)
 
-        # Calculate quality metrics
-        predicted = [elem.model_dump() for elem in result.mcode_mappings]
-        num_elements = len(predicted)
+            # Calculate quality metrics
+            predicted = [elem.model_dump() for elem in result.mcode_mappings]
+            num_elements = len(predicted)
 
-        # Get token usage from global tracker
-        from src.utils.token_tracker import global_token_tracker
-        token_usage = global_token_tracker.get_total_usage()
-        tokens_used = token_usage.total_tokens if token_usage else 0
+            # Get token usage from global tracker
+            from src.utils.token_tracker import global_token_tracker
+            token_usage = global_token_tracker.get_total_usage()
+            tokens_used = token_usage.total_tokens if token_usage else 0
 
-        # Stop performance tracking
-        perf_metrics.stop_tracking(tokens_used=tokens_used, elements_processed=num_elements)
+            # Stop performance tracking
+            perf_metrics.stop_tracking(tokens_used=tokens_used, elements_processed=num_elements)
 
-        # Use number of mCODE elements as basic score (more elements = better performance)
-        score = min(num_elements / 10.0, 1.0)  # Cap at 1.0
+            # Use number of mCODE elements as basic score (more elements = better performance)
+            score = min(num_elements / 10.0, 1.0)  # Cap at 1.0
 
-        # Get performance metrics
-        perf_data = perf_metrics.get_metrics()
+            # Get performance metrics
+            perf_data = perf_metrics.get_metrics()
 
-        # Enhanced quality metrics
-        metrics = {
-            "precision": score,
-            "recall": score,
-            "f1_score": score,
-            "element_count": num_elements,
-            **perf_data  # Include all performance metrics
-        }
+            # Enhanced quality metrics
+            metrics = {
+                "precision": score,
+                "recall": score,
+                "f1_score": score,
+                "element_count": num_elements,
+                **perf_data  # Include all performance metrics
+            }
 
-        return {
-            "combination": combination,
-            "combo_idx": combo_idx,
-            "fold": fold,
-            "trial_score": score,
-            "score": score,
-            "quality_metrics": metrics,
-            "predicted_mcode": predicted,
-            "performance_metrics": perf_metrics.to_dict(),
-            "success": True,
-            "timestamp": datetime.now().isoformat(),
-        }
+            return {
+                "combination": combination,
+                "combo_idx": combo_idx,
+                "fold": fold,
+                "trial_score": score,
+                "score": score,
+                "quality_metrics": metrics,
+                "predicted_mcode": predicted,
+                "performance_metrics": perf_metrics.to_dict(),
+                "success": True,
+                "timestamp": datetime.now().isoformat(),
+            }
+
+        except Exception as e:
+            # Handle pipeline failures gracefully - return failure result instead of raising
+            self.logger.warning(f"Pipeline failure for {model_name} + {prompt_name}: {e}")
+
+            # Return failure result with error information
+            return {
+                "combination": combination,
+                "combo_idx": combo_idx,
+                "fold": fold,
+                "trial_score": 0,
+                "score": 0,
+                "quality_metrics": {
+                    "precision": 0,
+                    "recall": 0,
+                    "f1_score": 0,
+                    "element_count": 0,
+                },
+                "predicted_mcode": [],
+                "performance_metrics": {},
+                "success": False,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
 
 
     def _save_optimal_config(
