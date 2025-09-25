@@ -6,15 +6,14 @@ This module provides a unified interface for storing processed mCODE data
 structure and codes for later retrieval and analysis.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Protocol
+
+from heysol.config import HeySolConfig
 
 from src.services.summarizer import McodeSummarizer
 from src.utils.config import Config
-from typing import Protocol
-
-from src.utils.onco_core_memory import OncoCoreClient, HeySolError
-from heysol.config import HeySolConfig
 from src.utils.logging_config import get_logger
+from src.utils.onco_core_memory import HeySolError, OncoCoreClient
 
 
 class DataStorage(Protocol):
@@ -66,9 +65,7 @@ class McodeMemoryStorage:
         """Lazy initialization of the CORE Memory client."""
         if self._client is None:
             config = HeySolConfig(
-                api_key=self.api_key,
-                base_url=self.base_url,
-                source=self.source
+                api_key=self.api_key, base_url=self.base_url, source=self.source
             )
             self._client = OncoCoreClient(
                 api_key=self.api_key, base_url=self.base_url, config=config

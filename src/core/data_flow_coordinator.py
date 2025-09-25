@@ -14,7 +14,6 @@ from src.core.dependency_container import create_trial_pipeline
 from src.core.flow_summary_generator import FlowSummaryGenerator
 from src.pipeline import McodePipeline
 from src.shared.models import WorkflowResult
-from src.utils.fetcher import get_full_studies_batch
 from src.utils.logging_config import get_logger
 
 
@@ -172,11 +171,18 @@ class DataFlowCoordinator:
                 success=False,
                 error_message="No trial data to process",
                 data=[],
-                metadata={"total_processed": 0, "total_successful": 0, "total_failed": 0},
+                metadata={
+                    "total_processed": 0,
+                    "total_successful": 0,
+                    "total_failed": 0,
+                },
             )
 
         return self.batch_processor.process_trials_in_batches(
-            trial_data, validate_data=validate_data, store_results=store_results, batch_size=batch_size
+            trial_data,
+            validate_data=validate_data,
+            store_results=store_results,
+            batch_size=batch_size,
         )
 
     def _generate_flow_summary(
@@ -201,7 +207,6 @@ class DataFlowCoordinator:
             fetch_result=fetch_result,
             processing_result=processing_result,
         )
-
 
     def get_flow_statistics(self) -> Dict[str, Any]:
         """

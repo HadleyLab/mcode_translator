@@ -118,9 +118,10 @@ class Config:
 
         api_key = os.getenv(api_key_env_var)
 
-        if not api_key or not isinstance(api_key, str) or len(api_key.strip()) < 20:
+        if not api_key or len(api_key.strip()) < 20:
             raise ConfigurationError(
-                f"Invalid or missing API key in environment variable '{api_key_env_var}' for model '{model_name}'."
+                f"Invalid or missing API key in environment variable "
+                f"'{api_key_env_var}' for model '{model_name}'."
             )
 
         return api_key
@@ -146,7 +147,7 @@ class Config:
         model_config = self.get_llm_config(model_name)
         base_url = model_config.base_url
 
-        if not base_url or not isinstance(base_url, str):
+        if not base_url:
             raise ConfigurationError(
                 f"Invalid or missing base URL for model '{model_name}'"
             )
@@ -174,7 +175,7 @@ class Config:
         model_config = self.get_llm_config(model_name)
         validated_model_name = model_config.name
 
-        if not validated_model_name or not isinstance(validated_model_name, str):
+        if not validated_model_name:
             raise ConfigurationError(
                 f"Invalid or missing model name for model '{model_name}'"
             )
@@ -295,7 +296,7 @@ class Config:
             ConfigurationError: If API key is missing or invalid.
         """
         api_key = os.getenv("COREAI_API_KEY")
-        if not api_key or not isinstance(api_key, str) or len(api_key.strip()) < 20:
+        if not api_key or len(api_key.strip()) < 20:
             raise ConfigurationError(
                 "Invalid or missing API key in environment variable 'COREAI_API_KEY'."
             )
@@ -487,5 +488,3 @@ class Config:
             raise ConfigurationError(
                 f"Failed to read modular config file {filename}: {str(e)}"
             )
-
-

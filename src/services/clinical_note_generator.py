@@ -21,7 +21,9 @@ class ClinicalNoteGenerator:
     def __init__(self):
         self.logger = get_logger(__name__)
 
-    def _generate_patient_header(self, patient_id: str, demographics: Dict[str, Any]) -> str:
+    def _generate_patient_header(
+        self, patient_id: str, demographics: Dict[str, Any]
+    ) -> str:
         """Generate patient identification and basic demographics header."""
         patient_name = demographics.get("name", "Unknown Patient")
         patient_age = demographics.get("age", "Unknown")
@@ -82,9 +84,7 @@ class ClinicalNoteGenerator:
             "maritalStatus" in demographics
             and demographics["maritalStatus"] != "Unknown"
         ):
-            marital_display = self._decode_marital_status(
-                demographics["maritalStatus"]
-            )
+            marital_display = self._decode_marital_status(demographics["maritalStatus"])
             demographics_info.append(
                 f"Patient marital status is {marital_display} (mCODE: MaritalStatus)"
             )
@@ -116,9 +116,7 @@ class ClinicalNoteGenerator:
                 diagnosis_date = condition.get(
                     "onsetDateTime", condition.get("recordedDate", "Unknown")
                 )
-                clean_display = (
-                    display.split(" (")[0] if " (" in display else display
-                )
+                clean_display = display.split(" (")[0] if " (" in display else display
 
                 if diagnosis_date and diagnosis_date != "Unknown":
                     mcode_format = self._format_mcode_element(
@@ -151,9 +149,7 @@ class ClinicalNoteGenerator:
                 system = her2.get("system", "").replace(
                     "http://snomed.info/sct", "SNOMED"
                 )
-                clean_display = (
-                    display.split(" (")[0] if " (" in display else display
-                )
+                clean_display = display.split(" (")[0] if " (" in display else display
                 mcode_format = self._format_mcode_element(
                     "HER2ReceptorStatus", system, code
                 )
@@ -169,9 +165,7 @@ class ClinicalNoteGenerator:
                 system = er.get("system", "").replace(
                     "http://snomed.info/sct", "SNOMED"
                 )
-                clean_display = (
-                    display.split(" (")[0] if " (" in display else display
-                )
+                clean_display = display.split(" (")[0] if " (" in display else display
                 mcode_format = self._format_mcode_element(
                     "ERReceptorStatus", system, code
                 )
@@ -187,9 +181,7 @@ class ClinicalNoteGenerator:
                 system = pr.get("system", "").replace(
                     "http://snomed.info/sct", "SNOMED"
                 )
-                clean_display = (
-                    display.split(" (")[0] if " (" in display else display
-                )
+                clean_display = display.split(" (")[0] if " (" in display else display
                 mcode_format = self._format_mcode_element(
                     "PRReceptorStatus", system, code
                 )
@@ -215,9 +207,7 @@ class ClinicalNoteGenerator:
                 system = stage.get("system", "").replace(
                     "http://snomed.info/sct", "SNOMED"
                 )
-                clean_display = (
-                    display.split(" (")[0] if " (" in display else display
-                )
+                clean_display = display.split(" (")[0] if " (" in display else display
                 mcode_format = self._format_mcode_element("TNMStage", system, code)
                 staging.append(f"{clean_display} {mcode_format}")
 
@@ -229,12 +219,8 @@ class ClinicalNoteGenerator:
                 system = stage.get("system", "").replace(
                     "http://snomed.info/sct", "SNOMED"
                 )
-                clean_display = (
-                    display.split(" (")[0] if " (" in display else display
-                )
-                mcode_format = self._format_mcode_element(
-                    "CancerStage", system, code
-                )
+                clean_display = display.split(" (")[0] if " (" in display else display
+                mcode_format = self._format_mcode_element("CancerStage", system, code)
                 staging.append(f"{clean_display} {mcode_format}")
 
         if staging:
@@ -360,9 +346,7 @@ class ClinicalNoteGenerator:
                 system = ecog.get("system", "").replace(
                     "http://snomed.info/sct", "SNOMED"
                 )
-                clean_display = (
-                    display.split(" (")[0] if " (" in display else display
-                )
+                clean_display = display.split(" (")[0] if " (" in display else display
                 mcode_format = self._format_mcode_element(
                     "ECOGPerformanceStatus", system, code
                 )
@@ -378,9 +362,7 @@ class ClinicalNoteGenerator:
                 system = karnofsky.get("system", "").replace(
                     "http://snomed.info/sct", "SNOMED"
                 )
-                clean_display = (
-                    display.split(" (")[0] if " (" in display else display
-                )
+                clean_display = display.split(" (")[0] if " (" in display else display
                 mcode_format = self._format_mcode_element(
                     "KarnofskyPerformanceStatus", system, code
                 )
@@ -403,26 +385,20 @@ class ClinicalNoteGenerator:
             if isinstance(weight, dict):
                 value = weight.get("value", "Unknown")
                 unit = weight.get("unit", "Unknown")
-                vital_signs.append(
-                    f"Body weight is {value} {unit} (mCODE: BodyWeight)"
-                )
+                vital_signs.append(f"Body weight is {value} {unit} (mCODE: BodyWeight)")
 
         if "BodyHeight" in mcode_elements:
             height = mcode_elements["BodyHeight"]
             if isinstance(height, dict):
                 value = height.get("value", "Unknown")
                 unit = height.get("unit", "Unknown")
-                vital_signs.append(
-                    f"Body height is {value} {unit} (mCODE: BodyHeight)"
-                )
+                vital_signs.append(f"Body height is {value} {unit} (mCODE: BodyHeight)")
 
         if "BodyMassIndex" in mcode_elements:
             bmi = mcode_elements["BodyMassIndex"]
             if isinstance(bmi, dict):
                 value = bmi.get("value", "Unknown")
-                vital_signs.append(
-                    f"Body mass index is {value} (mCODE: BodyMassIndex)"
-                )
+                vital_signs.append(f"Body mass index is {value} (mCODE: BodyMassIndex)")
 
         if "BloodPressure" in mcode_elements:
             bp = mcode_elements["BloodPressure"]
@@ -448,9 +424,7 @@ class ClinicalNoteGenerator:
             if isinstance(hb, dict):
                 value = hb.get("value", "Unknown")
                 unit = hb.get("unit", "Unknown")
-                lab_results.append(
-                    f"Hemoglobin is {value} {unit} (mCODE: Hemoglobin)"
-                )
+                lab_results.append(f"Hemoglobin is {value} {unit} (mCODE: Hemoglobin)")
 
         if "WhiteBloodCellCount" in mcode_elements:
             wbc = mcode_elements["WhiteBloodCellCount"]
@@ -475,9 +449,7 @@ class ClinicalNoteGenerator:
             if isinstance(creat, dict):
                 value = creat.get("value", "Unknown")
                 unit = creat.get("unit", "Unknown")
-                lab_results.append(
-                    f"Creatinine is {value} {unit} (mCODE: Creatinine)"
-                )
+                lab_results.append(f"Creatinine is {value} {unit} (mCODE: Creatinine)")
 
         if "TotalBilirubin" in mcode_elements:
             bili = mcode_elements["TotalBilirubin"]
@@ -652,6 +624,7 @@ class ClinicalNoteGenerator:
             else:
                 return f"Patient family history: {'; '.join(family_history[:-1])} and {family_history[-1]}."
         return ""
+
     def generate_summary(
         self,
         patient_id: str,
@@ -663,7 +636,9 @@ class ClinicalNoteGenerator:
             clinical_note = []
 
             # Patient header with demographics
-            clinical_note.append(self._generate_patient_header(patient_id, demographics))
+            clinical_note.append(
+                self._generate_patient_header(patient_id, demographics)
+            )
 
             # Demographics section
             demographics_section = self._generate_demographics_section(demographics)

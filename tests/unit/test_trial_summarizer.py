@@ -3,7 +3,7 @@ Unit tests for TrialSummarizer class.
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from src.workflows.trial_summarizer import TrialSummarizer
 
 

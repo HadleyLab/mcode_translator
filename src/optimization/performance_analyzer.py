@@ -5,7 +5,8 @@ This module provides comprehensive analysis of optimization results including
 model performance, prompt effectiveness, provider comparisons, and error analysis.
 """
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from src.utils.logging_config import get_logger
 
 

@@ -199,8 +199,6 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         except Exception as e:
             return self._handle_error(e, "trials optimization")
 
-
-
     def _save_optimal_config(
         self, best_result: Dict[str, Any], output_path: str
     ) -> None:
@@ -344,8 +342,6 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         available_models = self.get_available_models()
 
         return prompt in available_prompts and model in available_models
-
-
 
     async def _run_inter_rater_reliability_analysis(
         self,

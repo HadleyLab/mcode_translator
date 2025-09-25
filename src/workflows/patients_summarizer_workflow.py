@@ -10,10 +10,8 @@ from typing import Any, Dict, List, Optional
 from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 
-from .base_workflow import (
-    PatientsProcessorWorkflow as BasePatientsProcessorWorkflow,
-    WorkflowResult,
-)
+from .base_workflow import PatientsProcessorWorkflow as BasePatientsProcessorWorkflow
+from .base_workflow import WorkflowResult
 
 
 class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):

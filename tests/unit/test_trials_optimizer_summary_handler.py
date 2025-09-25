@@ -5,7 +5,6 @@ Unit tests for trials_optimizer SummaryHandler.
 
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from src.cli.trials_optimizer import SummaryHandler
 

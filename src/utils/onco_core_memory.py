@@ -26,10 +26,6 @@ or MCP (Model Context Protocol) operations based on availability and preference.
 
 from typing import Any, Dict, Optional
 
-from heysol.clients import HeySolAPIClient, HeySolMCPClient
-from heysol.config import HeySolConfig
-from heysol.exceptions import HeySolError, ValidationError
-
 
 class OncoCoreClient:
     """
@@ -85,9 +81,7 @@ class OncoCoreClient:
 
         # Initialize API client (always available)
         self.api_client = HeySolAPIClient(
-            api_key=api_key,
-            base_url=base_url,
-            config=config
+            api_key=api_key, base_url=base_url, config=config
         )
 
         # Initialize MCP client (optional)
@@ -95,16 +89,16 @@ class OncoCoreClient:
         if not skip_mcp_init:
             try:
                 self.mcp_client = HeySolMCPClient(
-                    api_key=api_key,
-                    mcp_url=config.mcp_url,
-                    config=config
+                    api_key=api_key, mcp_url=config.mcp_url, config=config
                 )
             except Exception:
                 # MCP initialization failed, continue with API-only mode
                 self.mcp_client = None
 
     @classmethod
-    def from_env(cls, skip_mcp_init: bool = False, prefer_mcp: bool = False) -> "HeySolClient":
+    def from_env(
+        cls, skip_mcp_init: bool = False, prefer_mcp: bool = False
+    ) -> "HeySolClient":
         """
         Create client from environment variables.
 
@@ -119,7 +113,9 @@ class OncoCoreClient:
         """Check if MCP is available and initialized."""
         return self.mcp_client is not None and self.mcp_client.is_mcp_available()
 
-    def get_preferred_access_method(self, operation: str = "", mcp_tool_name: Optional[str] = None) -> str:
+    def get_preferred_access_method(
+        self, operation: str = "", mcp_tool_name: Optional[str] = None
+    ) -> str:
         """
         Determine the preferred access method for a given operation.
 
@@ -140,7 +136,9 @@ class OncoCoreClient:
     def ensure_mcp_available(self, tool_name: Optional[str] = None) -> None:
         """Ensure MCP is available and optionally check for specific tool."""
         if not self.is_mcp_available():
-            raise HeySolError("MCP is not available. Please check your MCP configuration.")
+            raise HeySolError(
+                "MCP is not available. Please check your MCP configuration."
+            )
 
         if tool_name and tool_name not in self.mcp_client.tools:
             raise HeySolError(
@@ -170,7 +168,11 @@ class OncoCoreClient:
         }
 
     def ingest(
-        self, message: str, source: Optional[str] = None, space_id: Optional[str] = None, session_id: Optional[str] = None
+        self,
+        message: str,
+        source: Optional[str] = None,
+        space_id: Optional[str] = None,
+        session_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Ingest data into CORE Memory."""
         method = self.get_preferred_access_method("ingest", "memory_ingest")
@@ -190,9 +192,7 @@ class OncoCoreClient:
         method = self.get_preferred_access_method("search", "memory_search")
         if method == "mcp" and self.mcp_client:
             return self.mcp_client.search_via_mcp(
-                query=query,
-                space_ids=space_ids,
-                limit=limit
+                query=query, space_ids=space_ids, limit=limit
             )
         else:
             return self.api_client.search(query, space_ids, limit, include_invalidated)
@@ -212,7 +212,9 @@ class OncoCoreClient:
 
     def get_user_profile(self) -> Dict[str, Any]:
         """Get the current user's profile."""
-        method = self.get_preferred_access_method("get_user_profile", "get_user_profile")
+        method = self.get_preferred_access_method(
+            "get_user_profile", "get_user_profile"
+        )
         if method == "mcp" and self.mcp_client:
             return self.mcp_client.get_user_profile_via_mcp()
         else:
@@ -220,7 +222,11 @@ class OncoCoreClient:
 
     # Memory endpoints
     def search_knowledge_graph(
-        self, query: str, space_id: Optional[str] = None, limit: int = 10, depth: int = 2
+        self,
+        query: str,
+        space_id: Optional[str] = None,
+        limit: int = 10,
+        depth: int = 2,
     ) -> Dict[str, Any]:
         """Search the knowledge graph for related concepts and entities."""
         # Knowledge graph search is API-only for now
@@ -235,13 +241,21 @@ class OncoCoreClient:
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Add data to the ingestion queue for processing."""
-        return self.api_client.add_data_to_ingestion_queue(data, space_id, priority, tags, metadata)
+        return self.api_client.add_data_to_ingestion_queue(
+            data, space_id, priority, tags, metadata
+        )
 
     def get_episode_facts(
-        self, episode_id: str, limit: int = 100, offset: int = 0, include_metadata: bool = True
+        self,
+        episode_id: str,
+        limit: int = 100,
+        offset: int = 0,
+        include_metadata: bool = True,
     ) -> list:
         """Get episode facts from CORE Memory."""
-        return self.api_client.get_episode_facts(episode_id, limit, offset, include_metadata)
+        return self.api_client.get_episode_facts(
+            episode_id, limit, offset, include_metadata
+        )
 
     def get_ingestion_logs(
         self,
@@ -253,7 +267,9 @@ class OncoCoreClient:
         end_date: Optional[str] = None,
     ) -> list:
         """Get ingestion logs from CORE Memory."""
-        return self.api_client.get_ingestion_logs(space_id, limit, offset, status, start_date, end_date)
+        return self.api_client.get_ingestion_logs(
+            space_id, limit, offset, status, start_date, end_date
+        )
 
     def get_specific_log(self, log_id: str) -> Dict[str, Any]:
         """Get a specific ingestion log by ID."""
@@ -274,13 +290,17 @@ class OncoCoreClient:
         space_ids: Optional[list] = None,
     ) -> Dict[str, Any]:
         """Perform bulk operations on spaces."""
-        return self.api_client.bulk_space_operations(intent, space_id, statement_ids, space_ids)
+        return self.api_client.bulk_space_operations(
+            intent, space_id, statement_ids, space_ids
+        )
 
     def get_space_details(
         self, space_id: str, include_stats: bool = True, include_metadata: bool = True
     ) -> Dict[str, Any]:
         """Get detailed information about a specific space."""
-        return self.api_client.get_space_details(space_id, include_stats, include_metadata)
+        return self.api_client.get_space_details(
+            space_id, include_stats, include_metadata
+        )
 
     def update_space(
         self,
@@ -318,7 +338,12 @@ class OncoCoreClient:
         return self.api_client.get_webhook(webhook_id)
 
     def update_webhook(
-        self, webhook_id: str, url: str, events: list, secret: str = "", active: bool = True
+        self,
+        webhook_id: str,
+        url: str,
+        events: list,
+        secret: str = "",
+        active: bool = True,
     ) -> Dict[str, Any]:
         """Update webhook properties."""
         return self.api_client.update_webhook(webhook_id, url, events, secret, active)

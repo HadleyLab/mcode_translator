@@ -143,10 +143,16 @@ class PatientGenerator:
             for duration, archive_info in durations.items():
                 if self._matches_archive_name(archive_path, cancer_type, duration):
                     # For test compatibility, check existence of archive.zip but return cancer_type1.zip as archive_path
-                    check_path = self._build_check_path(synthetic_config, cancer_type, duration)
-                    expected_path = self._build_archive_path(synthetic_config, cancer_type, duration)
+                    check_path = self._build_check_path(
+                        synthetic_config, cancer_type, duration
+                    )
+                    expected_path = self._build_archive_path(
+                        synthetic_config, cancer_type, duration
+                    )
                     if os.path.exists(check_path):
-                        self.logger.info(f"Resolved named archive '{archive_path}' to: {expected_path}")
+                        self.logger.info(
+                            f"Resolved named archive '{archive_path}' to: {expected_path}"
+                        )
                         return expected_path
                     else:
                         raise ArchiveLoadError(
@@ -154,17 +160,23 @@ class PatientGenerator:
                         )
         return None
 
-    def _build_check_path(self, synthetic_config: Dict[str, Any], cancer_type: str, duration: str) -> str:
+    def _build_check_path(
+        self, synthetic_config: Dict[str, Any], cancer_type: str, duration: str
+    ) -> str:
         """Build path to check for existence (for test compatibility)."""
         # For backward compatibility with tests, check for "archive.zip"
         if f"{cancer_type}_{duration}" == "cancer_type1":
             archive_name = "archive.zip"
         else:
             archive_name = f"{cancer_type}_{duration}.zip"
-        base_directory = synthetic_config.get("base_directory", "data/synthetic_patients")
+        base_directory = synthetic_config.get(
+            "base_directory", "data/synthetic_patients"
+        )
         return os.path.join(base_directory, cancer_type, duration, archive_name)
 
-    def _matches_archive_name(self, archive_path: str, cancer_type: str, duration: str) -> bool:
+    def _matches_archive_name(
+        self, archive_path: str, cancer_type: str, duration: str
+    ) -> bool:
         """Check if archive path matches the expected patterns."""
         archive_name = f"{cancer_type}_{duration}.zip"
         archive_name_no_ext = f"{cancer_type}_{duration}"
@@ -175,10 +187,14 @@ class PatientGenerator:
             or archive_path.lower() == f"{cancer_type}_{duration}"
         )
 
-    def _build_archive_path(self, synthetic_config: Dict[str, Any], cancer_type: str, duration: str) -> str:
+    def _build_archive_path(
+        self, synthetic_config: Dict[str, Any], cancer_type: str, duration: str
+    ) -> str:
         """Build full archive path from configuration."""
         archive_name = f"{cancer_type}_{duration}.zip"
-        base_directory = synthetic_config.get("base_directory", "data/synthetic_patients")
+        base_directory = synthetic_config.get(
+            "base_directory", "data/synthetic_patients"
+        )
         return os.path.join(base_directory, cancer_type, duration, archive_name)
 
     def _resolve_direct_path(self, archive_path: str) -> str:
@@ -192,16 +208,20 @@ class PatientGenerator:
 
     def _load_file_list(self) -> None:
         """Load the list of patient files from the archive (lazy loading)."""
-        if getattr(self, '_loaded', False):
+        if getattr(self, "_loaded", False):
             return
 
         # If _patient_files is already set (e.g., in tests), don't load from archive
-        if hasattr(self, '_patient_files') and self._patient_files:
+        if hasattr(self, "_patient_files") and self._patient_files:
             self._loaded = True
             return
 
         # If archive_path is not set or doesn't exist (e.g., in tests), just mark as loaded
-        if not hasattr(self, 'archive_path') or not self.archive_path or not os.path.exists(self.archive_path):
+        if (
+            not hasattr(self, "archive_path")
+            or not self.archive_path
+            or not os.path.exists(self.archive_path)
+        ):
             self._loaded = True
             return
 
@@ -463,9 +483,9 @@ class PatientGenerator:
 
     def __len__(self) -> int:
         """Get total number of patients."""
-        if hasattr(self, '_loaded') and not self._loaded:
+        if hasattr(self, "_loaded") and not self._loaded:
             self._load_file_list()
-        return len(getattr(self, '_patient_files', []))
+        return len(getattr(self, "_patient_files", []))
 
     def get_random_patient(
         self, exclude_ids: Optional[List[str]] = None
@@ -479,7 +499,7 @@ class PatientGenerator:
         Returns:
             Random patient bundle
         """
-        if not getattr(self, '_loaded', False):
+        if not getattr(self, "_loaded", False):
             self._load_file_list()
         if not self._patient_files:
             raise ArchiveLoadError("No patient files found in archive")
@@ -562,7 +582,7 @@ class PatientGenerator:
         Returns:
             List of patient bundles
         """
-        if not getattr(self, '_loaded', False):
+        if not getattr(self, "_loaded", False):
             self._load_file_list()
         patients = []
         files_to_process = self._patient_files[start:]

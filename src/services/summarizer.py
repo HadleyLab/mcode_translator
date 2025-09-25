@@ -449,7 +449,9 @@ class McodeSummarizer:
         elements.extend(patient_elements)
 
         # Process clinical data from other resources
-        clinical_elements = self._extract_clinical_resources(patient_data, include_dates)
+        clinical_elements = self._extract_clinical_resources(
+            patient_data, include_dates
+        )
         elements.extend(clinical_elements)
 
         return elements
@@ -461,7 +463,9 @@ class McodeSummarizer:
                 return entry["resource"]
         return {}
 
-    def _extract_patient_demographics(self, patient_resource: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _extract_patient_demographics(
+        self, patient_resource: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Extract basic patient demographics from Patient resource."""
         elements = []
 
@@ -509,7 +513,9 @@ class McodeSummarizer:
 
         return elements
 
-    def _extract_clinical_resources(self, patient_data: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
+    def _extract_clinical_resources(
+        self, patient_data: Dict[str, Any], include_dates: bool
+    ) -> List[Dict[str, Any]]:
         """Extract clinical elements from non-Patient resources."""
         elements = []
 
@@ -518,15 +524,21 @@ class McodeSummarizer:
             resource_type = resource.get("resourceType")
 
             if resource_type == "Condition":
-                condition_elements = self._extract_condition_elements(resource, include_dates)
+                condition_elements = self._extract_condition_elements(
+                    resource, include_dates
+                )
                 elements.extend(condition_elements)
             elif resource_type == "Observation":
-                observation_elements = self._extract_observation_elements(resource, include_dates)
+                observation_elements = self._extract_observation_elements(
+                    resource, include_dates
+                )
                 elements.extend(observation_elements)
 
         return elements
 
-    def _extract_condition_elements(self, resource: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
+    def _extract_condition_elements(
+        self, resource: Dict[str, Any], include_dates: bool
+    ) -> List[Dict[str, Any]]:
         """Extract elements from Condition resources."""
         elements = []
 
@@ -559,7 +571,9 @@ class McodeSummarizer:
 
         return elements
 
-    def _extract_observation_elements(self, resource: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
+    def _extract_observation_elements(
+        self, resource: Dict[str, Any], include_dates: bool
+    ) -> List[Dict[str, Any]]:
         """Extract elements from Observation resources."""
         elements = []
 

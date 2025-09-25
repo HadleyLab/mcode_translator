@@ -5,12 +5,12 @@ This module handles the analysis of trial biology including conditions,
 interventions, demographics, and mCODE element extraction patterns.
 """
 
-from typing import List, Dict, Any
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List
 
-from src.utils.logging_config import get_logger
 from src.shared.models import McodeElement
+from src.utils.logging_config import get_logger
 
 
 class BiologicalAnalyzer:

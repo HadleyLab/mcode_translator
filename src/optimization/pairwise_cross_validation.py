@@ -15,7 +15,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-
 from src.pipeline import McodePipeline
 from src.shared.models import BenchmarkResult, McodeElement
 from src.shared.types import TaskStatus

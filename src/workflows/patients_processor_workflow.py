@@ -14,10 +14,8 @@ from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.concurrency import TaskQueue, create_task
 
-from .base_workflow import (
-    PatientsProcessorWorkflow as BasePatientsProcessorWorkflow,
-    WorkflowResult,
-)
+from .base_workflow import PatientsProcessorWorkflow as BasePatientsProcessorWorkflow
+from .base_workflow import WorkflowResult
 
 
 class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):

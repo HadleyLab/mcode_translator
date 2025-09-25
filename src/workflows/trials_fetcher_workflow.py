@@ -9,14 +9,14 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from src.utils.concurrency import TaskQueue, create_task, get_fetcher_pool
 from src.utils.fetcher import (
     ClinicalTrialsAPIError,
+    get_full_studies_batch,
     get_full_study,
     search_trials,
-    get_full_studies_batch,
     search_trials_parallel,
 )
-from src.utils.concurrency import TaskQueue, create_task, get_fetcher_pool
 
 from .base_workflow import FetcherWorkflow, WorkflowResult
 

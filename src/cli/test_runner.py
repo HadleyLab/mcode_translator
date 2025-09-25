@@ -11,9 +11,7 @@ from typing import Optional, Tuple
 
 
 def run_command(
-    cmd: str,
-    cwd: Optional[str] = None,
-    env: Optional[dict] = None
+    cmd: str, cwd: Optional[str] = None, env: Optional[dict] = None
 ) -> Tuple[bool, str, str]:
     """Run a command and return the result."""
     try:

@@ -5,8 +5,8 @@ This module handles the generation of various reports including mega reports,
 biological analysis reports, and comparative analysis reports.
 """
 
-from typing import Dict, Any
 from datetime import datetime
+from typing import Any, Dict
 
 from src.utils.logging_config import get_logger
 

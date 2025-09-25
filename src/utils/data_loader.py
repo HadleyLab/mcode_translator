@@ -7,7 +7,7 @@ used throughout the mCODE Translator application.
 
 import json
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from src.utils.logging_config import get_logger
 

@@ -5,7 +5,6 @@ Unit tests for trials_optimizer parser functionality.
 
 import argparse
 
-import pytest
 
 from src.cli.trials_optimizer import create_parser
 

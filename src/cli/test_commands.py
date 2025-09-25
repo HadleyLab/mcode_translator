@@ -4,18 +4,19 @@ Test execution CLI commands for mCODE Translator.
 This module contains commands for running various test suites.
 """
 
-import click
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import click
+
 from .test_runner import (
-    run_unit_tests,
-    run_integration_tests,
-    run_performance_tests,
     run_all_tests,
     run_coverage_report,
+    run_integration_tests,
     run_linting,
+    run_performance_tests,
+    run_unit_tests,
 )
 
 

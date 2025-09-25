@@ -2,8 +2,6 @@
 Unit tests for test_runner module.
 """
 
-import os
-import pytest
 from unittest.mock import patch, MagicMock, call
 from src.cli.test_runner import (
     run_command,

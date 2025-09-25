@@ -8,10 +8,11 @@ This module contains all Click commands related to clinical trials:
 - optimize_trials
 """
 
-import click
 from types import SimpleNamespace
 
-from . import trials_fetcher, trials_processor, trials_summarizer, trials_optimizer
+import click
+
+from . import trials_fetcher, trials_optimizer, trials_processor, trials_summarizer
 
 
 @click.group()

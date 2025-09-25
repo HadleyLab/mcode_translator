@@ -10,9 +10,9 @@ import argparse
 import json
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 from unittest.mock import MagicMock, patch
-from abc import ABC, abstractmethod
+from abc import ABC
 
 
 class BaseCLITest(ABC):

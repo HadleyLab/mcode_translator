@@ -5,7 +5,7 @@ This module provides specialized functionality for fetching clinical trial data
 from external APIs with batch processing and error handling.
 """
 
-from typing import Dict, List
+from typing import List
 
 from src.shared.models import WorkflowResult
 from src.utils.fetcher import get_full_studies_batch
@@ -73,6 +73,7 @@ class DataFetcher:
             return WorkflowResult(
                 success=True,
                 data=fetched_trials,
+                error_message="",
                 metadata={
                     "total_requested": len(trial_ids),
                     "total_fetched": len(fetched_trials),

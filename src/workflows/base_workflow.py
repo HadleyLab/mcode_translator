@@ -8,10 +8,7 @@ ensuring consistent interfaces, error handling, and CORE memory integration.
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
-from src.shared.models import (
-    WorkflowResult,
-    ProcessingMetadata,
-)
+from src.shared.models import ProcessingMetadata, WorkflowResult
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
 from src.utils.logging_config import get_logger

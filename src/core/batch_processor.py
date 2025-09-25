@@ -94,8 +94,11 @@ class BatchProcessor:
 
             # Count successful results in this batch
             successful_in_batch = sum(
-                1 for r in batch_results
-                if r is not None and getattr(r, "error", None) is None and getattr(r, "success", True)
+                1
+                for r in batch_results
+                if r is not None
+                and getattr(r, "error", None) is None
+                and getattr(r, "success", True)
             )
             total_successful += successful_in_batch
             total_processed += len(batch)

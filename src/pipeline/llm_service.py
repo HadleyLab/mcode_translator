@@ -339,8 +339,8 @@ class LLMService:
         Raises:
             Exception: If all retry attempts fail
         """
-        import random
         import asyncio
+        import random
 
         start_time = time.time()
         # Aggressive retry configuration for rate limiting

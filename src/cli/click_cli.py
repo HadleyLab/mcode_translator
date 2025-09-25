@@ -7,17 +7,18 @@ Click provides better testing utilities compared to argparse.
 
 import click
 
+from .data_commands import data
+from .patients_commands import patients
+from .test_commands import test
+
 # Import command groups
 from .trials_commands import trials
-from .patients_commands import patients
-from .data_commands import data
-from .test_commands import test
 
 
 @click.group()
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 @click.pass_context
-def cli(ctx, verbose):
+def cli(ctx: click.Context, verbose: bool) -> None:
     """mCODE Translator CLI - Click-based interface for testing."""
     ctx.ensure_object(dict)
     ctx.obj["verbose"] = verbose

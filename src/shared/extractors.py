@@ -2,7 +2,7 @@
 Shared extractors for common data extraction patterns.
 """
 
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 
 class DataExtractor:
@@ -14,7 +14,11 @@ class DataExtractor:
         try:
             if trial is None:
                 return ""
-            return trial.get("protocolSection", {}).get("identificationModule", {}).get("nctId", "")
+            return (
+                trial.get("protocolSection", {})
+                .get("identificationModule", {})
+                .get("nctId", "")
+            )
         except (KeyError, AttributeError, TypeError):
             return ""
 

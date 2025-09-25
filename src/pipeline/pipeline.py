@@ -4,7 +4,7 @@ Ultra-Lean McodePipeline
 Zero redundancy, maximum performance. Leverages existing infrastructure.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from src.pipeline.document_ingestor import DocumentIngestor
 from src.pipeline.llm_service import LLMService
@@ -12,6 +12,7 @@ from src.shared.models import (
     ClinicalTrialData,
     McodeElement,
     PipelineResult,
+    ProcessingMetadata,
     ValidationResult,
 )
 from src.utils.config import Config
@@ -26,7 +27,10 @@ class McodePipeline:
     """
 
     def __init__(
-        self, model_name: str = None, prompt_name: str = None, config: Config = None
+        self,
+        model_name: Optional[str] = None,
+        prompt_name: Optional[str] = None,
+        config: Optional[Config] = None,
     ):
         """
         Initialize with existing infrastructure.
@@ -38,7 +42,8 @@ class McodePipeline:
         """
         self.logger = get_logger(__name__)
         self.logger.info(
-            f"🔧 McodePipeline initializing with model: {model_name}, prompt: {prompt_name}"
+            f"🔧 McodePipeline initializing with model: {model_name}, "
+            f"prompt: {prompt_name}"
         )
 
         self.config = config or Config()
@@ -61,7 +66,8 @@ class McodePipeline:
             PipelineResult with existing validated models
         """
         self.logger.info(
-            f"🚀 Pipeline.process called with trial data keys: {list(trial_data.keys())[:5]}..."
+            f"🚀 Pipeline.process called with trial data keys: "
+            f"{list(trial_data.keys())[:5]}..."
         )
 
         # Validate input using existing ClinicalTrialData model - STRICT: No fallback, fail fast
@@ -76,13 +82,16 @@ class McodePipeline:
         all_elements = []
         for i, section in enumerate(sections):
             self.logger.info(
-                f"🔍 Processing section {i+1}/{len(sections)}: '{section.name}' (content length: {len(section.content) if section.content else 0})"
+                f"🔍 Processing section {i+1}/{len(sections)}: "
+                f"'{section.name}' (content length: "
+                f"{len(section.content) if section.content else 0})"
             )
             if section.content and section.content.strip():
                 self.logger.info(f"🚀 Calling LLM service for section {i+1}")
                 elements = await self.llm_service.map_to_mcode(section.content)
                 self.logger.info(
-                    f"✅ LLM service returned {len(elements)} elements for section {i+1}"
+                    f"✅ LLM service returned {len(elements)} elements "
+                    f"for section {i+1}"
                 )
                 all_elements.extend(elements)
             else:
@@ -96,17 +105,15 @@ class McodePipeline:
             validation_results=ValidationResult(
                 compliance_score=self._calculate_compliance_score(all_elements)
             ),
-            metadata={
-                "engine_type": "LLM",
-                "total_count": 1,
-                "successful": 1,
-                "failed": 0,
-                "success_rate": 1.0,
-                "entities_count": 0,
-                "mapped_count": len(all_elements),
-                "model_used": self.model_name,
-                "prompt_used": self.prompt_name,
-            },
+            metadata=ProcessingMetadata(
+                engine_type="LLM",
+                entities_count=0,
+                mapped_count=len(all_elements),
+                model_used=self.model_name,
+                prompt_used=self.prompt_name,
+                processing_time_seconds=None,
+                token_usage=None,
+            ),
             original_data=trial_data,
             error=None,
         )

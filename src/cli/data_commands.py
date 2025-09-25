@@ -4,16 +4,17 @@ Data management CLI commands for mCODE Translator.
 This module contains commands for downloading and managing data archives.
 """
 
-import click
 import sys
 import time
 from pathlib import Path
 
+import click
+
 from .data_downloader import (
-    list_available_archives,
-    get_default_archives_config,
-    parse_archive_list,
     download_archives,
+    get_default_archives_config,
+    list_available_archives,
+    parse_archive_list,
 )
 
 

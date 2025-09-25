@@ -12,8 +12,9 @@ import asyncio
 import sys
 from pathlib import Path
 from typing import Optional
-from watchdog.observers import Observer
+
 from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 from src.shared.cli_utils import McodeCLI
 from src.workflows.trials_optimizer_workflow import TrialsOptimizerWorkflow

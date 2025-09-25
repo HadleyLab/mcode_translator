@@ -13,12 +13,11 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from src.cli.trials_processor import (
-    create_parser,
     main,
     save_processed_data,
     print_processing_summary,
 )
-from tests.unit.test_cli_base import BaseCLITest, TestDataHelper
+from tests.unit.test_cli_base import BaseCLITest
 
 
 class TestTrialsProcessorCLI(BaseCLITest):

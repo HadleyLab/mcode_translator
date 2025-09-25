@@ -47,20 +47,28 @@ def parse_archive_list(archives_str):
             if len(parts) >= 3:
                 cancer_type = f"{parts[0]}_{parts[1]}"
                 duration = f"{parts[2]}_{parts[3]}" if len(parts) > 3 else parts[2]
-                if cancer_type in default_config and duration in default_config[cancer_type]:
+                if (
+                    cancer_type in default_config
+                    and duration in default_config[cancer_type]
+                ):
                     if cancer_type not in result:
                         result[cancer_type] = {}
-                    result[cancer_type][duration] = default_config[cancer_type][duration]
+                    result[cancer_type][duration] = default_config[cancer_type][
+                        duration
+                    ]
 
     return result
 
 
-def download_archives(archives_config, output_dir="data/synthetic_patients", workers=4, force=False):
+def download_archives(
+    archives_config, output_dir="data/synthetic_patients", workers=4, force=False
+):
     """Download archives using the data downloader."""
     from src.utils.data_downloader import download_synthetic_patient_archives_concurrent
+
     return download_synthetic_patient_archives_concurrent(
         base_dir=output_dir,
         archives_config=archives_config,
         force_download=force,
-        max_workers=workers
+        max_workers=workers,
     )

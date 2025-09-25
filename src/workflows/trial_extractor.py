@@ -5,7 +5,7 @@ This module provides functionality to extract mCODE-relevant information
 from clinical trial protocol sections.
 """
 
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 class TrialExtractor:

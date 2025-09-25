@@ -7,8 +7,9 @@ This module contains all Click commands related to patients:
 - summarize_patients
 """
 
-import click
 from types import SimpleNamespace
+
+import click
 
 from . import patients_fetcher, patients_processor, patients_summarizer
 

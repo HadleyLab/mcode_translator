@@ -2,10 +2,7 @@
 Unit tests for result_aggregator module.
 """
 
-import json
-import tempfile
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import pytest
 
 from src.optimization.result_aggregator import OptimizationResultAggregator

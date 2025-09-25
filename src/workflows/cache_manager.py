@@ -6,7 +6,7 @@ mCODE extractions, and summaries to improve performance.
 """
 
 import hashlib
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from src.utils.api_manager import APIManager
 

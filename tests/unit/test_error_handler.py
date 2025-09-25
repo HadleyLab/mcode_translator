@@ -2,7 +2,6 @@
 Unit tests for error_handler module.
 """
 
-import sys
 from unittest.mock import patch, MagicMock
 
 import pytest

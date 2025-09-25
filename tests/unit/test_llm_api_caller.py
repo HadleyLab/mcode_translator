@@ -2,8 +2,6 @@
 Unit tests for LLMAPICaller class.
 """
 
-import asyncio
-import json
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 from src.pipeline.llm_api_caller import LLMAPICaller

@@ -5,7 +5,7 @@ Unified API Manager - Centralized cache management for all API calls in the syst
 import asyncio
 import logging
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from .api_cache import APICache
 from .async_api_cache import AsyncAPICache
@@ -226,5 +226,3 @@ class APIManager:
             cache = await self.aget_cache(cache_namespace)
             stats = await cache.aget_stats()
             return {cache_namespace: stats}
-
-

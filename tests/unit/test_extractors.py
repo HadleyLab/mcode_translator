@@ -2,7 +2,6 @@
 Unit tests for shared extractors module.
 """
 
-import pytest
 from src.shared.extractors import DataExtractor
 
 

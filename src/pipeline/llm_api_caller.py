@@ -12,7 +12,10 @@ from typing import Any, Dict
 
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
-from src.utils.token_tracker import extract_token_usage_from_response, global_token_tracker
+from src.utils.token_tracker import (
+    extract_token_usage_from_response,
+    global_token_tracker,
+)
 
 
 class LLMAPICaller:
@@ -214,9 +217,7 @@ class LLMAPICaller:
 
             # Clean up common JSON formatting issues
             cleaned_content = cleaned_content.strip()
-            if cleaned_content.startswith("```") and cleaned_content.endswith(
-                "```"
-            ):
+            if cleaned_content.startswith("```") and cleaned_content.endswith("```"):
                 # Remove markdown code blocks if still present
                 lines = cleaned_content.split("\n")
                 if len(lines) > 2:
@@ -225,16 +226,12 @@ class LLMAPICaller:
             return json.loads(cleaned_content)
         except json.JSONDecodeError as e:
             # Provide detailed error information for debugging
-            self.logger.error(
-                f"❌ JSON parsing error for {self.model_name}: {str(e)}"
-            )
+            self.logger.error(f"❌ JSON parsing error for {self.model_name}: {str(e)}")
             self.logger.error(f"  Response preview: {response_content[:500]}...")
 
             # Check for common issues
             if "Expecting ',' delimiter" in str(e):
-                self.logger.error(
-                    "  Issue: Missing comma or malformed JSON structure"
-                )
+                self.logger.error("  Issue: Missing comma or malformed JSON structure")
             elif "Expecting ':' delimiter" in str(e):
                 self.logger.error("  Issue: Missing colon in key-value pair")
             elif "Expecting value" in str(e):

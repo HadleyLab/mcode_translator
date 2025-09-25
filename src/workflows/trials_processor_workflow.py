@@ -13,9 +13,9 @@ from src.shared.models import enhance_trial_with_mcode_results
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 
 from .base_workflow import TrialsProcessorWorkflow, WorkflowResult
+from .cache_manager import TrialCacheManager
 from .trial_extractor import TrialExtractor
 from .trial_summarizer import TrialSummarizer
-from .cache_manager import TrialCacheManager
 
 
 class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
@@ -70,7 +70,9 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             store_in_memory = False
 
             self.logger.info(
-                f"Extracted parameters: trials_data={len(trials_data) if trials_data else 0}, model={model}, prompt={prompt}, store_in_memory={store_in_memory}"
+                f"Extracted parameters: trials_data="
+                f"{len(trials_data) if trials_data else 0}, model={model}, "
+                f"prompt={prompt}, store_in_memory={store_in_memory}"
             )
 
             if not trials_data:
@@ -84,7 +86,8 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             self.logger.info("Initializing McodePipeline...")
             if not self.pipeline:
                 self.logger.info(
-                    f"Creating McodePipeline with prompt_name={prompt}, model_name={model}"
+                    f"Creating McodePipeline with prompt_name={prompt}, "
+                    f"model_name={model}"
                 )
                 try:
                     self.pipeline = McodePipeline(prompt_name=prompt, model_name=model)

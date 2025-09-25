@@ -5,11 +5,11 @@ Optimization Result Aggregator - Handles result processing and aggregation.
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List
 
+from src.optimization.biological_analyzer import BiologicalAnalyzer
 from src.optimization.performance_analyzer import PerformanceAnalyzer
 from src.optimization.report_generator import ReportGenerator
-from src.optimization.biological_analyzer import BiologicalAnalyzer
 
 
 class OptimizationResultAggregator:
@@ -45,11 +45,19 @@ class OptimizationResultAggregator:
 
             if scores:
                 cv_average_score = sum(scores) / len(scores)
-                cv_std = (sum((s - cv_average_score) ** 2 for s in scores) / len(scores)) ** 0.5
+                cv_std = (
+                    sum((s - cv_average_score) ** 2 for s in scores) / len(scores)
+                ) ** 0.5
 
-                avg_precision = sum(m.get("precision", 0) for m in all_metrics) / len(all_metrics)
-                avg_recall = sum(m.get("recall", 0) for m in all_metrics) / len(all_metrics)
-                avg_f1 = sum(m.get("f1_score", 0) for m in all_metrics) / len(all_metrics)
+                avg_precision = sum(m.get("precision", 0) for m in all_metrics) / len(
+                    all_metrics
+                )
+                avg_recall = sum(m.get("recall", 0) for m in all_metrics) / len(
+                    all_metrics
+                )
+                avg_f1 = sum(m.get("f1_score", 0) for m in all_metrics) / len(
+                    all_metrics
+                )
 
                 result = {
                     "combination": combo,
@@ -124,23 +132,39 @@ class OptimizationResultAggregator:
         )
 
         # Performance analysis
-        analysis_summary = self.performance_analyzer.analyze_by_category(optimization_results, "model")
-        provider_analysis = self.performance_analyzer.analyze_by_provider(optimization_results)
-        error_analysis = self.performance_analyzer.summarize_errors(optimization_results)
+        analysis_summary = self.performance_analyzer.analyze_by_category(
+            optimization_results, "model"
+        )
+        provider_analysis = self.performance_analyzer.analyze_by_provider(
+            optimization_results
+        )
+        error_analysis = self.performance_analyzer.summarize_errors(
+            optimization_results
+        )
 
         mega_analysis = {
             "model_stats": analysis_summary,
             "provider_stats": provider_analysis,
             "error_analysis": error_analysis,
             "total_runs": len(optimization_results),
-            "successful_runs": len([r for r in optimization_results if r.get("success", False)]),
+            "successful_runs": len(
+                [r for r in optimization_results if r.get("success", False)]
+            ),
             "time_range": {
                 "earliest": min(
-                    (r.get("timestamp") for r in optimization_results if r.get("timestamp")),
+                    (
+                        r.get("timestamp")
+                        for r in optimization_results
+                        if r.get("timestamp")
+                    ),
                     default=None,
                 ),
                 "latest": max(
-                    (r.get("timestamp") for r in optimization_results if r.get("timestamp")),
+                    (
+                        r.get("timestamp")
+                        for r in optimization_results
+                        if r.get("timestamp")
+                    ),
                     default=None,
                 ),
             },
@@ -148,11 +172,18 @@ class OptimizationResultAggregator:
 
         # Generate mega report
         try:
-            mega_report = self.report_generator.generate_mega_report(mega_analysis, "", "")
-            mega_report_path = Path("optimization_runs") / f"mega_optimization_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+            mega_report = self.report_generator.generate_mega_report(
+                mega_analysis, "", ""
+            )
+            mega_report_path = (
+                Path("optimization_runs")
+                / f"mega_optimization_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+            )
             with open(mega_report_path, "w", encoding="utf-8") as f:
                 f.write(mega_report)
-            self.logger.info(f"📊 Mega optimization report saved to: {mega_report_path}")
+            self.logger.info(
+                f"📊 Mega optimization report saved to: {mega_report_path}"
+            )
         except Exception as e:
             self.logger.warning(f"Failed to generate mega report: {e}")
 
@@ -255,7 +286,9 @@ class OptimizationResultAggregator:
         total_errors = sum(error_summary.values())
         if total_errors > 0:
             self.logger.info("   📈 Overall Error Distribution:")
-            for error_type, count in sorted(error_summary.items(), key=lambda x: x[1], reverse=True):
+            for error_type, count in sorted(
+                error_summary.items(), key=lambda x: x[1], reverse=True
+            ):
                 if count > 0:
                     percentage = (count / total_errors) * 100
                     self.logger.info(f"      {error_type}: {count} ({percentage:.1f}%)")
@@ -270,14 +303,24 @@ class OptimizationResultAggregator:
             primary_error = None
             if error_count > 0:
                 error_types = stats.get("error_types", {})
-                primary_error = max(error_types.items(), key=lambda x: x[1]) if error_types else None
+                primary_error = (
+                    max(error_types.items(), key=lambda x: x[1])
+                    if error_types
+                    else None
+                )
 
-            model_reliability.append((model, success_rate, error_count, primary_error, runs))
+            model_reliability.append(
+                (model, success_rate, error_count, primary_error, runs)
+            )
 
         model_reliability.sort(key=lambda x: (x[1], -x[2]))
         for model, success_rate, error_count, primary_error, runs in model_reliability:
             status = "✅" if success_rate >= 90 else "⚠️" if success_rate >= 50 else "❌"
-            error_info = f" ({primary_error[0]}: {primary_error[1]})" if primary_error and primary_error[1] > 0 else ""
+            error_info = (
+                f" ({primary_error[0]}: {primary_error[1]})"
+                if primary_error and primary_error[1] > 0
+                else ""
+            )
             self.logger.info(
                 f"      {status} {model}: {success_rate:.1f}% success ({runs} runs){error_info}"
             )
