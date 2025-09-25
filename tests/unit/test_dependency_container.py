@@ -155,3 +155,57 @@ class TestGlobalContainerFunctions:
         result = get_container()
 
         assert result != custom_container
+
+    def test_circular_dependency_detection(self):
+        """Test detection of circular dependencies."""
+        container = DependencyContainer()
+
+        # Register components with circular dependency
+        def component_a():
+            return container.get_component("component_b")
+
+        def component_b():
+            return container.get_component("component_a")
+
+        container.register_component("component_a", component_a, singleton=False)
+        container.register_component("component_b", component_b, singleton=False)
+
+        # Attempting to get component should raise an error
+        with pytest.raises(Exception):
+            container.get_component("component_a")
+
+    def test_component_creation_failure(self):
+        """Test handling of component creation failures."""
+        container = DependencyContainer()
+
+        def failing_component():
+            raise Exception("Component creation failed")
+
+        container.register_component("failing", failing_component, singleton=False)
+
+        with pytest.raises(Exception):
+            container.get_component("failing")
+
+    def test_large_number_of_components(self):
+        """Test performance with a large number of components."""
+        container = DependencyContainer()
+
+        # Register many components
+        for i in range(100):
+            container.register_component(f"component_{i}", Mock(), singleton=True)
+
+        # Should be able to retrieve all
+        for i in range(100):
+            assert container.get_component(f"component_{i}") is not None
+
+    def test_invalid_component_registration(self):
+        """Test registration of invalid components."""
+        container = DependencyContainer()
+
+        # Register None as component
+        with pytest.raises(ValueError):
+            container.register_component("invalid", None, singleton=True)
+
+        # Register with empty name
+        with pytest.raises(ValueError):
+            container.register_component("", Mock(), singleton=True)

@@ -25,6 +25,9 @@ tests/
 │   ├── test_mcode_llm.py
 │   ├── test_summarizer.py
 │   ├── test_patient_generator.py
+│   ├── test_trials_optimizer_parser.py
+│   ├── test_trials_optimizer_main.py
+│   ├── test_trials_optimizer_summary_handler.py
 │   └── test_*.py
 ├── integration/            # Integration tests with real data
 │   └── test_pipeline_integration.py

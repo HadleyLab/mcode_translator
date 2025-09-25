@@ -287,6 +287,249 @@ class TestPairwiseCrossValidatorMethods:
         # Verify logger calls
         mock_logger.info.assert_called()
 
+    def test_initialize_and_shutdown(self, setup_validator):
+        """Test initialize and shutdown methods."""
+        validator, _, _ = setup_validator
+
+        mock_logger = Mock()
+        validator.logger = mock_logger
+
+        # Test initialize
+        validator.initialize()
+        mock_logger.info.assert_called_with("🤖 Initializing pairwise validator")
+
+        # Test shutdown
+        validator.shutdown()
+        mock_logger.info.assert_called_with("🛑 Shutting down pairwise validator")
+
+    @patch('src.optimization.pairwise_cross_validation.TaskQueue')
+    @patch('src.optimization.pairwise_cross_validation.McodePipeline')
+    def test_run_pairwise_validation(self, mock_pipeline_class, mock_task_queue_class, setup_validator):
+        """Test running pairwise validation."""
+        validator, _, _ = setup_validator
+
+        # Mock task queue
+        mock_task_queue = Mock()
+        mock_task_queue_class.return_value = mock_task_queue
+        # Mock task result objects with success attribute
+        mock_result = Mock()
+        mock_result.success = True
+        mock_task_queue.execute_tasks.return_value = [mock_result]
+
+        # Create mock tasks
+        mock_task = Mock()
+        mock_task.task_id = "test_task"
+        tasks = [mock_task]
+
+        # Mock logger
+        mock_logger = Mock()
+        validator.logger = mock_logger
+
+        # Run validation
+        validator.run_pairwise_validation(tasks, max_workers=2)
+
+        # Verify task queue was created and used
+        mock_task_queue_class.assert_called_once_with(max_workers=2, name="PairwiseValidator")
+        mock_task_queue.execute_tasks.assert_called_once()
+
+    @patch('src.optimization.pairwise_cross_validation.McodePipeline')
+    @patch('src.optimization.pairwise_cross_validation.BenchmarkResult')
+    def test_process_pairwise_task(self, mock_benchmark_class, mock_pipeline_class, setup_validator):
+        """Test processing a single pairwise task."""
+        validator, _, _ = setup_validator
+
+        # Mock pipeline
+        mock_pipeline = Mock()
+        mock_pipeline_class.return_value = mock_pipeline
+        mock_pipeline_result = Mock()
+        mock_pipeline_result.mcode_mappings = []
+        mock_pipeline_result.validation_results.compliance_score = 0.8
+        mock_pipeline.process.return_value = mock_pipeline_result
+
+        # Mock benchmark result
+        mock_benchmark = Mock()
+        mock_benchmark.pipeline_result = mock_pipeline_result
+        mock_benchmark_class.return_value = mock_benchmark
+
+        # Create task
+        task = PairwiseComparisonTask(
+            trial_id="NCT123",
+            trial_data={"test": "data"},
+            gold_prompt="prompt1",
+            gold_model="model1",
+            comp_prompt="prompt2",
+            comp_model="model2"
+        )
+
+        # Process task
+        validator._process_pairwise_task(task)
+
+        # Verify pipeline was created and called
+        assert mock_pipeline_class.call_count == 2  # Gold and comp pipelines
+        assert task.status == TaskStatus.SUCCESS
+        assert task.gold_result is not None
+        assert task.comp_result is not None
+
+    def test_calculate_comparison_metrics(self, setup_validator):
+        """Test calculating comparison metrics."""
+        validator, _, _ = setup_validator
+
+        # Create mock benchmark results
+        mock_gold_result = Mock()
+        mock_gold_result.pipeline_result.mcode_mappings = [
+            Mock(element_type="Condition", code="C50", confidence_score=0.9)
+        ]
+        mock_gold_result.pipeline_result.validation_results.compliance_score = 0.85
+
+        mock_comp_result = Mock()
+        mock_comp_result.pipeline_result.mcode_mappings = [
+            Mock(element_type="Condition", code="C50", confidence_score=0.8)
+        ]
+        mock_comp_result.pipeline_result.validation_results.compliance_score = 0.82
+
+        # Create task
+        task = PairwiseComparisonTask()
+        task.gold_result = mock_gold_result
+        task.comp_result = mock_comp_result
+
+        # Calculate metrics
+        validator._calculate_comparison_metrics(task)
+
+        # Verify metrics were calculated
+        assert "mapping_jaccard_similarity" in task.comparison_metrics
+        assert "mapping_f1_score" in task.comparison_metrics
+        assert "gold_mappings_count" in task.comparison_metrics
+        assert "comp_mappings_count" in task.comparison_metrics
+
+    def test_calculate_mapping_metrics(self, setup_validator):
+        """Test calculating mapping-level metrics."""
+        validator, _, _ = setup_validator
+
+        # Create mock mappings
+        gold_mappings = [
+            Mock(element_type="Condition", code="C50", confidence_score=0.9),
+            Mock(element_type="Treatment", code="T123", confidence_score=0.8)
+        ]
+        comp_mappings = [
+            Mock(element_type="Condition", code="C50", confidence_score=0.85),
+            Mock(element_type="Treatment", code="T456", confidence_score=0.7)
+        ]
+
+        # Calculate metrics
+        result = validator._calculate_mapping_metrics(gold_mappings, comp_mappings)
+
+        # Verify all expected metrics are present
+        expected_metrics = [
+            "mapping_jaccard_similarity", "mapping_precision", "mapping_recall",
+            "mapping_f1_score", "mapping_true_positives", "mapping_false_positives",
+            "mapping_false_negatives", "gold_mappings_count", "comp_mappings_count",
+            "gold_avg_confidence", "comp_avg_confidence", "true_positive_examples",
+            "false_positive_examples", "false_negative_examples"
+        ]
+
+        for metric in expected_metrics:
+            assert metric in result
+
+    def test_calculate_mapping_metrics_edge_cases(self, setup_validator):
+        """Test mapping metrics calculation with edge cases."""
+        validator, _, _ = setup_validator
+
+        # Test with empty mappings
+        result = validator._calculate_mapping_metrics([], [])
+        assert result["mapping_jaccard_similarity"] == 0.0
+
+        # Test with invalid mappings (None element_type or code)
+        gold_mappings = [Mock(element_type=None, code="C50")]
+        comp_mappings = [Mock(element_type="Condition", code=None)]
+
+        result = validator._calculate_mapping_metrics(gold_mappings, comp_mappings)
+        assert isinstance(result, dict)
+
+    @patch('src.optimization.pairwise_cross_validation.json.dump')
+    @patch('src.optimization.pairwise_cross_validation.datetime')
+    def test_save_results(self, mock_datetime, mock_json_dump, setup_validator):
+        """Test saving results."""
+        validator, _, _ = setup_validator
+
+        mock_datetime.now.return_value.isoformat.return_value = "2023-01-01T00:00:00"
+
+        # Add mock results
+        mock_task = Mock()
+        mock_task.task_id = "test_task"
+        mock_task.trial_id = "NCT123"
+        mock_task.gold_prompt = "prompt1"
+        mock_task.gold_model = "model1"
+        mock_task.comp_prompt = "prompt2"
+        mock_task.comp_model = "model2"
+        mock_task.comparison_metrics = {"test": "metric"}
+        mock_task.status = TaskStatus.SUCCESS
+        mock_task.duration_ms = 100.0
+
+        validator.pairwise_results = [mock_task]
+
+        # Save results
+        validator.save_results()
+
+        # Verify json.dump was called
+        assert mock_json_dump.call_count >= 2  # Results and summary files
+
+    def test_generate_detailed_report(self, setup_validator):
+        """Test generating detailed markdown report."""
+        validator, _, _ = setup_validator
+
+        # Set up mock summary stats
+        validator.summary_stats = {
+            "summary": {
+                "total_comparisons": 10,
+                "successful_comparisons": 8,
+                "success_rate": 0.8,
+                "unique_config_pairs": 5,
+            },
+            "overall_metrics": {
+                "mapping_f1_score": {"mean": 0.75, "median": 0.7, "stdev": 0.1, "min": 0.6, "max": 0.9}
+            }
+        }
+
+        # Generate report
+        validator.generate_detailed_report("test_timestamp")
+
+        # Verify report file was created
+        report_file = validator.output_dir / "pairwise_report_test_timestamp.md"
+        assert report_file.exists()
+
+        # Check report content
+        with open(report_file, "r") as f:
+            content = f.read()
+
+        assert "# Pairwise Cross-Validation Report" in content
+        assert "Executive Summary" in content
+        assert "Overall Metrics" in content
+
+    def test_analyze_prompt_performance(self, setup_validator):
+        """Test analyzing prompt performance."""
+        validator, _, _ = setup_validator
+
+        mock_logger = Mock()
+        validator.logger = mock_logger
+
+        # Set up mock config analysis
+        validator.summary_stats = {
+            "configuration_analysis": {
+                "evidence_based_with_codes_model1_vs_evidence_based_model2": {
+                    "mapping_f1_score": {"mean": 0.85}
+                },
+                "evidence_based_model1_vs_other_model2": {
+                    "mapping_f1_score": {"mean": 0.75}
+                }
+            }
+        }
+
+        # Analyze performance
+        validator._analyze_prompt_performance()
+
+        # Verify logger calls for prompt analysis
+        mock_logger.info.assert_called()
+
 
 class TestPairwiseCrossValidatorIntegration:
     """Integration tests for PairwiseCrossValidator."""

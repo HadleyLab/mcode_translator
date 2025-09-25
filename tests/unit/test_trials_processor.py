@@ -12,57 +12,32 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-
 from src.cli.trials_processor import (
     create_parser,
     main,
     save_processed_data,
     print_processing_summary,
 )
+from tests.unit.test_cli_base import BaseCLITest, TestDataHelper
 
 
-class TestTrialsProcessorCLI:
+class TestTrialsProcessorCLI(BaseCLITest):
     """Test the trials_processor CLI module."""
 
-    def test_create_parser_basic_structure(self):
-        """Test that the argument parser is created with expected structure."""
-        parser = create_parser()
+    def get_cli_module(self):
+        """Return the CLI module being tested."""
+        from src.cli import trials_processor
+        return trials_processor
 
-        assert isinstance(parser, argparse.ArgumentParser)
-        assert "Process clinical trials" in parser.description
+    def get_workflow_class_name(self):
+        """Return the workflow class name for this CLI module."""
+        return "ClinicalTrialsProcessorWorkflow"
 
-        # Check that required arguments are present
-        actions = {action.dest for action in parser._actions}
-        assert "input_file" in actions
-        assert "output_file" in actions
-
-    def test_create_parser_input_file_argument(self):
-        """Test the input_file argument configuration."""
-        parser = create_parser()
-
-        # Find the input_file action
-        input_action = None
-        for action in parser._actions:
-            if action.dest == "input_file":
-                input_action = action
-                break
-
-        assert input_action is not None
-        assert "Path to NDJSON file containing trial data" in input_action.help
-
-    def test_create_parser_output_file_argument(self):
-        """Test the output_file argument configuration."""
-        parser = create_parser()
-
-        # Find the output_file action
-        output_action = None
-        for action in parser._actions:
-            if action.dest == "output_file":
-                output_action = action
-                break
-
-        assert output_action is not None
-        assert "Path to save processed mCODE data" in output_action.help
+    def get_default_args(self):
+        """Return default arguments for this CLI module."""
+        args = super().get_default_args()
+        args.trials = None  # trials_processor doesn't have trials argument
+        return args
 
     @patch("src.cli.trials_processor.ClinicalTrialsProcessorWorkflow")
     @patch("src.cli.trials_processor.McodeCLI.create_config")
@@ -218,205 +193,6 @@ class TestTrialsProcessorCLI:
         # Verify workflow was created with memory storage
         mock_workflow_class.assert_called_once_with(mock_config, mock_memory)
 
-    @patch("src.cli.trials_processor.McodeCLI.create_config")
-    @patch("src.cli.trials_processor.McodeCLI.setup_logging")
-    @patch("pathlib.Path.exists", return_value=False)
-    def test_main_input_file_not_found(
-        self, mock_path_exists, mock_setup_logging, mock_create_config
-    ):
-        """Test error when input file does not exist."""
-        # Mock configuration and logging
-        mock_config = MagicMock()
-        mock_create_config.return_value = mock_config
-
-        # Create mock args
-        args = argparse.Namespace(
-            input_file="nonexistent.ndjson",
-            output_file=None,
-            ingest=False,
-            verbose=False,
-            log_level="INFO",
-            config=None,
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            batch_size=10,
-            workers=0,
-            worker_pool="custom",
-            max_queue_size=1000,
-            task_timeout=None,
-            memory_source="mcode_translator",
-        )
-
-        # Mock sys.exit to prevent actual exit
-        with patch("sys.exit") as mock_exit:
-            # Call main - should exit with error
-            try:
-                main(args)
-            except SystemExit:
-                pass  # Expected when input file not found
-
-            # Verify sys.exit was called
-            assert mock_exit.call_count >= 1
-
-    @patch("src.cli.trials_processor.McodeCLI.create_config")
-    @patch("src.cli.trials_processor.McodeCLI.setup_logging")
-    @patch("src.cli.trials_processor.load_ndjson_data")
-    @patch("pathlib.Path.exists", return_value=True)
-    def test_main_empty_trial_data(
-        self, mock_path_exists, mock_load_data, mock_setup_logging, mock_create_config
-    ):
-        """Test error when input file contains no trial data."""
-        # Mock configuration and logging
-        mock_config = MagicMock()
-        mock_create_config.return_value = mock_config
-
-        # Mock empty trial data
-        mock_load_data.return_value = []
-
-        # Create mock args
-        args = argparse.Namespace(
-            input_file="empty.ndjson",
-            output_file=None,
-            ingest=False,
-            verbose=False,
-            log_level="INFO",
-            config=None,
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            batch_size=10,
-            workers=0,
-            worker_pool="custom",
-            max_queue_size=1000,
-            task_timeout=None,
-            memory_source="mcode_translator",
-        )
-
-        # Mock sys.exit to prevent actual exit
-        with patch("sys.exit") as mock_exit:
-            # Call main - should exit with error
-            try:
-                main(args)
-            except SystemExit:
-                pass  # Expected when no trial data found
-
-            # Verify sys.exit was called
-            assert mock_exit.call_count >= 1
-
-    @patch("src.cli.trials_processor.ClinicalTrialsProcessorWorkflow")
-    @patch("src.cli.trials_processor.McodeCLI.create_config")
-    @patch("src.cli.trials_processor.McodeCLI.setup_logging")
-    @patch("src.cli.trials_processor.load_ndjson_data")
-    @patch("pathlib.Path.exists", return_value=True)
-    def test_main_workflow_failure(
-        self,
-        mock_path_exists,
-        mock_load_data,
-        mock_setup_logging,
-        mock_create_config,
-        mock_workflow_class,
-    ):
-        """Test handling of workflow execution failure."""
-        # Mock configuration and logging
-        mock_config = MagicMock()
-        mock_create_config.return_value = mock_config
-
-        # Mock trial data
-        mock_trial_data = [{"nct_id": "NCT12345678", "title": "Test Trial"}]
-        mock_load_data.return_value = mock_trial_data
-
-        # Create mock args
-        args = argparse.Namespace(
-            input_file="trials.ndjson",
-            output_file="mcode_trials.ndjson",
-            ingest=False,
-            verbose=False,
-            log_level="INFO",
-            config=None,
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            batch_size=10,
-            workers=0,
-            worker_pool="custom",
-            max_queue_size=1000,
-            task_timeout=None,
-            memory_source="mcode_translator",
-        )
-
-        # Mock workflow and failed result
-        mock_workflow = MagicMock()
-        mock_result = MagicMock()
-        mock_result.success = False
-        mock_result.error_message = "Processing failed"
-        mock_workflow.execute.return_value = mock_result
-        mock_workflow_class.return_value = mock_workflow
-
-        # Mock sys.exit to prevent actual exit
-        with patch("sys.exit") as mock_exit:
-            # Call main - should exit with error
-            try:
-                main(args)
-            except SystemExit:
-                pass  # Expected when workflow fails
-
-            # Verify sys.exit was called
-            assert mock_exit.call_count >= 1
-
-    @patch("src.cli.trials_processor.ClinicalTrialsProcessorWorkflow")
-    @patch("src.cli.trials_processor.McodeCLI.create_config")
-    @patch("src.cli.trials_processor.McodeCLI.setup_logging")
-    @patch("src.cli.trials_processor.load_ndjson_data")
-    @patch("pathlib.Path.exists", return_value=True)
-    def test_main_keyboard_interrupt_handling(
-        self,
-        mock_path_exists,
-        mock_load_data,
-        mock_setup_logging,
-        mock_create_config,
-        mock_workflow_class,
-    ):
-        """Test handling of keyboard interrupt during execution."""
-        # Mock configuration and logging
-        mock_config = MagicMock()
-        mock_create_config.return_value = mock_config
-
-        # Mock trial data
-        mock_trial_data = [{"nct_id": "NCT12345678", "title": "Test Trial"}]
-        mock_load_data.return_value = mock_trial_data
-
-        # Create mock args
-        args = argparse.Namespace(
-            input_file="trials.ndjson",
-            output_file=None,
-            ingest=False,
-            verbose=False,
-            log_level="INFO",
-            config=None,
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            batch_size=10,
-            workers=0,
-            worker_pool="custom",
-            max_queue_size=1000,
-            task_timeout=None,
-            memory_source="mcode_translator",
-        )
-
-        # Mock workflow to raise KeyboardInterrupt
-        mock_workflow = MagicMock()
-        mock_workflow.execute.side_effect = KeyboardInterrupt()
-        mock_workflow_class.return_value = mock_workflow
-
-        # Mock sys.exit to prevent actual exit
-        with patch("sys.exit") as mock_exit:
-            # Call main - should handle KeyboardInterrupt gracefully
-            try:
-                main(args)
-            except SystemExit:
-                pass  # Expected when KeyboardInterrupt occurs
-
-            # Verify sys.exit was called with code 130 (standard for SIGINT)
-            assert mock_exit.call_count >= 1
-            mock_exit.assert_any_call(130)
 
     def test_save_processed_data_to_file(self):
         """Test saving processed data to output file."""

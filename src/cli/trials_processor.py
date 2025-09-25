@@ -135,7 +135,14 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     config = McodeCLI.create_config(args)
 
     # Validate and load input file
-    input_path = Path(args.input_file)
+    if not args.input_file:
+        handle_cli_error(ValueError("Input file is required"))
+
+    try:
+        input_path = Path(args.input_file)
+    except TypeError:
+        handle_cli_error(ValueError("Input file path is invalid"))
+
     if not input_path.exists():
         handle_cli_error(FileNotFoundError(f"Input file not found: {input_path}"))
 
@@ -180,7 +187,8 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
 
         # Save results
         if result.data:
-            save_processed_data(result.data, args.output_file, logger)
+            data_list = result.data if isinstance(result.data, list) else [result.data]
+            save_processed_data(data_list, args.output_file, logger)
 
         # Print summary
         print_processing_summary(result.metadata, args.ingest, logger)

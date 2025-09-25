@@ -22,6 +22,33 @@ from src.utils.error_handler import (
 )
 
 
+class TestErrorHandlerBase:
+    """Base class for error handler tests with common patterns."""
+
+    def assert_logger_called_once(self, mock_logger, expected_message):
+        """Helper to assert logger was called once with expected message."""
+        mock_logger.error.assert_called_once_with(expected_message)
+
+    def assert_logger_not_called(self, mock_logger):
+        """Helper to assert logger was not called."""
+        mock_logger.error.assert_not_called()
+
+    def assert_cli_error_output(self, mock_exit, mock_stderr, expected_message, exit_code=1):
+        """Helper to assert CLI error output and exit behavior."""
+        mock_stderr.write.assert_any_call(expected_message)
+        mock_stderr.write.assert_any_call("\n")
+        mock_exit.assert_called_once_with(exit_code)
+
+    def assert_validation_error(self, value, field_name, expected_message):
+        """Helper to assert validation raises expected error."""
+        with pytest.raises(ValueError, match=expected_message):
+            validate_required(value, field_name)
+
+    def assert_operation_logged(self, mock_logger, operation_name, log_method="info"):
+        """Helper to assert operation logging."""
+        getattr(mock_logger, log_method).assert_called_once_with(f"{'🚀' if log_method == 'info' else '❌'} {'Starting' if log_method == 'info' else 'Failed'}: {operation_name}")
+
+
 class TestMcodeError:
     """Test McodeError exception class."""
 
@@ -70,7 +97,7 @@ class TestAPIError:
         assert error.message == "API error"
 
 
-class TestHandleError:
+class TestHandleError(TestErrorHandlerBase):
     """Test handle_error function."""
 
     @patch('src.utils.error_handler.logger')
@@ -79,7 +106,7 @@ class TestHandleError:
         error = ValueError("Test error")
         handle_error(error)
 
-        mock_logger.error.assert_called_once_with("❌ Test error")
+        self.assert_logger_called_once(mock_logger, "❌ Test error")
 
     @patch('src.utils.error_handler.logger')
     def test_handle_error_with_context(self, mock_logger):
@@ -87,7 +114,7 @@ class TestHandleError:
         error = ValueError("Test error")
         handle_error(error, context="Operation failed")
 
-        mock_logger.error.assert_called_once_with("❌ Operation failed: Test error")
+        self.assert_logger_called_once(mock_logger, "❌ Operation failed: Test error")
 
     @patch('src.utils.error_handler.logger')
     def test_handle_error_with_custom_logger(self, mock_logger):
@@ -97,7 +124,7 @@ class TestHandleError:
         handle_error(error, logger_instance=mock_custom_logger)
 
         mock_custom_logger.error.assert_called_once_with("❌ Test error")
-        mock_logger.error.assert_not_called()
+        self.assert_logger_not_called(mock_logger)
 
     @patch('src.utils.error_handler.logger')
     @patch('sys.exit')
@@ -106,7 +133,7 @@ class TestHandleError:
         error = ValueError("Test error")
         handle_error(error, exit_code=1)
 
-        mock_logger.error.assert_called_once_with("❌ Test error")
+        self.assert_logger_called_once(mock_logger, "❌ Test error")
         mock_exit.assert_called_once_with(1)
 
     @patch('src.utils.error_handler.logger')
@@ -117,11 +144,11 @@ class TestHandleError:
         error = ValueError("Test error")
         handle_error(error, verbose=True)
 
-        mock_logger.error.assert_called_once_with("❌ Test error")
+        self.assert_logger_called_once(mock_logger, "❌ Test error")
         mock_logger.debug.assert_called_once_with("Full traceback:\nTraceback details")
 
 
-class TestHandleCliError:
+class TestHandleCliError(TestErrorHandlerBase):
     """Test handle_cli_error function."""
 
     @patch('sys.stderr')
@@ -131,10 +158,7 @@ class TestHandleCliError:
         error = ValueError("Test error")
         handle_cli_error(error)
 
-        # print() calls write twice: once for message, once for newline
-        mock_stderr.write.assert_any_call("❌ Test error")
-        mock_stderr.write.assert_any_call("\n")
-        mock_exit.assert_called_once_with(1)
+        self.assert_cli_error_output(mock_exit, mock_stderr, "❌ Test error")
 
     @patch('sys.stderr')
     @patch('sys.exit')
@@ -143,9 +167,7 @@ class TestHandleCliError:
         error = ValueError("Test error")
         handle_cli_error(error, context="Command failed")
 
-        mock_stderr.write.assert_any_call("❌ Command failed: Test error")
-        mock_stderr.write.assert_any_call("\n")
-        mock_exit.assert_called_once_with(1)
+        self.assert_cli_error_output(mock_exit, mock_stderr, "❌ Command failed: Test error")
 
     @patch('sys.stderr')
     @patch('sys.exit')
@@ -170,9 +192,7 @@ class TestHandleCliError:
         error = ValueError("Test error")
         handle_cli_error(error, exit_code=42)
 
-        mock_stderr.write.assert_any_call("❌ Test error")
-        mock_stderr.write.assert_any_call("\n")
-        mock_exit.assert_called_once_with(42)
+        self.assert_cli_error_output(mock_exit, mock_stderr, "❌ Test error", exit_code=42)
 
 
 class TestSafeExecute:
@@ -225,33 +245,28 @@ class TestSafeExecute:
         mock_logger.error.assert_not_called()
 
 
-class TestValidateRequired:
+class TestValidateRequired(TestErrorHandlerBase):
     """Test validate_required function."""
 
     def test_validate_required_none_value(self):
         """Test validation of None value."""
-        with pytest.raises(ValueError, match="Required value 'test' is None"):
-            validate_required(None, "test")
+        self.assert_validation_error(None, "test", "Required value 'test' is None")
 
     def test_validate_required_empty_string(self):
         """Test validation of empty string."""
-        with pytest.raises(ValueError, match="Required value 'test' is empty"):
-            validate_required("", "test")
+        self.assert_validation_error("", "test", "Required value 'test' is empty")
 
     def test_validate_required_whitespace_string(self):
         """Test validation of whitespace-only string."""
-        with pytest.raises(ValueError, match="Required value 'test' is empty"):
-            validate_required("   ", "test")
+        self.assert_validation_error("   ", "test", "Required value 'test' is empty")
 
     def test_validate_required_empty_list(self):
         """Test validation of empty list."""
-        with pytest.raises(ValueError, match="Required value 'test' is empty"):
-            validate_required([], "test")
+        self.assert_validation_error([], "test", "Required value 'test' is empty")
 
     def test_validate_required_empty_dict(self):
         """Test validation of empty dict."""
-        with pytest.raises(ValueError, match="Required value 'test' is empty"):
-            validate_required({}, "test")
+        self.assert_validation_error({}, "test", "Required value 'test' is empty")
 
     def test_validate_required_valid_string(self):
         """Test validation of valid string."""
@@ -274,14 +289,14 @@ class TestValidateRequired:
             validate_required(None, "test", error_msg="Custom error message")
 
 
-class TestLogOperationStart:
+class TestLogOperationStart(TestErrorHandlerBase):
     """Test log_operation_start function."""
 
     @patch('src.utils.error_handler.logger')
     def test_log_operation_start_default_logger(self, mock_logger):
         """Test operation start logging with default logger."""
         log_operation_start("Test operation")
-        mock_logger.info.assert_called_once_with("🚀 Starting: Test operation")
+        self.assert_operation_logged(mock_logger, "Test operation", "info")
 
     @patch('src.utils.error_handler.logger')
     def test_log_operation_start_custom_logger(self, mock_logger):
@@ -290,10 +305,10 @@ class TestLogOperationStart:
         log_operation_start("Test operation", logger_instance=mock_custom_logger)
 
         mock_custom_logger.info.assert_called_once_with("🚀 Starting: Test operation")
-        mock_logger.info.assert_not_called()
+        self.assert_logger_not_called(mock_logger)
 
 
-class TestLogOperationSuccess:
+class TestLogOperationSuccess(TestErrorHandlerBase):
     """Test log_operation_success function."""
 
     @patch('src.utils.error_handler.logger')
@@ -309,10 +324,10 @@ class TestLogOperationSuccess:
         log_operation_success("Test operation", logger_instance=mock_custom_logger)
 
         mock_custom_logger.info.assert_called_once_with("✅ Completed: Test operation")
-        mock_logger.info.assert_not_called()
+        self.assert_logger_not_called(mock_logger)
 
 
-class TestLogOperationFailure:
+class TestLogOperationFailure(TestErrorHandlerBase):
     """Test log_operation_failure function."""
 
     @patch('src.utils.error_handler.logger')
@@ -321,7 +336,7 @@ class TestLogOperationFailure:
         error = ValueError("Test error")
         log_operation_failure("Test operation", error)
 
-        mock_logger.error.assert_called_once_with("❌ Failed: Test operation - Test error")
+        self.assert_logger_called_once(mock_logger, "❌ Failed: Test operation - Test error")
 
     @patch('src.utils.error_handler.logger')
     def test_log_operation_failure_custom_logger(self, mock_logger):
@@ -331,4 +346,4 @@ class TestLogOperationFailure:
         log_operation_failure("Test operation", error, logger_instance=mock_custom_logger)
 
         mock_custom_logger.error.assert_called_once_with("❌ Failed: Test operation - Test error")
-        mock_logger.error.assert_not_called()
+        self.assert_logger_not_called(mock_logger)

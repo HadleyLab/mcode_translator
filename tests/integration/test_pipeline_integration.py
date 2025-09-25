@@ -235,3 +235,94 @@ class TestPipelineIntegration:
         tracker.reset()
         total_after_reset = tracker.get_total_usage()
         assert total_after_reset.total_tokens == 0
+
+    def test_error_handling_with_corrupted_data(self):
+        """Test handling of corrupted data files."""
+        from src.pipeline import McodePipeline
+
+        pipeline = McodePipeline()
+
+        # Test with corrupted JSON
+        corrupted_data = '{"protocolSection": {"identificationModule": {"nctId": "NCT123"'  # Missing closing brace
+
+        with pytest.raises(json.JSONDecodeError):
+            import json
+            json.loads(corrupted_data)
+
+        # Test with missing required fields
+        incomplete_data = {"protocolSection": {}}
+
+        with pytest.raises(Exception):
+            # This should fail due to missing required fields
+            import asyncio
+            asyncio.run(pipeline.process(incomplete_data))
+
+    def test_concurrent_pipeline_access(self):
+        """Test concurrent access to pipeline resources."""
+        from src.pipeline import McodePipeline
+        import asyncio
+
+        async def run_pipeline(data):
+            pipeline = McodePipeline()
+            with patch("src.pipeline.llm_service.LLMService.map_to_mcode") as mock_map:
+                mock_map.return_value = [McodeElement(element_type="CancerCondition", code="C123", display="Test")]
+                return await pipeline.process(data)
+
+        sample_data = {"protocolSection": {"identificationModule": {"nctId": "NCT123"}}}
+
+        # Run multiple pipelines concurrently
+        tasks = [run_pipeline(sample_data) for _ in range(5)]
+        results = asyncio.run(asyncio.gather(*tasks))
+
+        assert len(results) == 5
+        for result in results:
+            assert result is not None
+
+    def test_memory_exhaustion_handling(self):
+        """Test handling of memory exhaustion scenarios."""
+        from src.pipeline import McodePipeline
+
+        pipeline = McodePipeline()
+
+        # Create very large data that might cause memory issues
+        large_data = {
+            "protocolSection": {
+                "identificationModule": {"nctId": "NCT123"},
+                "descriptionModule": {"briefSummary": "A" * 1000000},  # 1MB string
+                "conditionsModule": {"conditions": ["Cancer"] * 10000},  # Many conditions
+            }
+        }
+
+        with patch("src.pipeline.llm_service.LLMService.map_to_mcode") as mock_map:
+            mock_map.return_value = [McodeElement(element_type="CancerCondition", code="C123", display="Test")]
+
+            # This should handle large data without crashing
+            import asyncio
+            result = asyncio.run(pipeline.process(large_data))
+            assert result is not None
+
+    def test_invalid_configuration_handling(self):
+        """Test handling of invalid configurations."""
+        from src.utils.config import Config
+
+        # Test with invalid config file
+        try:
+            config = Config(config_path="nonexistent.json")
+            # Should handle gracefully or raise appropriate error
+        except Exception as e:
+            assert "config" in str(e).lower() or "file" in str(e).lower()
+
+    def test_api_rate_limiting(self):
+        """Test handling of API rate limiting."""
+        from src.pipeline import McodePipeline
+
+        pipeline = McodePipeline()
+
+        with patch("src.pipeline.llm_service.LLMService.map_to_mcode") as mock_map:
+            # Simulate rate limiting
+            mock_map.side_effect = Exception("Rate limit exceeded")
+
+            with pytest.raises(Exception) as exc_info:
+                import asyncio
+                asyncio.run(pipeline.process({"protocolSection": {"identificationModule": {"nctId": "NCT123"}}}))
+            assert "rate" in str(exc_info.value).lower() or "limit" in str(exc_info.value).lower()

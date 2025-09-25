@@ -137,9 +137,9 @@ class BaseWorkflow(ABC):
 
     def _get_timestamp(self) -> str:
         """Get current timestamp for storage metadata."""
-        from datetime import datetime
+        from datetime import datetime, timezone
 
-        return datetime.utcnow().isoformat()
+        return datetime.now(timezone.utc).isoformat()
 
     @abstractmethod
     def execute(self, **kwargs) -> WorkflowResult:

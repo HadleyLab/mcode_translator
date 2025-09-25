@@ -126,6 +126,84 @@ class TestMcodePipeline:
         ]
         assert pipeline._calculate_compliance_score(elements3) == 1.0
 
+    @pytest.mark.asyncio
+    async def test_process_with_empty_data(self):
+        """Test processing with empty trial data."""
+        pipeline = McodePipeline()
+        empty_data = {}
+
+        with pytest.raises(Exception) as exc_info:
+            await pipeline.process(empty_data)
+        assert "protocolSection" in str(exc_info.value) or "validation" in str(exc_info.value).lower()
+
+    @pytest.mark.asyncio
+    async def test_process_with_malformed_json(self):
+        """Test processing with malformed JSON data."""
+        pipeline = McodePipeline()
+        malformed_data = {"protocolSection": {"identificationModule": {"nctId": "NCT123"}}}
+
+        with pytest.raises(Exception):
+            await pipeline.process(malformed_data)
+
+    @pytest.mark.asyncio
+    async def test_process_with_large_dataset(self):
+        """Test processing with a very large dataset."""
+        pipeline = McodePipeline()
+        large_data = {
+            "protocolSection": {
+                "identificationModule": {"nctId": "NCT123"},
+                "descriptionModule": {"briefSummary": "A" * 10000},  # Very long summary
+                "conditionsModule": {"conditions": ["Cancer"] * 1000},  # Many conditions
+            }
+        }
+
+        # Mock to avoid actual LLM call
+        with patch("src.pipeline.llm_service.LLMService.map_to_mcode") as mock_map:
+            mock_map.return_value = [McodeElement(element_type="CancerCondition", code="C123", display="Test")]
+
+            result = await pipeline.process(large_data)
+            assert result is not None
+            assert len(result.mcode_mappings) > 0
+
+    @pytest.mark.asyncio
+    async def test_process_with_network_timeout(self):
+        """Test processing when LLM service times out."""
+        pipeline = McodePipeline()
+
+        with patch("src.pipeline.llm_service.LLMService.map_to_mcode") as mock_map:
+            mock_map.side_effect = Exception("Network timeout")
+
+            with pytest.raises(Exception) as exc_info:
+                await pipeline.process({"protocolSection": {"identificationModule": {"nctId": "NCT123"}}})
+            assert "timeout" in str(exc_info.value).lower() or "network" in str(exc_info.value).lower()
+
+    @pytest.mark.asyncio
+    async def test_process_with_invalid_llm_response(self):
+        """Test processing with invalid LLM response."""
+        pipeline = McodePipeline()
+
+        with patch("src.pipeline.llm_service.LLMService.map_to_mcode") as mock_map:
+            mock_map.return_value = "Invalid response"  # Not a list of McodeElement
+
+            with pytest.raises(Exception):
+                await pipeline.process({"protocolSection": {"identificationModule": {"nctId": "NCT123"}}})
+
+    def test_pipeline_initialization_edge_cases(self):
+        """Test pipeline initialization with edge case parameters."""
+        # Test with empty model name
+        with pytest.raises(ValueError):
+            McodePipeline(model_name="")
+
+        # Test with None prompt name
+        pipeline = McodePipeline(prompt_name=None)
+        assert pipeline.prompt_name is None
+
+        # Test with very long names
+        long_name = "a" * 1000
+        pipeline = McodePipeline(model_name=long_name, prompt_name=long_name)
+        assert pipeline.model_name == long_name
+        assert pipeline.prompt_name == long_name
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

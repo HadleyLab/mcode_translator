@@ -8,7 +8,40 @@ from unittest.mock import patch, MagicMock
 from src.utils.onco_core_memory import OncoCoreClient
 
 
-class TestOncoCoreClient:
+class TestOncoCoreClientBase:
+    """Base class for OncoCoreClient tests with common patterns."""
+
+    def setup_mock_config(self, mock_config):
+        """Helper to setup mock config with common values."""
+        mock_config_instance = MagicMock()
+        mock_config.from_env.return_value = mock_config_instance
+        mock_config_instance.api_key = "test_key"
+        return mock_config_instance
+
+    def setup_mock_mcp_instance(self, mock_mcp_client):
+        """Helper to setup mock MCP instance."""
+        mock_mcp_instance = MagicMock()
+        mock_mcp_instance.is_mcp_available.return_value = True
+        mock_mcp_client.return_value = mock_mcp_instance
+        return mock_mcp_instance
+
+    def setup_mock_api_instance(self, mock_api_client):
+        """Helper to setup mock API instance."""
+        mock_api_instance = MagicMock()
+        mock_api_client.return_value = mock_api_instance
+        return mock_api_instance
+
+    def assert_client_initialization(self, client, expected_api_key="test_key", expected_base_url="https://api.example.com"):
+        """Helper to assert client initialization."""
+        assert client.api_key == expected_api_key
+        assert client.base_url == expected_base_url
+
+    def assert_mcp_preference(self, client, prefer_mcp, expected_method):
+        """Helper to assert MCP preference behavior."""
+        assert client.get_preferred_access_method() == expected_method
+
+
+class TestOncoCoreClient(TestOncoCoreClientBase):
     """Test suite for OncoCoreClient."""
 
     @patch('src.utils.onco_core_memory.HeySolConfig')
@@ -16,9 +49,7 @@ class TestOncoCoreClient:
     @patch('src.utils.onco_core_memory.HeySolMCPClient')
     def test_init_with_api_key(self, mock_mcp_client, mock_api_client, mock_config):
         """Test initialization with API key."""
-        mock_config_instance = MagicMock()
-        mock_config.from_env.return_value = mock_config_instance
-        mock_config_instance.api_key = "test_key"
+        mock_config_instance = self.setup_mock_config(mock_config)
         mock_config_instance.base_url = "https://api.example.com"
         mock_config_instance.source = "test"
         mock_config_instance.timeout = 30
@@ -26,8 +57,7 @@ class TestOncoCoreClient:
 
         client = OncoCoreClient(api_key="test_key")
 
-        assert client.api_key == "test_key"
-        assert client.base_url == "https://api.example.com"
+        self.assert_client_initialization(client)
         mock_api_client.assert_called_once()
         mock_mcp_client.assert_called_once()
 
@@ -120,30 +150,23 @@ class TestOncoCoreClient:
     @patch('src.utils.onco_core_memory.HeySolMCPClient')
     def test_get_preferred_access_method_mcp(self, mock_mcp_client, mock_api_client, mock_config):
         """Test get_preferred_access_method returns MCP when preferred."""
-        mock_config_instance = MagicMock()
-        mock_config.from_env.return_value = mock_config_instance
-        mock_config_instance.api_key = "test_key"
-
-        mock_mcp_instance = MagicMock()
-        mock_mcp_instance.is_mcp_available.return_value = True
-        mock_mcp_client.return_value = mock_mcp_instance
+        self.setup_mock_config(mock_config)
+        self.setup_mock_mcp_instance(mock_mcp_client)
 
         client = OncoCoreClient(api_key="test_key", prefer_mcp=True)
 
-        assert client.get_preferred_access_method() == "mcp"
+        self.assert_mcp_preference(client, True, "mcp")
 
     @patch('src.utils.onco_core_memory.HeySolConfig')
     @patch('src.utils.onco_core_memory.HeySolAPIClient')
     @patch('src.utils.onco_core_memory.HeySolMCPClient')
     def test_get_preferred_access_method_direct_api(self, mock_mcp_client, mock_api_client, mock_config):
         """Test get_preferred_access_method returns direct_api when MCP not preferred."""
-        mock_config_instance = MagicMock()
-        mock_config.from_env.return_value = mock_config_instance
-        mock_config_instance.api_key = "test_key"
+        self.setup_mock_config(mock_config)
 
         client = OncoCoreClient(api_key="test_key", prefer_mcp=False)
 
-        assert client.get_preferred_access_method() == "direct_api"
+        self.assert_mcp_preference(client, False, "direct_api")
 
     @patch('src.utils.onco_core_memory.HeySolConfig')
     @patch('src.utils.onco_core_memory.HeySolAPIClient')
@@ -208,15 +231,11 @@ class TestOncoCoreClient:
     @patch('src.utils.onco_core_memory.HeySolMCPClient')
     def test_ingest_via_mcp(self, mock_mcp_client, mock_api_client, mock_config):
         """Test ingest using MCP."""
-        mock_config_instance = MagicMock()
-        mock_config.from_env.return_value = mock_config_instance
-        mock_config_instance.api_key = "test_key"
+        self.setup_mock_config(mock_config)
 
-        mock_mcp_instance = MagicMock()
-        mock_mcp_instance.is_mcp_available.return_value = True
+        mock_mcp_instance = self.setup_mock_mcp_instance(mock_mcp_client)
         mock_mcp_instance.tools = ["memory_ingest"]
         mock_mcp_instance.ingest_via_mcp.return_value = {"status": "success"}
-        mock_mcp_client.return_value = mock_mcp_instance
 
         client = OncoCoreClient(api_key="test_key", prefer_mcp=True)
 

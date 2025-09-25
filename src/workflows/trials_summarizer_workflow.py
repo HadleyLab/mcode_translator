@@ -219,8 +219,8 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
                 metadata["healthy_volunteers"] = eligibility.get("healthyVolunteers")
 
         # Add processing timestamp
-        from datetime import datetime
+        from datetime import datetime, timezone
 
-        metadata["processed_at"] = datetime.utcnow().isoformat()
+        metadata["processed_at"] = datetime.now(timezone.utc).isoformat()
 
         return metadata
