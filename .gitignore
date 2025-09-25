@@ -177,3 +177,4 @@ inter_rater_analysis_results/
 
 # Temporary test files
 test_inter_rater_*.py
+/.kilocode
