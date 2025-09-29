@@ -16,7 +16,7 @@ Features:
 import argparse
 import json
 import sys
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
@@ -82,7 +82,7 @@ Input/Output:
     return parser
 
 
-def load_mcode_patients(input_file: Optional[str]) -> List[Dict]:
+def load_mcode_patients(input_file: Optional[str]) -> List[Dict[str, Any]]:
     """Load mCODE patient data from file or stdin."""
     if input_file:
         with open(input_file, "r", encoding="utf-8") as f:
@@ -103,7 +103,7 @@ def load_mcode_patients(input_file: Optional[str]) -> List[Dict]:
     return patients
 
 
-def save_summaries(summaries: List[Dict], output_file: Optional[str]) -> None:
+def save_summaries(summaries: List[Dict[str, Any]], output_file: Optional[str]) -> None:
     """Save summaries to file or stdout."""
     if output_file:
         with open(output_file, "w", encoding="utf-8") as f:

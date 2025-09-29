@@ -68,7 +68,8 @@ class APIManager:
         if cache_namespace is None:
             # Clear all caches
             for cache in self.caches.values():
-                cache.clear()
+                if isinstance(cache, APICache):
+                    cache.clear()
             # Also clear the base directory of any files
             try:
                 for filename in os.listdir(self.cache_dir):
@@ -80,7 +81,9 @@ class APIManager:
         else:
             # Clear specific namespace
             if cache_namespace in self.caches:
-                self.caches[cache_namespace].clear()
+                cache = self.caches[cache_namespace]
+                if isinstance(cache, APICache):
+                    cache.clear()
             # Also clear the namespace directory
             namespace_cache_dir = os.path.join(self.cache_dir, cache_namespace)
             try:
@@ -111,10 +114,11 @@ class APIManager:
             total_size = 0
 
             for namespace, cache in self.caches.items():
-                namespace_stats = cache.get_stats()
-                stats[namespace] = namespace_stats
-                total_items += namespace_stats.get("cached_items", 0)
-                total_size += namespace_stats.get("total_size_bytes", 0)
+                if isinstance(cache, APICache):
+                    namespace_stats = cache.get_stats()
+                    stats[namespace] = namespace_stats
+                    total_items += namespace_stats.get("cached_items", 0)
+                    total_size += namespace_stats.get("total_size_bytes", 0)
 
             stats["total"] = {
                 "cached_items": total_items,
@@ -157,7 +161,11 @@ class APIManager:
         """
         if cache_namespace is None:
             # Clear all async caches
-            tasks = [cache.aclear() for cache in self.caches.values()]
+            tasks = [
+                cache.aclear()
+                for cache in self.caches.values()
+                if isinstance(cache, AsyncAPICache)
+            ]
             await asyncio.gather(*tasks, return_exceptions=True)
 
             # Clear base directory
@@ -171,7 +179,9 @@ class APIManager:
         else:
             # Clear specific namespace
             if cache_namespace in self.caches:
-                await self.caches[cache_namespace].aclear()
+                cache = self.caches[cache_namespace]
+                if isinstance(cache, AsyncAPICache):
+                    await cache.aclear()
 
             # Clear namespace directory
             namespace_cache_dir = os.path.join(self.cache_dir, cache_namespace)
@@ -203,7 +213,7 @@ class APIManager:
             tasks = [
                 cache.aget_stats()
                 for cache in self.caches.values()
-                if hasattr(cache, "aget_stats")
+                if isinstance(cache, AsyncAPICache)
             ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -212,10 +222,14 @@ class APIManager:
             total_size = 0
 
             for (namespace, cache), result in zip(self.caches.items(), results):
-                if not isinstance(result, Exception):
+                if isinstance(cache, AsyncAPICache) and not isinstance(
+                    result, Exception
+                ):
                     stats[namespace] = result
-                    total_items += result.get("cached_items", 0)
-                    total_size += result.get("total_size_bytes", 0)
+                    total_items += cast(Dict[str, Any], result).get("cached_items", 0)
+                    total_size += cast(Dict[str, Any], result).get(
+                        "total_size_bytes", 0
+                    )
 
             stats["total"] = {
                 "cached_items": total_items,

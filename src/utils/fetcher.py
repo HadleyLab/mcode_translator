@@ -73,7 +73,7 @@ def search_trials(
             base_url, params=params, timeout=config.get_request_timeout()
         )
         response.raise_for_status()
-        result = response.json()
+        result: Dict[str, Any] = response.json()
 
         # Add pagination metadata to the result
         if isinstance(result, dict):

@@ -129,7 +129,7 @@ def cli_callback(
     model: Optional[str] = typer.Option(None, help="Default LLM model to use"),
     prompt: Optional[str] = typer.Option(None, help="Default prompt template to use"),
     workers: Optional[int] = typer.Option(None, help="Number of concurrent workers"),
-):
+) -> None:
     """
     mCODE Translator CLI - Integrated with HeySol API Client
 
@@ -214,7 +214,7 @@ if heysol_app:
     app.add_typer(heysol_app, name="memory")
 
 
-def get_global_config():
+def get_global_config() -> Optional[any]:  # type: ignore
     """Get the global configuration instance."""
     return _global_config
 
@@ -239,7 +239,7 @@ def is_verbose() -> bool:
     return _global_verbose
 
 
-def main():
+def main() -> None:
     """Main entry point for the CLI."""
     app()
 

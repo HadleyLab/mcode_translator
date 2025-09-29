@@ -37,7 +37,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
     ) -> None:
         super().__init__(config, memory_storage)
         self.cross_validator = CrossValidator()
-        self.execution_manager = OptimizationExecutionManager(self.logger)  # type: ignore
+        self.execution_manager = OptimizationExecutionManager(self.logger)
         self.result_aggregator = OptimizationResultAggregator(self.logger)
         self.extractor = DataExtractor()
 

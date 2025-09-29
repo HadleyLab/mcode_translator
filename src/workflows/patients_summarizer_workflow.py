@@ -327,7 +327,13 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
         patient_bundle = patient_data.get("patient_bundle", [])
 
         # Create FHIR bundle
-        fhir_bundle = {"resourceType": "Bundle", "type": "collection", "entry": []}
+        fhir_bundle: Dict[str, Any] = {
+            "resourceType": "Bundle",
+            "type": "collection",
+            "entry": [],
+        }
+        entries: List[Dict[str, Any]] = []
+        fhir_bundle["entry"] = entries
 
         for item in patient_bundle:
             if item.get("resource_type") == "Patient":
@@ -364,7 +370,7 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
                             ],
                         }
                     )
-                fhir_bundle["entry"].append(entry)
+                entries.append(entry)
 
             elif item.get("resource_type") in [
                 "Observation",
@@ -439,7 +445,7 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
                                 "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition"
                             )
 
-                    fhir_bundle["entry"].append(entry)
+                    entries.append(entry)
 
         return fhir_bundle
 

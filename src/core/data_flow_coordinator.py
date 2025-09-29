@@ -6,7 +6,7 @@ the entire pipeline from data fetching through validation, processing,
 and storage using the new unified architecture.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from src.core.batch_processor import BatchProcessor
 from src.core.data_fetcher import DataFetcher
@@ -87,7 +87,7 @@ class DataFlowCoordinator:
             self.logger.error("❌ Data fetching failed")
             return fetch_result
 
-        fetched_trials = fetch_result.data
+        fetched_trials = cast(List[Dict[str, Any]], fetch_result.data)
         self.logger.info(f"✅ Successfully fetched {len(fetched_trials)} trials")
 
         # Phase 2: Validate and process in batches

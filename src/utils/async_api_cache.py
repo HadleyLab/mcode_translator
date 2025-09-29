@@ -283,7 +283,8 @@ class AsyncAPICache:
             List of cached results (None for misses, exceptions for failures)
         """
         tasks = [self._aget_by_key(key_data) for key_data in key_data_list]
-        return await asyncio.gather(*tasks, return_exceptions=True)
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        return list(results)
 
     async def abatch_set(self, items: List[Dict[str, Any]]) -> None:
         """

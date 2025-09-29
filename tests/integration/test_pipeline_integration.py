@@ -3,12 +3,16 @@ Integration tests for pipeline components with real data sources.
 Tests end-to-end functionality without mocking external dependencies.
 """
 
-import pytest
 import json
 from pathlib import Path
 from unittest.mock import patch
-from src.services.summarizer import McodeSummarizer
+
+import pytest
+
 from src.core.dependency_container import DependencyContainer
+from src.services.summarizer import McodeSummarizer
+from src.shared.models import McodeElement
+from src.utils.config import Config
 
 
 @pytest.mark.live
@@ -246,7 +250,6 @@ class TestPipelineIntegration:
         corrupted_data = '{"protocolSection": {"identificationModule": {"nctId": "NCT123"'  # Missing closing brace
 
         with pytest.raises(json.JSONDecodeError):
-            import json
             json.loads(corrupted_data)
 
         # Test with missing required fields
@@ -264,8 +267,14 @@ class TestPipelineIntegration:
 
         async def run_pipeline(data):
             pipeline = McodePipeline()
-            with patch("src.pipeline.llm_service.LLMService.map_to_mcode") as mock_map:
-                mock_map.return_value = [McodeElement(element_type="CancerCondition", code="C123", display="Test")]
+            with patch(
+                "src.pipeline.llm_service.LLMService.map_to_mcode"
+            ) as mock_map:
+                mock_map.return_value = [
+                    McodeElement(
+                        element_type="CancerCondition", code="C123", display="Test"
+                    )
+                ]
                 return await pipeline.process(data)
 
         sample_data = {"protocolSection": {"identificationModule": {"nctId": "NCT123"}}}
@@ -293,8 +302,14 @@ class TestPipelineIntegration:
             }
         }
 
-        with patch("src.pipeline.llm_service.LLMService.map_to_mcode") as mock_map:
-            mock_map.return_value = [McodeElement(element_type="CancerCondition", code="C123", display="Test")]
+        with patch(
+            "src.pipeline.llm_service.LLMService.map_to_mcode"
+        ) as mock_map:
+            mock_map.return_value = [
+                McodeElement(
+                    element_type="CancerCondition", code="C123", display="Test"
+                )
+            ]
 
             # This should handle large data without crashing
             import asyncio
@@ -307,7 +322,7 @@ class TestPipelineIntegration:
 
         # Test with invalid config file
         try:
-            config = Config(config_path="nonexistent.json")
+            Config(config_path="nonexistent.json")
             # Should handle gracefully or raise appropriate error
         except Exception as e:
             assert "config" in str(e).lower() or "file" in str(e).lower()

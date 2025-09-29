@@ -31,7 +31,12 @@ pydantic>=2.0.0
 typing-extensions>=4.5.0
 
 # CLI framework
-click>=8.1.0
+typer>=0.9.0
+
+# HeySol API client for CORE Memory integration
+heysol-api-client @ file://../heysol_api_client
+
+# Removed Click dependency - using Typer only
 
 # Development and testing (optional, comment out for production)
 # pytest>=7.0.0

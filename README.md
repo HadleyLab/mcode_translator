@@ -136,10 +136,10 @@ export COREAI_API_KEY="your_core_memory_key_here"
 
 ```bash
 # Process a clinical trial
-python mcode_translate.py fetch-trials --nct-ids NCT04348955
+python mcode_translate.py trials fetch --nct-ids NCT04348955
 
 # Search by condition
-python mcode_translate.py fetch-trials --condition "breast cancer" --limit 3
+python mcode_translate.py trials fetch --condition "breast cancer" --limit 3
 
 # Optimize processing parameters
 python mcode_translate.py optimize-trials --trials-file raw_trials.ndjson --cv-folds 3

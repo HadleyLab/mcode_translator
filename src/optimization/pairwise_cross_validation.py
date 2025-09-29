@@ -104,10 +104,10 @@ class PairwiseCrossValidator:
             raise FileNotFoundError(f"Trials file not found: {trials_path}")
 
         with open(trials_path, "r") as f:
-            data = json.load(f)
+            data: Any = json.load(f)
 
         if isinstance(data, dict) and "successful_trials" in data:
-            trials = data["successful_trials"]
+            trials: List[Dict[str, Any]] = data["successful_trials"]
         elif isinstance(data, list):
             trials = data
         else:
@@ -193,7 +193,7 @@ class PairwiseCrossValidator:
             f"🚀 Starting concurrent processing with {max_workers} workers"
         )
 
-        def progress_callback(completed, total, result):
+        def progress_callback(completed: int, total: int, result: Any) -> None:
             if completed % 10 == 0:
                 progress = (completed / total) * 100
                 self.logger.info(f"📊 Progress: {completed}/{total} ({progress:.1f}%)")
@@ -219,7 +219,7 @@ class PairwiseCrossValidator:
         self.logger.info(f"🏁 Pairwise validation completed in {duration:.2f} seconds")
         self.logger.info(f"✅ Successful: {successful_tasks}, Failed: {failed_tasks}")
 
-    def _process_pairwise_task(self, task: PairwiseComparisonTask) -> None:
+    async def _process_pairwise_task(self, task: PairwiseComparisonTask) -> None:
         """Process a single pairwise comparison task."""
         task.start_time = time.time()
         task.status = TaskStatus.PROCESSING
@@ -233,7 +233,7 @@ class PairwiseCrossValidator:
                 gold_pipeline = McodePipeline(
                     prompt_name=task.gold_prompt, model_name=task.gold_model
                 )
-                pipeline_result = gold_pipeline.process(task.trial_data)
+                pipeline_result = await gold_pipeline.process(task.trial_data)
 
                 # Convert to BenchmarkResult
                 benchmark = BenchmarkResult(
@@ -241,7 +241,25 @@ class PairwiseCrossValidator:
                     trial_id=task.trial_id,
                     pipeline_result=pipeline_result,
                     execution_time_seconds=0.0,  # Will be set later
+                    memory_usage_mb=None,
                     status="success",
+                    entities_extracted=None,
+                    entities_mapped=None,
+                    extraction_completeness=None,
+                    mapping_accuracy=None,
+                    precision=None,
+                    recall=None,
+                    f1_score=None,
+                    compliance_score=None,
+                    prompt_variant_id=None,
+                    api_config_name=None,
+                    test_case_id=None,
+                    pipeline_type=None,
+                    start_time=None,
+                    end_time=None,
+                    duration_ms=None,
+                    success=True,
+                    error_message=None,
                 )
 
                 task.gold_result = benchmark
@@ -255,14 +273,32 @@ class PairwiseCrossValidator:
                 comp_pipeline = McodePipeline(
                     prompt_name=task.comp_prompt, model_name=task.comp_model
                 )
-                pipeline_result = comp_pipeline.process(task.trial_data)
+                pipeline_result = await comp_pipeline.process(task.trial_data)
 
                 benchmark = BenchmarkResult(
                     task_id=f"{task.comp_prompt}_{task.comp_model}_{task.trial_id}",
                     trial_id=task.trial_id,
                     pipeline_result=pipeline_result,
                     execution_time_seconds=0.0,  # Will be set later
+                    memory_usage_mb=None,
                     status="success",
+                    entities_extracted=None,
+                    entities_mapped=None,
+                    extraction_completeness=None,
+                    mapping_accuracy=None,
+                    precision=None,
+                    recall=None,
+                    f1_score=None,
+                    compliance_score=None,
+                    prompt_variant_id=None,
+                    api_config_name=None,
+                    test_case_id=None,
+                    pipeline_type=None,
+                    start_time=None,
+                    end_time=None,
+                    duration_ms=None,
+                    success=True,
+                    error_message=None,
                 )
 
                 task.comp_result = benchmark
@@ -282,12 +318,12 @@ class PairwiseCrossValidator:
             task.error_message = str(e)
             raise
 
-    def _process_pairwise_task_async(
+    async def _process_pairwise_task_async(
         self, task: PairwiseComparisonTask
     ) -> Dict[str, Any]:
         """Async version of pairwise task processing for TaskQueue."""
         try:
-            self._process_pairwise_task(task)
+            await self._process_pairwise_task(task)
             return {"success": True, "task_id": task.task_id}
         except Exception as e:
             return {"success": False, "task_id": task.task_id, "error": str(e)}
@@ -426,7 +462,10 @@ class PairwiseCrossValidator:
     def _extract_trial_id(self, trial_data: Dict[str, Any], index: int) -> str:
         """Extract trial ID from trial data."""
         try:
-            return trial_data["protocolSection"]["identificationModule"]["nctId"]
+            trial_id: str = trial_data["protocolSection"]["identificationModule"][
+                "nctId"
+            ]
+            return trial_id
         except (KeyError, TypeError):
             return f"trial_{index}"
 
@@ -446,7 +485,7 @@ class PairwiseCrossValidator:
             config_stats[config_key].append(result.comparison_metrics)
 
         # Calculate aggregate statistics
-        analysis = {
+        analysis: Dict[str, Any] = {
             "summary": {
                 "total_comparisons": len(self.pairwise_results),
                 "successful_comparisons": len(successful_results),
@@ -747,7 +786,7 @@ class PairwiseCrossValidator:
         config_analysis = self.summary_stats.get("configuration_analysis", {})
 
         # Group by prompt types
-        prompt_performance = {}
+        prompt_performance: Dict[str, List[float]] = {}
         snomed_prompts = []
         evidence_based_prompts = []
         other_prompts = []

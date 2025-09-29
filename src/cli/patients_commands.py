@@ -38,7 +38,7 @@ def fetch(
     ),
     log_level: str = typer.Option("INFO", help="Logging level"),
     config_file: Optional[str] = typer.Option(None, help="Path to configuration file"),
-):
+) -> None:
     """Fetch synthetic patients."""
 
     # Get global configuration
@@ -53,7 +53,7 @@ def fetch(
         log_level=log_level,
         config=config_file,
     )
-    patients_fetcher.main(args)
+    patients_fetcher.main(args)  # type: ignore
 
 
 @app.command()
@@ -70,7 +70,7 @@ def process(
     log_level: str = typer.Option("INFO", help="Logging level"),
     config_file: Optional[str] = typer.Option(None, help="Path to configuration file"),
     store_in_memory: bool = typer.Option(False, help="Store results in CORE memory"),
-):
+) -> None:
     """Process patients to mCODE."""
     if not input_file:
         typer.echo("Error: Must specify input file with --in", err=True)
@@ -87,7 +87,7 @@ def process(
         config=config_file,
         store_in_memory=store_in_memory,
     )
-    patients_processor.main(args)
+    patients_processor.main(args)  # type: ignore
 
 
 @app.command()
@@ -104,7 +104,7 @@ def summarize(
     log_level: str = typer.Option("INFO", help="Logging level"),
     config_file: Optional[str] = typer.Option(None, help="Path to configuration file"),
     store_in_memory: bool = typer.Option(False, help="Store results in CORE memory"),
-):
+) -> None:
     """Summarize mCODE patients."""
     if not input_file:
         typer.echo("Error: Must specify input file with --in", err=True)
@@ -121,7 +121,7 @@ def summarize(
         config=config_file,
         store_in_memory=store_in_memory,
     )
-    patients_summarizer.main(args)
+    patients_summarizer.main(args)  # type: ignore
 
 
 # For backward compatibility, expose the app as 'patients'

@@ -48,7 +48,7 @@ def fetch(
     log_level: str = typer.Option("INFO", help="Logging level"),
     config_file: Optional[str] = typer.Option(None, help="Path to configuration file"),
     store_in_memory: bool = typer.Option(False, help="Store results in CORE memory"),
-):
+) -> None:
     """
     Fetch clinical trials.
 
@@ -98,7 +98,7 @@ def process(
     log_level: str = typer.Option("INFO", help="Logging level"),
     config_file: Optional[str] = typer.Option(None, help="Path to configuration file"),
     store_in_memory: bool = typer.Option(False, help="Store results in CORE memory"),
-):
+) -> None:
     """Process clinical trials to mCODE."""
 
     # Get global configuration
@@ -111,7 +111,7 @@ def process(
         config.mcode_workers = workers
 
     class Args:
-        def __init__(self):
+        def __init__(self) -> None:
             self.input_file = input_file
             self.output_file = output_file
             self.model = config.mcode_default_model
@@ -122,7 +122,7 @@ def process(
             self.store_in_memory = store_in_memory
 
     args = Args()
-    trials_processor.main(args)
+    trials_processor.main(args)  # type: ignore
 
 
 @app.command()
@@ -141,7 +141,7 @@ def summarize(
     log_level: str = typer.Option("INFO", help="Logging level"),
     config_file: Optional[str] = typer.Option(None, help="Path to configuration file"),
     store_in_memory: bool = typer.Option(False, help="Store results in CORE memory"),
-):
+) -> None:
     """
     Summarize mCODE trials.
 
@@ -170,7 +170,7 @@ def summarize(
         config=config_file,
         store_in_memory=store_in_memory,
     )
-    trials_summarizer.main(args)
+    trials_summarizer.main(args)  # type: ignore
 
 
 @app.command()
@@ -193,7 +193,7 @@ def optimize(
     ),
     log_level: str = typer.Option("INFO", help="Logging level"),
     config_file: Optional[str] = typer.Option(None, help="Path to configuration file"),
-):
+) -> None:
     """Optimize trial processing parameters."""
 
     # Get global configuration
@@ -209,7 +209,7 @@ def optimize(
         log_level=log_level,
         config=config_file,
     )
-    trials_optimizer.main(args)
+    trials_optimizer.main(args)  # type: ignore
 
 
 # For backward compatibility, expose the app as 'trials'

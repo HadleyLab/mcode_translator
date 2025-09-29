@@ -681,7 +681,7 @@ class BaseCLITest(ABC):
                 with patch("src.cli.McodeCLI.setup_logging"):
                     with patch("pathlib.Path.exists", return_value=True):
                         with patch("src.cli.load_ndjson_data", return_value=large_dataset):
-                            with patch("sys.exit") as mock_exit:
+                            with patch("sys.exit"):
                                 mock_workflow = MagicMock()
                                 mock_result = MagicMock()
                                 mock_result.success = True
@@ -723,7 +723,7 @@ class BaseCLITest(ABC):
                 with patch("src.cli.McodeCLI.setup_logging"):
                     with patch("pathlib.Path.exists", return_value=True):
                         with patch("src.cli.load_ndjson_data", return_value=unicode_data):
-                            with patch("sys.exit") as mock_exit:
+                            with patch("sys.exit"):
                                 mock_workflow = MagicMock()
                                 mock_result = MagicMock()
                                 mock_result.success = True

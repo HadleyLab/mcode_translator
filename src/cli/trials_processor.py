@@ -50,7 +50,9 @@ Examples:
     return parser
 
 
-def save_processed_data(data: List[Any], output_file: Optional[str], logger) -> None:
+def save_processed_data(
+    data: List[Any], output_file: Optional[str], logger: Any
+) -> None:
     """Save processed mCODE data to file or stdout."""
     mcode_data = []
     for item in data:
@@ -91,7 +93,7 @@ def save_processed_data(data: List[Any], output_file: Optional[str], logger) -> 
 
 
 def print_processing_summary(
-    metadata: Optional[Dict[str, Any]], ingested: bool, logger
+    metadata: Optional[Dict[str, Any]], ingested: bool, logger: Any
 ) -> None:
     """Print processing summary."""
     if not metadata:

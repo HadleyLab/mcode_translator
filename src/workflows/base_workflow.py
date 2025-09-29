@@ -98,9 +98,7 @@ class BaseWorkflow(ABC):
             # Use search_similar_trials as a workaround for now
             try:
                 # This is a temporary workaround - the storage interface needs redesign
-                self.memory_storage.search_similar_trials(
-                    namespaced_key, limit=1
-                )
+                self.memory_storage.search_similar_trials(namespaced_key, limit=1)
                 success = True  # Assume success for now
                 if success:
                     self.logger.info(

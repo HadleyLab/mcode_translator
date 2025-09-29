@@ -176,7 +176,7 @@ class InterRaterReliabilityAnalyzer:
             max_concurrent=max_concurrent, name="InterRaterDataCollection"
         )
 
-        def progress_callback(completed, total, result):
+        def progress_callback(completed, total, result):  # type: ignore
             if completed % 5 == 0:
                 self.logger.info(
                     f"📊 Progress: {completed}/{total} evaluations completed"
@@ -516,7 +516,7 @@ class InterRaterReliabilityAnalyzer:
             return 0.0
 
         kappa = (p_o - p_e) / (1 - p_e)
-        return kappa
+        return float(kappa)
 
     def _calculate_fleiss_kappa(self, rating_matrix: np.ndarray) -> float:
         """
@@ -552,7 +552,7 @@ class InterRaterReliabilityAnalyzer:
             return 0.0
 
         kappa = (P_bar - P_e_bar) / (1 - P_e_bar)
-        return kappa
+        return float(kappa)
 
     def _calculate_overall_metrics(
         self, analysis: InterRaterAnalysis
@@ -692,7 +692,8 @@ class InterRaterReliabilityAnalyzer:
     def _extract_trial_id(self, trial_data: Dict[str, Any]) -> str:
         """Extract trial ID from trial data."""
         try:
-            return trial_data["protocolSection"]["identificationModule"]["nctId"]
+            trial_id = trial_data["protocolSection"]["identificationModule"]["nctId"]
+            return str(trial_id)
         except (KeyError, TypeError):
             return f"trial_{hash(str(trial_data)) % 10000}"
 
@@ -730,7 +731,7 @@ class InterRaterReliabilityAnalyzer:
             # Convert to serializable format
             if self.analysis_results is None:
                 raise ValueError("No analysis results available to save")
-            serializable_analysis = {
+            serializable_analysis: Dict[str, Any] = {
                 "trial_analyses": {},
                 "overall_metrics": {},
                 "rater_performance": self.analysis_results.rater_performance,
@@ -745,7 +746,7 @@ class InterRaterReliabilityAnalyzer:
                 trial_id,
                 trial_analysis,
             ) in self.analysis_results.trial_analyses.items():
-                serializable_trial = {}
+                serializable_trial: Dict[str, Any] = {}
                 for key, value in trial_analysis.items():
                     if hasattr(value, "__dict__"):  # AgreementMetrics object
                         serializable_trial[key] = {
@@ -761,8 +762,9 @@ class InterRaterReliabilityAnalyzer:
                 serializable_analysis["trial_analyses"][trial_id] = serializable_trial
 
             # Convert AgreementMetrics to dict
+            overall_metrics_dict: Dict[str, Dict[str, Any]] = {}
             for key, metrics in self.analysis_results.overall_metrics.items():
-                serializable_analysis["overall_metrics"][key] = {
+                overall_metrics_dict[key] = {
                     "percentage_agreement": metrics.percentage_agreement,
                     "cohens_kappa": metrics.cohens_kappa,
                     "fleiss_kappa": metrics.fleiss_kappa,
@@ -770,6 +772,7 @@ class InterRaterReliabilityAnalyzer:
                     "agreed_items": metrics.agreed_items,
                     "disagreed_items": metrics.disagreed_items,
                 }
+            serializable_analysis["overall_metrics"] = overall_metrics_dict
 
             json.dump(serializable_analysis, f, indent=2)
 

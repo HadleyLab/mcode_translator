@@ -101,7 +101,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                 self.logger.info("McodePipeline already initialized")
 
             # Process trials
-            processed_trials = []
+            processed_trials: List[Any] = []
             successful_count = 0
             failed_count = 0
 
@@ -423,7 +423,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         prompt: str,
         index: int,
         store_in_memory: bool = False,
-    ) -> tuple[list[Any], int, int]:
+    ) -> tuple[Any, bool]:
         """
         Synchronous wrapper for async trial processing.
 
@@ -438,7 +438,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         """
         import asyncio
 
-        async def process_async() -> tuple[list[Any], int, int]:
+        async def process_async() -> tuple[Any, bool]:
             return await self._process_single_trial_async(
                 trial, model, prompt, index, store_in_memory
             )

@@ -320,7 +320,7 @@ class TestIntegration:
         ]
 
         # Create workflow with test config
-        config = Config()
+        Config()
         workflow = TrialsOptimizerWorkflow()
 
         # Test concurrent optimization

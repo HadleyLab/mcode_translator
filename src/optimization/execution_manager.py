@@ -15,7 +15,7 @@ from src.utils.metrics import PerformanceMetrics
 class OptimizationExecutionManager:
     """Manages the execution of optimization trials with producer-consumer pattern."""
 
-    def __init__(self, logger):
+    def __init__(self, logger: Any) -> None:
         self.logger = logger
         self.extractor = DataExtractor()
 
@@ -25,7 +25,7 @@ class OptimizationExecutionManager:
         combinations: List[Dict[str, str]],
         cv_folds: int,
         cli_args: Optional[Any] = None,
-    ) -> Dict[int, Dict]:
+    ) -> Dict[int, Dict[str, List[Any]]]:
         """Execute optimization with concurrent cross validation."""
         # Create k-fold splits
         fold_indices = self._create_kfold_splits(len(trials_data), cv_folds)
@@ -39,7 +39,7 @@ class OptimizationExecutionManager:
             workers = task_queue.max_concurrent
 
         # Initialize results storage
-        combo_results = {
+        combo_results: Dict[int, Dict[str, List[Any]]] = {
             i: {"scores": [], "errors": [], "metrics": [], "mcode_elements": []}
             for i in range(len(combinations))
         }
@@ -50,7 +50,7 @@ class OptimizationExecutionManager:
         progress_lock = asyncio.Lock()
 
         # Producer-consumer execution
-        queue = asyncio.Queue()
+        queue: asyncio.Queue[Optional[Dict[str, Any]]] = asyncio.Queue()
         await self._run_producer(
             queue, combinations, trials_data, fold_indices, cv_folds, workers
         )
@@ -79,13 +79,13 @@ class OptimizationExecutionManager:
 
     async def _run_producer(
         self,
-        queue: asyncio.Queue,
+        queue: asyncio.Queue[Optional[Dict[str, Any]]],
         combinations: List[Dict[str, str]],
         trials_data: List[Dict[str, Any]],
         fold_indices: List[List[int]],
         cv_folds: int,
         workers: int,
-    ):
+    ) -> None:
         """Producer: put all tasks in the queue."""
         self.logger.info("🔄 Producer: Creating concurrent tasks...")
         task_id = 0
@@ -113,13 +113,13 @@ class OptimizationExecutionManager:
 
     async def _run_workers(
         self,
-        queue: asyncio.Queue,
+        queue: asyncio.Queue[Optional[Dict[str, Any]]],
         workers: int,
-        combo_results: Dict[int, Dict],
+        combo_results: Dict[int, Dict[str, List[Any]]],
         completed_tasks: Dict[str, int],
         progress_lock: asyncio.Lock,
         total_tasks: int,
-    ):
+    ) -> None:
         """Run worker tasks."""
         worker_tasks = [
             asyncio.create_task(
@@ -135,12 +135,12 @@ class OptimizationExecutionManager:
     async def _worker(
         self,
         worker_id: int,
-        queue: asyncio.Queue,
-        combo_results: Dict[int, Dict],
+        queue: asyncio.Queue[Optional[Dict[str, Any]]],
+        combo_results: Dict[int, Dict[str, List[Any]]],
         completed_tasks: Dict[str, int],
         progress_lock: asyncio.Lock,
         total_tasks: int,
-    ):
+    ) -> None:
         """Individual worker processing tasks."""
         self.logger.info(f"🤖 Worker {worker_id}: Starting...")
         worker_completed = 0
