@@ -7,7 +7,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class APICache:
             f"Initialized API cache for namespace '{namespace}' at {cache_dir} with TTL {default_ttl}"
         )
 
-    def _get_cache_key(self, func_name: str, *args, **kwargs) -> str:
+    def _get_cache_key(self, func_name: str, *args: Any, **kwargs: Any) -> str:
         """
         Generate a cache key based on function name and arguments
 
@@ -69,7 +69,7 @@ class APICache:
         """
         return os.path.join(self.cache_dir, f"{cache_key}.json")
 
-    def get(self, func_name: str, *args, **kwargs) -> Optional[Any]:
+    def get(self, func_name: str, *args: Any, **kwargs: Any) -> Optional[Any]:
         """
         Get cached result if available
 
@@ -133,7 +133,7 @@ class APICache:
         """
         return self._get_by_key(cache_key_data)
 
-    def set(self, result: Any, func_name: str, *args, **kwargs) -> None:
+    def set(self, result: Any, func_name: str, *args: Any, **kwargs: Any) -> None:
         """
         Store result in cache with configured TTL
 
@@ -151,8 +151,8 @@ class APICache:
         result: Any,
         cache_key: str,
         func_name: str = "unknown",
-        args: tuple = (),
-        kwargs: dict = {},
+        args: Tuple[Any, ...] = (),
+        kwargs: Dict[str, Any] = {},
     ) -> None:
         """
         Store result in cache by cache key using configured TTL

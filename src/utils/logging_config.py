@@ -2,9 +2,12 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import colorlog
+
+# Export logging module for other modules to use
+__all__ = ["setup_logging", "get_logger", "Loggable", "logging"]
 
 # Global configuration state
 _logging_configured = False
@@ -34,12 +37,10 @@ def setup_logging(level: Optional[str] = None) -> None:
         ) from e
 
     # Use provided level or default from config
-    if level is None:
-        level = logging_config["default_level"]
+    log_level: str = level or logging_config["default_level"]
 
     # Convert string level to logging constant
-    if isinstance(level, str):
-        level = getattr(logging, level.upper(), logging.INFO)
+    numeric_level: int = getattr(logging, log_level.upper(), logging.INFO)
 
     # Clear all existing handlers to prevent duplicates
     root_logger = logging.getLogger()
@@ -47,9 +48,11 @@ def setup_logging(level: Optional[str] = None) -> None:
 
     # Set up colored formatter if enabled
     if logging_config.get("colored_output", True):
-        formatter = colorlog.ColoredFormatter(
-            logging_config["format"],
-            log_colors=logging_config["handlers"]["console"]["colors"],
+        formatter: Union[colorlog.ColoredFormatter, logging.Formatter] = (
+            colorlog.ColoredFormatter(
+                logging_config["format"],
+                log_colors=logging_config["handlers"]["console"]["colors"],
+            )
         )
     else:
         formatter = logging.Formatter(logging_config["format"])
@@ -67,7 +70,7 @@ def setup_logging(level: Optional[str] = None) -> None:
 
     # Configure root logger
     root_logger.addHandler(console_handler)
-    root_logger.setLevel(level)
+    root_logger.setLevel(numeric_level)
 
     # Configure specific loggers
     for logger_name, logger_config in logging_config["loggers"].items():
@@ -81,7 +84,7 @@ def setup_logging(level: Optional[str] = None) -> None:
     _logging_configured = True
 
 
-def get_logger(name: str = None) -> logging.Logger:
+def get_logger(name: Optional[str] = None) -> logging.Logger:
     """
     Get a logger instance. Call setup_logging() first.
 
@@ -106,5 +109,5 @@ class Loggable:
     Base class that provides a logger instance to subclasses.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(self.__class__.__name__)

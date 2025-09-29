@@ -20,7 +20,7 @@ class DataFetcher:
     for clinical trial data retrieval operations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the data fetcher with logging."""
         self.logger = get_logger(__name__)
 

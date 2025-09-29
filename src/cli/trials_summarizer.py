@@ -8,7 +8,7 @@ A streamlined command-line interface for generating summaries from mCODE trial d
 import argparse
 import json
 import sys
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
@@ -48,7 +48,7 @@ Examples:
     return parser
 
 
-def load_mcode_trials(input_file: Optional[str]) -> List[Dict]:
+def load_mcode_trials(input_file: Optional[str]) -> List[Dict[str, Any]]:
     """Load mCODE trial data from file or stdin."""
     if input_file:
         with open(input_file, "r", encoding="utf-8") as f:
@@ -69,7 +69,7 @@ def load_mcode_trials(input_file: Optional[str]) -> List[Dict]:
     return trials
 
 
-def save_summaries(summaries: List[Dict], output_file: Optional[str]) -> None:
+def save_summaries(summaries: List[Dict[str, Any]], output_file: Optional[str]) -> None:
     """Save summaries to file or stdout."""
     if output_file:
         with open(output_file, "w", encoding="utf-8") as f:
@@ -171,9 +171,9 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         sys.exit(1)
 
 
-def extract_summaries(data) -> List[Dict]:
+def extract_summaries(data: Any) -> List[Dict[str, Any]]:
     """Extract summaries from workflow results."""
-    summaries = []
+    summaries: List[Dict[str, Any]] = []
     if not data:
         return summaries
 
@@ -202,7 +202,7 @@ def extract_summaries(data) -> List[Dict]:
     return summaries
 
 
-def print_processing_summary(metadata, ingested, logger):
+def print_processing_summary(metadata: Any, ingested: bool, logger: Any) -> None:
     """Print processing summary."""
     if not metadata:
         return

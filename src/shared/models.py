@@ -47,7 +47,7 @@ class Condition(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def handle_string_condition(cls, values):
+    def handle_string_condition(cls, values: Any) -> Any:
         """Handle conditions that come as strings from API."""
         if isinstance(values, str):
             return {"name": values}
@@ -188,7 +188,7 @@ class TokenUsage(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def calculate_total(cls, values):
+    def calculate_total(cls, values: Any) -> Any:
         """Calculate total tokens if not provided."""
         if isinstance(values, dict):
             prompt = values.get("prompt_tokens", 0)
@@ -233,7 +233,7 @@ class PipelineResult(BaseModel):
 
     @field_validator("validation_results", mode="before")
     @classmethod
-    def ensure_validation_results(cls, v):
+    def ensure_validation_results(cls, v: Any) -> Any:
         """Ensure validation_results is always present."""
         if v is None:
             return ValidationResult(compliance_score=0.0)
@@ -241,10 +241,18 @@ class PipelineResult(BaseModel):
 
     @field_validator("metadata", mode="before")
     @classmethod
-    def ensure_metadata(cls, v):
+    def ensure_metadata(cls, v: Any) -> Any:
         """Ensure metadata is always present."""
         if v is None:
-            return ProcessingMetadata(engine_type="unknown")
+            return ProcessingMetadata(
+                engine_type="unknown",
+                entities_count=0,
+                mapped_count=0,
+                processing_time_seconds=None,
+                model_used=None,
+                prompt_used=None,
+                token_usage=None,
+            )
         return v
 
 
@@ -496,7 +504,7 @@ class PatientsSummarizerInput(WorkflowInput):
     )
 
 
-def create_mcode_results_structure(pipeline_result) -> Dict[str, Any]:
+def create_mcode_results_structure(pipeline_result: Any) -> Dict[str, Any]:
     """
     Create standardized McodeResults structure from pipeline result.
 
@@ -523,7 +531,7 @@ def create_mcode_results_structure(pipeline_result) -> Dict[str, Any]:
 
 
 def enhance_trial_with_mcode_results(
-    trial_data: Dict[str, Any], pipeline_result
+    trial_data: Dict[str, Any], pipeline_result: Any
 ) -> Dict[str, Any]:
     """
     Enhance trial data with mCODE processing results.

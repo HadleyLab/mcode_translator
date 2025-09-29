@@ -140,10 +140,10 @@ class McodeCLI:
         from src.utils.logging_config import setup_logging
 
         log_level = logging.DEBUG if args.verbose else getattr(logging, args.log_level)
-        setup_logging(level=log_level)
+        setup_logging(level=logging.getLevelName(log_level))
 
     @staticmethod
-    def create_config(args: argparse.Namespace) -> "Config":
+    def create_config(args: argparse.Namespace) -> "Config":  # type: ignore[name-defined]
         """Create configuration instance from CLI arguments."""
         from src.utils.config import Config
 

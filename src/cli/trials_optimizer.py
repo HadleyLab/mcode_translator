@@ -8,7 +8,6 @@ configuration files only - no CORE Memory storage required.
 """
 
 import argparse
-import asyncio
 import sys
 from pathlib import Path
 from typing import Any, Optional

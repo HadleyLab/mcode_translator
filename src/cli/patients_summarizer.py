@@ -21,7 +21,8 @@ from typing import Dict, List, Optional
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.logging_config import get_logger
-from src.workflows.patients_summarizer_workflow import PatientsSummarizerWorkflow
+from src.workflows.patients_summarizer_workflow import \
+    PatientsSummarizerWorkflow
 
 logger = get_logger(__name__)
 

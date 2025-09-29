@@ -32,7 +32,7 @@ def load_ndjson_data(input_path: Path, data_type: str = "data") -> List[Dict[str
     if not input_path.exists():
         raise FileNotFoundError(f"{data_type.title()} file not found: {input_path}")
 
-    data = []
+    data: List[Dict[str, Any]] = []
     with open(input_path, "r", encoding="utf-8") as f:
         for line_num, line in enumerate(f, 1):
             line = line.strip()
@@ -55,8 +55,11 @@ def load_ndjson_data(input_path: Path, data_type: str = "data") -> List[Dict[str
 def extract_trial_id(trial_data: Dict[str, Any]) -> Optional[str]:
     """Extract trial ID from trial data."""
     try:
-        return trial_data["protocolSection"]["identificationModule"]["nctId"]
-    except KeyError:
+        protocol_section = trial_data.get("protocolSection", {})
+        identification_module = protocol_section.get("identificationModule", {})
+        nct_id = identification_module.get("nctId")
+        return nct_id if isinstance(nct_id, str) else None
+    except (KeyError, TypeError):
         return None
 
 
@@ -68,8 +71,9 @@ def extract_patient_id(patient_data: Dict[str, Any]) -> Optional[str]:
         for entry in entries:
             resource = entry.get("resource", {})
             if resource.get("resourceType") == "Patient":
-                patient_id = resource.get("id")
-                if patient_id:
+                patient_id_raw = resource.get("id")
+                if patient_id_raw is not None and isinstance(patient_id_raw, str):
+                    patient_id: str = patient_id_raw
                     return patient_id
         return None
     except (KeyError, TypeError):

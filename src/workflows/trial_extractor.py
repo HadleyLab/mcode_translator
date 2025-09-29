@@ -13,7 +13,7 @@ class TrialExtractor:
 
     def extract_trial_mcode_elements(self, trial: Dict[str, Any]) -> Dict[str, Any]:
         """Extract mCODE elements from clinical trial data."""
-        mcode_elements = {}
+        mcode_elements: Dict[str, Any] = {}
 
         try:
             protocol_section = trial.get("protocolSection", {})
@@ -372,7 +372,7 @@ class TrialExtractor:
 
     def extract_trial_metadata(self, trial: Dict[str, Any]) -> Dict[str, Any]:
         """Extract comprehensive trial metadata for storage."""
-        metadata = {}
+        metadata: Dict[str, Any] = {}
 
         try:
             # Ensure trial is a dict
@@ -445,7 +445,8 @@ class TrialExtractor:
     def extract_trial_id(self, trial: Dict[str, Any]) -> str:
         """Extract trial ID from trial data."""
         try:
-            return trial["protocolSection"]["identificationModule"]["nctId"]
+            trial_id = trial["protocolSection"]["identificationModule"]["nctId"]
+            return trial_id if isinstance(trial_id, str) else ""
         except (KeyError, TypeError):
             import hashlib
 

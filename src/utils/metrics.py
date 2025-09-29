@@ -12,22 +12,24 @@ class MatchingMetrics:
     Tracks metrics for breast cancer patient-trial matching
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
         self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset all metrics"""
-        self.total_patients = 0
-        self.total_trials = 0
-        self.total_matches = 0
-        self.match_reasons = defaultdict(int)
-        self.gene_match_counts = defaultdict(int)
-        self.biomarker_match_counts = defaultdict(int)
-        self.stage_match_counts = defaultdict(int)
-        self.treatment_match_counts = defaultdict(int)
+        self.total_patients: int = 0
+        self.total_trials: int = 0
+        self.total_matches: int = 0
+        self.match_reasons: defaultdict[str, int] = defaultdict(int)
+        self.gene_match_counts: defaultdict[str, int] = defaultdict(int)
+        self.biomarker_match_counts: defaultdict[str, int] = defaultdict(int)
+        self.stage_match_counts: defaultdict[str, int] = defaultdict(int)
+        self.treatment_match_counts: defaultdict[str, int] = defaultdict(int)
 
-    def record_match(self, match_reasons: List[str], genomic_variants: List[Dict]):
+    def record_match(
+        self, match_reasons: List[str], genomic_variants: List[Dict[str, Any]]
+    ) -> None:
         """Record metrics for a successful match"""
         self.total_matches += 1
 
@@ -76,7 +78,7 @@ class MatchingMetrics:
             )[:5],
         }
 
-    def log_summary(self):
+    def log_summary(self) -> None:
         """Log metrics summary"""
         summary = self.get_summary()
         self.logger.info("Matching Metrics Summary:")
@@ -165,23 +167,23 @@ class PerformanceMetrics:
     Tracks performance metrics including time, tokens, and cost for optimization workflows.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset all performance metrics"""
-        self.start_time = None
-        self.end_time = None
+        self.start_time: float | None = None
+        self.end_time: float | None = None
         self.processing_time = 0.0
         self.tokens_used = 0
         self.estimated_cost = 0.0
         self.elements_processed = 0
 
-    def start_tracking(self):
+    def start_tracking(self) -> None:
         """Start performance tracking"""
         self.start_time = time.time()
 
-    def stop_tracking(self, tokens_used: int = 0, elements_processed: int = 0):
+    def stop_tracking(self, tokens_used: int = 0, elements_processed: int = 0) -> None:
         """Stop performance tracking and record metrics"""
         if self.start_time is None:
             return

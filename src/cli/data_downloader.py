@@ -4,20 +4,20 @@ Data downloader helper functions for CLI.
 This module provides helper functions for downloading synthetic patient data archives.
 """
 
-import click
+from typing import Any, Dict, Optional
 
 
-def list_available_archives():
+def list_available_archives() -> None:
     """List available synthetic patient archives."""
     archives_config = get_default_archives_config()
-    click.echo("Available synthetic patient archives:")
+    print("Available synthetic patient archives:")
     for cancer_type, durations in archives_config.items():
-        click.echo(f"  {cancer_type}:")
+        print(f"  {cancer_type}:")
         for duration in durations.keys():
-            click.echo(f"    - {duration}")
+            print(f"    - {duration}")
 
 
-def get_default_archives_config():
+def get_default_archives_config() -> Dict[str, Dict[str, str]]:
     """Get default archive configuration."""
     return {
         "mixed_cancer": {
@@ -31,14 +31,14 @@ def get_default_archives_config():
     }
 
 
-def parse_archive_list(archives_str):
+def parse_archive_list(archives_str: Optional[str]) -> Dict[str, Dict[str, str]]:
     """Parse comma-separated archive list into config dict."""
     if not archives_str:
         return {}
 
     archive_names = [name.strip() for name in archives_str.split(",")]
     default_config = get_default_archives_config()
-    result = {}
+    result: Dict[str, Dict[str, str]] = {}
 
     for name in archive_names:
         if "_" in name:
@@ -61,10 +61,14 @@ def parse_archive_list(archives_str):
 
 
 def download_archives(
-    archives_config, output_dir="data/synthetic_patients", workers=4, force=False
-):
+    archives_config: Dict[str, Dict[str, str]],
+    output_dir: str = "data/synthetic_patients",
+    workers: int = 4,
+    force: bool = False,
+) -> Any:
     """Download archives using the data downloader."""
-    from src.utils.data_downloader import download_synthetic_patient_archives_concurrent
+    from src.utils.data_downloader import \
+        download_synthetic_patient_archives_concurrent
 
     return download_synthetic_patient_archives_concurrent(
         base_dir=output_dir,

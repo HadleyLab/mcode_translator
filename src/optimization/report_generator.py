@@ -16,7 +16,7 @@ class ReportGenerator:
     Generates comprehensive optimization reports.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
     def generate_mega_report(
@@ -221,7 +221,7 @@ class ReportGenerator:
 
     def _extract_mcode_coverage(self, biological_content: str) -> Dict[str, Any]:
         """Extract mCODE coverage information from biological report."""
-        coverage = {"avg_elements": "Unknown", "model_elements": {}}
+        coverage: Dict[str, Any] = {"avg_elements": "Unknown", "model_elements": {}}
 
         if not biological_content:
             return coverage
@@ -302,9 +302,11 @@ class ReportGenerator:
 
         return "Unknown"
 
-    def _extract_combinations_data(self, biological_content: str) -> Dict[str, Dict]:
+    def _extract_combinations_data(
+        self, biological_content: str
+    ) -> Dict[str, Dict[str, Any]]:
         """Extract combination data from biological report."""
-        combinations = {}
+        combinations: Dict[str, Dict[str, Any]] = {}
 
         if not biological_content:
             return combinations
@@ -352,7 +354,7 @@ class ReportGenerator:
 
     def _extract_reliability_metrics(self, inter_rater_content: str) -> Dict[str, str]:
         """Extract reliability metrics from inter-rater report."""
-        metrics = {}
+        metrics: Dict[str, str] = {}
 
         if not inter_rater_content:
             return metrics
@@ -391,9 +393,11 @@ class ReportGenerator:
 
         return metrics
 
-    def _extract_rater_performance(self, inter_rater_content: str) -> Dict[str, Dict]:
+    def _extract_rater_performance(
+        self, inter_rater_content: str
+    ) -> Dict[str, Dict[str, Any]]:
         """Extract rater performance data."""
-        performance = {}
+        performance: Dict[str, Dict[str, Any]] = {}
 
         if not inter_rater_content:
             return performance
@@ -440,7 +444,7 @@ class ReportGenerator:
 
     def _extract_biological_insights(self, biological_content: str) -> Dict[str, Any]:
         """Extract biological insights from biological report."""
-        insights = {
+        insights: Dict[str, Any] = {
             "total_trials": "N/A",
             "top_conditions": [],
             "intervention_types": [],

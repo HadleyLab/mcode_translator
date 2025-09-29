@@ -19,7 +19,7 @@ class FlowSummaryGenerator:
     analysis for data processing flows.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the summary generator with logging."""
         self.logger = get_logger(__name__)
 

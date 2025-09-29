@@ -108,7 +108,7 @@ class LLMService:
 
         return mcode_elements
 
-    async def _call_llm_api_async(self, prompt: str, llm_config) -> Dict[str, Any]:
+    async def _call_llm_api_async(self, prompt: str, llm_config: Any) -> Dict[str, Any]:
         """
         Make optimized async LLM API call with connection reuse and performance monitoring.
 
@@ -168,7 +168,8 @@ class LLMService:
             )
 
             # Extract token usage using existing utility
-            from src.utils.token_tracker import extract_token_usage_from_response
+            from src.utils.token_tracker import \
+                extract_token_usage_from_response
 
             token_usage = extract_token_usage_from_response(
                 response, self.model_name, "provider"
@@ -281,7 +282,7 @@ class LLMService:
                     if len(lines) > 2:
                         cleaned_content = "\n".join(lines[1:-1])
 
-                return json.loads(cleaned_content)
+                return json.loads(cleaned_content)  # type: ignore[no-any-return]
             except json.JSONDecodeError as e:
                 # Provide detailed error information for debugging
                 self.logger.error(
@@ -321,8 +322,13 @@ class LLMService:
             raise
 
     async def _make_async_api_call_with_rate_limiting(
-        self, client, llm_config, prompt: str, temperature: float, max_tokens: int
-    ):
+        self,
+        client: Any,
+        llm_config: Any,
+        prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> Any:
         """
         Make async API call with aggressive rate limiting and exponential backoff retry logic.
 

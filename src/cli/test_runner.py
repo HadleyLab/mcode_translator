@@ -7,11 +7,11 @@ and generate coverage reports.
 
 import os
 import subprocess
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 
 def run_command(
-    cmd: str, cwd: Optional[str] = None, env: Optional[dict] = None
+    cmd: str, cwd: Optional[str] = None, env: Optional[Dict[str, str]] = None
 ) -> Tuple[bool, str, str]:
     """Run a command and return the result."""
     try:
@@ -23,7 +23,7 @@ def run_command(
         return False, "", str(e)
 
 
-def run_unit_tests(args) -> bool:
+def run_unit_tests(args: Any) -> bool:
     """Run unit tests."""
     print("🧪 Running Unit Tests...")
     cmd = "python -m pytest tests/unit/ -v --tb=short"
@@ -39,7 +39,7 @@ def run_unit_tests(args) -> bool:
     return success
 
 
-def run_integration_tests(args) -> bool:
+def run_integration_tests(args: Any) -> bool:
     """Run integration tests."""
     print("🔗 Running Integration Tests...")
 
@@ -62,7 +62,7 @@ def run_integration_tests(args) -> bool:
     return success
 
 
-def run_performance_tests(args) -> bool:
+def run_performance_tests(args: Any) -> bool:
     """Run performance tests."""
     print("⚡ Running Performance Tests...")
     cmd = "python -m pytest tests/performance/ -v --tb=short"
@@ -76,7 +76,7 @@ def run_performance_tests(args) -> bool:
     return success
 
 
-def run_all_tests(args) -> bool:
+def run_all_tests(args: Any) -> bool:
     """Run all test suites."""
     print("🚀 Running All Tests...")
 
@@ -101,7 +101,7 @@ def run_all_tests(args) -> bool:
     return success
 
 
-def run_coverage_report(args) -> bool:
+def run_coverage_report(args: Any) -> bool:
     """Generate coverage report."""
     print("📊 Generating Coverage Report...")
     cmd = "python -m pytest tests/ --cov=src --cov-report=html --cov-report=term-missing --cov-fail-under=90"
@@ -117,7 +117,7 @@ def run_coverage_report(args) -> bool:
     return success
 
 
-def run_linting(args) -> bool:
+def run_linting(args: Any) -> bool:
     """Run linting and formatting checks."""
     print("🔍 Running Linting and Formatting Checks...")
 

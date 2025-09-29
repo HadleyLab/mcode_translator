@@ -30,7 +30,6 @@ class TokenUsage:
         """Add two TokenUsage instances together"""
         if not isinstance(other, TokenUsage):
             return self
-
         return TokenUsage(
             prompt_tokens=self.prompt_tokens + other.prompt_tokens,
             completion_tokens=self.completion_tokens + other.completion_tokens,
@@ -45,20 +44,20 @@ class TokenTracker:
     Thread-safe token usage tracker for aggregating token usage across all LLM calls
     """
 
-    _instance = None
+    _instance: Optional["TokenTracker"] = None
     _lock = Lock()
 
-    def __new__(cls):
+    def __new__(cls) -> "TokenTracker":
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
-                    cls._instance = super(TokenTracker, cls).__new__(cls)
+                    cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         if not hasattr(self, "_initialized"):
             self._usage = TokenUsage()
-            self._component_usage = {}
+            self._component_usage: Dict[str, TokenUsage] = {}
             self._initialized = True
 
     def add_usage(self, usage: TokenUsage, component: str = "default") -> None:

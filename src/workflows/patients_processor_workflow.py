@@ -14,7 +14,8 @@ from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.concurrency import TaskQueue, create_task
 
-from .base_workflow import PatientsProcessorWorkflow as BasePatientsProcessorWorkflow
+from .base_workflow import \
+    PatientsProcessorWorkflow as BasePatientsProcessorWorkflow
 from .base_workflow import WorkflowResult
 
 
@@ -25,7 +26,9 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
     Processes patient data and stores mCODE summaries to CORE Memory.
     """
 
-    def __init__(self, config, memory_storage: Optional[McodeMemoryStorage] = None):
+    def __init__(
+        self, config: Any, memory_storage: Optional[McodeMemoryStorage] = None
+    ):
         """
         Initialize the patients processor workflow.
 
@@ -39,7 +42,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
         self.demographics_extractor = DemographicsExtractor()
         self.fhir_extractors = FHIRResourceExtractors()
 
-    def execute(self, **kwargs) -> WorkflowResult:
+    def execute(self, **kwargs: Any) -> WorkflowResult:
         """
         Execute the patients processing workflow.
 

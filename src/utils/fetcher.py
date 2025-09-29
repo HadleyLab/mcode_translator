@@ -4,7 +4,7 @@ Provides basic functions for fetching clinical trial data from ClinicalTrials.go
 """
 
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import requests
 
@@ -23,8 +23,11 @@ class ClinicalTrialsAPIError(Exception):
 
 
 def search_trials(
-    search_expr: str, fields=None, max_results: int = 100, page_token: str = None
-):
+    search_expr: str,
+    fields: Optional[List[str]] = None,
+    max_results: int = 100,
+    page_token: Optional[str] = None,
+) -> Dict[str, Any]:
     """
     Search for clinical trials matching the expression
 
@@ -51,7 +54,7 @@ def search_trials(
 
         # Build the API URL from config
         base_url = config.get_clinical_trials_base_url()
-        params = {
+        params: Dict[str, Any] = {
             "format": "json",
             "query.term": search_expr,
             "pageSize": max_results,
@@ -166,7 +169,7 @@ def _fetch_single_study_with_error_handling(nct_id: str) -> Dict[str, Any]:
 
 def search_trials_parallel(
     search_expr: str,
-    fields=None,
+    fields: Optional[List[str]] = None,
     max_results: int = 1000,
     page_size: int = 100,
     max_workers: int = 4,
@@ -227,14 +230,14 @@ def search_trials_parallel(
         successful_pages = 0
         failed_pages = 0
 
-        for result in task_results:
-            if result.success:
-                page_data = result.result
+        for task_result in task_results:
+            if task_result.success:
+                page_data = task_result.result
                 studies = page_data.get("studies", [])
                 all_studies.extend(studies)
                 successful_pages += 1
             else:
-                logger.warning(f"Page fetch failed: {result.error}")
+                logger.warning(f"Page fetch failed: {task_result.error}")
                 failed_pages += 1
 
         # Create final result
@@ -262,7 +265,10 @@ def search_trials_parallel(
 
 
 def _search_single_page(
-    search_expr: str, fields=None, max_results: int = 100, page_token: str = None
+    search_expr: str,
+    fields: Optional[List[str]] = None,
+    max_results: int = 100,
+    page_token: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Search a single page of results (helper for parallel processing).
@@ -281,7 +287,7 @@ def _search_single_page(
 
 def search_multiple_queries(
     search_queries: List[str],
-    fields=None,
+    fields: Optional[List[str]] = None,
     max_results_per_query: int = 100,
     max_workers: int = 4,
 ) -> Dict[str, Dict[str, Any]]:
@@ -342,7 +348,7 @@ def search_multiple_queries(
     return results
 
 
-def get_full_study(nct_id: str):
+def get_full_study(nct_id: str) -> Dict[str, Any]:
     """
     Get complete study record for a specific trial
 
@@ -374,7 +380,7 @@ def get_full_study(nct_id: str):
             study_url, params=params, timeout=config.get_request_timeout()
         )
         response.raise_for_status()
-        result = response.json()
+        result: Dict[str, Any] = response.json()
 
         logger.info(f"API call completed for NCT ID: {nct_id}")
 
@@ -394,7 +400,9 @@ def get_full_study(nct_id: str):
         )
 
 
-def calculate_total_studies(search_expr: str, fields=None, page_size: int = 100):
+def calculate_total_studies(
+    search_expr: str, fields: Optional[List[str]] = None, page_size: int = 100
+) -> Dict[str, Any]:
     """
     Calculate the total number of studies matching the search expression
 
@@ -414,7 +422,7 @@ def calculate_total_studies(search_expr: str, fields=None, page_size: int = 100)
 
         # Build the API URL from config
         base_url = config.get_clinical_trials_base_url()
-        params = {
+        params: Dict[str, Any] = {
             "format": "json",
             "query.term": search_expr,
             "pageSize": 1,  # Just get one study to minimize data
@@ -426,7 +434,7 @@ def calculate_total_studies(search_expr: str, fields=None, page_size: int = 100)
             base_url, params=params, timeout=config.get_request_timeout()
         )
         response.raise_for_status()
-        result = response.json()
+        result: Dict[str, Any] = response.json()
 
         # Extract the total count from the response
         total_studies = result.get("totalCount", 0)

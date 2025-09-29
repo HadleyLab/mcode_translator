@@ -18,12 +18,14 @@ class BiologicalAnalyzer:
     Analyzes the biological content of clinical trial data.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
-    def analyze_trial_biology(self, trials_data: List[Dict]) -> Dict[str, Any]:
+    def analyze_trial_biology(
+        self, trials_data: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """Analyze the biological content of trial data with robust error handling."""
-        biology_stats = {
+        biology_stats: Dict[str, Any] = {
             "total_trials": len(trials_data),
             "conditions": {},
             "interventions": {},
@@ -55,12 +57,14 @@ class BiologicalAnalyzer:
                                             "condition", "Unknown"
                                         )
                                         if isinstance(cond_name, str):
-                                            biology_stats["conditions"][cond_name] = (
-                                                biology_stats["conditions"].get(
-                                                    cond_name, 0
+                                            conditions_dict = biology_stats[
+                                                "conditions"
+                                            ]
+                                            if isinstance(conditions_dict, dict):
+                                                conditions_dict[cond_name] = (
+                                                    conditions_dict.get(cond_name, 0)
+                                                    + 1
                                                 )
-                                                + 1
-                                            )
 
                         # Interventions
                         if "armsInterventionsModule" in protocol and isinstance(
@@ -74,12 +78,14 @@ class BiologicalAnalyzer:
                                     if isinstance(intervention, dict):
                                         int_type = intervention.get("type", "Unknown")
                                         if isinstance(int_type, str):
-                                            biology_stats["interventions"][int_type] = (
-                                                biology_stats["interventions"].get(
-                                                    int_type, 0
+                                            interventions_dict = biology_stats[
+                                                "interventions"
+                                            ]
+                                            if isinstance(interventions_dict, dict):
+                                                interventions_dict[int_type] = (
+                                                    interventions_dict.get(int_type, 0)
+                                                    + 1
                                                 )
-                                                + 1
-                                            )
 
                         # Study phase
                         if "designModule" in protocol and isinstance(
@@ -138,7 +144,9 @@ class BiologicalAnalyzer:
         return biology_stats
 
     def analyze_mcode_elements(
-        self, combo_results: Dict[int, Dict], combinations: List[Dict[str, str]]
+        self,
+        combo_results: Dict[int, Dict[str, Any]],
+        combinations: List[Dict[str, str]],
     ) -> Dict[str, Any]:
         """Analyze mCODE elements generated across all combinations using proper McodeElement models."""
         analysis = {}
@@ -159,7 +167,7 @@ class BiologicalAnalyzer:
                     self.logger.debug(f"Skipping invalid mCODE element: {e}")
                     continue
 
-            combo_analysis = {
+            combo_analysis: Dict[str, Any] = {
                 "total_elements": len(mcode_elements),
                 "element_types": {},
                 "confidence_distribution": [],
@@ -180,49 +188,57 @@ class BiologicalAnalyzer:
             for element in mcode_elements:
                 # Element type distribution
                 elem_type = element.element_type
-                combo_analysis["element_types"][elem_type] = (
-                    combo_analysis["element_types"].get(elem_type, 0) + 1
-                )
+                element_types_dict = combo_analysis["element_types"]
+                if isinstance(element_types_dict, dict):
+                    element_types_dict[elem_type] = (
+                        element_types_dict.get(elem_type, 0) + 1
+                    )
 
                 # Confidence scores
                 confidence = element.confidence_score or 0.0
-                combo_analysis["confidence_distribution"].append(confidence)
+                confidence_list = combo_analysis["confidence_distribution"]
+                if isinstance(confidence_list, list):
+                    confidence_list.append(confidence)
 
                 # Biological categorization using proper element types
-                if elem_type in [
-                    "CancerCondition",
-                    "PrimaryCancerCondition",
-                    "SecondaryCancerCondition",
-                ]:
-                    combo_analysis["biological_categories"]["cancer_conditions"] += 1
-                    condition = element.display or "Unknown"
-                    combo_analysis["top_conditions"][condition] = (
-                        combo_analysis["top_conditions"].get(condition, 0) + 1
-                    )
-                elif elem_type in [
-                    "CancerTreatment",
-                    "ChemotherapyTreatment",
-                    "TargetedTherapy",
-                    "RadiationTreatment",
-                ]:
-                    combo_analysis["biological_categories"]["treatments"] += 1
-                    treatment = element.display or "Unknown"
-                    combo_analysis["top_treatments"][treatment] = (
-                        combo_analysis["top_treatments"].get(treatment, 0) + 1
-                    )
-                elif elem_type in ["PatientDemographics", "Patient"]:
-                    combo_analysis["biological_categories"][
-                        "patient_characteristics"
-                    ] += 1
-                elif elem_type in ["TNMStage", "CancerStage"]:
-                    combo_analysis["biological_categories"]["tumor_staging"] += 1
-                elif element.display and any(
-                    marker in element.display.upper()
-                    for marker in ["HER2", "ER+", "ER-", "PR+", "PR-", "BRCA"]
-                ):
-                    combo_analysis["biological_categories"]["genetic_markers"] += 1
-                else:
-                    combo_analysis["biological_categories"]["other"] += 1
+                biological_categories = combo_analysis["biological_categories"]
+                if isinstance(biological_categories, dict):
+                    if elem_type in [
+                        "CancerCondition",
+                        "PrimaryCancerCondition",
+                        "SecondaryCancerCondition",
+                    ]:
+                        biological_categories["cancer_conditions"] += 1
+                        condition = element.display or "Unknown"
+                        top_conditions = combo_analysis["top_conditions"]
+                        if isinstance(top_conditions, dict):
+                            top_conditions[condition] = (
+                                top_conditions.get(condition, 0) + 1
+                            )
+                    elif elem_type in [
+                        "CancerTreatment",
+                        "ChemotherapyTreatment",
+                        "TargetedTherapy",
+                        "RadiationTreatment",
+                    ]:
+                        biological_categories["treatments"] += 1
+                        treatment = element.display or "Unknown"
+                        top_treatments = combo_analysis["top_treatments"]
+                        if isinstance(top_treatments, dict):
+                            top_treatments[treatment] = (
+                                top_treatments.get(treatment, 0) + 1
+                            )
+                    elif elem_type in ["PatientDemographics", "Patient"]:
+                        biological_categories["patient_characteristics"] += 1
+                    elif elem_type in ["TNMStage", "CancerStage"]:
+                        biological_categories["tumor_staging"] += 1
+                    elif element.display and any(
+                        marker in element.display.upper()
+                        for marker in ["HER2", "ER+", "ER-", "PR+", "PR-", "BRCA"]
+                    ):
+                        biological_categories["genetic_markers"] += 1
+                    else:
+                        biological_categories["other"] += 1
 
                 # Evidence quality assessment using proper evidence_text field
                 evidence = element.evidence_text or ""
@@ -256,43 +272,42 @@ class BiologicalAnalyzer:
                         quality_score += 1
                     if element.confidence_score and element.confidence_score > 0.8:
                         quality_score += 1  # High confidence
-                    combo_analysis["evidence_quality"].append(quality_score)
+                    evidence_quality_list = combo_analysis["evidence_quality"]
+                    if isinstance(evidence_quality_list, list):
+                        evidence_quality_list.append(quality_score)
 
                     # Evidence source tracking
-                    if (
-                        "patients" in evidence.lower()
-                        or "eligibility" in evidence.lower()
-                    ):
-                        combo_analysis["evidence_sources"]["patient_criteria"] = (
-                            combo_analysis["evidence_sources"].get(
-                                "patient_criteria", 0
+                    evidence_sources = combo_analysis["evidence_sources"]
+                    if isinstance(evidence_sources, dict):
+                        if (
+                            "patients" in evidence.lower()
+                            or "eligibility" in evidence.lower()
+                        ):
+                            evidence_sources["patient_criteria"] = (
+                                evidence_sources.get("patient_criteria", 0) + 1
                             )
-                            + 1
-                        )
-                    elif (
-                        "treatment" in evidence.lower()
-                        or "intervention" in evidence.lower()
-                    ):
-                        combo_analysis["evidence_sources"]["treatment_info"] = (
-                            combo_analysis["evidence_sources"].get("treatment_info", 0)
-                            + 1
-                        )
-                    elif (
-                        "cancer" in evidence.lower() or "condition" in evidence.lower()
-                    ):
-                        combo_analysis["evidence_sources"]["condition_info"] = (
-                            combo_analysis["evidence_sources"].get("condition_info", 0)
-                            + 1
-                        )
-                    elif "study" in evidence.lower() or "trial" in evidence.lower():
-                        combo_analysis["evidence_sources"]["study_design"] = (
-                            combo_analysis["evidence_sources"].get("study_design", 0)
-                            + 1
-                        )
-                    else:
-                        combo_analysis["evidence_sources"]["other"] = (
-                            combo_analysis["evidence_sources"].get("other", 0) + 1
-                        )
+                        elif (
+                            "treatment" in evidence.lower()
+                            or "intervention" in evidence.lower()
+                        ):
+                            evidence_sources["treatment_info"] = (
+                                evidence_sources.get("treatment_info", 0) + 1
+                            )
+                        elif (
+                            "cancer" in evidence.lower()
+                            or "condition" in evidence.lower()
+                        ):
+                            evidence_sources["condition_info"] = (
+                                evidence_sources.get("condition_info", 0) + 1
+                            )
+                        elif "study" in evidence.lower() or "trial" in evidence.lower():
+                            evidence_sources["study_design"] = (
+                                evidence_sources.get("study_design", 0) + 1
+                            )
+                        else:
+                            evidence_sources["other"] = (
+                                evidence_sources.get("other", 0) + 1
+                            )
 
             analysis[combo_key] = combo_analysis
 
@@ -302,7 +317,7 @@ class BiologicalAnalyzer:
         self, mcode_analysis: Dict[str, Any], combinations: List[Dict[str, str]]
     ) -> Dict[str, Any]:
         """Generate comparative analysis across models and prompts."""
-        comparative = {
+        comparative: Dict[str, Any] = {
             "model_comparison": {},
             "prompt_comparison": {},
             "best_performers": {
@@ -314,8 +329,8 @@ class BiologicalAnalyzer:
         }
 
         # Group by model and prompt
-        model_stats = {}
-        prompt_stats = {}
+        model_stats: Dict[str, Dict[str, Any]] = {}
+        prompt_stats: Dict[str, Dict[str, Any]] = {}
 
         for combo_key, analysis in mcode_analysis.items():
             model = combo_key.split("_")[0]
@@ -390,10 +405,10 @@ class BiologicalAnalyzer:
 
     def generate_markdown_report(
         self,
-        trial_biology: Dict,
-        mcode_analysis: Dict,
-        comparative_analysis: Dict,
-        combinations: List[Dict],
+        trial_biology: Dict[str, Any],
+        mcode_analysis: Dict[str, Any],
+        comparative_analysis: Dict[str, Any],
+        combinations: List[Dict[str, str]],
     ) -> str:
         """Generate comprehensive markdown report."""
         report = []
@@ -576,9 +591,9 @@ class BiologicalAnalyzer:
 
     def generate_biological_analysis_report(
         self,
-        combo_results: Dict[int, Dict],
+        combo_results: Dict[int, Dict[str, Any]],
         combinations: List[Dict[str, str]],
-        trials_data: List[Dict],
+        trials_data: List[Dict[str, Any]],
     ) -> None:
         """Generate comprehensive biological and mCODE analysis report."""
         try:

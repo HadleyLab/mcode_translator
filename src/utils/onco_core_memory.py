@@ -24,7 +24,7 @@ This client provides a unified interface that can use either direct API calls
 or MCP (Model Context Protocol) operations based on availability and preference.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 
 class OncoCoreClient:
@@ -98,7 +98,7 @@ class OncoCoreClient:
     @classmethod
     def from_env(
         cls, skip_mcp_init: bool = False, prefer_mcp: bool = False
-    ) -> "HeySolClient":
+    ) -> "OncoCoreClient":
         """
         Create client from environment variables.
 
@@ -128,7 +128,9 @@ class OncoCoreClient:
         """
         if self.prefer_mcp and self.is_mcp_available():
             if mcp_tool_name:
-                return "mcp" if mcp_tool_name in self.mcp_client.tools else "direct_api"
+                if self.mcp_client and mcp_tool_name in self.mcp_client.tools:
+                    return "mcp"
+                return "direct_api"
             return "mcp"
         else:
             return "direct_api"
@@ -140,7 +142,7 @@ class OncoCoreClient:
                 "MCP is not available. Please check your MCP configuration."
             )
 
-        if tool_name and tool_name not in self.mcp_client.tools:
+        if self.mcp_client and tool_name and tool_name not in self.mcp_client.tools:
             raise HeySolError(
                 f"MCP tool '{tool_name}' is not available. Available tools: {list(self.mcp_client.tools.keys())}"
             )
@@ -148,8 +150,34 @@ class OncoCoreClient:
     def get_available_tools(self) -> Dict[str, Any]:
         """Get information about available MCP tools."""
         if self.mcp_client:
-            return self.mcp_client.get_available_tools()
+            tools = self.mcp_client.get_available_tools()
+            return tools if isinstance(tools, dict) else {}
         return {}
+
+    def get_tool_names(self, refresh: bool = False) -> List[str]:
+        """Return the list of available MCP tools."""
+        if not self.mcp_client:
+            return []
+        if refresh:
+            self.mcp_client.refresh_tools()
+        tool_names = self.mcp_client.get_tool_names()
+        return tool_names if isinstance(tool_names, list) else []
+
+    def refresh_mcp_tools(self) -> List[str]:
+        """Refresh the cached MCP tool metadata and return the updated names."""
+        if not self.mcp_client:
+            return []
+        self.mcp_client.refresh_tools()
+        tool_names = self.mcp_client.get_tool_names()
+        return tool_names if isinstance(tool_names, list) else []
+
+    def call_tool(self, tool_name: str, **kwargs: Any) -> Dict[str, Any]:
+        """Invoke an MCP tool by name."""
+        if not self.mcp_client:
+            raise HeySolError("MCP client not available")
+        self.ensure_mcp_available(tool_name)
+        result = self.mcp_client.call_tool(tool_name, **kwargs)
+        return result if isinstance(result, dict) else {}
 
     def get_client_info(self) -> Dict[str, Any]:
         """Get information about both API and MCP clients."""
@@ -177,38 +205,49 @@ class OncoCoreClient:
         """Ingest data into CORE Memory."""
         method = self.get_preferred_access_method("ingest", "memory_ingest")
         if method == "mcp" and self.mcp_client:
-            return self.mcp_client.ingest_via_mcp(message, source, space_id, session_id)
+            result = self.mcp_client.ingest_via_mcp(
+                message, source, space_id, session_id
+            )
+            return result if isinstance(result, dict) else {}
         else:
-            return self.api_client.ingest(message, space_id, session_id)
+            result = self.api_client.ingest(message, space_id, session_id)
+            return result if isinstance(result, dict) else {}
 
     def search(
         self,
         query: str,
-        space_ids: Optional[list] = None,
+        space_ids: Optional[List[str]] = None,
         limit: int = 10,
         include_invalidated: bool = False,
     ) -> Dict[str, Any]:
         """Search for memories in CORE Memory."""
         method = self.get_preferred_access_method("search", "memory_search")
         if method == "mcp" and self.mcp_client:
-            return self.mcp_client.search_via_mcp(
+            result = self.mcp_client.search_via_mcp(
                 query=query, space_ids=space_ids, limit=limit
             )
+            return result if isinstance(result, dict) else {}
         else:
-            return self.api_client.search(query, space_ids, limit, include_invalidated)
+            result = self.api_client.search(
+                query, space_ids, limit, include_invalidated
+            )
+            return result if isinstance(result, dict) else {}
 
-    def get_spaces(self) -> list:
+    def get_spaces(self) -> List[Dict[str, Any]]:
         """Get available memory spaces."""
         method = self.get_preferred_access_method("get_spaces", "memory_get_spaces")
         if method == "mcp" and self.mcp_client:
-            return self.mcp_client.get_memory_spaces_via_mcp()
+            spaces = self.mcp_client.get_memory_spaces_via_mcp()
+            return spaces if isinstance(spaces, list) else []
         else:
-            return self.api_client.get_spaces()
+            spaces = self.api_client.get_spaces()
+            return spaces if isinstance(spaces, list) else []
 
     def create_space(self, name: str, description: str = "") -> str:
         """Create a new memory space."""
         # Space creation is typically API-only
-        return self.api_client.create_space(name, description)
+        space_id = self.api_client.create_space(name, description)
+        return space_id if isinstance(space_id, str) else ""
 
     def get_user_profile(self) -> Dict[str, Any]:
         """Get the current user's profile."""
@@ -216,9 +255,11 @@ class OncoCoreClient:
             "get_user_profile", "get_user_profile"
         )
         if method == "mcp" and self.mcp_client:
-            return self.mcp_client.get_user_profile_via_mcp()
+            profile = self.mcp_client.get_user_profile_via_mcp()
+            return profile if isinstance(profile, dict) else {}
         else:
-            return self.api_client.get_user_profile()
+            profile = self.api_client.get_user_profile()
+            return profile if isinstance(profile, dict) else {}
 
     # Memory endpoints
     def search_knowledge_graph(
@@ -230,20 +271,22 @@ class OncoCoreClient:
     ) -> Dict[str, Any]:
         """Search the knowledge graph for related concepts and entities."""
         # Knowledge graph search is API-only for now
-        return self.api_client.search_knowledge_graph(query, space_id, limit, depth)
+        graph = self.api_client.search_knowledge_graph(query, space_id, limit, depth)
+        return graph if isinstance(graph, dict) else {}
 
     def add_data_to_ingestion_queue(
         self,
         data: Any,
         space_id: Optional[str] = None,
         priority: str = "normal",
-        tags: Optional[list] = None,
+        tags: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Add data to the ingestion queue for processing."""
-        return self.api_client.add_data_to_ingestion_queue(
+        response = self.api_client.add_data_to_ingestion_queue(
             data, space_id, priority, tags, metadata
         )
+        return response if isinstance(response, dict) else {}
 
     def get_episode_facts(
         self,
@@ -251,11 +294,12 @@ class OncoCoreClient:
         limit: int = 100,
         offset: int = 0,
         include_metadata: bool = True,
-    ) -> list:
+    ) -> List[Dict[str, Any]]:
         """Get episode facts from CORE Memory."""
-        return self.api_client.get_episode_facts(
+        facts = self.api_client.get_episode_facts(
             episode_id, limit, offset, include_metadata
         )
+        return facts if isinstance(facts, list) else []
 
     def get_ingestion_logs(
         self,
@@ -265,42 +309,47 @@ class OncoCoreClient:
         status: Optional[str] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-    ) -> list:
+    ) -> List[Dict[str, Any]]:
         """Get ingestion logs from CORE Memory."""
-        return self.api_client.get_ingestion_logs(
+        logs = self.api_client.get_ingestion_logs(
             space_id, limit, offset, status, start_date, end_date
         )
+        return logs if isinstance(logs, list) else []
 
     def get_specific_log(self, log_id: str) -> Dict[str, Any]:
         """Get a specific ingestion log by ID."""
-        return self.api_client.get_specific_log(log_id)
+        log = self.api_client.get_specific_log(log_id)
+        return log if isinstance(log, dict) else {}
 
     def check_ingestion_status(
         self, run_id: Optional[str] = None, space_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """Check the status of data ingestion processing."""
-        return self.api_client.check_ingestion_status(run_id, space_id)
+        status = self.api_client.check_ingestion_status(run_id, space_id)
+        return status if isinstance(status, dict) else {}
 
     # Spaces endpoints
     def bulk_space_operations(
         self,
         intent: str,
         space_id: Optional[str] = None,
-        statement_ids: Optional[list] = None,
-        space_ids: Optional[list] = None,
+        statement_ids: Optional[List[str]] = None,
+        space_ids: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """Perform bulk operations on spaces."""
-        return self.api_client.bulk_space_operations(
+        response = self.api_client.bulk_space_operations(
             intent, space_id, statement_ids, space_ids
         )
+        return response if isinstance(response, dict) else {}
 
     def get_space_details(
         self, space_id: str, include_stats: bool = True, include_metadata: bool = True
     ) -> Dict[str, Any]:
         """Get detailed information about a specific space."""
-        return self.api_client.get_space_details(
+        details = self.api_client.get_space_details(
             space_id, include_stats, include_metadata
         )
+        return details if isinstance(details, dict) else {}
 
     def update_space(
         self,
@@ -310,18 +359,21 @@ class OncoCoreClient:
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Update properties of an existing space."""
-        return self.api_client.update_space(space_id, name, description, metadata)
+        response = self.api_client.update_space(space_id, name, description, metadata)
+        return response if isinstance(response, dict) else {}
 
     def delete_space(self, space_id: str, confirm: bool = False) -> Dict[str, Any]:
         """Delete a space."""
-        return self.api_client.delete_space(space_id, confirm)
+        response = self.api_client.delete_space(space_id, confirm)
+        return response if isinstance(response, dict) else {}
 
     # Webhook endpoints
     def register_webhook(
-        self, url: str, events: Optional[list] = None, secret: str = ""
+        self, url: str, events: Optional[List[str]] = None, secret: str = ""
     ) -> Dict[str, Any]:
         """Register a new webhook."""
-        return self.api_client.register_webhook(url, events, secret)
+        webhook = self.api_client.register_webhook(url, events, secret)
+        return webhook if isinstance(webhook, dict) else {}
 
     def list_webhooks(
         self,
@@ -329,32 +381,39 @@ class OncoCoreClient:
         active: Optional[bool] = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> list:
+    ) -> List[Dict[str, Any]]:
         """List all webhooks."""
-        return self.api_client.list_webhooks(space_id, active, limit, offset)
+        webhooks = self.api_client.list_webhooks(space_id, active, limit, offset)
+        return webhooks if isinstance(webhooks, list) else []
 
     def get_webhook(self, webhook_id: str) -> Dict[str, Any]:
         """Get webhook details."""
-        return self.api_client.get_webhook(webhook_id)
+        webhook = self.api_client.get_webhook(webhook_id)
+        return webhook if isinstance(webhook, dict) else {}
 
     def update_webhook(
         self,
         webhook_id: str,
         url: str,
-        events: list,
+        events: List[str],
         secret: str = "",
         active: bool = True,
     ) -> Dict[str, Any]:
         """Update webhook properties."""
-        return self.api_client.update_webhook(webhook_id, url, events, secret, active)
+        webhook = self.api_client.update_webhook(
+            webhook_id, url, events, secret, active
+        )
+        return webhook if isinstance(webhook, dict) else {}
 
     def delete_webhook(self, webhook_id: str, confirm: bool = False) -> Dict[str, Any]:
         """Delete a webhook."""
-        return self.api_client.delete_webhook(webhook_id, confirm)
+        response = self.api_client.delete_webhook(webhook_id, confirm)
+        return response if isinstance(response, dict) else {}
 
     def delete_log_entry(self, log_id: str) -> Dict[str, Any]:
         """Delete a log entry from CORE Memory."""
-        return self.api_client.delete_log_entry(log_id)
+        response = self.api_client.delete_log_entry(log_id)
+        return response if isinstance(response, dict) else {}
 
     # MCP-specific operations
     def delete_logs_by_source(
@@ -363,14 +422,16 @@ class OncoCoreClient:
         """Delete all logs with a specific source using MCP."""
         if not self.mcp_client:
             raise HeySolError("MCP client not available")
-        return self.mcp_client.delete_logs_by_source(source, space_id, confirm)
+        result = self.mcp_client.delete_logs_by_source(source, space_id, confirm)
+        return result if isinstance(result, dict) else {}
 
     def get_logs_by_source(
         self, source: str, space_id: Optional[str] = None, limit: int = 100
     ) -> Dict[str, Any]:
         """Get all logs with a specific source."""
         if self.mcp_client:
-            return self.mcp_client.get_logs_by_source(source, space_id, limit)
+            logs = self.mcp_client.get_logs_by_source(source, space_id, limit)
+            return logs if isinstance(logs, dict) else {}
         else:
             return {
                 "logs": [],

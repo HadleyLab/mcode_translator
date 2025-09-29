@@ -10,13 +10,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from src.utils.concurrency import TaskQueue, create_task, get_fetcher_pool
-from src.utils.fetcher import (
-    ClinicalTrialsAPIError,
-    get_full_studies_batch,
-    get_full_study,
-    search_trials,
-    search_trials_parallel,
-)
+from src.utils.fetcher import (ClinicalTrialsAPIError, get_full_studies_batch,
+                               get_full_study, search_trials,
+                               search_trials_parallel)
 
 from .base_workflow import FetcherWorkflow, WorkflowResult
 
@@ -28,7 +24,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
     Fetches raw trial data without processing or storage to core memory.
     """
 
-    def execute(self, **kwargs) -> WorkflowResult:
+    def execute(self, **kwargs: Any) -> WorkflowResult:
         """
         Execute the trials fetching workflow.
 
@@ -175,7 +171,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                 max_workers=fetcher_pool.max_workers, name="FullDataFetcherQueue"
             )
 
-            def progress_callback(completed, total, result):
+            def progress_callback(completed: int, total: int, result: Any) -> None:
                 nct_id = nct_ids[int(result.task_id.split("_")[2])]
                 if result.success and result.result:
                     self.logger.debug(f"✅ Fetched full data for {nct_id}")
@@ -464,11 +460,11 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
 
         return present_fields / total_fields if total_fields > 0 else 0.0
 
-    def _get_cli_args(self):
+    def _get_cli_args(self) -> Any:
         """Get CLI arguments from the current execution context."""
         # This will be set by the CLI script when calling execute()
         return getattr(self, "_cli_args", None)
 
-    def _set_cli_args(self, args):
+    def _set_cli_args(self, args: Any) -> None:
         """Set CLI arguments for concurrency configuration."""
         self._cli_args = args

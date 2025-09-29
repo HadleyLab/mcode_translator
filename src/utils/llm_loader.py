@@ -72,14 +72,14 @@ class LLMConfig:
 class LLMLoader:
     """Utility class for loading LLM configurations from the file-based LLM library"""
 
-    def __init__(self, llms_config_path: str = None):
+    def __init__(self, llms_config_path: str | None = None) -> None:
         if llms_config_path is None:
             # Use the correct path relative to this file
-            llms_config_path = (
-                Path(__file__).parent.parent / "config" / "llms_config.json"
-            )
-        self.llms_config_path = Path(llms_config_path)
-        self.llms_config = self._load_llms_config()
+            config_path = Path(__file__).parent.parent / "config" / "llms_config.json"
+        else:
+            config_path = Path(llms_config_path)
+        self.llms_config_path: Path = config_path
+        self.llms_config: Dict[str, Any] = self._load_llms_config()
 
     def _load_llms_config(self) -> Dict[str, Any]:
         """Load the LLMs configuration JSON file"""
@@ -90,11 +90,12 @@ class LLMLoader:
                 )
 
             with open(self.llms_config_path, "r") as f:
-                config_data = json.load(f)
+                config_data: Dict[str, Any] = json.load(f)
 
             # Handle nested structure: models.available contains the actual models
             if "models" in config_data and "available" in config_data["models"]:
-                return config_data["models"]["available"]
+                nested_data: Dict[str, Any] = config_data["models"]["available"]
+                return nested_data
 
             # Fallback to flattened structure if nested structure not found
             return config_data
@@ -147,7 +148,7 @@ class LLMLoader:
 
     def get_all_llms(self) -> Dict[str, LLMConfig]:
         """Get all LLMs from the library - STRICT implementation"""
-        all_llms = {}
+        all_llms: Dict[str, LLMConfig] = {}
         for llm_key in self.llms_config.keys():
             # STRICT: Load all LLMs - throw exception if any LLM fails validation
             all_llms[llm_key] = self.get_llm(llm_key)

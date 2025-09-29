@@ -18,7 +18,7 @@ class FHIRResourceExtractors:
     different FHIR resource types.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
     def extract_condition_mcode(

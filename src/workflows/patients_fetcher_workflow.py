@@ -21,7 +21,7 @@ class PatientsFetcherWorkflow(FetcherWorkflow):
     Fetches raw patient data without processing or storage to core memory.
     """
 
-    def execute(self, **kwargs) -> WorkflowResult:
+    def execute(self, **kwargs: Any) -> WorkflowResult:
         """
         Execute the patients fetching workflow.
 

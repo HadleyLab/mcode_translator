@@ -8,13 +8,8 @@ from typing import Any, Dict, List, Optional
 
 from src.pipeline.document_ingestor import DocumentIngestor
 from src.pipeline.llm_service import LLMService
-from src.shared.models import (
-    ClinicalTrialData,
-    McodeElement,
-    PipelineResult,
-    ProcessingMetadata,
-    ValidationResult,
-)
+from src.shared.models import (ClinicalTrialData, McodeElement, PipelineResult,
+                               ProcessingMetadata, ValidationResult)
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
 

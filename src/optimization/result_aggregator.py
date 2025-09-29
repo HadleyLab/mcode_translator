@@ -15,7 +15,7 @@ from src.optimization.report_generator import ReportGenerator
 class OptimizationResultAggregator:
     """Aggregates and processes optimization results."""
 
-    def __init__(self, logger):
+    def __init__(self, logger: Any) -> None:
         self.logger = logger
         self.performance_analyzer = PerformanceAnalyzer()
         self.report_generator = ReportGenerator()
@@ -23,7 +23,7 @@ class OptimizationResultAggregator:
 
     def aggregate_results(
         self,
-        combo_results: Dict[int, Dict],
+        combo_results: Dict[int, Dict[str, Any]],
         combinations: List[Dict[str, str]],
         trials_data: List[Dict[str, Any]],
         cv_folds: int,
@@ -122,7 +122,7 @@ class OptimizationResultAggregator:
         self,
         optimization_results: List[Dict[str, Any]],
         trials_data: List[Dict[str, Any]],
-        combo_results: Dict[int, Dict],
+        combo_results: Dict[int, Dict[str, Any]],
         combinations: List[Dict[str, str]],
     ) -> Dict[str, Any]:
         """Generate comprehensive analysis reports."""
@@ -142,6 +142,13 @@ class OptimizationResultAggregator:
             optimization_results
         )
 
+        # Collect valid timestamps
+        timestamps = [
+            str(r.get("timestamp"))
+            for r in optimization_results
+            if r.get("timestamp") is not None
+        ]
+
         mega_analysis = {
             "model_stats": analysis_summary,
             "provider_stats": provider_analysis,
@@ -151,22 +158,8 @@ class OptimizationResultAggregator:
                 [r for r in optimization_results if r.get("success", False)]
             ),
             "time_range": {
-                "earliest": min(
-                    (
-                        r.get("timestamp")
-                        for r in optimization_results
-                        if r.get("timestamp")
-                    ),
-                    default=None,
-                ),
-                "latest": max(
-                    (
-                        r.get("timestamp")
-                        for r in optimization_results
-                        if r.get("timestamp")
-                    ),
-                    default=None,
-                ),
+                "earliest": min(timestamps) if timestamps else None,
+                "latest": max(timestamps) if timestamps else None,
             },
         }
 
@@ -191,11 +184,11 @@ class OptimizationResultAggregator:
 
     def log_performance_analysis(
         self,
-        model_analysis: Dict,
-        prompt_analysis: Dict,
-        provider_analysis: Dict,
+        model_analysis: Dict[str, Any],
+        prompt_analysis: Dict[str, Any],
+        provider_analysis: Dict[str, Any],
         all_results: List[Dict[str, Any]],
-    ):
+    ) -> None:
         """Log detailed reliability and performance analysis."""
         self.logger.info("🔍 RELIABILITY & PERFORMANCE ANALYSIS:")
 

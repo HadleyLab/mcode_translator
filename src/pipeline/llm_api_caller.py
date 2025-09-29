@@ -12,10 +12,8 @@ from typing import Any, Dict
 
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
-from src.utils.token_tracker import (
-    extract_token_usage_from_response,
-    global_token_tracker,
-)
+from src.utils.token_tracker import (extract_token_usage_from_response,
+                                     global_token_tracker)
 
 
 class LLMAPICaller:
@@ -37,7 +35,7 @@ class LLMAPICaller:
         self.model_name = model_name
         self.logger = get_logger(__name__)
 
-    async def call_llm_api_async(self, prompt: str, llm_config) -> Dict[str, Any]:
+    async def call_llm_api_async(self, prompt: str, llm_config: Any) -> Dict[str, Any]:
         """
         Make optimized async LLM API call with connection reuse and performance monitoring.
 
@@ -223,7 +221,7 @@ class LLMAPICaller:
                 if len(lines) > 2:
                     cleaned_content = "\n".join(lines[1:-1])
 
-            return json.loads(cleaned_content)
+            return json.loads(cleaned_content)  # type: ignore[no-any-return]
         except json.JSONDecodeError as e:
             # Provide detailed error information for debugging
             self.logger.error(f"❌ JSON parsing error for {self.model_name}: {str(e)}")
@@ -255,8 +253,13 @@ class LLMAPICaller:
             ) from e
 
     async def _make_async_api_call_with_rate_limiting(
-        self, client, llm_config, prompt: str, temperature: float, max_tokens: int
-    ):
+        self,
+        client: Any,
+        llm_config: Any,
+        prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> Any:
         """
         Make async API call with aggressive rate limiting and exponential backoff retry logic.
 

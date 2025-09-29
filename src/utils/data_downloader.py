@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Any, Dict, Optional, cast
 
 import requests
 
@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 
 def download_synthetic_patient_archives(
     base_dir: str = "data/synthetic_patients",
-    archives_config: Dict[str, Dict[str, str]] = None,
+    archives_config: Optional[Dict[str, Dict[str, str]]] = None,
     force_download: bool = False,
 ) -> Dict[str, str]:
     """
@@ -91,7 +91,7 @@ def get_archive_paths(base_dir: str = "data/synthetic_patients") -> Dict[str, st
 
 def download_synthetic_patient_archives_concurrent(
     base_dir: str = "data/synthetic_patients",
-    archives_config: Dict[str, Dict[str, str]] = None,
+    archives_config: Optional[Dict[str, Dict[str, str]]] = None,
     force_download: bool = False,
     max_workers: int = 4,
 ) -> Dict[str, str]:
@@ -159,7 +159,7 @@ def download_synthetic_patient_archives_concurrent(
     # Execute downloads concurrently
     task_queue = TaskQueue(max_workers=max_workers, name="ArchiveDownloader")
 
-    def progress_callback(completed, total, result):
+    def progress_callback(completed: int, total: int, result: Any) -> None:
         archive_name = result.task_id.replace("download_", "")
         if result.success:
             logger.info(f"✅ Downloaded: {archive_name}")
@@ -181,7 +181,7 @@ def download_synthetic_patient_archives_concurrent(
         else:
             failed_downloads += 1
             # Remove failed downloads
-            archive_path = archive_paths.get(archive_name)
+            archive_path = cast(str, archive_paths.get(archive_name))
             if archive_path and os.path.exists(archive_path):
                 os.remove(archive_path)
                 del archive_paths[archive_name]
@@ -294,7 +294,7 @@ def download_multiple_files(
     # Execute downloads concurrently
     task_queue = TaskQueue(max_workers=max_workers, name="FileDownloader")
 
-    def progress_callback(completed, total, result):
+    def progress_callback(completed: int, total: int, result: Any) -> None:
         filename = result.task_id.replace("download_", "")
         if result.success:
             logger.info(f"✅ Downloaded: {filename}")
@@ -316,7 +316,7 @@ def download_multiple_files(
         else:
             failed_downloads += 1
             # Remove failed downloads
-            dest_path = downloaded_paths.get(filename)
+            dest_path = cast(str, downloaded_paths.get(filename))
             if dest_path and os.path.exists(dest_path):
                 os.remove(dest_path)
                 del downloaded_paths[filename]

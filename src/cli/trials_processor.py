@@ -15,13 +15,11 @@ from typing import Any, Dict, List, Optional
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.data_loader import extract_trial_id, load_ndjson_data
-from src.utils.error_handler import (
-    handle_cli_error,
-    log_operation_start,
-    log_operation_success,
-)
+from src.utils.error_handler import (handle_cli_error, log_operation_start,
+                                     log_operation_success)
 from src.utils.logging_config import get_logger
-from src.workflows.trials_processor_workflow import ClinicalTrialsProcessorWorkflow
+from src.workflows.trials_processor_workflow import \
+    ClinicalTrialsProcessorWorkflow
 
 
 def create_parser() -> argparse.ArgumentParser:

@@ -8,7 +8,6 @@ and creating configured pipeline components.
 from typing import Any, Dict, Optional, cast
 
 from src.pipeline import McodePipeline
-
 # Removed unified_pipeline imports - using simplified pipeline directly
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 from src.utils.config import Config
@@ -33,7 +32,9 @@ class DependencyContainer:
         self._components: Dict[str, Any] = {}
         self._singletons: Dict[str, Any] = {}
 
-    def register_component(self, name: str, component: Any, singleton: bool = False) -> None:
+    def register_component(
+        self, name: str, component: Any, singleton: bool = False
+    ) -> None:
         """
         Register a component in the container.
 

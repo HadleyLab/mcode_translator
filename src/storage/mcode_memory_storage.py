@@ -6,7 +6,16 @@ This module provides a unified interface for storing processed mCODE data
 structure and codes for later retrieval and analysis.
 """
 
+import sys
+from pathlib import Path
 from typing import Any, Dict, Optional, Protocol
+
+# Add heysol_api_client to path for imports
+heysol_client_path = (
+    Path(__file__).parent.parent.parent.parent / "heysol_api_client" / "src"
+)
+if str(heysol_client_path) not in sys.path:
+    sys.path.insert(0, str(heysol_client_path))
 
 from heysol.config import HeySolConfig
 
@@ -58,7 +67,7 @@ class McodeMemoryStorage:
         self.default_spaces = self.config.get_core_memory_default_spaces()
 
         # Defer client initialization until first use to avoid auth errors during import
-        self._client = None
+        self._client: Optional[OncoCoreClient] = None
 
     @property
     def client(self) -> OncoCoreClient:

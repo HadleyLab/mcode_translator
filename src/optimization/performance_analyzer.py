@@ -15,14 +15,14 @@ class PerformanceAnalyzer:
     Analyzes optimization results and performance metrics.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
     def analyze_by_category(
-        self, all_results: List[Dict], category_key: str
+        self, all_results: List[Dict[str, Any]], category_key: str
     ) -> Dict[str, Any]:
         """Analyze results by a specific category (model or prompt) with comprehensive error tracking."""
-        category_stats = {}
+        category_stats: Dict[str, Dict[str, Any]] = {}
 
         for result in all_results:
             combo = result.get("combination", {})
@@ -173,7 +173,7 @@ class PerformanceAnalyzer:
 
         return category_stats
 
-    def analyze_by_provider(self, all_results: List[Dict]) -> Dict[str, Any]:
+    def analyze_by_provider(self, all_results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Analyze results by provider (OpenAI, DeepSeek, etc.)."""
         provider_mapping = {
             "gpt-4-turbo": "OpenAI",
@@ -187,7 +187,7 @@ class PerformanceAnalyzer:
             "llama-3": "Meta",
         }
 
-        provider_stats = {}
+        provider_stats: Dict[str, Dict[str, Any]] = {}
 
         for result in all_results:
             combo = result.get("combination", {})
@@ -251,7 +251,7 @@ class PerformanceAnalyzer:
 
         return provider_stats
 
-    def summarize_errors(self, all_results: List[Dict]) -> Dict[str, int]:
+    def summarize_errors(self, all_results: List[Dict[str, Any]]) -> Dict[str, int]:
         """Summarize error types across all results with strict categorization."""
         error_counts = {
             "json_parsing": 0,

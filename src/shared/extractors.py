@@ -14,11 +14,12 @@ class DataExtractor:
         try:
             if trial is None:
                 return ""
-            return (
+            trial_id = (
                 trial.get("protocolSection", {})
                 .get("identificationModule", {})
                 .get("nctId", "")
             )
+            return trial_id if isinstance(trial_id, str) else ""
         except (KeyError, AttributeError, TypeError):
             return ""
 

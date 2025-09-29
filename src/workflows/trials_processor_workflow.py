@@ -25,7 +25,9 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
     Processes trial data and stores mCODE summaries to CORE Memory.
     """
 
-    def __init__(self, config, memory_storage: Optional[McodeMemoryStorage] = None):
+    def __init__(
+        self, config: Any, memory_storage: Optional[McodeMemoryStorage] = None
+    ):
         """
         Initialize the trials processor workflow.
 
@@ -34,14 +36,14 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             memory_storage: Optional core memory storage interface
         """
         super().__init__(config, memory_storage)
-        self.pipeline = None
+        self.pipeline: Optional[Any] = None
 
         # Initialize component classes
         self.extractor = TrialExtractor()
         self.summarizer = TrialSummarizer()
         self.cache_manager = TrialCacheManager()
 
-    def execute(self, **kwargs) -> WorkflowResult:
+    def execute(self, **kwargs: Any) -> WorkflowResult:
         """
         Execute the trials processing workflow.
 
@@ -62,7 +64,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             self.logger.info("Starting trials processor workflow execution")
             # Extract parameters
             trials_data = kwargs.get("trials_data", [])
-            model = kwargs.get("model")
+            model = kwargs.get("model") or "gpt-4o"
             prompt = kwargs.get("prompt", "direct_mcode_evidence_based_concise")
             workers = kwargs.get("workers", 0)
 
@@ -114,11 +116,13 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                 f"⚡ Using fully async processing with {effective_workers} concurrent task{'s' if effective_workers > 1 else ''}"
             )
 
-            async def process_async():
+            async def process_async() -> tuple[list[Any], int, int]:
                 # Create semaphore for concurrency control
                 semaphore = asyncio.Semaphore(effective_workers)
 
-                async def process_trial_async(trial: Dict[str, Any], index: int):
+                async def process_trial_async(
+                    trial: Dict[str, Any], index: int
+                ) -> tuple[Any, bool]:
                     async with semaphore:
                         return await self._process_single_trial_async(
                             trial, model, prompt, index, store_in_memory
@@ -139,7 +143,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                 failed_count = 0
 
                 for i, result in enumerate(results):
-                    if isinstance(result, Exception):
+                    if isinstance(result, BaseException):
                         self.logger.error(f"Task {i+1} failed with exception: {result}")
                         failed_count += 1
                         # Add error trial
@@ -237,7 +241,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
     def _extract_trial_id(self, trial: Dict[str, Any]) -> str:
         """Extract trial ID from trial data."""
         try:
-            return trial["protocolSection"]["identificationModule"]["nctId"]
+            return str(trial["protocolSection"]["identificationModule"]["nctId"])
         except (KeyError, TypeError):
             import hashlib
 
@@ -249,7 +253,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
 
     def _extract_trial_metadata(self, trial: Dict[str, Any]) -> Dict[str, Any]:
         """Extract comprehensive trial metadata for storage."""
-        metadata = {}
+        metadata: Dict[str, Any] = {}
 
         try:
             # Ensure trial is a dict
@@ -419,7 +423,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         prompt: str,
         index: int,
         store_in_memory: bool = False,
-    ) -> tuple:
+    ) -> tuple[list[Any], int, int]:
         """
         Synchronous wrapper for async trial processing.
 
@@ -434,7 +438,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         """
         import asyncio
 
-        async def process_async():
+        async def process_async() -> tuple[list[Any], int, int]:
             return await self._process_single_trial_async(
                 trial, model, prompt, index, store_in_memory
             )
@@ -448,7 +452,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         prompt: str,
         index: int,
         store_in_memory: bool = False,
-    ) -> tuple:
+    ) -> tuple[Any, bool]:
         """
         Process a single trial asynchronously for pipeline compatibility.
 
@@ -477,10 +481,15 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             mcode_success = False
             try:
                 # Use new ultra-lean pipeline interface
-                result = await self.pipeline.process(trial)
-                # Add mCODE results to trial using standardized utility
-                enhanced_trial = enhance_trial_with_mcode_results(trial, result)
-                mcode_success = True
+                if self.pipeline is not None:
+                    result = await self.pipeline.process(trial)
+                    # Add mCODE results to trial using standardized utility
+                    enhanced_trial = enhance_trial_with_mcode_results(trial, result)
+                    mcode_success = True
+                else:
+                    # Create basic enhanced trial without mCODE results
+                    enhanced_trial = trial.copy()
+                    enhanced_trial["McodeProcessingError"] = "Pipeline not initialized"
             except Exception as mcode_error:
                 self.logger.warning(
                     f"mCODE pipeline failed for trial {self._extract_trial_id(trial)}: {mcode_error}"
@@ -501,7 +510,9 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             error_trial["ProcessingError"] = str(e)
             return error_trial, False
 
-    def process_single_trial(self, trial: Dict[str, Any], **kwargs) -> WorkflowResult:
+    def process_single_trial(
+        self, trial: Dict[str, Any], **kwargs: Any
+    ) -> WorkflowResult:
         """
         Process a single clinical trial.
 
@@ -516,8 +527,12 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
 
         # Return single trial result
         if result.success and result.data:
+            from typing import List, cast
+
             return self._create_result(
-                success=True, data=result.data[0], metadata=result.metadata
+                success=True,
+                data=cast(List[Any], result.data)[0],
+                metadata=result.metadata,
             )
         else:
             return result

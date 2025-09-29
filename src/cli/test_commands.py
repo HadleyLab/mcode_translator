@@ -2,53 +2,51 @@
 Test execution CLI commands for mCODE Translator.
 
 This module contains commands for running various test suites.
+
+Migrated from Click to Typer with full type hints and heysol_api_client integration.
 """
 
-import sys
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Literal
 
-import click
+import typer
 
-from .test_runner import (
-    run_all_tests,
-    run_coverage_report,
-    run_integration_tests,
-    run_linting,
-    run_performance_tests,
-    run_unit_tests,
-)
+from ..config.heysol_config import get_config
+from .test_runner import (run_all_tests, run_coverage_report,
+                          run_integration_tests, run_linting,
+                          run_performance_tests, run_unit_tests)
 
-
-@click.group()
-def test():
-    """Test execution commands."""
-    pass
+# Create the test Typer app
+app = typer.Typer()
 
 
-@test.command()
-@click.argument(
-    "suite",
-    type=click.Choice(
-        ["unit", "integration", "performance", "all", "coverage", "lint"]
+@app.command()
+def run(
+    suite: Literal[
+        "unit", "integration", "performance", "all", "coverage", "lint"
+    ] = typer.Argument(..., help="Test suite to run"),
+    live: bool = typer.Option(
+        False, help="Run integration tests with live data sources"
     ),
-)
-@click.option(
-    "--live", is_flag=True, help="Run integration tests with live data sources"
-)
-@click.option("--coverage", is_flag=True, help="Generate coverage reports")
-@click.option(
-    "--benchmark", is_flag=True, help="Run only benchmark tests in performance suite"
-)
-@click.option("--fail-fast", is_flag=True, help="Stop on first failure")
-@click.option("--log-level", default="INFO", help="Logging level")
-@click.option("--config", help="Path to configuration file")
-def run(suite, live, coverage, benchmark, fail_fast, log_level, config):
+    coverage: bool = typer.Option(False, help="Generate coverage reports"),
+    benchmark: bool = typer.Option(
+        False, help="Run only benchmark tests in performance suite"
+    ),
+    fail_fast: bool = typer.Option(False, help="Stop on first failure"),
+    log_level: str = typer.Option("INFO", help="Logging level"),
+    config_file: str = typer.Option(None, help="Path to configuration file"),
+) -> None:
     """Run tests."""
     # Check if we're in the right directory
     if not Path("src").exists():
-        click.echo("❌ Error: Please run this script from the project root directory")
-        sys.exit(1)
+        typer.echo(
+            "❌ Error: Please run this script from the project root directory", err=True
+        )
+        raise typer.Exit(1)
+
+    # Get global configuration
+    get_config()
 
     # Create args object for compatibility
     args = SimpleNamespace(
@@ -76,8 +74,12 @@ def run(suite, live, coverage, benchmark, fail_fast, log_level, config):
 
     # Exit with appropriate code
     if success:
-        click.echo("✅ All tests passed!")
-        sys.exit(0)
+        typer.echo("✅ All tests passed!")
+        raise typer.Exit(0)
     else:
-        click.echo("❌ Some tests failed!")
-        sys.exit(1)
+        typer.echo("❌ Some tests failed!")
+        raise typer.Exit(1)
+
+
+# For backward compatibility, expose the app as 'test'
+test = app

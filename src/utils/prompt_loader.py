@@ -7,7 +7,7 @@ instead of using hardcoded prompts in the source code.
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 # Import centralized logging configuration
 from src.utils.logging_config import get_logger
@@ -64,7 +64,7 @@ class PromptLoader:
             # Handle the new flat structure: { "prompts": { "category": [prompt1, prompt2, ...] } }
             if "prompts" in config_data:
                 prompts_config = config_data["prompts"]
-                flattened_config = {}
+                flattened_config: Dict[str, Any] = {}
 
                 # Iterate through categories and their prompt lists
                 for category, prompt_list in prompts_config.items():
@@ -77,7 +77,7 @@ class PromptLoader:
                 logger.warning(
                     "Prompt library structure not found in config, using raw config"
                 )
-                return config_data
+                return cast(Dict[str, Any], config_data)
 
         except Exception as e:
             logger.error(f"Failed to load prompts config: {str(e)}")
@@ -96,7 +96,8 @@ class PromptLoader:
 
             # Extract pipelines configuration
             if "pipelines" in config_data:
-                return config_data["pipelines"]
+                pipelines = config_data["pipelines"]
+                return pipelines if isinstance(pipelines, dict) else {}
             else:
                 logger.warning("Pipelines configuration not found in config")
                 return {}
@@ -105,7 +106,7 @@ class PromptLoader:
             logger.error(f"Failed to load pipelines config: {str(e)}")
             return {}
 
-    def get_prompt(self, prompt_key: str, **format_kwargs) -> str:
+    def get_prompt(self, prompt_key: str, **format_kwargs: Any) -> str:
         """
         Get a prompt by key, optionally formatting it with provided arguments
 
@@ -459,7 +460,7 @@ class PromptLoader:
         pipeline_config = self.pipelines_config[pipeline_key]
         required_types = pipeline_config.get("required_prompt_types", [])
 
-        pipeline_prompts = {}
+        pipeline_prompts: Dict[str, List[Dict[str, Any]]] = {}
         for prompt_name, prompt_metadata in self.prompts_config.items():
             prompt_type = prompt_metadata.get("prompt_type")
             compatible_pipelines = prompt_metadata.get("compatible_pipelines", [])
@@ -485,7 +486,7 @@ class PromptLoader:
         if pipeline_key not in self.pipelines_config:
             raise ValueError(f"Pipeline '{pipeline_key}' not found in configuration")
 
-        return self.pipelines_config[pipeline_key].copy()
+        return self.pipelines_config[pipeline_key].copy()  # type: ignore[no-any-return]
 
     def list_available_pipelines(self) -> Dict[str, Dict[str, Any]]:
         """
@@ -505,7 +506,7 @@ class PromptLoader:
         """
         return self.prompts_config.copy()
 
-    def get_default_prompt(self, **format_kwargs) -> str:
+    def get_default_prompt(self, **format_kwargs: Any) -> str:
         """Get the default prompt (direct_mcode_evidence_based_concise)
 
         Args:
@@ -537,7 +538,7 @@ class PromptLoader:
 prompt_loader = PromptLoader()
 
 
-def load_prompt(prompt_key: str, **format_kwargs) -> str:
+def load_prompt(prompt_key: str, **format_kwargs: Any) -> str:
     """
     Convenience function to load a prompt using the global loader
 
@@ -556,7 +557,7 @@ def reload_prompts_config() -> None:
     prompt_loader.reload_config()
 
 
-def get_default_prompt(**format_kwargs) -> str:
+def get_default_prompt(**format_kwargs: Any) -> str:
     """Get the default prompt using the global loader"""
     return prompt_loader.get_default_prompt(**format_kwargs)
 

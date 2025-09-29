@@ -124,7 +124,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             # Create directory for saving individual runs
             runs_dir = Path("optimization_runs")
             runs_dir.mkdir(exist_ok=True)
-            run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            datetime.now().strftime("%Y%m%d_%H%M%S")
 
             # Aggregate results using the result aggregator
             aggregation_result = self.result_aggregator.aggregate_results(
@@ -143,7 +143,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 self._save_optimal_config(best_result, output_config)
 
             # Generate reports using the result aggregator
-            mega_analysis = self.result_aggregator.generate_reports(
+            self.result_aggregator.generate_reports(
                 optimization_results, trials_data, combo_results, combinations
             )
 
@@ -361,9 +361,8 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
     ) -> Optional[Dict[str, Any]]:
         """Run inter-rater reliability analysis on optimization results."""
         try:
-            from src.optimization.inter_rater_reliability import (
-                InterRaterReliabilityAnalyzer,
-            )
+            from src.optimization.inter_rater_reliability import \
+                InterRaterReliabilityAnalyzer
 
             self.logger.info("🤝 Starting inter-rater reliability analysis...")
 
@@ -403,15 +402,15 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 "num_raters": analysis.num_raters,
                 "num_trials": analysis.num_trials,
                 "overall_agreement": {
-                    "presence_agreement": cast(Any, analysis.overall_metrics.get(
-                        "presence_agreement", {}
-                    )).percentage_agreement,
-                    "values_agreement": cast(Any, analysis.overall_metrics.get(
-                        "values_agreement", {}
-                    )).percentage_agreement,
-                    "confidence_agreement": cast(Any, analysis.overall_metrics.get(
-                        "confidence_agreement", {}
-                    )).percentage_agreement,
+                    "presence_agreement": cast(
+                        Any, analysis.overall_metrics.get("presence_agreement", {})
+                    ).percentage_agreement,
+                    "values_agreement": cast(
+                        Any, analysis.overall_metrics.get("values_agreement", {})
+                    ).percentage_agreement,
+                    "confidence_agreement": cast(
+                        Any, analysis.overall_metrics.get("confidence_agreement", {})
+                    ).percentage_agreement,
                 },
                 "report_path": str(report_path),
             }

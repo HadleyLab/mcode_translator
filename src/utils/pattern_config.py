@@ -12,12 +12,12 @@ from .config import Config
 class PatternManager:
     """Manages regex patterns loaded from centralized configuration."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = Config()
         self.patterns_config = self.config.get_patterns_config()
-        self._compiled_patterns = {}
+        self._compiled_patterns: Dict[str, Dict[str, re.Pattern[str]]] = {}
 
-    def _compile_pattern(self, pattern_config: Dict[str, Any]) -> re.Pattern:
+    def _compile_pattern(self, pattern_config: Dict[str, Any]) -> re.Pattern[str]:
         """Compile a regex pattern from configuration."""
         pattern = pattern_config["pattern"]
         flags = 0
@@ -33,10 +33,10 @@ class PatternManager:
 
         return re.compile(pattern, flags)
 
-    def get_biomarker_patterns(self) -> Dict[str, re.Pattern]:
+    def get_biomarker_patterns(self) -> Dict[str, re.Pattern[str]]:
         """Get compiled biomarker regex patterns."""
         if "biomarker" not in self._compiled_patterns:
-            patterns = {}
+            patterns: Dict[str, re.Pattern[str]] = {}
             biomarker_config = self.patterns_config["patterns"]["biomarker_patterns"]
             for name, config in biomarker_config.items():
                 patterns[name] = self._compile_pattern(config)
@@ -44,10 +44,10 @@ class PatternManager:
 
         return self._compiled_patterns["biomarker"]
 
-    def get_genomic_patterns(self) -> Dict[str, re.Pattern]:
+    def get_genomic_patterns(self) -> Dict[str, re.Pattern[str]]:
         """Get compiled genomic variant patterns."""
         if "genomic" not in self._compiled_patterns:
-            patterns = {}
+            patterns: Dict[str, re.Pattern[str]] = {}
             genomic_config = self.patterns_config["patterns"]["genomic_patterns"]
             for name, config in genomic_config.items():
                 patterns[name] = self._compile_pattern(config)
@@ -55,10 +55,10 @@ class PatternManager:
 
         return self._compiled_patterns["genomic"]
 
-    def get_condition_patterns(self) -> Dict[str, re.Pattern]:
+    def get_condition_patterns(self) -> Dict[str, re.Pattern[str]]:
         """Get compiled condition patterns."""
         if "condition" not in self._compiled_patterns:
-            patterns = {}
+            patterns: Dict[str, re.Pattern[str]] = {}
             condition_config = self.patterns_config["patterns"]["condition_patterns"]
             for name, config in condition_config.items():
                 patterns[name] = self._compile_pattern(config)
@@ -66,10 +66,10 @@ class PatternManager:
 
         return self._compiled_patterns["condition"]
 
-    def get_demographic_patterns(self) -> Dict[str, re.Pattern]:
+    def get_demographic_patterns(self) -> Dict[str, re.Pattern[str]]:
         """Get compiled demographic patterns."""
         if "demographic" not in self._compiled_patterns:
-            patterns = {}
+            patterns: Dict[str, re.Pattern[str]] = {}
             demographic_config = self.patterns_config["patterns"][
                 "demographic_patterns"
             ]
@@ -79,7 +79,7 @@ class PatternManager:
 
         return self._compiled_patterns["demographic"]
 
-    def get_all_patterns(self) -> Dict[str, Dict[str, re.Pattern]]:
+    def get_all_patterns(self) -> Dict[str, Dict[str, re.Pattern[str]]]:
         """Get all compiled patterns organized by category."""
         return {
             "biomarker": self.get_biomarker_patterns(),

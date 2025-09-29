@@ -15,7 +15,7 @@ class CrossValidator:
     Handles cross validation operations for optimization workflows.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
     def create_kfold_splits(self, n_samples: int, n_folds: int) -> List[List[int]]:
@@ -49,7 +49,7 @@ class CrossValidator:
         self, prompts: List[str], models: List[str], max_combinations: int
     ) -> List[Dict[str, str]]:
         """Generate combinations of prompts and models to test."""
-        combinations = []
+        combinations: List[Dict[str, str]] = []
 
         for prompt in prompts:
             for model in models:

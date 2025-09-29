@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from src.utils.logging_config import Loggable, logging
 
@@ -13,7 +13,7 @@ class DocumentSection:
     content: str
     source_type: str  # 'protocol', 'eligibility', 'conditions', 'design', etc.
     position: int
-    metadata: Dict[str, Any] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 
 class DocumentIngestor(Loggable):
@@ -22,7 +22,7 @@ class DocumentIngestor(Loggable):
     Extracts and processes relevant sections from clinical trial data
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # Set logger to DEBUG level for troubleshooting
         self.logger.setLevel(logging.DEBUG)
@@ -259,7 +259,9 @@ class DocumentIngestor(Loggable):
             "text_fragment": text_fragment,
             "position_range": {"start": start_pos, "end": end_pos},
             "extraction_context": {
-                "module_type": section.metadata.get("module_type"),
+                "module_type": (
+                    section.metadata.get("module_type") if section.metadata else None
+                ),
                 "source_system": "ClinicalTrials.gov",
             },
             "provenance_chain": [

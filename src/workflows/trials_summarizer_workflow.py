@@ -5,7 +5,7 @@ This workflow handles generating comprehensive natural language summaries
 from processed mCODE trial data and stores them in CORE Memory.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import McodeMemoryStorage
@@ -21,7 +21,9 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
     for storage in CORE Memory.
     """
 
-    def __init__(self, config, memory_storage: Optional[McodeMemoryStorage] = None):
+    def __init__(
+        self, config: Any, memory_storage: Optional[McodeMemoryStorage] = None
+    ):
         """
         Initialize the trials summarizer workflow.
 
@@ -32,7 +34,7 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
         super().__init__(config, memory_storage)
         self.summarizer = McodeSummarizer()
 
-    def execute(self, **kwargs) -> WorkflowResult:
+    def execute(self, **kwargs: Any) -> WorkflowResult:
         """
         Execute the trials summarization workflow.
 
@@ -142,7 +144,9 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
         except Exception as e:
             return self._handle_error(e, "trials summarization")
 
-    def process_single_trial(self, trial: Dict[str, Any], **kwargs) -> WorkflowResult:
+    def process_single_trial(
+        self, trial: Dict[str, Any], **kwargs: Any
+    ) -> WorkflowResult:
         """
         Process a single trial for summarization.
 
@@ -156,7 +160,12 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
         result = self.execute(trials_data=[trial], **kwargs)
 
         # Return single trial result
-        if result.success and result.data:
+        if (
+            result.success
+            and result.data
+            and isinstance(result.data, list)
+            and len(result.data) > 0
+        ):
             return self._create_result(
                 success=True, data=result.data[0], metadata=result.metadata
             )
@@ -169,15 +178,17 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
         if "protocolSection" in trial:
             protocol = trial["protocolSection"]
             if "identificationModule" in protocol:
-                return protocol["identificationModule"].get("nctId", "unknown")
+                return cast(
+                    str, protocol["identificationModule"].get("nctId", "unknown")
+                )
 
         # Check for direct trial_id field
         if "trial_id" in trial:
-            return trial["trial_id"]
+            return cast(str, trial["trial_id"])
 
         # Check for nctId field
         if "nctId" in trial:
-            return trial["nctId"]
+            return cast(str, trial["nctId"])
 
         return "unknown"
 

@@ -10,7 +10,8 @@ from typing import Any, Dict, List, Optional
 from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import McodeMemoryStorage
 
-from .base_workflow import PatientsProcessorWorkflow as BasePatientsProcessorWorkflow
+from .base_workflow import \
+    PatientsProcessorWorkflow as BasePatientsProcessorWorkflow
 from .base_workflow import WorkflowResult
 
 
@@ -22,7 +23,9 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
     for storage in CORE Memory.
     """
 
-    def __init__(self, config, memory_storage: Optional[McodeMemoryStorage] = None):
+    def __init__(
+        self, config: Any, memory_storage: Optional[McodeMemoryStorage] = None
+    ):
         """
         Initialize the patients summarizer workflow.
 
@@ -51,7 +54,7 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
 
         return f"patient_{hashlib.md5(str(patient).encode('utf-8')).hexdigest()[:8]}"
 
-    def execute(self, **kwargs) -> WorkflowResult:
+    def execute(self, **kwargs: Any) -> WorkflowResult:
         """
         Execute the patients summarization workflow.
 
@@ -290,7 +293,7 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
         return {}
 
     def process_single_patient(
-        self, patient: Dict[str, Any], **kwargs
+        self, patient: Dict[str, Any], **kwargs: Any
     ) -> WorkflowResult:
         """
         Process a single patient for summarization.
@@ -305,7 +308,12 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
         result = self.execute(patients_data=[patient], **kwargs)
 
         # Return single patient result
-        if result.success and result.data:
+        if (
+            result.success
+            and result.data
+            and isinstance(result.data, list)
+            and len(result.data) > 0
+        ):
             return self._create_result(
                 success=True, data=result.data[0], metadata=result.metadata
             )
@@ -463,7 +471,7 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
 
         return demographics
 
-    def _convert_to_mappings_format(self, summary) -> List[Dict[str, Any]]:
+    def _convert_to_mappings_format(self, summary: Any) -> List[Dict[str, Any]]:
         """Convert natural language summary to mCODE mappings format for CORE Memory."""
         # Handle different summary formats
         if isinstance(summary, list):

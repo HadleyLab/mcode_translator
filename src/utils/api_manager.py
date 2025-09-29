@@ -5,7 +5,7 @@ Unified API Manager - Centralized cache management for all API calls in the syst
 import asyncio
 import logging
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Union, cast
 
 from .api_cache import APICache
 from .async_api_cache import AsyncAPICache
@@ -30,7 +30,7 @@ class APIManager:
 
         self.cache_dir = cache_dir
         self.default_ttl = config.get_cache_ttl()
-        self.caches = {}
+        self.caches: Dict[str, Union[APICache, AsyncAPICache]] = {}
         # Create base cache directory if it doesn't exist
         os.makedirs(cache_dir, exist_ok=True)
 
@@ -56,9 +56,9 @@ class APIManager:
                 namespace=cache_namespace,
                 default_ttl=self.default_ttl,
             )
-        return self.caches[cache_namespace]
+        return cast(APICache, self.caches[cache_namespace])
 
-    def clear_cache(self, cache_namespace: str = None) -> None:
+    def clear_cache(self, cache_namespace: Optional[str] = None) -> None:
         """
         Clear cache for a specific namespace or all caches
 
@@ -94,7 +94,7 @@ class APIManager:
                     f"Failed to clear namespace cache directory {namespace_cache_dir}: {e}"
                 )
 
-    def get_cache_stats(self, cache_namespace: str = None) -> Dict[str, Any]:
+    def get_cache_stats(self, cache_namespace: Optional[str] = None) -> Dict[str, Any]:
         """
         Get cache statistics for a specific namespace or all caches
 
@@ -146,9 +146,9 @@ class APIManager:
                 namespace=cache_namespace,
                 default_ttl=self.default_ttl,
             )
-        return self.caches[cache_namespace]
+        return cast(AsyncAPICache, self.caches[cache_namespace])
 
-    async def aclear_cache(self, cache_namespace: str = None) -> None:
+    async def aclear_cache(self, cache_namespace: Optional[str] = None) -> None:
         """
         Async clear cache for a specific namespace or all caches
 
@@ -186,7 +186,9 @@ class APIManager:
                     f"Failed to clear namespace cache directory {namespace_cache_dir}: {e}"
                 )
 
-    async def aget_cache_stats(self, cache_namespace: str = None) -> Dict[str, Any]:
+    async def aget_cache_stats(
+        self, cache_namespace: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Async get cache statistics for a specific namespace or all caches
 

@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 from dotenv import load_dotenv
 
@@ -30,39 +30,44 @@ class Config:
     Loads configuration from separate modular config files for better organization
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Load all modular configurations
-        self.cache_config = self._load_cache_config()
-        self.apis_config = self._load_apis_config()
-        self.core_memory_config = self._load_core_memory_config()
-        self.models_config = self._load_models_config()
-        self.prompts_config = self._load_prompts_config()
-        self.synthetic_data_config = self._load_synthetic_data_config()
-        self.validation_config = self._load_validation_config()
-        self.logging_config = self._load_logging_config()
-        self.patterns_config = self._load_patterns_config()
+        self.cache_config: Dict[str, Any] = self._load_cache_config()
+        self.apis_config: Dict[str, Any] = self._load_apis_config()
+        self.core_memory_config: Dict[str, Any] = self._load_core_memory_config()
+        self.models_config: Dict[str, Any] = self._load_models_config()
+        self.prompts_config: Dict[str, Any] = self._load_prompts_config()
+        self.synthetic_data_config: Dict[str, Any] = self._load_synthetic_data_config()
+        self.validation_config: Dict[str, Any] = self._load_validation_config()
+        self.logging_config: Dict[str, Any] = self._load_logging_config()
+        self.patterns_config: Dict[str, Any] = self._load_patterns_config()
 
         # No legacy support - forward compatibility only
 
     def is_cache_enabled(self) -> bool:
         """Check if caching is enabled"""
-        return self.cache_config["cache"]["enabled"]
+        enabled = self.cache_config["cache"]["enabled"]
+        return bool(enabled) if isinstance(enabled, bool) else False
 
     def get_api_cache_directory(self) -> str:
         """Get API cache directory path for clinical trials and other API data"""
-        return self.cache_config["cache"]["api_cache_directory"]
+        directory = self.cache_config["cache"]["api_cache_directory"]
+        return directory if isinstance(directory, str) else ""
 
     def get_cache_ttl(self) -> int:
         """Get cache TTL in seconds"""
-        return self.cache_config["cache"]["ttl_seconds"]
+        ttl = self.cache_config["cache"]["ttl_seconds"]
+        return int(ttl) if isinstance(ttl, int) else 3600
 
     def get_rate_limit_delay(self) -> float:
         """Get rate limiting delay in seconds"""
-        return self.cache_config["rate_limiting"]["delay_seconds"]
+        delay = self.cache_config["rate_limiting"]["delay_seconds"]
+        return float(delay) if isinstance(delay, (int, float)) else 1.0
 
     def get_request_timeout(self) -> int:
         """Get request timeout in seconds"""
-        return self.cache_config["request"]["timeout_seconds"]
+        timeout = self.cache_config["request"]["timeout_seconds"]
+        return int(timeout) if isinstance(timeout, int) else 30
 
     def get_timeout(self, model_name: str) -> int:
         """
@@ -84,11 +89,11 @@ class Config:
                 f"Timeout not configured for model '{model_name}'. "
                 "Configure timeout_seconds in the model configuration."
             )
-        return timeout
+        return cast(int, timeout)
 
     def get_clinical_trials_base_url(self) -> str:
         """Get clinical trials API base URL"""
-        return self.apis_config["apis"]["clinical_trials"]["base_url"]
+        return cast(str, self.apis_config["apis"]["clinical_trials"]["base_url"])
 
     def get_api_key(self, model_name: str) -> str:
         """
@@ -236,15 +241,15 @@ class Config:
                 f"Invalid or missing max tokens for model '{model_name}'"
             )
 
-        return max_tokens
+        return cast(int, max_tokens)
 
     def is_strict_mode(self) -> bool:
         """Check if strict validation mode is enabled"""
-        return self.validation_config["validation"]["strict_mode"]
+        return cast(bool, self.validation_config["validation"]["strict_mode"])
 
     def require_api_keys(self) -> bool:
         """Check if API keys are required"""
-        return self.validation_config["validation"]["require_api_keys"]
+        return cast(bool, self.validation_config["validation"]["require_api_keys"])
 
     def get_llm_config(self, llm_key: str) -> LLMConfig:
         """
@@ -324,7 +329,7 @@ class Config:
         try:
             with open(config_path, "r") as f:
                 config_data = json.load(f)
-            return config_data
+            return cast(Dict[str, Any], config_data)
         except json.JSONDecodeError as e:
             raise ConfigurationError(
                 f"Invalid JSON in CORE Memory configuration file: {str(e)}"
@@ -337,64 +342,68 @@ class Config:
     def get_core_memory_api_base_url(self) -> str:
         """Get CORE Memory API base URL from centralized config"""
         config = self.get_core_memory_config()
-        return config["core_memory"]["api_base_url"]
+        return cast(str, config["core_memory"]["api_base_url"])
 
     def get_core_memory_source(self) -> str:
         """Get CORE Memory source identifier from centralized config"""
         config = self.get_core_memory_config()
-        return config["core_memory"]["source"]
+        return cast(str, config["core_memory"]["source"])
 
     def get_core_memory_timeout(self) -> int:
         """Get CORE Memory request timeout from centralized config"""
         config = self.get_core_memory_config()
-        return config["core_memory"]["timeout_seconds"]
+        return cast(int, config["core_memory"]["timeout_seconds"])
 
     def get_core_memory_max_retries(self) -> int:
         """Get CORE Memory max retries from centralized config"""
         config = self.get_core_memory_config()
-        return config["core_memory"]["max_retries"]
+        return cast(int, config["core_memory"]["max_retries"])
 
     def get_core_memory_default_spaces(self) -> Dict[str, str]:
         """Get CORE Memory default spaces from centralized config"""
         config = self.get_core_memory_config()
-        return config["core_memory"]["default_spaces"]
+        return cast(Dict[str, str], config["core_memory"]["default_spaces"])
 
     def get_core_memory_batch_size(self) -> int:
         """Get CORE Memory batch size from centralized config"""
         config = self.get_core_memory_config()
-        return config["core_memory"]["storage_settings"]["batch_size"]
+        return cast(int, config["core_memory"]["storage_settings"]["batch_size"])
 
     def get_mcode_summary_format(self) -> str:
         """Get mCODE summary format from centralized config"""
         config = self.get_core_memory_config()
-        return config["mcode_settings"]["summary_format"]
+        return cast(str, config["mcode_settings"]["summary_format"])
 
     def get_mcode_include_codes(self) -> bool:
         """Get whether to include codes in mCODE summaries"""
         config = self.get_core_memory_config()
-        return config["mcode_settings"]["include_codes"]
+        return cast(bool, config["mcode_settings"]["include_codes"])
 
     def get_mcode_max_summary_length(self) -> int:
         """Get maximum mCODE summary length"""
         config = self.get_core_memory_config()
-        return config["mcode_settings"]["max_summary_length"]
+        return cast(int, config["mcode_settings"]["max_summary_length"])
 
     # Synthetic Data Configuration Methods
     def get_synthetic_data_base_directory(self) -> str:
         """Get synthetic data base directory"""
-        return self.synthetic_data_config["synthetic_data"]["base_directory"]
+        return cast(str, self.synthetic_data_config["synthetic_data"]["base_directory"])
 
     def get_synthetic_data_default_archive(self) -> str:
         """Get default synthetic data archive"""
-        return self.synthetic_data_config["synthetic_data"]["default_archive"]
+        return cast(
+            str, self.synthetic_data_config["synthetic_data"]["default_archive"]
+        )
 
     def get_synthetic_data_archives(self) -> Dict[str, Any]:
         """Get all synthetic data archives configuration"""
-        return self.synthetic_data_config["synthetic_data"]["archives"]
+        return cast(
+            Dict[str, Any], self.synthetic_data_config["synthetic_data"]["archives"]
+        )
 
     def is_synthetic_data_auto_download_enabled(self) -> bool:
         """Check if auto download is enabled for synthetic data"""
-        return self.synthetic_data_config["synthetic_data"]["auto_download"]
+        return cast(bool, self.synthetic_data_config["synthetic_data"]["auto_download"])
 
     # Logging Configuration Methods
     def get_logging_config(self) -> Dict[str, Any]:
@@ -403,15 +412,15 @@ class Config:
 
     def get_default_log_level(self) -> str:
         """Get default logging level"""
-        return self.logging_config["logging"]["default_level"]
+        return cast(str, self.logging_config["logging"]["default_level"])
 
     def get_log_format(self) -> str:
         """Get logging format string"""
-        return self.logging_config["logging"]["format"]
+        return cast(str, self.logging_config["logging"]["format"])
 
     def is_colored_logging_enabled(self) -> bool:
         """Check if colored logging is enabled"""
-        return self.logging_config["logging"]["colored_output"]
+        return cast(bool, self.logging_config["logging"]["colored_output"])
 
     # Patterns Configuration Methods
     def get_patterns_config(self) -> Dict[str, Any]:
@@ -420,19 +429,27 @@ class Config:
 
     def get_biomarker_patterns(self) -> Dict[str, Any]:
         """Get biomarker regex patterns"""
-        return self.patterns_config["patterns"]["biomarker_patterns"]
+        return cast(
+            Dict[str, Any], self.patterns_config["patterns"]["biomarker_patterns"]
+        )
 
     def get_genomic_patterns(self) -> Dict[str, Any]:
         """Get genomic variant patterns"""
-        return self.patterns_config["patterns"]["genomic_patterns"]
+        return cast(
+            Dict[str, Any], self.patterns_config["patterns"]["genomic_patterns"]
+        )
 
     def get_condition_patterns(self) -> Dict[str, Any]:
         """Get condition patterns"""
-        return self.patterns_config["patterns"]["condition_patterns"]
+        return cast(
+            Dict[str, Any], self.patterns_config["patterns"]["condition_patterns"]
+        )
 
     def get_demographic_patterns(self) -> Dict[str, Any]:
         """Get demographic patterns"""
-        return self.patterns_config["patterns"]["demographic_patterns"]
+        return cast(
+            Dict[str, Any], self.patterns_config["patterns"]["demographic_patterns"]
+        )
 
     def _load_cache_config(self) -> Dict[str, Any]:
         """Load cache configuration from modular config file"""
@@ -475,7 +492,7 @@ class Config:
         config_path = Path(__file__).parent.parent / "config" / filename
         try:
             with open(config_path, "r") as f:
-                return json.load(f)
+                return cast(Dict[str, Any], json.load(f))
         except FileNotFoundError:
             raise ConfigurationError(
                 f"Modular configuration file not found: {config_path}"

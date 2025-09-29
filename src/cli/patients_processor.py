@@ -9,7 +9,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from src.shared.cli_utils import McodeCLI
 from src.storage.mcode_memory_storage import McodeMemoryStorage
@@ -133,7 +133,8 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
 
         # Save results
         if result.data:
-            save_processed_data(result.data, args.output_file, logger)
+            data_list = result.data if isinstance(result.data, list) else [result.data]
+            save_processed_data(data_list, args.output_file, logger)
 
         # Print summary
         print_processing_summary(result.metadata, args.ingest, trials_criteria, logger)
@@ -150,7 +151,9 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
         sys.exit(1)
 
 
-def save_processed_data(data: List[Any], output_file: Optional[str], logger) -> None:
+def save_processed_data(
+    data: List[Any], output_file: Optional[str], logger: Any
+) -> None:
     """Save processed mCODE data to file or stdout."""
     mcode_data = []
     for patient_bundle in data:
@@ -222,7 +225,12 @@ def save_processed_data(data: List[Any], output_file: Optional[str], logger) -> 
         logger.info("📤 mCODE data written to stdout")
 
 
-def print_processing_summary(metadata, ingested, trials_criteria, logger):
+def print_processing_summary(
+    metadata: Any,
+    ingested: bool,
+    trials_criteria: Optional[Dict[str, Any]],
+    logger: Any,
+) -> None:
     """Print processing summary."""
     if not metadata:
         return
@@ -248,14 +256,14 @@ def print_processing_summary(metadata, ingested, trials_criteria, logger):
         logger.info("💾 Storage disabled")
 
 
-def extract_mcode_criteria_from_trials(trials_data) -> dict:
+def extract_mcode_criteria_from_trials(trials_data: Any) -> Dict[str, List[str]]:
     """
     Extract mCODE eligibility criteria from trial data.
 
     This is a simplified version - in practice, this would use
     the full mCODE criteria extraction logic.
     """
-    criteria = {}
+    criteria: Dict[str, List[str]] = {}
 
     # Handle different trial data formats
     if isinstance(trials_data, list):

@@ -96,11 +96,11 @@ def handle_cli_error(
 
 
 def safe_execute(
-    func: Callable,
-    *args,
+    func: Callable[..., Any],
+    *args: Any,
     error_msg: str = "Operation failed",
     logger_instance: Optional[logging.Logger] = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> Any:
     """
     Execute a function safely with consistent error handling.
@@ -147,7 +147,12 @@ def validate_required(value: Any, name: str, error_msg: Optional[str] = None) ->
         msg = error_msg or f"Required value '{name}' is empty"
         raise ValueError(msg)
 
-    if isinstance(value, (list, dict)) and len(value) == 0:
+    # Handle list and dict separately to avoid mypy issues with len()
+    # Use truthiness check instead of length for generic types
+    if isinstance(value, (list, tuple)) and not value:
+        msg = error_msg or f"Required value '{name}' is empty"
+        raise ValueError(msg)
+    if isinstance(value, dict) and not value:
         msg = error_msg or f"Required value '{name}' is empty"
         raise ValueError(msg)
 

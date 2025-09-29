@@ -21,12 +21,12 @@ class Task:
     """Task representation for both async and thread-based execution."""
 
     id: str
-    func: Callable
-    args: tuple = ()
-    kwargs: dict = None
+    func: Callable[..., Any]
+    args: tuple[Any, ...] = ()
+    kwargs: Optional[dict[str, Any]] = None
     priority: int = 0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.kwargs is None:
             self.kwargs = {}
 
@@ -38,7 +38,7 @@ class TaskResult:
     task_id: str
     success: bool
     result: Any = None
-    error: Exception = None
+    error: Optional[Exception] = None
     duration: float = 0.0
 
 
@@ -59,7 +59,7 @@ class AsyncQueue:
         self,
         tasks: List[Task],
         timeout: Optional[float] = None,
-        progress_callback: Optional[Callable] = None,
+        progress_callback: Optional[Callable[[int, int, TaskResult], None]] = None,
     ) -> List[TaskResult]:
         """Execute tasks with controlled concurrency using a worker pool approach."""
         if not tasks:
@@ -69,7 +69,9 @@ class AsyncQueue:
             f"🚀 {self.name}: Processing {len(tasks)} tasks (max {self.max_concurrent} concurrent)"
         )
 
-        async def worker(worker_id: int, task_queue: asyncio.Queue):
+        async def worker(
+            worker_id: int, task_queue: asyncio.Queue[Optional[Task]]
+        ) -> None:
             """Worker function that processes tasks from the queue."""
             while True:
                 try:
@@ -90,8 +92,8 @@ class AsyncQueue:
                         # Run sync function in thread pool
                         loop = asyncio.get_event_loop()
 
-                        def task_wrapper():
-                            return task.func(*task.args, **task.kwargs)
+                        def task_wrapper() -> Any:
+                            return task.func(*task.args, **(task.kwargs or {}))
 
                         result = await loop.run_in_executor(None, task_wrapper)
 
@@ -135,8 +137,8 @@ class AsyncQueue:
                     self.logger.error(f"❌ {self.name}: WORKER-{worker_id} error: {e}")
 
         # Create task queue and results list
-        task_queue = asyncio.Queue()
-        task_results = []
+        task_queue: asyncio.Queue[Optional[Task]] = asyncio.Queue()
+        task_results: List[TaskResult] = []
 
         # Add all tasks to queue
         for task in tasks:
@@ -168,7 +170,7 @@ class AsyncQueue:
         else:
             await asyncio.gather(*workers, return_exceptions=True)
 
-        successful = sum(1 for r in task_results if r.success)
+        successful = len([r for r in task_results if r.success])
         self.logger.info(f"🎉 {self.name}: Completed {successful}/{len(tasks)} tasks")
 
         return task_results
@@ -187,12 +189,16 @@ class AsyncQueue:
         )
 
 
-def create_task(task_id: str, func: Callable, *args, **kwargs) -> Task:
+def create_task(
+    task_id: str, func: Callable[..., Any], *args: Any, **kwargs: Any
+) -> Task:
     """Create async task."""
     return Task(id=task_id, func=func, args=args, kwargs=kwargs)
 
 
-def create_async_queue_from_args(args, component_type: str = "custom") -> AsyncQueue:
+def create_async_queue_from_args(
+    args: Any, component_type: str = "custom"
+) -> AsyncQueue:
     """
     Create AsyncQueue from CLI args.
 
@@ -230,7 +236,7 @@ class WorkerPool:
         self._running = False
         self._lock = threading.Lock()
 
-    def start(self):
+    def start(self) -> None:
         """Start the worker pool."""
         with self._lock:
             if not self._running:
@@ -242,7 +248,7 @@ class WorkerPool:
                     f"🚀 {self.name}: Started with {self.max_workers} workers"
                 )
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop the worker pool."""
         with self._lock:
             if self._running:
@@ -252,24 +258,24 @@ class WorkerPool:
                 self._running = False
                 self.logger.info(f"🛑 {self.name}: Stopped")
 
-    def __enter__(self):
+    def __enter__(self) -> "WorkerPool":
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         self.stop()
 
-    def submit_task(self, task: Task) -> Future:
+    def submit_task(self, task: Task) -> Future[TaskResult]:
         """Submit a single task for execution."""
         if not self._running or not self.executor:
             raise RuntimeError(f"Worker pool {self.name} is not running")
 
-        def task_wrapper():
+        def task_wrapper() -> TaskResult:
             start_time = time.time()
             self.logger.info(f"⚡ {self.name}: STARTED {task.id}")
 
             try:
-                result = task.func(*task.args, **task.kwargs)
+                result = task.func(*task.args, **(task.kwargs or {}))
                 duration = time.time() - start_time
                 self.logger.info(
                     f"✅ {self.name}: COMPLETED {task.id} ({duration:.2f}s)"
@@ -288,7 +294,7 @@ class WorkerPool:
 
         return self.executor.submit(task_wrapper)
 
-    def submit_tasks(self, tasks: List[Task]) -> List[Future]:
+    def submit_tasks(self, tasks: List[Task]) -> List[Future[TaskResult]]:
         """Submit multiple tasks for execution."""
         return [self.submit_task(task) for task in tasks]
 
@@ -311,7 +317,9 @@ class TaskQueue:
             return future.result()
 
     def execute_tasks(
-        self, tasks: List[Task], progress_callback: Optional[Callable] = None
+        self,
+        tasks: List[Task],
+        progress_callback: Optional[Callable[[int, int, TaskResult], None]] = None,
     ) -> List[TaskResult]:
         """Execute multiple tasks with optional progress callback."""
         if not tasks:
@@ -339,7 +347,10 @@ class TaskQueue:
 
 
 def run_concurrent(
-    func: Callable, items: List[Any], max_workers: int = 4, task_prefix: str = "task"
+    func: Callable[..., Any],
+    items: List[Any],
+    max_workers: int = 4,
+    task_prefix: str = "task",
 ) -> List[TaskResult]:
     """
     Run a function concurrently on a list of items.

@@ -18,7 +18,7 @@ class ClinicalNoteGenerator:
     optimized for knowledge graph entity extraction.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
     def _generate_patient_header(

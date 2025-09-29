@@ -18,7 +18,7 @@ class DemographicsExtractor:
     required for mCODE compliance and clinical documentation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
     def extract_demographics(self, patient_resource: Dict[str, Any]) -> Dict[str, Any]:

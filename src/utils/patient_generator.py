@@ -33,13 +33,14 @@ def _extract_patient_id_from_bundle(bundle: Dict[str, Any]) -> Optional[str]:
         if resource.get("resourceType") == "Patient":
             # Try ID first
             patient_id = resource.get("id")
-            if patient_id:
-                return patient_id
+            if patient_id and isinstance(patient_id, str):
+                return str(patient_id)
 
             # Try any identifier with a value
             for identifier in resource.get("identifier", []):
-                if identifier.get("value"):
-                    return identifier.get("value")
+                value = identifier.get("value")
+                if value and isinstance(value, str):
+                    return str(value)
 
             # Fallback to name-based ID
             name = resource.get("name", [{}])[0]
@@ -106,6 +107,8 @@ class PatientGenerator:
         self._patient_files: List[str] = []
         self._current_index = 0
         self._loaded = False
+        self._patients: List[Dict[str, Any]] = []
+        self._patient_index: Dict[str, int] = {}
 
         # Setup random seed if provided
         if shuffle and seed is not None:

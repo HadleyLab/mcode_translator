@@ -9,7 +9,7 @@ import logging
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class AsyncAPICache:
             f"Initialized Async API cache for namespace '{namespace}' at {cache_dir} with TTL {default_ttl}"
         )
 
-    def _get_cache_key(self, func_name: str, *args, **kwargs) -> str:
+    def _get_cache_key(self, func_name: str, *args: Any, **kwargs: Any) -> str:
         """Generate a cache key (same as sync version)"""
         key_data = {
             "function": func_name,
@@ -54,7 +54,7 @@ class AsyncAPICache:
         """Get the file path for a cache key"""
         return os.path.join(self.cache_dir, f"{cache_key}.json")
 
-    async def aget(self, func_name: str, *args, **kwargs) -> Optional[Any]:
+    async def aget(self, func_name: str, *args: Any, **kwargs: Any) -> Optional[Any]:
         """
         Async get cached result if available
 
@@ -81,7 +81,7 @@ class AsyncAPICache:
         """
         loop = asyncio.get_event_loop()
 
-        def _sync_get():
+        def _sync_get() -> Optional[Any]:
             cache_key = self._generate_cache_key(cache_key_data)
             cache_path = self._get_cache_path(cache_key)
 
@@ -112,7 +112,9 @@ class AsyncAPICache:
 
         return await loop.run_in_executor(self.executor, _sync_get)
 
-    async def aset(self, result: Any, func_name: str, *args, **kwargs) -> None:
+    async def aset(
+        self, result: Any, func_name: str, *args: Any, **kwargs: Any
+    ) -> None:
         """
         Async store result in cache
 
@@ -130,8 +132,8 @@ class AsyncAPICache:
         result: Any,
         cache_key: str,
         func_name: str = "unknown",
-        args: tuple = (),
-        kwargs: dict = {},
+        args: tuple[Any, ...] = (),
+        kwargs: dict[str, Any] = {},
     ) -> None:
         """
         Async store result in cache by cache key
@@ -145,7 +147,7 @@ class AsyncAPICache:
         """
         loop = asyncio.get_event_loop()
 
-        def _sync_set():
+        def _sync_set() -> None:
             cache_path = self._get_cache_path(cache_key)
 
             try:
@@ -198,7 +200,7 @@ class AsyncAPICache:
         """Async clear all cached data for this namespace"""
         loop = asyncio.get_event_loop()
 
-        def _sync_clear():
+        def _sync_clear() -> None:
             try:
                 for filename in os.listdir(self.cache_dir):
                     file_path = os.path.join(self.cache_dir, filename)
@@ -216,7 +218,7 @@ class AsyncAPICache:
         """Async get cache statistics"""
         loop = asyncio.get_event_loop()
 
-        def _sync_stats():
+        def _sync_stats() -> Dict[str, Any]:
             try:
                 cache_files = os.listdir(self.cache_dir)
                 total_size = sum(
@@ -270,7 +272,7 @@ class AsyncAPICache:
         return hashlib.md5(key_string.encode()).hexdigest()
 
     # Batch Operations
-    async def abatch_get(self, key_data_list: List[Any]) -> List[Optional[Any]]:
+    async def abatch_get(self, key_data_list: List[Any]) -> List[Any]:
         """
         Async batch get multiple cache entries
 
@@ -278,7 +280,7 @@ class AsyncAPICache:
             key_data_list: List of cache key data
 
         Returns:
-            List of cached results (None for misses)
+            List of cached results (None for misses, exceptions for failures)
         """
         tasks = [self._aget_by_key(key_data) for key_data in key_data_list]
         return await asyncio.gather(*tasks, return_exceptions=True)
@@ -299,7 +301,9 @@ class AsyncAPICache:
         await asyncio.gather(*tasks, return_exceptions=True)
 
     # Cache Warming
-    async def awarm_cache(self, key_data_list: List[Any], fetch_func: callable) -> None:
+    async def awarm_cache(
+        self, key_data_list: List[Any], fetch_func: Callable[..., Any]
+    ) -> None:
         """
         Async warm cache by pre-fetching and caching results
 
@@ -335,7 +339,9 @@ class AsyncAPICache:
         await asyncio.gather(*fetch_tasks, return_exceptions=True)
         logger.info(f"Cache warming completed for namespace '{self.namespace}'")
 
-    async def _fetch_and_cache(self, key_data: Any, fetch_func: callable) -> None:
+    async def _fetch_and_cache(
+        self, key_data: Any, fetch_func: Callable[..., Any]
+    ) -> None:
         """Fetch data and cache it"""
         try:
             result = await fetch_func(key_data)
@@ -380,7 +386,7 @@ class AsyncAPICache:
         """Async cleanup expired cache entries"""
         loop = asyncio.get_event_loop()
 
-        def _sync_cleanup():
+        def _sync_cleanup() -> int:
             try:
                 cleaned_count = 0
                 current_time = time.time()

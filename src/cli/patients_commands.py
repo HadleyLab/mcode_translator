@@ -1,46 +1,48 @@
 """
 Patient-related CLI commands for mCODE Translator.
 
-This module contains all Click commands related to patients:
+This module contains all commands related to patients:
 - fetch_patients
 - process_patients
 - summarize_patients
+
+Migrated from Click to Typer with full type hints and heysol_api_client integration.
 """
 
 from types import SimpleNamespace
+from typing import Optional
 
-import click
+import typer
 
+from ..config.heysol_config import get_config
 from . import patients_fetcher, patients_processor, patients_summarizer
 
-
-@click.group()
-def patients():
-    """Patient data commands."""
-    pass
+# Create the patients Typer app
+app = typer.Typer()
 
 
-@patients.command()
-@click.option(
-    "--archive", help="Patient archive identifier (e.g., breast_cancer_10_years)"
-)
-@click.option("--patient-id", help="Specific patient ID to fetch")
-@click.option(
-    "--limit",
-    type=int,
-    default=10,
-    help="Maximum number of patients to fetch (default: 10)",
-)
-@click.option(
-    "--list-archives", is_flag=True, help="List available patient archives and exit"
-)
-@click.option(
-    "--out", "output_file", help="Output file for patient data (NDJSON format)"
-)
-@click.option("--log-level", default="INFO", help="Logging level")
-@click.option("--config", help="Path to configuration file")
-def fetch(archive, patient_id, limit, list_archives, output_file, log_level, config):
+@app.command()
+def fetch(
+    archive: Optional[str] = typer.Option(
+        None, help="Patient archive identifier (e.g., breast_cancer_10_years)"
+    ),
+    patient_id: Optional[str] = typer.Option(None, help="Specific patient ID to fetch"),
+    limit: int = typer.Option(
+        10, help="Maximum number of patients to fetch (default: 10)"
+    ),
+    list_archives: bool = typer.Option(
+        False, help="List available patient archives and exit"
+    ),
+    output_file: Optional[str] = typer.Option(
+        None, help="Output file for patient data (NDJSON format)"
+    ),
+    log_level: str = typer.Option("INFO", help="Logging level"),
+    config_file: Optional[str] = typer.Option(None, help="Path to configuration file"),
+):
     """Fetch synthetic patients."""
+
+    # Get global configuration
+    get_config()
 
     args = SimpleNamespace(
         archive=archive,
@@ -49,67 +51,78 @@ def fetch(archive, patient_id, limit, list_archives, output_file, log_level, con
         list_archives=list_archives,
         output_file=output_file,
         log_level=log_level,
-        config=config,
+        config=config_file,
     )
     patients_fetcher.main(args)
 
 
-@patients.command()
-@click.option("--in", "input_file", help="Input file containing patient data")
-@click.option("--out", "output_file", help="Output file for processed mCODE data")
-@click.option(
-    "--trials",
-    help="Path to NDJSON file containing trial data for eligibility filtering",
-)
-@click.option("--log-level", default="INFO", help="Logging level")
-@click.option("--config", help="Path to configuration file")
-@click.option(
-    "--store-in-memory/--no-store-in-memory",
-    default=False,
-    help="Store results in CORE memory",
-)
-def process(input_file, output_file, trials, log_level, config, store_in_memory):
+@app.command()
+def process(
+    input_file: str = typer.Option(
+        ..., "--in", help="Input file containing patient data"
+    ),
+    output_file: Optional[str] = typer.Option(
+        None, "--out", help="Output file for processed mCODE data"
+    ),
+    trials: Optional[str] = typer.Option(
+        None, help="Path to NDJSON file containing trial data for eligibility filtering"
+    ),
+    log_level: str = typer.Option("INFO", help="Logging level"),
+    config_file: Optional[str] = typer.Option(None, help="Path to configuration file"),
+    store_in_memory: bool = typer.Option(False, help="Store results in CORE memory"),
+):
     """Process patients to mCODE."""
     if not input_file:
-        raise click.UsageError("Must specify input file with --in")
+        typer.echo("Error: Must specify input file with --in", err=True)
+        raise typer.Exit(1)
+
+    # Get global configuration
+    get_config()
 
     args = SimpleNamespace(
         input_file=input_file,
         output_file=output_file,
         trials=trials,
         log_level=log_level,
-        config=config,
+        config=config_file,
         store_in_memory=store_in_memory,
     )
     patients_processor.main(args)
 
 
-@patients.command()
-@click.option("--in", "input_file", help="Input file containing mCODE patient data")
-@click.option("--out", "output_file", help="Output file for summarized data")
-@click.option(
-    "--dry-run",
-    is_flag=True,
-    help="Run summarization without storing results in CORE Memory",
-)
-@click.option("--log-level", default="INFO", help="Logging level")
-@click.option("--config", help="Path to configuration file")
-@click.option(
-    "--store-in-memory/--no-store-in-memory",
-    default=False,
-    help="Store results in CORE memory",
-)
-def summarize(input_file, output_file, dry_run, log_level, config, store_in_memory):
+@app.command()
+def summarize(
+    input_file: str = typer.Option(
+        ..., "--in", help="Input file containing mCODE patient data"
+    ),
+    output_file: Optional[str] = typer.Option(
+        None, "--out", help="Output file for summarized data"
+    ),
+    dry_run: bool = typer.Option(
+        False, help="Run summarization without storing results in CORE Memory"
+    ),
+    log_level: str = typer.Option("INFO", help="Logging level"),
+    config_file: Optional[str] = typer.Option(None, help="Path to configuration file"),
+    store_in_memory: bool = typer.Option(False, help="Store results in CORE memory"),
+):
     """Summarize mCODE patients."""
     if not input_file:
-        raise click.UsageError("Must specify input file with --in")
+        typer.echo("Error: Must specify input file with --in", err=True)
+        raise typer.Exit(1)
+
+    # Get global configuration
+    get_config()
 
     args = SimpleNamespace(
         input_file=input_file,
         output_file=output_file,
         dry_run=dry_run,
         log_level=log_level,
-        config=config,
+        config=config_file,
         store_in_memory=store_in_memory,
     )
     patients_summarizer.main(args)
+
+
+# For backward compatibility, expose the app as 'patients'
+patients = app

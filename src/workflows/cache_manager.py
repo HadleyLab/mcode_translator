@@ -6,7 +6,7 @@ mCODE extractions, and summaries to improve performance.
 """
 
 import hashlib
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from src.utils.api_manager import APIManager
 
@@ -14,7 +14,7 @@ from src.utils.api_manager import APIManager
 class TrialCacheManager:
     """Manage caching for trial processing operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the cache manager."""
         api_manager = APIManager()
         self.workflow_cache = api_manager.get_cache(
@@ -40,7 +40,7 @@ class TrialCacheManager:
         cached_result = self.workflow_cache.get_by_key(cache_key_data)
         if cached_result is not None:
             print(f"Cache HIT for processed trial {trial_id}")
-            return cached_result
+            return cast(Dict[str, Any], cached_result)
         return None
 
     def cache_trial_result(
@@ -81,7 +81,7 @@ class TrialCacheManager:
         cached_result = self.summary_cache.get_by_key(cache_key_data)
         if cached_result is not None:
             print(f"Cache HIT for natural language summary {trial_id}")
-            return cached_result
+            return cast(str, cached_result)
         return None
 
     def cache_natural_language_summary(
@@ -120,7 +120,7 @@ class TrialCacheManager:
     def _extract_trial_id(self, trial: Dict[str, Any]) -> str:
         """Extract trial ID from trial data."""
         try:
-            return trial["protocolSection"]["identificationModule"]["nctId"]
+            return cast(str, trial["protocolSection"]["identificationModule"]["nctId"])
         except (KeyError, TypeError):
             return f"unknown_trial_{hashlib.md5(str(trial).encode('utf-8')).hexdigest()[:8]}"
 
