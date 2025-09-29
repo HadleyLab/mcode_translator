@@ -530,6 +530,36 @@ def create_mcode_results_structure(pipeline_result: Any) -> Dict[str, Any]:
     }
 
 
+class McodeSummary(BaseModel):
+    """Pydantic model for mCODE summary data."""
+
+    id: str = Field(..., description="Unique identifier for the entity")
+    summary: str = Field(..., description="Natural language summary")
+    mcode_elements: List[str] = Field(
+        default_factory=list, description="mCODE elements"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata"
+    )
+
+
+class SearchResult(BaseModel):
+    """Pydantic model for search results."""
+
+    episodes: List[Dict[str, Any]] = Field(default_factory=list)
+    facts: List[Dict[str, Any]] = Field(default_factory=list)
+    total_count: int = Field(default=0)
+
+
+class MemoryStats(BaseModel):
+    """Pydantic model for memory statistics."""
+
+    spaces: List[Dict[str, Any]] = Field(default_factory=list)
+    total_spaces: int = Field(default=0)
+    patients_space: Dict[str, Any] = Field(default_factory=dict)
+    trials_space: Dict[str, Any] = Field(default_factory=dict)
+
+
 def enhance_trial_with_mcode_results(
     trial_data: Dict[str, Any], pipeline_result: Any
 ) -> Dict[str, Any]:
