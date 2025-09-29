@@ -5,6 +5,9 @@ from typing import Any, Dict, cast
 
 from dotenv import load_dotenv
 
+# Import LLM loader for file-based LLM library
+from .llm_loader import LLMConfig, llm_loader
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -13,9 +16,6 @@ DEFAULT_BASE_URL = "https://core.heysol.ai/api/v1"
 DEFAULT_MCP_URL = "https://core.heysol.ai/api/v1/mcp?source=heysol-api-client"
 DEFAULT_PROFILE_URL = "https://core.heysol.ai/api/profile"
 DEFAULT_SOURCE = "heysol-python-client"
-
-# Import LLM loader for file-based LLM library
-from .llm_loader import LLMConfig, llm_loader
 
 
 class ConfigurationError(Exception):

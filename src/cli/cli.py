@@ -11,6 +11,14 @@ from typing import Optional
 
 import typer
 
+# Import configuration
+from ..config.heysol_config import get_config
+# Import mCODE command groups
+from .data_commands import data
+from .patients_commands import patients
+from .test_commands import test
+from .trials_commands import trials
+
 # Add heysol_api_client to path for imports
 heysol_client_path = (
     Path(__file__).parent.parent.parent.parent / "heysol_api_client" / "src"
@@ -23,14 +31,6 @@ try:
     from cli import app as heysol_app
 except ImportError:
     heysol_app = None
-
-# Import configuration
-from ..config.heysol_config import get_config
-# Import mCODE command groups
-from .data_commands import data
-from .patients_commands import patients
-from .test_commands import test
-from .trials_commands import trials
 
 # Create the main Typer app
 app = typer.Typer()

@@ -11,14 +11,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+from heysol.config import HeySolConfig as BaseHeySolConfig
+
 # Add heysol_api_client to path for imports
 heysol_client_path = (
     Path(__file__).parent.parent.parent.parent / "heysol_api_client" / "src"
 )
 if str(heysol_client_path) not in sys.path:
     sys.path.insert(0, str(heysol_client_path))
-
-from heysol.config import HeySolConfig as BaseHeySolConfig
 
 # Import existing mCODE config for integration
 try:

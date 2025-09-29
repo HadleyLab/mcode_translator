@@ -463,7 +463,7 @@ class InterRaterReliabilityAnalyzer:
                         try:
                             corr, _ = pearsonr(conf_i, conf_j)
                             correlations.append(corr)
-                        except:
+                        except Exception:
                             pass
 
             if correlations:

@@ -7,6 +7,8 @@ used across all command-line interfaces.
 
 import argparse
 
+from src.utils.config import Config
+
 
 class McodeCLI:
     """Shared CLI utilities and argument patterns."""
@@ -143,7 +145,7 @@ class McodeCLI:
         setup_logging(level=logging.getLevelName(log_level))
 
     @staticmethod
-    def create_config(args: argparse.Namespace) -> "Config":  # type: ignore[name-defined]
+    def create_config(args: argparse.Namespace) -> Config:
         """Create configuration instance from CLI arguments."""
         from src.utils.config import Config
 

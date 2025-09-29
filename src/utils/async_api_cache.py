@@ -413,7 +413,7 @@ class AsyncAPICache:
                         try:
                             os.remove(file_path)
                             cleaned_count += 1
-                        except:
+                        except Exception:
                             pass
 
                 if cleaned_count > 0:

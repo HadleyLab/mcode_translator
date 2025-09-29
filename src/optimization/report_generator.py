@@ -237,7 +237,7 @@ class ReportGenerator:
                         num_str = parts[1].strip().split()[0]
                         if num_str.replace(".", "").isdigit():
                             coverage["avg_elements"] = float(num_str)
-                except:
+                except Exception:
                     pass
 
             # Look for model-specific element counts
@@ -249,7 +249,7 @@ class ReportGenerator:
                     try:
                         elements = int(parts[1])
                         coverage["model_elements"][model] = elements
-                    except:
+                    except Exception:
                         pass
 
         return coverage
@@ -269,7 +269,7 @@ class ReportGenerator:
                         pct = line.split("%")[0].split()[-1]
                         if pct.replace(".", "").isdigit():
                             return f"{pct}% agreement"
-                except:
+                except Exception:
                     pass
 
         return "Analysis available"
@@ -297,7 +297,7 @@ class ReportGenerator:
                         pct = line.split("%")[0].split()[-1]
                         if pct.replace(".", "").isdigit():
                             return f"{pct}%"
-                    except:
+                    except Exception:
                         pass
 
         return "Unknown"
@@ -345,7 +345,7 @@ class ReportGenerator:
                                 "genetic_markers": biomarkers,
                             },
                         }
-                    except:
+                    except Exception:
                         pass
             elif in_table and not line.startswith("|"):
                 break
@@ -367,28 +367,28 @@ class ReportGenerator:
                     try:
                         pct = line.split("%")[0].split()[-1]
                         metrics["presence_agreement"] = f"{pct}%"
-                    except:
+                    except Exception:
                         pass
             elif "values agreement" in line_lower:
                 if "%" in line:
                     try:
                         pct = line.split("%")[0].split()[-1]
                         metrics["values_agreement"] = f"{pct}%"
-                    except:
+                    except Exception:
                         pass
             elif "confidence agreement" in line_lower:
                 if "%" in line:
                     try:
                         pct = line.split("%")[0].split()[-1]
                         metrics["confidence_agreement"] = f"{pct}%"
-                    except:
+                    except Exception:
                         pass
             elif "fleiss" in line_lower and "kappa" in line_lower:
                 try:
                     # Extract kappa value
                     kappa_part = line.split(":")[-1].strip()
                     metrics["fleiss_kappa"] = kappa_part
-                except:
+                except Exception:
                     pass
 
         return metrics
@@ -435,9 +435,9 @@ class ReportGenerator:
                                     performance[rater]["avg_elements"] = float(
                                         elements_part
                                     )
-                            except:
+                            except Exception:
                                 pass
-                except:
+                except Exception:
                     pass
 
         return performance
@@ -462,7 +462,7 @@ class ReportGenerator:
                     num = line.split(":")[-1].strip()
                     if num.isdigit():
                         insights["total_trials"] = int(num)
-                except:
+                except Exception:
                     pass
 
             # Extract top conditions
@@ -480,7 +480,7 @@ class ReportGenerator:
                     count_part = line.split(":**")[1].strip()
                     if count_part.isdigit():
                         insights["element_distribution"][element_type] = int(count_part)
-                except:
+                except Exception:
                     pass
 
         return insights

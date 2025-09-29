@@ -10,19 +10,19 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, Protocol
 
-# Add heysol_api_client to path for imports
-heysol_client_path = (
-    Path(__file__).parent.parent.parent.parent / "heysol_api_client" / "src"
-)
-if str(heysol_client_path) not in sys.path:
-    sys.path.insert(0, str(heysol_client_path))
-
 from heysol.config import HeySolConfig
 
 from src.services.summarizer import McodeSummarizer
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
 from src.utils.onco_core_memory import HeySolError, OncoCoreClient
+
+# Add heysol_api_client to path for imports
+heysol_client_path = (
+    Path(__file__).parent.parent.parent.parent / "heysol_api_client" / "src"
+)
+if str(heysol_client_path) not in sys.path:
+    sys.path.insert(0, str(heysol_client_path))
 
 
 class DataStorage(Protocol):

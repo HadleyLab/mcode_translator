@@ -5,6 +5,8 @@ This module provides a unified interface for interacting with OncoCore
 through the HeySol API client for oncology-specific memory storage and retrieval.
 """
 
+from typing import Any, Dict, List, Optional
+
 # Import the HeySol client components
 from heysol.clients import HeySolAPIClient, HeySolMCPClient
 from heysol.config import HeySolConfig
@@ -13,18 +15,8 @@ from heysol.exceptions import HeySolError, ValidationError
 # Re-export for convenience
 __all__ = [
     "OncoCoreClient",
-    "OncoCoreError",
-    "OncoCoreClient",
     "HeySolError",
 ]
-"""
-HeySol API client implementation with both direct API and MCP support.
-
-This client provides a unified interface that can use either direct API calls
-or MCP (Model Context Protocol) operations based on availability and preference.
-"""
-
-from typing import Any, Dict, List, Optional
 
 
 class OncoCoreClient:
