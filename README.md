@@ -129,7 +129,7 @@ cd mcode-translator
 pip install -r requirements.txt
 
 # Set up environment (optional, for CORE Memory storage)
-export COREAI_API_KEY="your_core_memory_key_here"
+export HEYSOL_API_KEY="your_heysol_api_key_here"
 ```
 
 ### 🎯 Your First mCODE Translation
@@ -205,7 +205,7 @@ python mcode_translate.py optimize-trials --trials-file trials.json --cv-folds 3
 ### Environment Variables
 ```bash
 # Optional (for CORE Memory storage)
-COREAI_API_KEY=your_core_memory_key
+HEYSOL_API_KEY=your_heysol_api_key
 
 # Optional
 ENABLE_LIVE_TESTS=false  # Enable integration tests
@@ -215,7 +215,7 @@ LOG_LEVEL=INFO
 ### .env File Support
 You can also create a `.env` file in the project root:
 ```bash
-COREAI_API_KEY=your_core_memory_key_here
+HEYSOL_API_KEY=your_heysol_api_key_here
 ```
 
 ### Running Without CORE Memory

@@ -11,7 +11,7 @@ from src.services.clinical_note_generator import ClinicalNoteGenerator
 from src.services.demographics_extractor import DemographicsExtractor
 from src.services.fhir_extractors import FHIRResourceExtractors
 from src.services.summarizer import McodeSummarizer
-from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.storage.mcode_memory_storage import OncoCoreMemory
 from src.utils.concurrency import TaskQueue, create_task
 
 from .base_workflow import \
@@ -27,7 +27,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
     """
 
     def __init__(
-        self, config: Any, memory_storage: Optional[McodeMemoryStorage] = None
+        self, config: Any, memory_storage: Optional[OncoCoreMemory] = None
     ):
         """
         Initialize the patients processor workflow.

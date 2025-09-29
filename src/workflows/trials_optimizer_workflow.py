@@ -16,7 +16,7 @@ from src.optimization.cross_validation import CrossValidator
 from src.optimization.execution_manager import OptimizationExecutionManager
 from src.optimization.result_aggregator import OptimizationResultAggregator
 from src.shared.extractors import DataExtractor
-from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.storage.mcode_memory_storage import OncoCoreMemory
 from src.utils.config import Config
 
 from .base_workflow import BaseWorkflow, WorkflowResult
@@ -33,7 +33,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
     def __init__(
         self,
         config: Optional[Config] = None,
-        memory_storage: Optional[Union[McodeMemoryStorage, bool]] = None,
+        memory_storage: Optional[Union[OncoCoreMemory, bool]] = None,
     ) -> None:
         super().__init__(config, memory_storage)
         self.cross_validator = CrossValidator()

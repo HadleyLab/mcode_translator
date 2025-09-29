@@ -300,10 +300,10 @@ class Config:
         Raises:
             ConfigurationError: If API key is missing or invalid.
         """
-        api_key = os.getenv("COREAI_API_KEY")
+        api_key = os.getenv("HEYSOL_API_KEY")
         if not api_key or len(api_key.strip()) < 20:
             raise ConfigurationError(
-                "Invalid or missing API key in environment variable 'COREAI_API_KEY'."
+                "Invalid or missing API key in environment variable 'HEYSOL_API_KEY'."
             )
         return api_key
 

@@ -14,6 +14,9 @@ if [ -f ".env" ]; then
     set +a
 fi
 
+# Set PYTHONPATH to include heysol_api_client src directory
+export PYTHONPATH="../heysol_api_client/src:$PYTHONPATH"
+
 # Check API key - use default HEYSOL_API_KEY unless registry is in effect
 if [ -z "$HEYSOL_API_KEY" ]; then
     echo "❌ No API key found!"
@@ -34,7 +37,7 @@ echo "✅ API key found (ends with: ...${HEYSOL_API_KEY: -4})"
 echo ""
 
 # Check if we're in the right directory
-if [ ! -f "src/cli/cli.py" ]; then
+if [ ! -f "src/cli/__init__.py" ]; then
     echo "❌ Not in MCODE Translator directory!"
     echo "💡 Please run this script from the mcode_translator directory"
     exit 1

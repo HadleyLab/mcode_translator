@@ -1,56 +1,52 @@
 """
-mCODE Memory Storage - Unified interface for storing mCODE summaries to CORE Memory.
+OncoCore Memory - Unified interface for storing mCODE summaries to CORE Memory.
 
 This module provides a unified interface for storing processed mCODE data
-(trials and patients) as natural language summaries that preserve mCODE
-structure and codes for later retrieval and analysis.
+(patients and trials) as natural language summaries that preserve mCODE
+structure and codes for later retrieval and analysis. This is the mCODE Translator's
+instance of CORE Memory with dedicated patients and trials spaces.
 """
 
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional, Protocol
+from typing import Any, Dict, Optional, cast
 
-from heysol.config import HeySolConfig
-
-from src.services.summarizer import McodeSummarizer
-from src.utils.config import Config
-from src.utils.logging_config import get_logger
-from src.utils.onco_core_memory import HeySolError, OncoCoreClient
-
-# Add heysol_api_client to path for imports
+# Inject heysol_api_client path for imports (per coding standards)
 heysol_client_path = (
     Path(__file__).parent.parent.parent.parent / "heysol_api_client" / "src"
 )
 if str(heysol_client_path) not in sys.path:
     sys.path.insert(0, str(heysol_client_path))
 
+from heysol.clients import HeySolAPIClient
+from heysol.config import HeySolConfig
+from heysol.exceptions import HeySolError
 
-class DataStorage(Protocol):
-    """Protocol for data storage components."""
-
-    def store(self, key: str, data: Dict[str, Any]) -> bool:
-        """Store data with given key. Returns success status."""
-        ...
-
-    def retrieve(self, key: str) -> Optional[Dict[str, Any]]:
-        """Retrieve data by key."""
-        ...
+from src.services.summarizer import McodeSummarizer
+from src.utils.config import Config
+from src.utils.logging_config import get_logger
 
 
-class McodeMemoryStorage:
+class OncoCoreMemory:
     """
     Unified storage interface for mCODE summaries in CORE Memory.
 
-    Stores processed mCODE data as natural language summaries that preserve
-    the structured mCODE elements and codes for later analysis.
+    This is the mCODE Translator's dedicated CORE Memory instance with patients
+    and trials spaces. Stores processed mCODE data as natural language summaries
+    that preserve the structured mCODE elements and codes for later analysis.
+
+    Uses HeySol API client directly with --store-to-memory functionality.
     """
+
+    PATIENTS_SPACE = "patients"
+    TRIALS_SPACE = "trials"
 
     def __init__(self, api_key: Optional[str] = None, source: Optional[str] = None):
         """
-        Initialize the storage interface with centralized configuration.
+        Initialize the OncoCore Memory interface with centralized configuration.
 
         Args:
-            api_key: Optional CORE Memory API key (will use config if not provided)
+            api_key: Optional HeySol API key (will use config if not provided)
             source: Optional source identifier (will use config if not provided)
         """
         self.logger = get_logger(__name__)
@@ -62,30 +58,46 @@ class McodeMemoryStorage:
         self.source = source or self.config.get_core_memory_source()
         self.base_url = self.config.get_core_memory_api_base_url()
         self.timeout = self.config.get_core_memory_timeout()
-        self.max_retries = self.config.get_core_memory_max_retries()
-        self.batch_size = self.config.get_core_memory_batch_size()
-        self.default_spaces = self.config.get_core_memory_default_spaces()
 
-        # Defer client initialization until first use to avoid auth errors during import
-        self._client: Optional[OncoCoreClient] = None
+        # Initialize HeySol API client directly
+        heysol_config = HeySolConfig(
+            api_key=self.api_key,
+            base_url=self.base_url,
+            source=self.source,
+            timeout=self.timeout,
+        )
+        self.api_client = HeySolAPIClient(config=heysol_config)
 
-    @property
-    def client(self) -> OncoCoreClient:
-        """Lazy initialization of the CORE Memory client."""
-        if self._client is None:
-            config = HeySolConfig(
-                api_key=self.api_key, base_url=self.base_url, source=self.source
-            )
-            self._client = OncoCoreClient(
-                api_key=self.api_key, base_url=self.base_url, config=config
-            )
-        return self._client
+        # Ensure spaces exist
+        self._ensure_spaces()
+
+    def _ensure_spaces(self) -> None:
+        """Ensure the required spaces exist in CORE Memory."""
+        try:
+            spaces = self.api_client.get_spaces()
+            existing_spaces = {space.get("name", "") for space in spaces}
+
+            if self.PATIENTS_SPACE not in existing_spaces:
+                self.api_client.create_space(
+                    self.PATIENTS_SPACE, "Patient mCODE summaries"
+                )
+                self.logger.info(f"Created {self.PATIENTS_SPACE} space")
+
+            if self.TRIALS_SPACE not in existing_spaces:
+                self.api_client.create_space(
+                    self.TRIALS_SPACE, "Clinical trial mCODE summaries"
+                )
+                self.logger.info(f"Created {self.TRIALS_SPACE} space")
+
+        except HeySolError as e:
+            self.logger.error(f"Failed to ensure spaces: {e}")
+            raise
 
     def store_trial_mcode_summary(
         self, trial_id: str, mcode_data: Dict[str, Any]
     ) -> bool:
         """
-        Store a processed clinical trial's mCODE summary.
+        Store a processed clinical trial's mCODE summary in the trials space.
 
         Args:
             trial_id: Clinical trial identifier (NCT ID)
@@ -95,11 +107,10 @@ class McodeMemoryStorage:
             bool: True if stored successfully
         """
         try:
-            # The summarizer expects the original trial data, not processed mCODE data
-            # Extract the original trial data from mcode_data if available
+            # Generate summary using summarizer
             trial_data = mcode_data.get("original_trial_data")
             if not trial_data:
-                # If original trial data is not available, try to reconstruct from metadata
+                # Reconstruct from metadata if needed
                 trial_data = {
                     "protocolSection": {
                         "identificationModule": {
@@ -128,9 +139,17 @@ class McodeMemoryStorage:
                 }
 
             summary = self.summarizer.create_trial_summary(trial_data)
-            self.client.ingest(summary)
-            self.logger.info(f"✅ Stored trial {trial_id} mCODE summary in CORE Memory")
+
+            # Store in trials space
+            self.api_client.ingest(
+                message=summary, space_id=self.TRIALS_SPACE, source=self.source
+            )
+
+            self.logger.info(
+                f"✅ Stored trial {trial_id} mCODE summary in {self.TRIALS_SPACE} space"
+            )
             return True
+
         except HeySolError as e:
             self.logger.error(f"❌ Failed to store trial {trial_id}: {e}")
             return False
@@ -142,7 +161,7 @@ class McodeMemoryStorage:
         self, patient_id: str, mcode_data: Dict[str, Any]
     ) -> bool:
         """
-        Store a processed patient's mCODE summary.
+        Store a processed patient's mCODE summary in the patients space.
 
         Args:
             patient_id: Patient identifier
@@ -152,22 +171,26 @@ class McodeMemoryStorage:
             bool: True if stored successfully
         """
         try:
-            # The summarizer expects the original patient FHIR bundle data
-            # Extract it from mcode_data if available, otherwise use the processed data
+            # Generate summary using summarizer
             patient_bundle = mcode_data.get("original_patient_data")
             if not patient_bundle:
-                # If original data is not available, try to reconstruct or use processed data
                 self.logger.warning(
                     f"Original patient data not available for {patient_id}, using processed data"
                 )
                 patient_bundle = mcode_data
 
             summary = self.summarizer.create_patient_summary(patient_bundle)
-            self.client.ingest(summary)
+
+            # Store in patients space
+            self.api_client.ingest(
+                message=summary, space_id=self.PATIENTS_SPACE, source=self.source
+            )
+
             self.logger.info(
-                f"✅ Stored patient {patient_id} mCODE summary in CORE Memory"
+                f"✅ Stored patient {patient_id} mCODE summary in {self.PATIENTS_SPACE} space"
             )
             return True
+
         except HeySolError as e:
             self.logger.error(f"❌ Failed to store patient {patient_id}: {e}")
             return False
@@ -177,7 +200,7 @@ class McodeMemoryStorage:
 
     def search_similar_trials(self, query: str, limit: int = 10) -> Dict[str, Any]:
         """
-        Search for similar trials in CORE Memory.
+        Search for similar trials in the trials space.
 
         Args:
             query: Search query
@@ -187,21 +210,61 @@ class McodeMemoryStorage:
             Dict with search results
         """
         try:
-            return self.client.search(query, limit=limit)
+            result = self.api_client.search(
+                query=query, space_ids=[self.TRIALS_SPACE], limit=limit
+            )
+            return cast(Dict[str, Any], result)
+        except HeySolError as e:
+            self.logger.error(f"❌ Search failed: {e}")
+            return {"episodes": [], "facts": []}
+
+    def search_similar_patients(self, query: str, limit: int = 10) -> Dict[str, Any]:
+        """
+        Search for similar patients in the patients space.
+
+        Args:
+            query: Search query
+            limit: Maximum results to return
+
+        Returns:
+            Dict with search results
+        """
+        try:
+            result = self.api_client.search(
+                query=query, space_ids=[self.PATIENTS_SPACE], limit=limit
+            )
+            return cast(Dict[str, Any], result)
         except HeySolError as e:
             self.logger.error(f"❌ Search failed: {e}")
             return {"episodes": [], "facts": []}
 
     def get_memory_stats(self) -> Dict[str, Any]:
         """
-        Get statistics about stored memories.
+        Get statistics about stored memories in both spaces.
 
         Returns:
             Dict with memory statistics
         """
         try:
-            spaces = self.client.get_spaces()
-            return {"spaces": spaces, "total_spaces": len(spaces)}
+            spaces = cast(list[Dict[str, Any]], self.api_client.get_spaces())
+            patients_space: Dict[str, Any] = next(
+                (s for s in spaces if s.get("name") == self.PATIENTS_SPACE), {}
+            )
+            trials_space: Dict[str, Any] = next(
+                (s for s in spaces if s.get("name") == self.TRIALS_SPACE), {}
+            )
+
+            return {
+                "spaces": spaces,
+                "total_spaces": len(spaces),
+                "patients_space": patients_space,
+                "trials_space": trials_space,
+            }
         except HeySolError as e:
             self.logger.error(f"❌ Failed to get memory stats: {e}")
             return {"spaces": [], "total_spaces": 0}
+
+    def close(self) -> None:
+        """Close the API client and clean up resources."""
+        if hasattr(self.api_client, "close"):
+            self.api_client.close()

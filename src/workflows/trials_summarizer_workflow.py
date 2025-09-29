@@ -8,7 +8,7 @@ from processed mCODE trial data and stores them in CORE Memory.
 from typing import Any, Dict, Optional, cast
 
 from src.services.summarizer import McodeSummarizer
-from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.storage.mcode_memory_storage import OncoCoreMemory
 
 from .base_workflow import TrialsProcessorWorkflow, WorkflowResult
 
@@ -22,7 +22,7 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
     """
 
     def __init__(
-        self, config: Any, memory_storage: Optional[McodeMemoryStorage] = None
+        self, config: Any, memory_storage: Optional[OncoCoreMemory] = None
     ):
         """
         Initialize the trials summarizer workflow.

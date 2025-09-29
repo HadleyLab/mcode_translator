@@ -11,7 +11,7 @@ import sys
 from typing import Any, Dict, List, Optional
 
 from src.shared.cli_utils import McodeCLI
-from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.storage.mcode_memory_storage import OncoCoreMemory
 from src.utils.logging_config import get_logger
 from src.workflows.trials_summarizer_workflow import TrialsSummarizerWorkflow
 
@@ -110,7 +110,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     memory_storage = None
     if args.ingest:
         try:
-            memory_storage = McodeMemoryStorage(source=args.memory_source)
+            memory_storage = OncoCoreMemory(source=args.memory_source)
             logger.info(
                 f"🧠 Initialized CORE Memory storage (source: {args.memory_source})"
             )

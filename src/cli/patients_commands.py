@@ -52,6 +52,7 @@ def fetch(
         output_file=output_file,
         log_level=log_level,
         config=config_file,
+        verbose=False,
     )
     patients_fetcher.main(args)  # type: ignore
 
@@ -85,7 +86,9 @@ def process(
         trials=trials,
         log_level=log_level,
         config=config_file,
-        store_in_memory=store_in_memory,
+        ingest=store_in_memory,
+        memory_source="mcode_translator",
+        verbose=False,
     )
     patients_processor.main(args)  # type: ignore
 
@@ -120,6 +123,7 @@ def summarize(
         log_level=log_level,
         config=config_file,
         store_in_memory=store_in_memory,
+        verbose=False,
     )
     patients_summarizer.main(args)  # type: ignore
 

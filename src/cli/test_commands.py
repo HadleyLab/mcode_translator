@@ -8,14 +8,12 @@ Migrated from Click to Typer with full type hints and heysol_api_client integrat
 
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Literal
-
 import typer
 
 from ..config.heysol_config import get_config
 from .test_runner import (run_all_tests, run_coverage_report,
-                          run_integration_tests, run_linting,
-                          run_performance_tests, run_unit_tests)
+                           run_integration_tests, run_linting,
+                           run_performance_tests, run_unit_tests)
 
 # Create the test Typer app
 app = typer.Typer()
@@ -23,9 +21,7 @@ app = typer.Typer()
 
 @app.command()
 def run(
-    suite: Literal[
-        "unit", "integration", "performance", "all", "coverage", "lint"
-    ] = typer.Argument(..., help="Test suite to run"),
+    suite: str = typer.Argument(..., help="Test suite to run"),
     live: bool = typer.Option(
         False, help="Run integration tests with live data sources"
     ),

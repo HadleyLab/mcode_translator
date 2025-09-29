@@ -8,7 +8,7 @@ from processed mCODE patient data and stores them in CORE Memory.
 from typing import Any, Dict, List, Optional
 
 from src.services.summarizer import McodeSummarizer
-from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.storage.mcode_memory_storage import OncoCoreMemory
 
 from .base_workflow import \
     PatientsProcessorWorkflow as BasePatientsProcessorWorkflow
@@ -24,7 +24,7 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
     """
 
     def __init__(
-        self, config: Any, memory_storage: Optional[McodeMemoryStorage] = None
+        self, config: Any, memory_storage: Optional[OncoCoreMemory] = None
     ):
         """
         Initialize the patients summarizer workflow.

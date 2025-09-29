@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional, cast
 
 from src.pipeline import McodePipeline
 # Removed unified_pipeline imports - using simplified pipeline directly
-from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.storage.mcode_memory_storage import OncoCoreMemory
 from src.utils.config import Config
 
 
@@ -81,16 +81,16 @@ class DependencyContainer:
         # Create and return the processor
         return McodePipeline(prompt_name=prompt_name, model_name=model_name)
 
-    def create_memory_storage(self) -> McodeMemoryStorage:
+    def create_memory_storage(self) -> OncoCoreMemory:
         """
         Create a memory storage component.
 
         Returns:
-            Configured McodeMemoryStorage instance
+            Configured OncoCoreMemory instance
         """
         if "memory_storage" not in self._singletons:
-            self._singletons["memory_storage"] = McodeMemoryStorage()
-        return cast(McodeMemoryStorage, self._singletons["memory_storage"])
+            self._singletons["memory_storage"] = OncoCoreMemory()
+        return cast(OncoCoreMemory, self._singletons["memory_storage"])
 
     def create_clinical_trial_pipeline(
         self,

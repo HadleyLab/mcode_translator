@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from src.pipeline import McodePipeline
 from src.shared.models import enhance_trial_with_mcode_results
-from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.storage.mcode_memory_storage import OncoCoreMemory
 
 from .base_workflow import TrialsProcessorWorkflow, WorkflowResult
 from .cache_manager import TrialCacheManager
@@ -26,7 +26,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
     """
 
     def __init__(
-        self, config: Any, memory_storage: Optional[McodeMemoryStorage] = None
+        self, config: Any, memory_storage: Optional[OncoCoreMemory] = None
     ):
         """
         Initialize the trials processor workflow.

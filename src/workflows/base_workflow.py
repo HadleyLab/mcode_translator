@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union, cast
 
 from src.shared.models import ProcessingMetadata, WorkflowResult
-from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.storage.mcode_memory_storage import OncoCoreMemory
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
 
@@ -31,7 +31,7 @@ class BaseWorkflow(ABC):
     def __init__(
         self,
         config: Optional[Config] = None,
-        memory_storage: Optional[Union[McodeMemoryStorage, bool]] = None,
+        memory_storage: Optional[Union[OncoCoreMemory, bool]] = None,
     ):
         """
         Initialize the workflow with configuration and CORE memory.
@@ -43,12 +43,12 @@ class BaseWorkflow(ABC):
         """
         self.config = config or Config()
         if memory_storage is False:
-            self.memory_storage: Optional[McodeMemoryStorage] = None
+            self.memory_storage: Optional[OncoCoreMemory] = None
         else:
             self.memory_storage = (
                 memory_storage
-                if isinstance(memory_storage, McodeMemoryStorage)
-                else McodeMemoryStorage()
+                if isinstance(memory_storage, OncoCoreMemory)
+                else OncoCoreMemory()
             )
         self.logger = get_logger(self.__class__.__name__)
 
@@ -94,7 +94,7 @@ class BaseWorkflow(ABC):
                 "timestamp": self._get_timestamp(),
             }
 
-            # McodeMemoryStorage doesn't have generic store method
+            # OncoCoreMemory doesn't have generic store method
             # Use search_similar_trials as a workaround for now
             try:
                 # This is a temporary workaround - the storage interface needs redesign
@@ -136,7 +136,7 @@ class BaseWorkflow(ABC):
 
         try:
             namespaced_key = f"{self.memory_space}:{key}"
-            # McodeMemoryStorage doesn't have generic retrieve method
+            # OncoCoreMemory doesn't have generic retrieve method
             # Use search_similar_trials as a workaround for now
             result = self.memory_storage.search_similar_trials(namespaced_key, limit=1)
             if result and result.get("episodes"):
