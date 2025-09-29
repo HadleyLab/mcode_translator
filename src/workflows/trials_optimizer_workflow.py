@@ -10,12 +10,14 @@ import asyncio
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union, cast
 
 from src.optimization.cross_validation import CrossValidator
 from src.optimization.execution_manager import OptimizationExecutionManager
 from src.optimization.result_aggregator import OptimizationResultAggregator
 from src.shared.extractors import DataExtractor
+from src.storage.mcode_memory_storage import McodeMemoryStorage
+from src.utils.config import Config
 
 from .base_workflow import BaseWorkflow, WorkflowResult
 
@@ -28,10 +30,14 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
     settings for mCODE processing. Results are saved to config files.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(
+        self,
+        config: Optional[Config] = None,
+        memory_storage: Optional[Union[McodeMemoryStorage, bool]] = None,
+    ) -> None:
+        super().__init__(config, memory_storage)
         self.cross_validator = CrossValidator()
-        self.execution_manager = OptimizationExecutionManager(self.logger)
+        self.execution_manager = OptimizationExecutionManager(self.logger)  # type: ignore
         self.result_aggregator = OptimizationResultAggregator(self.logger)
         self.extractor = DataExtractor()
 
@@ -40,7 +46,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         """Optimizer workflows use 'optimization' space."""
         return "optimization"
 
-    def execute(self, **kwargs) -> WorkflowResult:
+    def execute(self, **kwargs: Any) -> WorkflowResult:
         """
         Execute the optimization workflow with cross validation.
 
@@ -343,6 +349,10 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
         return prompt in available_prompts and model in available_models
 
+    def summarize_benchmark_validations(self) -> None:
+        """Summarize benchmark validations (placeholder for CLI)."""
+        self.logger.info("Benchmark validation summary not implemented yet")
+
     async def _run_inter_rater_reliability_analysis(
         self,
         trials_data: List[Dict[str, Any]],
@@ -393,15 +403,15 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 "num_raters": analysis.num_raters,
                 "num_trials": analysis.num_trials,
                 "overall_agreement": {
-                    "presence_agreement": analysis.overall_metrics.get(
+                    "presence_agreement": cast(Any, analysis.overall_metrics.get(
                         "presence_agreement", {}
-                    ).percentage_agreement,
-                    "values_agreement": analysis.overall_metrics.get(
+                    )).percentage_agreement,
+                    "values_agreement": cast(Any, analysis.overall_metrics.get(
                         "values_agreement", {}
-                    ).percentage_agreement,
-                    "confidence_agreement": analysis.overall_metrics.get(
+                    )).percentage_agreement,
+                    "confidence_agreement": cast(Any, analysis.overall_metrics.get(
                         "confidence_agreement", {}
-                    ).percentage_agreement,
+                    )).percentage_agreement,
                 },
                 "report_path": str(report_path),
             }

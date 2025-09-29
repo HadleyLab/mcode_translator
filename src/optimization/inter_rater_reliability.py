@@ -93,7 +93,7 @@ class InterRaterReliabilityAnalyzer:
     3. Confidence scores
     """
 
-    def __init__(self, output_dir: str = "inter_rater_analysis_results"):
+    def __init__(self, output_dir: str = "inter_rater_analysis_results") -> None:
         self.logger = get_logger(__name__)
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
@@ -314,7 +314,7 @@ class InterRaterReliabilityAnalyzer:
         rater_ids = list(rater_results.keys())
 
         # Get all unique element types across all raters
-        all_element_types = set()
+        all_element_types: set[str] = set()
         for result in rater_results.values():
             all_element_types.update(
                 elem.element_type for elem in result.mcode_elements
@@ -371,7 +371,7 @@ class InterRaterReliabilityAnalyzer:
 
     def _calculate_values_agreement(
         self, rater_results: Dict[str, RaterResult]
-    ) -> Dict[str, float]:
+    ) -> Dict[str, Any]:
         """Calculate agreement on element values and codes."""
         # Group elements by type
         elements_by_type: Dict[str, Dict[str, List[McodeElement]]] = defaultdict(
@@ -638,7 +638,7 @@ class InterRaterReliabilityAnalyzer:
 
     def _analyze_rater_performance(self) -> Dict[str, Dict[str, Any]]:
         """Analyze performance characteristics of each rater."""
-        rater_stats = defaultdict(
+        rater_stats: Dict[str, Dict[str, Any]] = defaultdict(
             lambda: {
                 "trials_processed": 0,
                 "success_rate": 0.0,
@@ -706,7 +706,7 @@ class InterRaterReliabilityAnalyzer:
         )
         with open(rater_results_file, "w") as f:
             # Convert to serializable format
-            serializable_results = {}
+            serializable_results: Dict[str, Dict[str, Any]] = {}
             for trial_id, trial_results in self.rater_results.items():
                 serializable_results[trial_id] = {}
                 for rater_id, result in trial_results.items():
@@ -728,6 +728,8 @@ class InterRaterReliabilityAnalyzer:
         analysis_file = self.output_dir / f"inter_rater_analysis_{timestamp}.json"
         with open(analysis_file, "w") as f:
             # Convert to serializable format
+            if self.analysis_results is None:
+                raise ValueError("No analysis results available to save")
             serializable_analysis = {
                 "trial_analyses": {},
                 "overall_metrics": {},
@@ -777,6 +779,8 @@ class InterRaterReliabilityAnalyzer:
         """Generate a comprehensive markdown report."""
         if not self.analysis_results:
             return "No analysis results available"
+
+        assert self.analysis_results is not None  # For mypy
 
         report = f"""# Inter-Rater Reliability Analysis Report
 **Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}

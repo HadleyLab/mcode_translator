@@ -5,7 +5,7 @@ This module provides a centralized container for managing dependencies
 and creating configured pipeline components.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from src.pipeline import McodePipeline
 
@@ -33,7 +33,7 @@ class DependencyContainer:
         self._components: Dict[str, Any] = {}
         self._singletons: Dict[str, Any] = {}
 
-    def register_component(self, name: str, component: Any, singleton: bool = False):
+    def register_component(self, name: str, component: Any, singleton: bool = False) -> None:
         """
         Register a component in the container.
 
@@ -61,7 +61,7 @@ class DependencyContainer:
             return self._singletons[name]
         return self._components.get(name)
 
-    def create_mcode_processor(self, **kwargs) -> McodePipeline:
+    def create_mcode_processor(self, **kwargs: Any) -> McodePipeline:
         """
         Create an mCODE processing component.
 
@@ -80,7 +80,7 @@ class DependencyContainer:
         # Create and return the processor
         return McodePipeline(prompt_name=prompt_name, model_name=model_name)
 
-    def create_memory_storage(self):
+    def create_memory_storage(self) -> McodeMemoryStorage:
         """
         Create a memory storage component.
 
@@ -89,7 +89,7 @@ class DependencyContainer:
         """
         if "memory_storage" not in self._singletons:
             self._singletons["memory_storage"] = McodeMemoryStorage()
-        return self._singletons["memory_storage"]
+        return cast(McodeMemoryStorage, self._singletons["memory_storage"])
 
     def create_clinical_trial_pipeline(
         self,
@@ -143,13 +143,13 @@ def get_container() -> DependencyContainer:
     return _container
 
 
-def set_container(container: DependencyContainer):
+def set_container(container: DependencyContainer) -> None:
     """Set the global dependency container instance."""
     global _container
     _container = container
 
 
-def reset_container():
+def reset_container() -> None:
     """Reset the global container (useful for testing)."""
     global _container
     _container = None

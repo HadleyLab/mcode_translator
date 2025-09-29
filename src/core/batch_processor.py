@@ -120,6 +120,7 @@ class BatchProcessor:
         return WorkflowResult(
             success=total_successful > 0,
             data=all_results,
+            error_message=None,
             metadata={
                 "total_trials": len(trials_data),
                 "total_processed": total_processed,

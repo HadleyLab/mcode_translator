@@ -11,22 +11,23 @@ import argparse
 import asyncio
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from src.shared.cli_utils import McodeCLI
+from src.shared.models import WorkflowResult
 from src.workflows.trials_optimizer_workflow import TrialsOptimizerWorkflow
 
 
 class SummaryHandler(FileSystemEventHandler):
     """Event handler for real-time summary of optimization runs."""
 
-    def __init__(self, workflow):
+    def __init__(self, workflow: "TrialsOptimizerWorkflow") -> None:
         self.workflow = workflow
 
-    def on_created(self, event):
+    def on_created(self, event: Any) -> None:
         if event.is_directory or not event.src_path.endswith(".json"):
             return
         print("\n📊 Real-time summary updated:")
@@ -249,7 +250,7 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
 
     # Initialize and execute workflow
     try:
-        result = asyncio.run(workflow.execute(**workflow_kwargs))
+        result: WorkflowResult = workflow.execute(**workflow_kwargs)
 
         if result.success:
             print("✅ Optimization completed successfully!")
