@@ -72,9 +72,9 @@ def summarize_trial(
             console.print(f"[blue]📋 Include codes: {include_codes}[/blue]")
             console.print(f"[blue]💾 Memory storage: {'enabled' if store_memory else 'disabled'}[/blue]")
 
-        # Initialize unified processor
-        from services import UnifiedTrialProcessor
-        processor = UnifiedTrialProcessor(
+        # Initialize mCODE trial processor
+        from services.trial_processor import McodeTrialProcessor
+        processor = McodeTrialProcessor(
             default_engine=engine,
             llm_model=llm_model,
             llm_prompt=llm_prompt,
