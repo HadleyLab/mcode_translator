@@ -159,7 +159,7 @@ class TestStorageIntegration:
 
     def test_storage_error_handling_search_failure(self, mock_onco_core_memory):
         """Test handling of search failures."""
-        from src.utils.onco_core_memory import HeySolError
+        from src.services.heysol_client import HeySolError
 
         mock_onco_core_memory.search.side_effect = HeySolError("Search failed")
 

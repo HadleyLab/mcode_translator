@@ -7,21 +7,19 @@ operations.
 """
 
 from .base_workflow import TrialsProcessorWorkflow, WorkflowResult
-from .cache_manager import TrialCacheManager
-from .patients_fetcher_workflow import PatientsFetcherWorkflow
-from .patients_processor_workflow import PatientsProcessorWorkflow
-from .patients_summarizer_workflow import PatientsSummarizerWorkflow
+from .patients_fetcher import PatientsFetcherWorkflow
+from .patients_processor import PatientsProcessorWorkflow
+from .patients_summarizer import PatientsSummarizerWorkflow
 from .trial_extractor import TrialExtractor
 from .trial_summarizer import TrialSummarizer
-from .trials_fetcher_workflow import TrialsFetcherWorkflow
-from .trials_optimizer_workflow import TrialsOptimizerWorkflow
-from .trials_processor_workflow import ClinicalTrialsProcessorWorkflow
-from .trials_summarizer_workflow import TrialsSummarizerWorkflow
+from .trials_fetcher import TrialsFetcherWorkflow
+from .trials_optimizer import TrialsOptimizerWorkflow
+from .trials_processor import TrialsProcessor
+from .trials_summarizer import TrialsSummarizerWorkflow
 
 __all__ = [
     "TrialsProcessorWorkflow",
     "WorkflowResult",
-    "TrialCacheManager",
     "PatientsFetcherWorkflow",
     "PatientsProcessorWorkflow",
     "PatientsSummarizerWorkflow",
@@ -29,6 +27,6 @@ __all__ = [
     "TrialSummarizer",
     "TrialsFetcherWorkflow",
     "TrialsOptimizerWorkflow",
-    "ClinicalTrialsProcessorWorkflow",
+    "TrialsProcessor",
     "TrialsSummarizerWorkflow",
 ]

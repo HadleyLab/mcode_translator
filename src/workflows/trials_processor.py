@@ -12,13 +12,12 @@ from src.pipeline import McodePipeline
 from src.shared.models import enhance_trial_with_mcode_results
 from src.storage.mcode_memory_storage import OncoCoreMemory
 
-from .base_workflow import TrialsProcessorWorkflow, WorkflowResult
-from .cache_manager import TrialCacheManager
+from .base_workflow import TrialsProcessorWorkflow as BaseTrialsProcessorWorkflow, WorkflowResult
 from .trial_extractor import TrialExtractor
 from .trial_summarizer import TrialSummarizer
 
 
-class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
+class TrialsProcessor(BaseTrialsProcessorWorkflow):
     """
     Workflow for processing clinical trials with mCODE mapping.
 
@@ -41,7 +40,6 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         # Initialize component classes
         self.extractor = TrialExtractor()
         self.summarizer = TrialSummarizer()
-        self.cache_manager = TrialCacheManager()
 
     def execute(self, **kwargs: Any) -> WorkflowResult:
         """
@@ -52,8 +50,9 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         Args:
             **kwargs: Workflow parameters including:
                 - trials_data: List of trial data to process
-                - model: LLM model to use
-                - prompt: Prompt template to use
+                - engine: Processing engine ('regex' or 'llm')
+                - model: LLM model to use (for llm engine)
+                - prompt: Prompt template to use (for llm engine)
                 - workers: Number of concurrent workers
                 - store_in_memory: Whether to store results in CORE memory (default: False)
 
@@ -64,6 +63,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             self.logger.info("Starting trials processor workflow execution")
             # Extract parameters
             trials_data = kwargs.get("trials_data", [])
+            engine = kwargs.get("engine", "llm")
             model = kwargs.get("model") or "gpt-4o"
             prompt = kwargs.get("prompt", "direct_mcode_evidence_based_concise")
             workers = kwargs.get("workers", 0)
@@ -73,8 +73,8 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
 
             self.logger.info(
                 f"Extracted parameters: trials_data="
-                f"{len(trials_data) if trials_data else 0}, model={model}, "
-                f"prompt={prompt}, store_in_memory={store_in_memory}"
+                f"{len(trials_data) if trials_data else 0}, engine={engine}, "
+                f"model={model}, prompt={prompt}, store_in_memory={store_in_memory}"
             )
 
             if not trials_data:
@@ -84,15 +84,19 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                     error_message="No trial data provided for processing.",
                 )
 
-            # Initialize pipeline if needed
-            self.logger.info("Initializing McodePipeline...")
+            # Initialize processing engine
+            self.logger.info(f"Initializing McodePipeline with {engine} engine...")
             if not self.pipeline:
                 self.logger.info(
-                    f"Creating McodePipeline with prompt_name={prompt}, "
+                    f"Creating McodePipeline with engine={engine}, prompt_name={prompt}, "
                     f"model_name={model}"
                 )
                 try:
-                    self.pipeline = McodePipeline(prompt_name=prompt, model_name=model)
+                    self.pipeline = McodePipeline(
+                        prompt_name=prompt,
+                        model_name=model,
+                        engine=engine
+                    )
                     self.logger.info("McodePipeline initialized successfully")
                 except Exception as e:
                     self.logger.error(f"Failed to initialize McodePipeline: {e}")
@@ -106,7 +110,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             failed_count = 0
 
             self.logger.info(
-                f"🔬 Processing {len(trials_data)} trials with mCODE pipeline"
+                f"🔬 Processing {len(trials_data)} trials with {engine} engine"
             )
 
             # Use fully async processing with controlled concurrency
@@ -124,6 +128,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                     trial: Dict[str, Any], index: int
                 ) -> tuple[Any, bool]:
                     async with semaphore:
+                        # Use unified pipeline for both engines
                         return await self._process_single_trial_async(
                             trial, model, prompt, index, store_in_memory
                         )
@@ -185,8 +190,9 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                     "successful": successful_count,
                     "failed": failed_count,
                     "success_rate": success_rate,
-                    "model_used": model,
-                    "prompt_used": prompt,
+                    "engine_used": engine,
+                    "model_used": model if engine == "llm" else None,
+                    "prompt_used": prompt if engine == "llm" else None,
                     "stored_in_memory": store_in_memory
                     and self.memory_storage is not None,
                 },
@@ -195,17 +201,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         except Exception as e:
             return self._handle_error(e, "trials processing")
 
-    def _get_cached_trial_result(
-        self, trial: Dict[str, Any], model: str, prompt: str
-    ) -> Optional[Dict[str, Any]]:
-        """Get cached processed trial result if available."""
-        return self.cache_manager.get_cached_trial_result(trial, model, prompt)
-
-    def _cache_trial_result(
-        self, processed_trial: Dict[str, Any], model: str, prompt: str
-    ) -> None:
-        """Cache processed trial result."""
-        self.cache_manager.cache_trial_result(processed_trial, model, prompt)
+    # Removed caching methods - only API calls should be cached
 
     # Removed _make_trial_serializable - now in TrialCacheManager
 
@@ -216,27 +212,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         # mCODE extraction is pure computation, not API calls, so no caching
         return self.extractor.extract_trial_mcode_elements(trial)
 
-    def _generate_trial_natural_language_summary_cached(
-        self, trial_id: str, mcode_elements: Dict[str, Any], trial_data: Dict[str, Any]
-    ) -> str:
-        """Generate natural language summary with caching."""
-        cached_result = self.cache_manager.get_cached_natural_language_summary(
-            trial_id, mcode_elements, trial_data
-        )
-        if cached_result is not None:
-            return cached_result
-
-        # Generate summary using the summarizer
-        summary = self.summarizer.generate_trial_natural_language_summary(
-            trial_id, mcode_elements, trial_data
-        )
-
-        # Cache the result
-        self.cache_manager.cache_natural_language_summary(
-            summary, trial_id, mcode_elements, trial_data
-        )
-
-        return summary
+    # Removed caching methods - only API calls should be cached
 
     def _extract_trial_id(self, trial: Dict[str, Any]) -> str:
         """Extract trial ID from trial data."""
@@ -332,6 +308,47 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         return self.summarizer.generate_trial_natural_language_summary(
             trial_id, mcode_elements, trial_data
         )
+
+    def _generate_trial_regex_summary(
+        self, trial_id: str, mcode_elements: Dict[str, Any], trial_data: Dict[str, Any]
+    ) -> str:
+        """Generate a simple text-based summary for regex-processed trials."""
+        try:
+            # Extract basic trial information
+            protocol_section = trial_data.get("protocolSection", {})
+            identification = protocol_section.get("identificationModule", {})
+            title = identification.get("briefTitle", "Unknown Title")
+
+            # Extract key mCODE elements
+            conditions = []
+            if "TrialCancerConditions" in mcode_elements:
+                cancer_conditions = mcode_elements["TrialCancerConditions"]
+                if isinstance(cancer_conditions, list):
+                    conditions = [c.get("display", str(c)) for c in cancer_conditions if isinstance(c, dict)]
+                elif isinstance(cancer_conditions, dict):
+                    conditions = [cancer_conditions.get("display", str(cancer_conditions))]
+
+            # Build simple summary
+            summary_parts = [f"Clinical Trial {trial_id}: {title}"]
+
+            if conditions:
+                summary_parts.append(f"Conditions: {', '.join(conditions[:3])}")  # Limit to first 3
+
+            # Add enrollment and status if available
+            design = protocol_section.get("designModule", {})
+            enrollment = design.get("enrollmentInfo", {}).get("count", "Unknown")
+            if enrollment != "Unknown":
+                summary_parts.append(f"Enrollment: {enrollment} participants")
+
+            status = protocol_section.get("statusModule", {}).get("overallStatus", "Unknown")
+            if status != "Unknown":
+                summary_parts.append(f"Status: {status}")
+
+            return ". ".join(summary_parts) + "."
+
+        except Exception as e:
+            self.logger.error(f"Error generating regex summary for {trial_id}: {e}")
+            return f"Clinical Trial {trial_id}: Basic summary generation failed."
 
     def _convert_trial_mcode_to_mappings_format(
         self, mcode_elements: Dict[str, Any]
@@ -454,12 +471,12 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         store_in_memory: bool = False,
     ) -> tuple[Any, bool]:
         """
-        Process a single trial asynchronously for pipeline compatibility.
+        Process a single trial asynchronously using unified pipeline.
 
         Args:
             trial: Trial data to process
-            model: LLM model to use
-            prompt: Prompt template to use
+            model: Model name (ignored for regex)
+            prompt: Prompt name (ignored for regex)
             index: Trial index for logging
 
         Returns:
@@ -468,19 +485,12 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
         try:
             self.logger.info(f"🔬 Processing trial {index}")
 
-            # Check for cached processed trial result
-            cached_result = self._get_cached_trial_result(trial, model, prompt)
-            if cached_result is not None:
-                self.logger.info(
-                    f"✅ Cache HIT for trial {self._extract_trial_id(trial)}"
-                )
-                return cached_result, True
+            # Process trial (no caching for workflow results)
 
-            # Try to process with mCODE pipeline
+            # Process with unified pipeline (handles both LLM and regex)
             enhanced_trial = None
             mcode_success = False
             try:
-                # Use new ultra-lean pipeline interface
                 if self.pipeline is not None:
                     result = await self.pipeline.process(trial)
                     # Add mCODE results to trial using standardized utility
@@ -498,8 +508,19 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
                 enhanced_trial = trial.copy()
                 enhanced_trial["McodeProcessingError"] = str(mcode_error)
 
-            # Cache the processed trial result
-            self._cache_trial_result(enhanced_trial, model, prompt)
+            # Generate natural language summary using the summarizer
+            trial_id = self._extract_trial_id(trial)
+            mcode_elements = enhanced_trial.get("McodeResults", {}).get("mcode_mappings", [])
+            summary = self.summarizer.generate_trial_natural_language_summary(
+                trial_id, mcode_elements, trial
+            )
+
+            # Add summary to results
+            if "McodeResults" not in enhanced_trial:
+                enhanced_trial["McodeResults"] = {}
+            enhanced_trial["McodeResults"]["natural_language_summary"] = summary
+
+            # No caching for workflow results
 
             return enhanced_trial, mcode_success
 
@@ -509,6 +530,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             error_trial = trial.copy()
             error_trial["ProcessingError"] = str(e)
             return error_trial, False
+
 
     def process_single_trial(
         self, trial: Dict[str, Any], **kwargs: Any
@@ -570,13 +592,7 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             self.logger.error(f"Error validating trial data: {e}")
             return False
 
-    def clear_workflow_caches(self) -> None:
-        """Clear all workflow-related caches."""
-        self.cache_manager.clear_all_caches()
-
-    def get_cache_stats(self) -> Dict[str, Any]:
-        """Get statistics for all workflow caches."""
-        return self.cache_manager.get_cache_stats()
+    # Removed cache management methods - only API calls should be cached
 
     def get_processing_stats(self) -> Dict[str, Any]:
         """
@@ -597,7 +613,6 @@ class ClinicalTrialsProcessorWorkflow(TrialsProcessorWorkflow):
             ),
             "prompt_template": getattr(self.pipeline, "prompt_name", "unknown"),
             "memory_storage_available": self.memory_storage is not None,
-            "cache_stats": self.get_cache_stats(),
         }
 
     def _check_trial_has_full_data(self, trial: Dict[str, Any]) -> bool:

@@ -7,7 +7,7 @@ Zero redundancy, maximum performance. Leverages existing infrastructure.
 from typing import Any, Dict, List, Optional
 
 from src.pipeline.document_ingestor import DocumentIngestor
-from src.pipeline.llm_service import LLMService
+from src.services.llm.service import LLMService
 from src.shared.models import (ClinicalTrialData, McodeElement, PipelineResult,
                                ProcessingMetadata, ValidationResult)
 from src.utils.config import Config
@@ -26,29 +26,39 @@ class McodePipeline:
         model_name: Optional[str] = None,
         prompt_name: Optional[str] = None,
         config: Optional[Config] = None,
+        engine: str = "llm",
     ):
         """
         Initialize with existing infrastructure.
 
         Args:
-            model_name: LLM model name (uses existing llm_loader)
+            model_name: LLM model name (uses existing llm_loader) or "regex" for regex engine
             prompt_name: Prompt template name (uses existing prompt_loader)
             config: Existing Config instance
+            engine: Processing engine ("llm" or "regex")
         """
         self.logger = get_logger(__name__)
         self.logger.info(
-            f"🔧 McodePipeline initializing with model: {model_name}, "
+            f"🔧 McodePipeline initializing with engine: {engine}, model: {model_name}, "
             f"prompt: {prompt_name}"
         )
 
         self.config = config or Config()
-        self.model_name = model_name or "deepseek-coder"
+        self.engine = engine
+        self.model_name = model_name or ("regex" if engine == "regex" else "deepseek-coder")
         self.prompt_name = prompt_name or "direct_mcode_evidence_based_concise"
 
         # Leverage existing components
         self.document_ingestor = DocumentIngestor()
-        self.llm_service = LLMService(self.config, self.model_name, self.prompt_name)
-        self.logger.info("✅ McodePipeline initialized successfully")
+
+        # Initialize appropriate service based on engine
+        if engine == "regex":
+            from src.services.regex.service import RegexService
+            self.service = RegexService(self.config, self.model_name, self.prompt_name)
+        else:
+            self.service = LLMService(self.config, self.model_name, self.prompt_name)
+
+        self.logger.info(f"✅ McodePipeline initialized with {engine} engine")
 
     async def process(self, trial_data: Dict[str, Any]) -> PipelineResult:
         """
@@ -73,7 +83,7 @@ class McodePipeline:
         sections = self.document_ingestor.ingest_clinical_trial_document(trial_data)
         self.logger.info(f"📄 Document ingestor returned {len(sections)} sections")
 
-        # Stage 2: Async LLM processing (existing utils) - STRICT: No fallback, fail fast
+        # Stage 2: Processing using configured service - STRICT: No fallback, fail fast
         all_elements = []
         for i, section in enumerate(sections):
             self.logger.info(
@@ -82,13 +92,24 @@ class McodePipeline:
                 f"{len(section.content) if section.content else 0})"
             )
             if section.content and section.content.strip():
-                self.logger.info(f"🚀 Calling LLM service for section {i+1}")
-                elements = await self.llm_service.map_to_mcode(section.content)
-                self.logger.info(
-                    f"✅ LLM service returned {len(elements)} elements "
-                    f"for section {i+1}"
-                )
-                all_elements.extend(elements)
+                if self.engine == "regex":
+                    # For regex, we need full trial data, not sections
+                    # Use the service's trial mapping method
+                    elements = self.service.map_trial_to_mcode(trial_data)
+                    self.logger.info(
+                        f"✅ REGEX service returned {len(elements)} elements"
+                    )
+                    all_elements.extend(elements)
+                    break  # Regex processes the whole trial at once, not per section
+                else:
+                    # LLM processing per section
+                    self.logger.info(f"🚀 Calling LLM service for section {i+1}")
+                    elements = await self.service.map_to_mcode(section.content)
+                    self.logger.info(
+                        f"✅ LLM service returned {len(elements)} elements "
+                        f"for section {i+1}"
+                    )
+                    all_elements.extend(elements)
             else:
                 self.logger.info(f"⚠️ Skipping empty section {i+1}")
 
@@ -101,11 +122,11 @@ class McodePipeline:
                 compliance_score=self._calculate_compliance_score(all_elements)
             ),
             metadata=ProcessingMetadata(
-                engine_type="LLM",
+                engine_type=self.engine.upper(),
                 entities_count=0,
                 mapped_count=len(all_elements),
-                model_used=self.model_name,
-                prompt_used=self.prompt_name,
+                model_used=self.model_name if self.engine == "llm" else None,
+                prompt_used=self.prompt_name if self.engine == "llm" else None,
                 processing_time_seconds=None,
                 token_usage=None,
             ),

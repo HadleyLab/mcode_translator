@@ -36,19 +36,16 @@ directory.
 from .api_manager import APIManager
 from .config import Config, ConfigurationError
 from .feature_utils import (standardize_biomarkers, standardize_features,
-                            standardize_variants)
+                             standardize_variants)
 from .llm_loader import (LLMConfig, LLMLoader, llm_loader, load_llm,
-                         reload_llms_config)
+                          reload_llms_config)
 from .logging_config import Loggable, get_logger, setup_logging
 from .metrics import MatchingMetrics
-from .pattern_config import (AGE_PATTERN, BIOMARKER_PATTERNS,
-                             CANCER_TYPE_PATTERN, COMPLEX_VARIANT_PATTERN,
-                             CONDITION_PATTERN, ECOG_PATTERN, GENDER_PATTERN,
-                             GENE_PATTERN, STAGE_PATTERN, VARIANT_PATTERN)
+from .patient_generator import PatientGenerator
 from .prompt_loader import (PromptLoader, load_prompt, prompt_loader,
-                            reload_prompts_config)
+                             reload_prompts_config)
 from .token_tracker import (TokenUsage, extract_token_usage_from_response,
-                            global_token_tracker)
+                             global_token_tracker)
 
 __all__ = [
     # API Manager
@@ -81,15 +78,6 @@ __all__ = [
     "standardize_variants",
     # Metrics
     "MatchingMetrics",
-    # Pattern Config
-    "BIOMARKER_PATTERNS",
-    "GENE_PATTERN",
-    "VARIANT_PATTERN",
-    "COMPLEX_VARIANT_PATTERN",
-    "STAGE_PATTERN",
-    "CANCER_TYPE_PATTERN",
-    "CONDITION_PATTERN",
-    "ECOG_PATTERN",
-    "GENDER_PATTERN",
-    "AGE_PATTERN",
+    # Patient Generator
+    "PatientGenerator",
 ]

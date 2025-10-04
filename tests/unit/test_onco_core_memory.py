@@ -5,7 +5,7 @@ Unit tests for onco_core_memory module.
 import pytest
 from unittest.mock import patch, MagicMock
 
-from src.utils.onco_core_memory import OncoCoreClient
+from src.services.heysol_client import OncoCoreClient
 
 
 class TestOncoCoreClientBase:

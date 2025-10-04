@@ -8,12 +8,12 @@ import json
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 from src.core.dependency_container import DependencyContainer
-from src.workflows.trials_fetcher_workflow import TrialsFetcherWorkflow
-from src.workflows.trials_processor_workflow import ClinicalTrialsProcessorWorkflow
-from src.workflows.trials_summarizer_workflow import TrialsSummarizerWorkflow
-from src.workflows.patients_fetcher_workflow import PatientsFetcherWorkflow
-from src.workflows.patients_processor_workflow import PatientsProcessorWorkflow
-from src.workflows.patients_summarizer_workflow import PatientsSummarizerWorkflow
+from src.workflows.trials_fetcher import TrialsFetcherWorkflow
+from src.workflows.trials_processor import TrialsProcessor
+from src.workflows.trials_summarizer import TrialsSummarizerWorkflow
+from src.workflows.patients_fetcher import PatientsFetcherWorkflow
+from src.workflows.patients_processor import PatientsProcessorWorkflow
+from src.workflows.patients_summarizer import PatientsSummarizerWorkflow
 
 
 @pytest.mark.integration
@@ -98,7 +98,7 @@ class TestWorkflowIntegration:
 
         # Create workflows
         fetcher = TrialsFetcherWorkflow()
-        processor = ClinicalTrialsProcessorWorkflow(container.config)
+        processor = TrialsProcessor(container.config)
         summarizer = TrialsSummarizerWorkflow(container.config)
 
         # Mock dependencies

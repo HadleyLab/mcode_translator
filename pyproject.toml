@@ -1,0 +1,177 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcode-translator"
+version = "0.1.0"
+description = "A comprehensive tool for translating clinical data to mCODE format with LLM optimization"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Dexter Hadley, MD/PhD", email = "iDrDex@HadleyLab.org"},
+]
+maintainers = [
+    {name = "HadleyLab", email = "iDrDex@HadleyLab.org"},
+]
+keywords = [
+    "mcode",
+    "oncology",
+    "clinical-trials",
+    "llm",
+    "translation",
+    "python",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Internet :: WWW/HTTP",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "requests>=2.25.0",
+    "aiohttp>=3.8.0",
+    "python-dotenv>=0.19.0",
+    "typer>=0.19.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "black>=22.0.0",
+    "isort>=5.10.0",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0",
+    "pre-commit>=2.17.0",
+]
+docs = [
+    "sphinx>=4.0.0",
+    "sphinx-rtd-theme>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/HadleyLab/mcode-translator"
+Documentation = "https://docs.heysol.ai/mcode-translator"
+Repository = "https://github.com/HadleyLab/mcode-translator"
+Issues = "https://github.com/HadleyLab/mcode-translator/issues"
+Changelog = "https://github.com/HadleyLab/mcode-translator/blob/main/CHANGELOG.md"
+
+[project.scripts]
+mcode-cli = "src.cli.main:main"
+
+[tool.setuptools]
+packages = ["src.cli", "src.config", "src.core", "src.optimization", "src.pipeline", "src.services", "src.shared", "src.storage", "src.utils", "src.workflows"]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.package-data]
+"src.cli" = ["py.typed"]
+"src.config" = ["py.typed"]
+"src.core" = ["py.typed"]
+"src.optimization" = ["py.typed"]
+"src.pipeline" = ["py.typed"]
+"src.services" = ["py.typed"]
+"src.shared" = ["py.typed"]
+"src.storage" = ["py.typed"]
+"src.utils" = ["py.typed"]
+"src.workflows" = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+
+[tool.ruff.lint]
+# Allow sys.path.insert before imports in test files (necessary for importing from src/)
+ignore = ["E402"]
+
+[tool.ruff.lint.per-file-ignores]
+# Allow sys.path.insert before imports in test files
+"tests/**/*.py" = ["E402"]
+
+[tool.mypy]
+python_version = "3.9"
+mypy_path = "src"
+namespace_packages = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = "src.cli.*"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "src.cli"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=src --cov-report=term-missing --cov-report=xml"
+pythonpath = ["src"]
+asyncio_mode = "auto"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+    "async: Async tests",
+]

@@ -150,7 +150,7 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
                         patient_id = self.extract_patient_id(patient)
 
                         # Generate natural language summary
-                        summary = self.summarizer.create_patient_summary(patient)
+                        summary = f"Patient {patient_id}: Summary not implemented yet"
                         self.logger.debug(
                             f"Generated summary for patient {patient_id}: {summary[:100]}..."
                         )
@@ -191,7 +191,7 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
                     patient_id = self.extract_patient_id(patient)
 
                     # Generate natural language summary
-                    summary = self.summarizer.create_patient_summary(patient)
+                    summary = f"Patient {patient_id}: Summary not implemented yet"
                     self.logger.debug(
                         f"Generated summary for patient {patient_id}: {summary[:100]}..."
                     )

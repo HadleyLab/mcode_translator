@@ -22,7 +22,7 @@ class TrialSummarizer:
     ) -> str:
         """Generate comprehensive natural language summary for clinical trial using McodeSummarizer."""
         try:
-            # Use the McodeSummarizer service
+            # Use the McodeSummarizer service with the original trial data
             summary = self.summarizer.create_trial_summary(trial_data)
             print(
                 f"Generated comprehensive trial summary for {trial_id}: {summary[:200]}..."

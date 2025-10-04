@@ -6,7 +6,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch, mock_open
 
-from src.workflows.patients_fetcher_workflow import PatientsFetcherWorkflow
+from src.workflows.patients_fetcher import PatientsFetcherWorkflow
 from src.utils.config import Config
 
 
@@ -52,7 +52,7 @@ class TestPatientsFetcherWorkflow:
         assert result.success is False
         assert "Archive path is required" in result.error_message
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_execute_single_patient_success(
         self, mock_create_generator, workflow, mock_patient_data
     ):
@@ -72,7 +72,7 @@ class TestPatientsFetcherWorkflow:
         assert result.metadata["fetch_type"] == "single_patient"
         assert result.metadata["total_fetched"] == 1
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_execute_single_patient_not_found(self, mock_create_generator, workflow):
         """Test single patient fetch when patient not found."""
         # Mock generator
@@ -87,7 +87,7 @@ class TestPatientsFetcherWorkflow:
         assert result.success is False
         assert "not found in archive" in result.error_message
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_execute_multiple_patients_success(
         self, mock_create_generator, workflow, mock_patient_data
     ):
@@ -109,7 +109,7 @@ class TestPatientsFetcherWorkflow:
         assert result.metadata["total_fetched"] == 2
         # Note: requested_limit is not stored in metadata, only in the internal method
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_execute_multiple_patients_empty_archive(
         self, mock_create_generator, workflow
     ):
@@ -125,7 +125,7 @@ class TestPatientsFetcherWorkflow:
         assert result.success is False
         assert "No patients found in archive" in result.error_message
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     @patch("pathlib.Path.exists", return_value=True)
     @patch("builtins.open", new_callable=mock_open)
     def test_execute_with_output_file(
@@ -153,7 +153,7 @@ class TestPatientsFetcherWorkflow:
         # Verify file was opened for writing
         mock_file.assert_called_once_with(Path("output.ndjson"), "w", encoding="utf-8")
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     @patch("sys.stdout")
     def test_execute_stdout_output(
         self, mock_stdout, mock_create_generator, workflow, mock_patient_data
@@ -172,7 +172,7 @@ class TestPatientsFetcherWorkflow:
         # Verify stdout was used
         assert mock_stdout.write.called
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_fetch_single_patient_generator_error(
         self, mock_create_generator, workflow
     ):
@@ -186,7 +186,7 @@ class TestPatientsFetcherWorkflow:
         assert result.success is False
         assert "Failed to fetch patient" in result.error_message
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_fetch_multiple_patients_generator_error(
         self, mock_create_generator, workflow
     ):
@@ -241,7 +241,7 @@ class TestPatientsFetcherWorkflow:
         assert "breast_cancer_10_years" in archives
         assert "mixed_cancer_lifetime" in archives
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_get_archive_info_success(self, mock_create_generator, workflow):
         """Test getting archive info successfully."""
         # Mock generator
@@ -256,7 +256,7 @@ class TestPatientsFetcherWorkflow:
         assert info["total_patients"] == 150
         assert "patient_generator_type" in info
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_get_archive_info_error(self, mock_create_generator, workflow):
         """Test getting archive info handles errors."""
         mock_create_generator.side_effect = Exception("Archive not accessible")
@@ -266,7 +266,7 @@ class TestPatientsFetcherWorkflow:
         assert info["archive_path"] == "invalid_archive"
         assert "error" in info
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_execute_with_limit_zero(self, mock_create_generator, workflow):
         """Test execute with limit of zero returns no patients found."""
         # Mock generator with some patients but limit=0 should return empty
@@ -282,7 +282,7 @@ class TestPatientsFetcherWorkflow:
         assert len(result.data) == 0
         assert result.metadata["total_fetched"] == 0
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_execute_limit_exceeds_available(
         self, mock_create_generator, workflow, mock_patient_data
     ):

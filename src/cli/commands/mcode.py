@@ -19,6 +19,8 @@ from utils.logging_config import get_logger
 console = Console()
 logger = get_logger(__name__)
 
+
+
 app = typer.Typer(
     name="mcode",
     help="mCODE translation and processing operations",
@@ -37,7 +39,7 @@ def summarize_trial(
     format: str = typer.Option("text", help="Output format (text, json, ndjson)"),
     include_codes: bool = typer.Option(True, help="Include mCODE codes in summary"),
     store_memory: bool = typer.Option(True, help="Store summary in CORE Memory"),
-    engine: str = typer.Option("regex", help="Processing engine: 'regex' (fast, deterministic) or 'llm' (flexible, intelligent)"),
+    engine: str = typer.Option("llm", help="Processing engine: 'regex' (fast, deterministic) or 'llm' (flexible, intelligent)"),
     llm_model: str = typer.Option("deepseek-coder", help="LLM model to use for llm engine"),
     llm_prompt: str = typer.Option("direct_mcode_evidence_based_concise", help="Prompt template for llm engine"),
     compare_engines: bool = typer.Option(False, help="Compare both engines and show recommendation"),
@@ -72,26 +74,16 @@ def summarize_trial(
             console.print(f"[blue]📋 Include codes: {include_codes}[/blue]")
             console.print(f"[blue]💾 Memory storage: {'enabled' if store_memory else 'disabled'}[/blue]")
 
-        # Initialize mCODE trial processor
-        from services.trial_processor import McodeTrialProcessor
-        processor = McodeTrialProcessor(
-            default_engine=engine,
-            llm_model=llm_model,
-            llm_prompt=llm_prompt,
-            include_codes=include_codes
-        )
+        # Initialize trials processor workflow
+        from workflows.trials_processor import TrialsProcessor
+        from config.heysol_config import get_config
+        config = get_config()
+        processor = TrialsProcessor(config)
 
-        # Handle engine comparison if requested
-        if compare_engines:
-            console.print("[blue]🔍 Fetching trial data for comparison...[/blue]")
-            # TODO: Implement trial data fetching for comparison
-            console.print("[yellow]⚠️ Engine comparison not yet implemented[/yellow]")
-            console.print(f"[blue]💡 Recommended engine: {processor.recommend_engine({})}[/blue]")
-            return
 
         console.print("[blue]🔍 Fetching trial data...[/blue]")
         # Fetch trial data using TrialsFetcherWorkflow
-        from workflows.trials_fetcher_workflow import TrialsFetcherWorkflow
+        from workflows.trials_fetcher import TrialsFetcherWorkflow
         fetcher = TrialsFetcherWorkflow()
         fetch_result = fetcher.execute(nct_ids=[trial_id], output_path=None)
 
@@ -108,20 +100,42 @@ def summarize_trial(
         console.print(f"[green]✅ Fetched trial data for {trial_id}[/green]")
 
         console.print("[blue]📝 Generating mCODE summary...[/blue]")
-        # Process trial using unified processor
-        import asyncio
-        processing_result = asyncio.run(processor.process_trial(trial_data, engine=engine))
+        # Process trial using workflow
+        processing_result = processor.process_single_trial(
+            trial_data,
+            engine=engine,
+            model=llm_model,
+            prompt=llm_prompt
+        )
 
         if not processing_result.success:
             console.print(f"[red]❌ Processing failed: {processing_result.error_message}[/red]")
             raise typer.Exit(1)
 
-        summary = processing_result.data
-        console.print(f"[green]✅ Generated summary using {engine} engine[/green]")
+        # Use summarizer workflow to generate proper natural language summary
+        from workflows.trials_summarizer import TrialsSummarizerWorkflow
+        summarizer = TrialsSummarizerWorkflow(config)
+
+        # Get processed trial with mCODE elements
+        processed_trial = processing_result.data
+
+        # Generate natural language summary using summarizer workflow
+        summary_result = summarizer.process_single_trial(
+            processed_trial,
+            store_in_memory=False  # Don't store during CLI usage
+        )
+
+        if summary_result.success and summary_result.data:
+            summary_data = summary_result.data
+            # Extract the natural language summary
+            summary = summary_data.get("McodeResults", {}).get("natural_language_summary", "Summary not available")
+        else:
+            summary = "Failed to generate summary"
+
+        console.print(f"[green]✅ Generated summary[/green]")
         if verbose:
-            console.print(f"[blue]⏱️ Processing time: {processing_result.processing_time:.2f}s[/blue]")
             if processing_result.metadata:
-                console.print(f"[blue]📊 Elements extracted: {processing_result.metadata.get('elements_extracted', 0)}[/blue]")
+                console.print(f"[blue]📊 Processing metadata: {processing_result.metadata}[/blue]")
 
         # Display summary based on format
         if format == "text":
@@ -141,12 +155,12 @@ def summarize_trial(
                 "original_trial_data": trial_data,
                 "trial_metadata": {
                     "nct_id": trial_id,
-                    "processing_engine": engine,
-                    "processing_time": processing_result.processing_time,
+                    "processing_engine": "llm",
                 },
-                "processing_metadata": processing_result.metadata
+                "processing_metadata": processing_result.metadata,
+                "processed_trial": processed_trial
             }
-            success = memory.store_trial_mcode_summary(trial_id, mcode_data)
+            success = memory.store_trial_summary(trial_id, summary)
             if success:
                 console.print("[green]✅ Summary stored in CORE Memory[/green]")
             else:

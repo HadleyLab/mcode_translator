@@ -34,7 +34,7 @@ def ingest_clinical_trials(
     status: str = typer.Option("all", help="Filter by trial status (recruiting, active, completed, etc.)"),
     batch_size: int = typer.Option(10, help="Number of trials to process per batch"),
     space_name: str = typer.Option("Clinical Trials Database", help="Target memory space name"),
-    engine: str = typer.Option("regex", help="Processing engine: 'regex' (fast, deterministic) or 'llm' (flexible, intelligent)"),
+    engine: str = typer.Option("llm", help="Processing engine: 'regex' (fast, deterministic) or 'llm' (flexible, intelligent)"),
     llm_model: str = typer.Option("deepseek-coder", help="LLM model to use for llm engine"),
     llm_prompt: str = typer.Option("direct_mcode_evidence_based_concise", help="Prompt template for llm engine"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
@@ -63,7 +63,7 @@ def ingest_clinical_trials(
         # Import required components
         from config.heysol_config import get_config
         from storage.mcode_memory_storage import OncoCoreMemory
-        from workflows.trials_fetcher_workflow import TrialsFetcherWorkflow
+        from workflows.trials_fetcher import TrialsFetcherWorkflow
 
         # Get configuration
         config = get_config()
@@ -98,14 +98,10 @@ def ingest_clinical_trials(
                 raise typer.Exit(1)
             console.print(f"[green]✅ Created new space: {space_id}[/green]")
 
-        # Initialize workflow and unified processor
+        # Initialize workflows
         fetcher = TrialsFetcherWorkflow()
-        from services import McodeTrialProcessor
-        processor = McodeTrialProcessor(
-            default_engine=engine,
-            llm_model=llm_model,
-            llm_prompt=llm_prompt
-        )
+        from workflows.trials_processor import TrialsProcessor
+        processor = TrialsProcessor(config)
 
         # Fetch live trial data using existing workflow
         console.print(f"[blue]🔍 Fetching live trials for condition: {cancer_type}[/blue]")
@@ -211,80 +207,95 @@ def ingest_clinical_trials(
 
             console.print(f"[blue]📦 Processing batch {batch_num}/{total_batches} ({len(batch)} trials)[/blue]")
 
+            # Filter out duplicates and trials without NCT IDs
+            processable_batch = []
+            skipped_in_batch = 0
+
             for trial in batch:
-                try:
-                    # Extract NCT ID for processing
+                protocol_section = trial.get("protocolSection", {})
+                identification = protocol_section.get("identificationModule", {})
+                nct_id = identification.get("nctId", "")
+
+                if not nct_id:
+                    console.print(f"[yellow]⚠️ Skipping trial with no NCT ID[/yellow]")
+                    ingestion_stats["failed"] += 1
+                    continue
+
+                # Check for duplicates
+                if nct_id in existing_trials:
+                    console.print(f"[blue]   ⏭️ Skipped (duplicate) - {nct_id} already exists[/blue]")
+                    ingestion_stats["skipped_duplicates"] += 1
+                    skipped_in_batch += 1
+                    continue
+
+                processable_batch.append(trial)
+
+            if not processable_batch:
+                console.print(f"[yellow]⚠️ No processable trials in this batch[/yellow]")
+                continue
+
+            if verbose:
+                for trial in processable_batch:
                     protocol_section = trial.get("protocolSection", {})
                     identification = protocol_section.get("identificationModule", {})
+                    status_module = protocol_section.get("statusModule", {})
                     nct_id = identification.get("nctId", "")
+                    trial_status = status_module.get("overallStatus", "unknown")
+                    console.print(f"[blue]   🧪 Processing: {nct_id} ({trial_status})[/blue]")
 
-                    if not nct_id:
-                        console.print(f"[yellow]⚠️ Skipping trial with no NCT ID[/yellow]")
-                        ingestion_stats["failed"] += 1
-                        continue
+            try:
+                # Use workflow to process the batch
+                processing_result = processor.execute(
+                    trials_data=processable_batch,
+                    engine=engine,
+                    model=llm_model,
+                    prompt=llm_prompt,
+                    workers=1,  # Process sequentially for now
+                    store_in_memory=False  # We'll handle storage manually
+                )
 
-                    # Check for duplicates
-                    if nct_id in existing_trials:
-                        console.print(f"[blue]   ⏭️ Skipped (duplicate) - {nct_id} already exists[/blue]")
-                        ingestion_stats["skipped_duplicates"] += 1
-                        continue
+                if processing_result.success and processing_result.data:
+                    processed_trials = processing_result.data
 
-                    if verbose:
+                    for idx, processed_trial in enumerate(processed_trials):
+                        if idx >= len(processable_batch):
+                            break
+
+                        original_trial = processable_batch[idx]
+                        protocol_section = original_trial.get("protocolSection", {})
+                        identification = protocol_section.get("identificationModule", {})
+                        design = protocol_section.get("designModule", {})
                         status_module = protocol_section.get("statusModule", {})
-                        trial_status = status_module.get("overallStatus", "unknown")
-                        console.print(f"[blue]   🧪 Processing: {nct_id} ({trial_status})[/blue]")
+                        nct_id = identification.get("nctId", "")
 
-                    # Use unified processor for processing and storage
-                    # This handles: mCODE summary generation and CORE Memory storage
-                    processing_result = processor.process_trial(trial, engine=engine)
+                        # Store in CORE Memory
+                        mcode_data = {
+                            "original_trial_data": original_trial,
+                            "trial_metadata": {
+                                "nct_id": nct_id,
+                                "overall_status": status_module.get("overallStatus", ""),
+                                "phase": design.get("phase", ""),
+                            },
+                            "processing_metadata": processing_result.metadata,
+                            "processed_trial": processed_trial
+                        }
 
-                    # Store in CORE Memory using existing storage mechanism
-                    if processing_result.success:
-                        # Handle different result formats from regex vs LLM processing
-                        if engine == "regex":
-                            # Regex returns summary string
-                            summary_data = processing_result.data
-                            mcode_data = {
-                                "original_trial_data": trial,
-                                "trial_metadata": {
-                                    "nct_id": nct_id,
-                                    "overall_status": status_module.get("overallStatus", ""),
-                                    "phase": design.get("phase", ""),
-                                },
-                                "processing_metadata": processing_result.metadata
-                            }
-                        else:
-                            # LLM returns summary string (both engines now return consistent format)
-                            summary_data = processing_result.data
-                            mcode_data = {
-                                "original_trial_data": trial,
-                                "trial_metadata": {
-                                    "nct_id": nct_id,
-                                    "overall_status": status_module.get("overallStatus", ""),
-                                    "phase": design.get("phase", ""),
-                                },
-                                "processing_metadata": processing_result.metadata
-                            }
-
-                        success = memory.store_trial_mcode_summary(nct_id, mcode_data)
+                        success = memory.store_trial_summary(nct_id, summary)
 
                         if success:
-                            console.print(f"[green]   ✅ Ingested: {nct_id} ({processing_result.engine})[/green]")
-                            if verbose:
-                                console.print(f"[blue]   ⏱️ Processing time: {processing_result.processing_time:.2f}s[/blue]")
+                            console.print(f"[green]   ✅ Ingested: {nct_id}[/green]")
                             ingestion_stats["ingested"] += 1
-                            # Add to existing trials to avoid duplicates in same batch
                             existing_trials.add(nct_id)
                         else:
                             console.print(f"[red]   ❌ Failed to store: {nct_id}[/red]")
                             ingestion_stats["failed"] += 1
-                    else:
-                        console.print(f"[red]   ❌ Processing failed: {nct_id} - {processing_result.error_message}[/red]")
-                        ingestion_stats["failed"] += 1
+                else:
+                    console.print(f"[red]   ❌ Batch processing failed: {processing_result.error_message}[/red]")
+                    ingestion_stats["failed"] += len(processable_batch)
 
-                except Exception as e:
-                    console.print(f"[red]   ❌ Failed to process trial: {e}[/red]")
-                    ingestion_stats["failed"] += 1
+            except Exception as e:
+                console.print(f"[red]   ❌ Failed to process batch: {e}[/red]")
+                ingestion_stats["failed"] += len(processable_batch)
 
         # Calculate final statistics
         ingestion_stats["end_time"] = time.time()

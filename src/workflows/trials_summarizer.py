@@ -70,8 +70,45 @@ class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
                 try:
                     trial_id = self._extract_trial_id(trial)
 
-                    # Generate natural language summary
-                    summary = self.summarizer.create_trial_summary(trial)
+                    # Generate natural language summary using McodeSummarizer with processed mCODE elements
+                    mcode_elements = trial.get("McodeResults", {}).get("mcode_mappings", [])
+                    self.logger.info(f"Found {len(mcode_elements)} mCODE elements for summarization")
+                    if mcode_elements:
+                        # Convert processed mCODE elements to summarizer format
+                        formatted_elements = []
+                        for element in mcode_elements:
+                            # element is an McodeElement object, access attributes directly
+                            element_type = element.element_type
+                            # Only strip "Trial" prefix if it's followed by a capital letter (e.g., "TrialTitle" -> "Title")
+                            if element_type.startswith("Trial") and len(element_type) > 5 and element_type[5].isupper():
+                                element_name = element_type[5:]  # Remove "Trial" prefix
+                            else:
+                                element_name = element_type
+
+                            codes = f"{element.system}:{element.code}" if element.system and element.code else ""
+                            formatted_element = {
+                                "element_name": element_name,
+                                "value": element.display or "",
+                                "codes": codes,
+                                "date_qualifier": ""
+                            }
+                            formatted_elements.append(formatted_element)
+                            self.logger.debug(f"Converted element: {element_type} -> {element_name} = '{element.display}'")
+
+                        self.logger.info(f"Converted {len(formatted_elements)} elements for summarization")
+
+                        # Use processed elements to generate summary
+                        trial_id = self._extract_trial_id(trial)
+                        prioritized = self.summarizer._group_elements_by_priority(formatted_elements, "Trial")
+                        self.logger.info(f"Prioritized {len(prioritized)} elements")
+                        sentences = self.summarizer._generate_sentences_from_elements(prioritized, trial_id)
+                        self.logger.info(f"Generated {len(sentences)} sentences")
+                        summary = " ".join(sentences)
+                        self.logger.info(f"Final summary: {summary[:200]}...")
+                    else:
+                        # Fallback to basic extraction if no processed elements
+                        self.logger.warning("No processed mCODE elements found, using basic extraction")
+                        summary = self.summarizer.create_trial_summary(trial)
                     self.logger.debug(
                         f"Generated summary for trial {trial_id}: {summary[:100]}..."
                     )

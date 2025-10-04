@@ -11,7 +11,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from heysol.config import HeySolConfig as BaseHeySolConfig
+try:
+    from heysol.config import HeySolConfig as BaseHeySolConfig
+except ImportError:
+    # Fallback for when heysol_api_client is not available
+    BaseHeySolConfig = None
 
 # Add heysol_api_client to path for imports
 heysol_client_path = (
@@ -32,11 +36,16 @@ class McodeHeySolConfig:
     """
     Extended HeySol configuration for mCODE Translator.
 
-    Integrates heysol_api_client's HeySolConfig with mCODE-specific settings.
+    Integrates heysol_api_client's HeySolConfig with mCODE-specific settings
+    and supports both API key and user registry authentication.
     """
 
-    # Core HeySol configuration
-    heysol: BaseHeySolConfig = field(default_factory=BaseHeySolConfig.from_env)
+    # Core HeySol configuration (when available)
+    heysol: Optional[BaseHeySolConfig] = field(default=None)
+
+    # Authentication settings
+    api_key: Optional[str] = field(default=None)
+    user: Optional[str] = field(default=None)
 
     # mCODE-specific settings
     mcode_cache_enabled: bool = field(
@@ -90,8 +99,65 @@ class McodeHeySolConfig:
 
     @classmethod
     def from_env(cls) -> "McodeHeySolConfig":
-        """Create configuration from environment variables."""
-        return cls()
+        """Create configuration from environment variables and command line args."""
+        # Get authentication from environment or use provided values
+        api_key = os.getenv("HEYSOL_API_KEY")
+        base_url = os.getenv("HEYSOL_BASE_URL", "https://core.heysol.ai/api/v1")
+
+        # Initialize HeySol config if available
+        heysol_config = None
+        if BaseHeySolConfig and api_key:
+            try:
+                heysol_config = BaseHeySolConfig(
+                    api_key=api_key,
+                    base_url=base_url
+                )
+            except Exception:
+                # Fallback if HeySol config creation fails
+                pass
+
+        return cls(
+            heysol=heysol_config,
+            api_key=api_key,
+            user=None  # User would be set from CLI args
+        )
+
+    @classmethod
+    def with_authentication(
+        cls,
+        api_key: Optional[str] = None,
+        user: Optional[str] = None,
+        base_url: Optional[str] = None
+    ) -> "McodeHeySolConfig":
+        """Create configuration with explicit authentication."""
+        # Validate authentication
+        if not api_key and not user:
+            raise ValueError("Either api_key or user must be provided")
+
+        if api_key and user:
+            raise ValueError("Only one authentication method allowed (api_key or user)")
+
+        # Resolve authentication
+        resolved_api_key = api_key
+        resolved_base_url = base_url or "https://core.heysol.ai/api/v1"
+
+        # Initialize HeySol config if available
+        heysol_config = None
+        if BaseHeySolConfig and resolved_api_key:
+            try:
+                heysol_config = BaseHeySolConfig(
+                    api_key=resolved_api_key,
+                    base_url=resolved_base_url
+                )
+            except Exception:
+                # Fallback if HeySol config creation fails
+                pass
+
+        return cls(
+            heysol=heysol_config,
+            api_key=resolved_api_key,
+            user=user
+        )
 
     @classmethod
     def with_mcode_integration(
@@ -130,18 +196,43 @@ class McodeHeySolConfig:
 
     def get_api_key(self) -> Optional[str]:
         """Get HeySol API key."""
-        api_key = self.heysol.api_key
-        return api_key if isinstance(api_key, str) else None
+        if self.api_key:
+            return self.api_key
+        if self.heysol and hasattr(self.heysol, 'api_key'):
+            api_key = self.heysol.api_key
+            return api_key if isinstance(api_key, str) else None
+        return None
+
+    def resolve_user_authentication(self) -> Optional[str]:
+        """Resolve user registry authentication to API key.
+
+        This method would implement the actual registry resolution logic.
+        For now, returns None to indicate the feature structure is ready.
+        """
+        if not self.user:
+            return None
+
+        # TODO: Implement actual registry resolution
+        # This would involve:
+        # 1. Checking local registry files
+        # 2. Querying HeySol registry API
+        # 3. Caching resolved credentials securely
+
+        return None
 
     def get_base_url(self) -> str:
         """Get HeySol base URL."""
-        base_url = self.heysol.base_url
-        return base_url if isinstance(base_url, str) else ""
+        if self.heysol:
+            base_url = self.heysol.base_url
+            return base_url if isinstance(base_url, str) else ""
+        return "https://core.heysol.ai/api/v1"  # Default fallback
 
     def get_timeout(self) -> int:
         """Get HeySol timeout."""
-        timeout = self.heysol.timeout
-        return timeout if isinstance(timeout, int) else 60
+        if self.heysol and hasattr(self.heysol, 'timeout'):
+            timeout = self.heysol.timeout
+            return timeout if isinstance(timeout, int) else 60
+        return 60  # Default fallback
 
     def is_cache_enabled(self) -> bool:
         """Check if mCODE caching is enabled."""

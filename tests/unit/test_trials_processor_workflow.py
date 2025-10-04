@@ -4,11 +4,11 @@ Unit tests for ClinicalTrialsProcessorWorkflow.
 
 import pytest
 from unittest.mock import Mock, patch
-from src.workflows.trials_processor_workflow import ClinicalTrialsProcessorWorkflow
+from src.workflows.trials_processor import TrialsProcessor
 
 
-class TestClinicalTrialsProcessorWorkflow:
-    """Test cases for ClinicalTrialsProcessorWorkflow."""
+class TestTrialsProcessor:
+    """Test cases for TrialsProcessor."""
 
     @pytest.fixture
     def config(self):
@@ -18,7 +18,7 @@ class TestClinicalTrialsProcessorWorkflow:
     @pytest.fixture
     def workflow(self, config):
         """Create a test workflow instance."""
-        return ClinicalTrialsProcessorWorkflow(config)
+        return TrialsProcessor(config)
 
     def test_workflow_initialization(self, workflow):
         """Test workflow initializes correctly."""
