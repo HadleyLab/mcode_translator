@@ -6,9 +6,7 @@ Strict, performant service using abstracted mCODE element configurations.
 No legacy code, no fallbacks, no backwards compatibility.
 """
 
-from typing import Any, Dict, List, Optional, TypeAlias, cast
-
-McodeElement: TypeAlias = Dict[str, Any]
+from typing import Any, Dict, List
 
 
 class McodeSummarizer:
@@ -27,12 +25,9 @@ class McodeSummarizer:
             detail_level: Level of detail ("minimal", "standard", "full"). Defaults to "full".
             include_mcode: Whether to include mCODE annotations. Defaults to True.
         """
-        self.include_dates: bool = include_dates
-        self.detail_level: str = detail_level
-        self.include_mcode: bool = include_mcode
-        self.detail_configs: Dict[str, Dict[str, Any]]
-        self.element_configs: Dict[str, Dict[str, Any]]
-        self.current_config: Dict[str, Any]
+        self.include_dates = include_dates
+        self.detail_level = detail_level
+        self.include_mcode = include_mcode
 
         # Validate detail level
         if detail_level not in ["minimal", "standard", "full"]:
@@ -43,7 +38,7 @@ class McodeSummarizer:
         # Configure detail level settings
         self._configure_detail_levels()
 
-    def _configure_detail_levels(self) -> None:
+    def _configure_detail_levels(self):
         """Configure summarizer behavior based on detail level switches."""
         # Detail level configurations
         self.detail_configs = {
@@ -63,7 +58,7 @@ class McodeSummarizer:
             },
             "full": {
                 "max_elements": None,  # No limit
-                "include_codes": True,
+                "include_codes": self.include_mcode,
                 "include_dates": self.include_dates,
                 "include_mcode": self.include_mcode,
                 "priority_threshold": None,  # No threshold
@@ -293,7 +288,7 @@ class McodeSummarizer:
             )
 
         config = self.element_configs[element_name]
-        template = cast(str, config["template"])
+        template = config["template"]
 
         # Apply detail level switches
         include_codes = self.current_config["include_codes"]
@@ -301,7 +296,6 @@ class McodeSummarizer:
         include_mcode = self.current_config["include_mcode"]
 
         # Format codes based on detail level
-        codes_part = ""
         if include_codes and codes:
             codes_part = f" ({codes})"
         elif include_codes and not codes:
@@ -317,6 +311,10 @@ class McodeSummarizer:
                     codes_part = " (CDC-RACE:UNK)"  # Unknown race
                 elif element_name == "Ethnicity":
                     codes_part = " (CDC-RACE:UNK)"  # Unknown ethnicity
+            else:
+                codes_part = ""
+        else:
+            codes_part = ""
 
         # Format date qualifier based on detail level
         formatted_date = date_qualifier if (include_dates and date_qualifier) else ""
@@ -362,8 +360,8 @@ class McodeSummarizer:
             return f"{subject}'s {element_name.lower()}{mcode_part} is {value}{codes_part}."
 
     def _group_elements_by_priority(
-        self, elements: List[McodeElement], subject_type: str = "Patient"
-    ) -> List[McodeElement]:
+        self, elements: List[Dict[str, Any]], subject_type: str = "Patient"
+    ) -> List[Dict[str, Any]]:
         """Group and sort mCODE elements by clinical priority for optimal NLP processing, respecting detail level switches.
 
         Args:
@@ -374,7 +372,7 @@ class McodeSummarizer:
             Sorted and filtered list of elements by clinical priority, respecting detail level constraints
         """
         # Sort elements by their configured priority
-        sorted_elements: List[McodeElement] = []
+        sorted_elements = []
         for element in elements:
             element_name = element.get("element_name", "")
             if element_name in self.element_configs:
@@ -386,7 +384,7 @@ class McodeSummarizer:
         sorted_elements.sort(key=lambda x: x["priority"])
 
         # Apply detail level filters
-        filtered_elements: List[McodeElement] = []
+        filtered_elements = []
 
         for element in sorted_elements:
             priority = element.get("priority", 999)
@@ -405,7 +403,7 @@ class McodeSummarizer:
         return filtered_elements
 
     def _generate_sentences_from_elements(
-        self, elements: List[McodeElement], subject: str
+        self, elements: List[Dict[str, Any]], subject: str
     ) -> List[str]:
         """Generate standardized sentences from a list of mCODE elements.
 
@@ -416,7 +414,7 @@ class McodeSummarizer:
         Returns:
             List of formatted sentences
         """
-        sentences: List[str] = []
+        sentences = []
         for element in elements:
             element_name = element.get("element_name", "")
             value = element.get("value", "")
@@ -437,9 +435,9 @@ class McodeSummarizer:
 
     def _extract_patient_elements(
         self, patient_data: Dict[str, Any], include_dates: bool
-    ) -> List[McodeElement]:
+    ) -> List[Dict[str, Any]]:
         """Extract mCODE elements from patient data using abstracted processing."""
-        elements: List[McodeElement] = []
+        elements = []
 
         # Get patient resource and extract basic info
         patient_resource = self._find_patient_resource(patient_data)
@@ -451,30 +449,21 @@ class McodeSummarizer:
         elements.extend(patient_elements)
 
         # Process clinical data from other resources
-        clinical_elements = self._extract_clinical_resources(
-            patient_data, include_dates
-        )
+        clinical_elements = self._extract_clinical_resources(patient_data, include_dates)
         elements.extend(clinical_elements)
 
         return elements
 
-    def _find_patient_resource(
-        self, patient_data: Dict[str, Any]
-    ) -> Optional[McodeElement]:
+    def _find_patient_resource(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
         """Find the Patient resource in the FHIR bundle."""
         for entry in patient_data.get("entry", []):
             if entry.get("resource", {}).get("resourceType") == "Patient":
-                resource = entry["resource"]
-                return (
-                    cast(McodeElement, resource) if isinstance(resource, dict) else None
-                )
-        return None
+                return entry["resource"]
+        return {}
 
-    def _extract_patient_demographics(
-        self, patient_resource: Dict[str, Any]
-    ) -> List[McodeElement]:
+    def _extract_patient_demographics(self, patient_resource: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Extract basic patient demographics from Patient resource."""
-        elements: List[McodeElement] = []
+        elements = []
 
         # Basic patient info
         patient_id = patient_resource.get("id", "")
@@ -520,34 +509,26 @@ class McodeSummarizer:
 
         return elements
 
-    def _extract_clinical_resources(
-        self, patient_data: Dict[str, Any], include_dates: bool
-    ) -> List[McodeElement]:
+    def _extract_clinical_resources(self, patient_data: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
         """Extract clinical elements from non-Patient resources."""
-        elements: List[McodeElement] = []
+        elements = []
 
         for entry in patient_data.get("entry", []):
             resource = entry.get("resource", {})
             resource_type = resource.get("resourceType")
 
             if resource_type == "Condition":
-                condition_elements = self._extract_condition_elements(
-                    resource, include_dates
-                )
+                condition_elements = self._extract_condition_elements(resource, include_dates)
                 elements.extend(condition_elements)
             elif resource_type == "Observation":
-                observation_elements = self._extract_observation_elements(
-                    resource, include_dates
-                )
+                observation_elements = self._extract_observation_elements(resource, include_dates)
                 elements.extend(observation_elements)
 
         return elements
 
-    def _extract_condition_elements(
-        self, resource: Dict[str, Any], include_dates: bool
-    ) -> List[McodeElement]:
+    def _extract_condition_elements(self, resource: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
         """Extract elements from Condition resources."""
-        elements: List[McodeElement] = []
+        elements = []
 
         code_info = resource.get("code", {}).get("coding", [{}])[0]
         display = code_info.get("display", "")
@@ -578,18 +559,14 @@ class McodeSummarizer:
 
         return elements
 
-    def _extract_observation_elements(
-        self, resource: Dict[str, Any], include_dates: bool
-    ) -> List[McodeElement]:
+    def _extract_observation_elements(self, resource: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
         """Extract elements from Observation resources."""
-        elements: List[McodeElement] = []
+        elements = []
 
-        resource.get("code", {}).get("coding", [{}])[0]
-        # display = code_info.get("display", "")
+        code_info = resource.get("code", {}).get("coding", [{}])[0]
+        display = code_info.get("display", "")
         value_info = resource.get("valueCodeableConcept", {})
-        value_coding: Dict[str, Any] = (
-            value_info.get("coding", [{}])[0] if value_info else {}
-        )
+        value_coding = value_info.get("coding", [{}])[0] if value_info else {}
         value_display = value_coding.get("display", "")
         value_system = value_coding.get("system", "")
         value_code = value_coding.get("code", "")
@@ -618,9 +595,11 @@ class McodeSummarizer:
 
         return elements
 
-    def _extract_trial_elements(self, trial_data: Dict[str, Any]) -> List[McodeElement]:
+    def _extract_trial_elements(
+        self, trial_data: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Extract mCODE elements from trial data using abstracted processing."""
-        elements: List[McodeElement] = []
+        elements = []
 
         protocol_section = trial_data.get("protocolSection", {})
         identification = protocol_section.get("identificationModule", {})
@@ -635,7 +614,7 @@ class McodeSummarizer:
             {
                 "element_name": "Trial",
                 "value": "Clinical Trial",
-                "codes": "",
+                "codes": "SNOMED:385633000",  # Clinical trial
                 "date_qualifier": "",
             }
         )
@@ -645,16 +624,27 @@ class McodeSummarizer:
                 {
                     "element_name": "TrialTitle",
                     "value": brief_title,
-                    "codes": "",
+                    "codes": "SNOMED:385633001",  # Trial title
                     "date_qualifier": "",
                 }
             )
+
+        # Map status to SNOMED codes
+        status_codes = {
+            "completed": "SNOMED:385633005",
+            "recruiting": "SNOMED:385633006",
+            "active": "SNOMED:385633007",
+            "terminated": "SNOMED:385633008",
+            "withdrawn": "SNOMED:385633009",
+            "suspended": "SNOMED:385633010",
+        }
+        status_code = status_codes.get(overall_status.lower(), "")
 
         elements.append(
             {
                 "element_name": "TrialStatus",
                 "value": overall_status.lower(),
-                "codes": "",
+                "codes": status_code,
                 "date_qualifier": "",
             }
         )
@@ -685,7 +675,7 @@ class McodeSummarizer:
         return " ".join(sentences)
 
     def create_patient_summary(
-        self, patient_data: Dict[str, Any], include_dates: Optional[bool] = None
+        self, patient_data: Dict[str, Any], include_dates: bool = None
     ) -> str:
         """Generate patient summary using abstracted element processing."""
         if not patient_data or "entry" not in patient_data:
