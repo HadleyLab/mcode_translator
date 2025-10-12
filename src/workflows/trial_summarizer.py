@@ -27,12 +27,25 @@ class TrialSummarizer:
 
             # Filter to only trial-related elements
             trial_element_types = {
-                "Trial", "TrialTitle", "TrialStudyType", "TrialPhase", "TrialStatus",
-                "TrialLeadSponsor", "TrialCollaborators", "TrialInterventionModel",
-                "TrialPrimaryPurpose", "TrialEnrollment", "TrialCancerConditions",
-                "TrialAgeCriteria", "TrialSexCriteria", "TrialHealthyVolunteers",
-                "TrialMedicationInterventions", "TrialOtherInterventions",
-                "TrialPrimaryOutcomes", "TrialStartDate", "TrialCompletionDate"
+                "Trial",
+                "TrialTitle",
+                "TrialStudyType",
+                "TrialPhase",
+                "TrialStatus",
+                "TrialLeadSponsor",
+                "TrialCollaborators",
+                "TrialInterventionModel",
+                "TrialPrimaryPurpose",
+                "TrialEnrollment",
+                "TrialCancerConditions",
+                "TrialAgeCriteria",
+                "TrialSexCriteria",
+                "TrialHealthyVolunteers",
+                "TrialMedicationInterventions",
+                "TrialOtherInterventions",
+                "TrialPrimaryOutcomes",
+                "TrialStartDate",
+                "TrialCompletionDate",
             }
 
             # Create elements list for summarizer, filtering to trial elements
@@ -40,12 +53,14 @@ class TrialSummarizer:
             for mapping in mappings:
                 element_type = mapping.get("mcode_element", "")
                 if element_type in trial_element_types or element_type.startswith("Trial"):
-                    elements.append({
-                        "element_name": element_type,
-                        "value": mapping.get("value", ""),
-                        "codes": mapping.get("code", ""),
-                        "date_qualifier": "",
-                    })
+                    elements.append(
+                        {
+                            "element_name": element_type,
+                            "value": mapping.get("value", ""),
+                            "codes": mapping.get("code", ""),
+                            "date_qualifier": "",
+                        }
+                    )
 
             # Use summarizer to generate sentences from LLM mappings
             subject = trial_id
@@ -61,9 +76,7 @@ class TrialSummarizer:
             else:
                 summary = basic_summary
 
-            print(
-                f"Generated comprehensive trial summary for {trial_id}: {summary[:200]}..."
-            )
+            print(f"Generated comprehensive trial summary for {trial_id}: {summary[:200]}...")
             print(f"Full trial summary length: {len(summary)} characters")
             return summary
 
@@ -76,9 +89,7 @@ class TrialSummarizer:
             except Exception as fallback_e:
                 return f"Clinical Trial {trial_id}: Error generating comprehensive summary - {str(e)}, fallback failed: {str(fallback_e)}"
 
-    def convert_trial_mcode_to_mappings_format(
-        self, mcode_elements: Any
-    ) -> list[Dict[str, Any]]:
+    def convert_trial_mcode_to_mappings_format(self, mcode_elements: Any) -> list[Dict[str, Any]]:
         """Convert trial mCODE elements to standardized mappings format for storage."""
         mappings = []
 
@@ -86,14 +97,14 @@ class TrialSummarizer:
             if isinstance(mcode_elements, list):
                 # Handle list of McodElement objects or dicts
                 for item in mcode_elements:
-                    if hasattr(item, 'element_type'):
+                    if hasattr(item, "element_type"):
                         # McodElement object
                         mapping = {
-                            "mcode_element": getattr(item, 'element_type', ''),
-                            "value": getattr(item, 'display', ''),
-                            "system": getattr(item, 'system', ''),
-                            "code": getattr(item, 'code', ''),
-                            "interpretation": getattr(item, 'evidence_text', ''),
+                            "mcode_element": getattr(item, "element_type", ""),
+                            "value": getattr(item, "display", ""),
+                            "system": getattr(item, "system", ""),
+                            "code": getattr(item, "code", ""),
+                            "interpretation": getattr(item, "evidence_text", ""),
                         }
                     elif isinstance(item, dict):
                         # Dict format
@@ -165,15 +176,13 @@ class TrialSummarizer:
             print(f"mcode_elements type: {type(mcode_elements)}")
             if isinstance(mcode_elements, list) and len(mcode_elements) > 0:
                 print(f"First element type: {type(mcode_elements[0])}")
-                if hasattr(mcode_elements[0], '__dict__'):
+                if hasattr(mcode_elements[0], "__dict__"):
                     print(f"First element attrs: {mcode_elements[0].__dict__}")
             raise
 
         return mappings
 
-    def format_trial_mcode_element(
-        self, element_name: str, system: str, code: str
-    ) -> str:
+    def format_trial_mcode_element(self, element_name: str, system: str, code: str) -> str:
         """Centralized function to format trial mCODE elements consistently."""
         # Clean up system URLs to standard names
         if "snomed" in system.lower():

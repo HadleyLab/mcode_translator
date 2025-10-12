@@ -1,4 +1,5 @@
 import os
+
 #!/usr/bin/env python3
 """
 mCODE Translator CLI - Pure Typer Backend
@@ -7,8 +8,8 @@ A comprehensive command-line interface for mCODE translation, processing,
 and memory operations using HeySol API client integration.
 """
 
-import sys
 from pathlib import Path
+import sys
 from typing import Optional
 
 import typer
@@ -25,7 +26,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Subcommand imports - import after path setup
-from .commands import patients, trials, memory, config
+from .commands import config, memory, patients, trials
 
 app = typer.Typer(
     name="mcode-translator",
@@ -34,6 +35,7 @@ app = typer.Typer(
     rich_markup_mode="rich",
 )
 
+
 # Global state for subcommands
 class GlobalState:
     api_key: Optional[str] = None
@@ -41,6 +43,7 @@ class GlobalState:
     base_url: Optional[str] = None
     source: Optional[str] = None
     skip_mcp: bool = False
+
 
 state = GlobalState()
 
@@ -71,9 +74,7 @@ def cli_callback(
         if api_key or user:
             # Explicit authentication provided
             config = McodeHeySolConfig.with_authentication(
-                api_key=api_key,
-                user=user,
-                base_url=base_url
+                api_key=api_key, user=user, base_url=base_url
             )
         else:
             # No explicit auth - use environment variables
@@ -127,13 +128,13 @@ def cli_callback(
 
 
 # Add command groups with detailed descriptions
-if patients and hasattr(patients, 'app'):
+if patients and hasattr(patients, "app"):
     app.add_typer(patients.app, name="patients", help="Patient data processing operations")
-if trials and hasattr(trials, 'app'):
+if trials and hasattr(trials, "app"):
     app.add_typer(trials.app, name="trials", help="Clinical trial data processing operations")
-if memory and hasattr(memory, 'app'):
+if memory and hasattr(memory, "app"):
     app.add_typer(memory.app, name="memory", help="CORE Memory operations and management")
-if config and hasattr(config, 'app'):
+if config and hasattr(config, "app"):
     app.add_typer(config.app, name="config", help="Configuration management and validation")
 
 
@@ -163,6 +164,7 @@ def status():
 
         # Get configuration for authentication
         from config.heysol_config import get_config
+
         config = get_config()
 
         # Update config with current state
@@ -177,7 +179,9 @@ def status():
 
         if not api_key and not user:
             console.print("[red]❌ No authentication configured[/red]")
-            console.print("[yellow]💡 Use --api-key, --user, or set HEYSOL_API_KEY environment variable[/yellow]")
+            console.print(
+                "[yellow]💡 Use --api-key, --user, or set HEYSOL_API_KEY environment variable[/yellow]"
+            )
             raise typer.Exit(1)
 
         # Initialize client based on authentication method
@@ -189,7 +193,9 @@ def status():
             resolved_api_key = config.resolve_user_authentication()
             if resolved_api_key:
                 client = HeySolClient(api_key=resolved_api_key)
-                console.print(f"[green]✅ Registry authentication successful for user: {user}[/green]")
+                console.print(
+                    f"[green]✅ Registry authentication successful for user: {user}[/green]"
+                )
             else:
                 console.print(f"[red]❌ Could not resolve API key for user: {user}[/red]")
                 console.print("[yellow]💡 Check that the user exists in the registry[/yellow]")
@@ -201,10 +207,13 @@ def status():
 
         console.print("[green]✅ HeySol API client initialized successfully[/green]")
         console.print(f"[blue]📊 Available memory spaces: {len(spaces)}[/blue]")
-        console.print(f"[blue]🧠 MCP integration: {'Available' if mcp_available else 'API Only'}[/blue]")
+        console.print(
+            f"[blue]🧠 MCP integration: {'Available' if mcp_available else 'API Only'}[/blue]"
+        )
 
         # Check configuration
         from config.heysol_config import get_config
+
         config = get_config()
         console.print("[green]✅ Configuration loaded successfully[/green]")
         console.print(f"[blue]🎯 Base URL: {config.get_base_url()}[/blue]")
@@ -220,8 +229,12 @@ def status():
 
         # Show memory stats
         stats = memory_storage.get_memory_stats()
-        console.print(f"[blue]💾 Patients space: {stats.patients_space.get('name', 'Not found') if stats.patients_space else 'Not found'}[/blue]")
-        console.print(f"[blue]🧪 Trials space: {stats.trials_space.get('name', 'Not found') if stats.trials_space else 'Not found'}[/blue]")
+        console.print(
+            f"[blue]💾 Patients space: {stats.patients_space.get('name', 'Not found') if stats.patients_space else 'Not found'}[/blue]"
+        )
+        console.print(
+            f"[blue]🧪 Trials space: {stats.trials_space.get('name', 'Not found') if stats.trials_space else 'Not found'}[/blue]"
+        )
 
         console.print("\n[bold green]🎉 All systems operational![/bold green]")
 
@@ -259,12 +272,21 @@ def doctor():
     if sys.version_info >= (3, 10):
         console.print("[green]✅ Python version: {diagnostics['python_version']}[/green]")
     else:
-        console.print(f"[red]❌ Python version {diagnostics['python_version']} - requires Python 3.10+[/red]")
+        console.print(
+            f"[red]❌ Python version {diagnostics['python_version']} - requires Python 3.10+[/red]"
+        )
 
     # Check dependencies
     required_deps = [
-        "typer", "rich", "pydantic", "requests", "python-dotenv",
-        "heysol", "pandas", "scipy", "openai"
+        "typer",
+        "rich",
+        "pydantic",
+        "requests",
+        "python-dotenv",
+        "heysol",
+        "pandas",
+        "scipy",
+        "openai",
     ]
 
     for dep in required_deps:
@@ -279,7 +301,8 @@ def doctor():
     # Check configuration
     try:
         from config.heysol_config import get_config
-        config = get_config()
+
+        get_config()
         diagnostics["configuration"]["heysol_config"] = "✅"
         console.print("[green]✅ HeySol configuration loaded[/green]")
     except Exception as e:
@@ -289,12 +312,15 @@ def doctor():
     # Check API connectivity
     try:
         from heysol import HeySolClient
+
         api_key = state.api_key
         if api_key:
             client = HeySolClient(api_key=api_key)
             spaces = client.get_spaces()
             diagnostics["connectivity"]["heysol_api"] = f"✅ {len(spaces)} spaces"
-            console.print(f"[green]✅ HeySol API connected - {len(spaces)} spaces available[/green]")
+            console.print(
+                f"[green]✅ HeySol API connected - {len(spaces)} spaces available[/green]"
+            )
             client.close()
         else:
             diagnostics["connectivity"]["heysol_api"] = "❌ No API key"
@@ -325,9 +351,7 @@ def doctor():
 
     # Summary
     all_good = all(
-        "❌" not in str(status)
-        for category in diagnostics.values()
-        for status in category.values()
+        "❌" not in str(status) for category in diagnostics.values() for status in category.values()
     )
 
     if all_good:
@@ -335,7 +359,9 @@ def doctor():
         console.print("[green]🚀 System ready for mCODE translation operations[/green]")
     else:
         console.print("\n[yellow]⚠️ Some diagnostics failed - check configuration[/yellow]")
-        console.print("[blue]💡 Run 'mcode-translator config check' for detailed config validation[/blue]")
+        console.print(
+            "[blue]💡 Run 'mcode-translator config check' for detailed config validation[/blue]"
+        )
 
 
 __version__ = "2.0.0"

@@ -21,9 +21,7 @@ class ClinicalNoteGenerator:
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
-    def _generate_patient_header(
-        self, patient_id: str, demographics: Dict[str, Any]
-    ) -> str:
+    def _generate_patient_header(self, patient_id: str, demographics: Dict[str, Any]) -> str:
         """Generate patient identification and basic demographics header."""
         patient_name = demographics.get("name", "Unknown Patient")
         patient_age = demographics.get("age", "Unknown")
@@ -42,9 +40,7 @@ class ClinicalNoteGenerator:
             first_name = "Unknown"
             last_name = "Patient"
 
-        age_description = (
-            f"{patient_age} year old" if patient_age != "Unknown" else "age unknown"
-        )
+        age_description = f"{patient_age} year old" if patient_age != "Unknown" else "age unknown"
         return f"{first_name} {last_name} is a {age_description} {patient_gender} Patient (ID: {patient_id})."
 
     def _generate_demographics_section(self, demographics: Dict[str, Any]) -> str:
@@ -80,10 +76,7 @@ class ClinicalNoteGenerator:
             )
 
         # Marital status if available
-        if (
-            "maritalStatus" in demographics
-            and demographics["maritalStatus"] != "Unknown"
-        ):
+        if "maritalStatus" in demographics and demographics["maritalStatus"] != "Unknown":
             marital_display = self._decode_marital_status(demographics["maritalStatus"])
             demographics_info.append(
                 f"Patient marital status is {marital_display} (mCODE: MaritalStatus)"
@@ -110,25 +103,19 @@ class ClinicalNoteGenerator:
             if isinstance(condition, dict):
                 display = condition.get("display", "Unknown")
                 code = condition.get("code", "Unknown")
-                system = condition.get("system", "").replace(
-                    "http://snomed.info/sct", "SNOMED"
-                )
+                system = condition.get("system", "").replace("http://snomed.info/sct", "SNOMED")
                 diagnosis_date = condition.get(
                     "onsetDateTime", condition.get("recordedDate", "Unknown")
                 )
                 clean_display = display.split(" (")[0] if " (" in display else display
 
                 if diagnosis_date and diagnosis_date != "Unknown":
-                    mcode_format = self._format_mcode_element(
-                        "CancerCondition", system, code
-                    )
+                    mcode_format = self._format_mcode_element("CancerCondition", system, code)
                     cancer_diagnoses.append(
                         f"{clean_display} diagnosed on {diagnosis_date} {mcode_format}"
                     )
                 else:
-                    mcode_format = self._format_mcode_element(
-                        "CancerCondition", system, code
-                    )
+                    mcode_format = self._format_mcode_element("CancerCondition", system, code)
                     cancer_diagnoses.append(f"{clean_display} {mcode_format}")
 
         if cancer_diagnoses:
@@ -146,48 +133,30 @@ class ClinicalNoteGenerator:
             if isinstance(her2, dict):
                 display = her2.get("display", "Unknown")
                 code = her2.get("code", "Unknown")
-                system = her2.get("system", "").replace(
-                    "http://snomed.info/sct", "SNOMED"
-                )
+                system = her2.get("system", "").replace("http://snomed.info/sct", "SNOMED")
                 clean_display = display.split(" (")[0] if " (" in display else display
-                mcode_format = self._format_mcode_element(
-                    "HER2ReceptorStatus", system, code
-                )
-                biomarkers.append(
-                    f"HER2 receptor status is {clean_display} {mcode_format}"
-                )
+                mcode_format = self._format_mcode_element("HER2ReceptorStatus", system, code)
+                biomarkers.append(f"HER2 receptor status is {clean_display} {mcode_format}")
 
         if "ERReceptorStatus" in mcode_elements:
             er = mcode_elements["ERReceptorStatus"]
             if isinstance(er, dict):
                 display = er.get("display", "Unknown")
                 code = er.get("code", "Unknown")
-                system = er.get("system", "").replace(
-                    "http://snomed.info/sct", "SNOMED"
-                )
+                system = er.get("system", "").replace("http://snomed.info/sct", "SNOMED")
                 clean_display = display.split(" (")[0] if " (" in display else display
-                mcode_format = self._format_mcode_element(
-                    "ERReceptorStatus", system, code
-                )
-                biomarkers.append(
-                    f"ER receptor status is {clean_display} {mcode_format}"
-                )
+                mcode_format = self._format_mcode_element("ERReceptorStatus", system, code)
+                biomarkers.append(f"ER receptor status is {clean_display} {mcode_format}")
 
         if "PRReceptorStatus" in mcode_elements:
             pr = mcode_elements["PRReceptorStatus"]
             if isinstance(pr, dict):
                 display = pr.get("display", "Unknown")
                 code = pr.get("code", "Unknown")
-                system = pr.get("system", "").replace(
-                    "http://snomed.info/sct", "SNOMED"
-                )
+                system = pr.get("system", "").replace("http://snomed.info/sct", "SNOMED")
                 clean_display = display.split(" (")[0] if " (" in display else display
-                mcode_format = self._format_mcode_element(
-                    "PRReceptorStatus", system, code
-                )
-                biomarkers.append(
-                    f"PR receptor status is {clean_display} {mcode_format}"
-                )
+                mcode_format = self._format_mcode_element("PRReceptorStatus", system, code)
+                biomarkers.append(f"PR receptor status is {clean_display} {mcode_format}")
 
         if biomarkers:
             if len(biomarkers) == 1:
@@ -204,9 +173,7 @@ class ClinicalNoteGenerator:
             if isinstance(stage, dict):
                 display = stage.get("display", "Unknown")
                 code = stage.get("code", "Unknown")
-                system = stage.get("system", "").replace(
-                    "http://snomed.info/sct", "SNOMED"
-                )
+                system = stage.get("system", "").replace("http://snomed.info/sct", "SNOMED")
                 clean_display = display.split(" (")[0] if " (" in display else display
                 mcode_format = self._format_mcode_element("TNMStage", system, code)
                 staging.append(f"{clean_display} {mcode_format}")
@@ -216,9 +183,7 @@ class ClinicalNoteGenerator:
             if isinstance(stage, dict):
                 display = stage.get("display", "Unknown")
                 code = stage.get("code", "Unknown")
-                system = stage.get("system", "").replace(
-                    "http://snomed.info/sct", "SNOMED"
-                )
+                system = stage.get("system", "").replace("http://snomed.info/sct", "SNOMED")
                 clean_display = display.split(" (")[0] if " (" in display else display
                 mcode_format = self._format_mcode_element("CancerStage", system, code)
                 staging.append(f"{clean_display} {mcode_format}")
@@ -240,16 +205,12 @@ class ClinicalNoteGenerator:
                     if isinstance(proc, dict):
                         display = proc.get("display", "Unknown")
                         code = proc.get("code", "Unknown")
-                        system = proc.get("system", "").replace(
-                            "http://snomed.info/sct", "SNOMED"
-                        )
+                        system = proc.get("system", "").replace("http://snomed.info/sct", "SNOMED")
                         procedure_date = proc.get(
                             "performedDateTime",
                             proc.get("performedPeriod", {}).get("start", "Unknown"),
                         )
-                        clean_display = (
-                            display.split(" (")[0] if " (" in display else display
-                        )
+                        clean_display = display.split(" (")[0] if " (" in display else display
 
                         if procedure_date and procedure_date != "Unknown":
                             mcode_format = self._format_mcode_element(
@@ -271,12 +232,8 @@ class ClinicalNoteGenerator:
                     if isinstance(med, dict):
                         display = med.get("display", "Unknown")
                         code = med.get("code", "Unknown")
-                        system = med.get("system", "").replace(
-                            "http://snomed.info/sct", "SNOMED"
-                        )
-                        clean_display = (
-                            display.split(" (")[0] if " (" in display else display
-                        )
+                        system = med.get("system", "").replace("http://snomed.info/sct", "SNOMED")
+                        clean_display = display.split(" (")[0] if " (" in display else display
                         mcode_format = self._format_mcode_element(
                             "CancerRelatedMedicationStatement", system, code
                         )
@@ -289,12 +246,8 @@ class ClinicalNoteGenerator:
                     if isinstance(rad, dict):
                         display = rad.get("display", "Unknown")
                         code = rad.get("code", "Unknown")
-                        system = rad.get("system", "").replace(
-                            "http://snomed.info/sct", "SNOMED"
-                        )
-                        clean_display = (
-                            display.split(" (")[0] if " (" in display else display
-                        )
+                        system = rad.get("system", "").replace("http://snomed.info/sct", "SNOMED")
+                        clean_display = display.split(" (")[0] if " (" in display else display
                         mcode_format = self._format_mcode_element(
                             "CancerRelatedRadiationProcedure", system, code
                         )
@@ -320,9 +273,7 @@ class ClinicalNoteGenerator:
                         system = variant.get("system", "").replace(
                             "http://snomed.info/sct", "SNOMED"
                         )
-                        clean_display = (
-                            display.split(" (")[0] if " (" in display else display
-                        )
+                        clean_display = display.split(" (")[0] if " (" in display else display
                         mcode_format = self._format_mcode_element(
                             "CancerGeneticVariant", system, code
                         )
@@ -332,7 +283,9 @@ class ClinicalNoteGenerator:
             if len(genetics) == 1:
                 return f"Patient genetic information: {genetics[0]}."
             else:
-                return f"Patient genetic information: {'; '.join(genetics[:-1])} and {genetics[-1]}."
+                return (
+                    f"Patient genetic information: {'; '.join(genetics[:-1])} and {genetics[-1]}."
+                )
         return ""
 
     def _generate_performance_section(self, mcode_elements: Dict[str, Any]) -> str:
@@ -343,13 +296,9 @@ class ClinicalNoteGenerator:
             if isinstance(ecog, dict):
                 display = ecog.get("display", "Unknown")
                 code = ecog.get("code", "Unknown")
-                system = ecog.get("system", "").replace(
-                    "http://snomed.info/sct", "SNOMED"
-                )
+                system = ecog.get("system", "").replace("http://snomed.info/sct", "SNOMED")
                 clean_display = display.split(" (")[0] if " (" in display else display
-                mcode_format = self._format_mcode_element(
-                    "ECOGPerformanceStatus", system, code
-                )
+                mcode_format = self._format_mcode_element("ECOGPerformanceStatus", system, code)
                 performance_status.append(
                     f"ECOG performance status is {clean_display} {mcode_format}"
                 )
@@ -359,9 +308,7 @@ class ClinicalNoteGenerator:
             if isinstance(karnofsky, dict):
                 display = karnofsky.get("display", "Unknown")
                 code = karnofsky.get("code", "Unknown")
-                system = karnofsky.get("system", "").replace(
-                    "http://snomed.info/sct", "SNOMED"
-                )
+                system = karnofsky.get("system", "").replace("http://snomed.info/sct", "SNOMED")
                 clean_display = display.split(" (")[0] if " (" in display else display
                 mcode_format = self._format_mcode_element(
                     "KarnofskyPerformanceStatus", system, code
@@ -440,9 +387,7 @@ class ClinicalNoteGenerator:
             if isinstance(plt, dict):
                 value = plt.get("value", "Unknown")
                 unit = plt.get("unit", "Unknown")
-                lab_results.append(
-                    f"Platelet count is {value} {unit} (mCODE: PlateletCount)"
-                )
+                lab_results.append(f"Platelet count is {value} {unit} (mCODE: PlateletCount)")
 
         if "Creatinine" in mcode_elements:
             creat = mcode_elements["Creatinine"]
@@ -456,18 +401,14 @@ class ClinicalNoteGenerator:
             if isinstance(bili, dict):
                 value = bili.get("value", "Unknown")
                 unit = bili.get("unit", "Unknown")
-                lab_results.append(
-                    f"Total bilirubin is {value} {unit} (mCODE: TotalBilirubin)"
-                )
+                lab_results.append(f"Total bilirubin is {value} {unit} (mCODE: TotalBilirubin)")
 
         if "AlanineAminotransferase" in mcode_elements:
             alt = mcode_elements["AlanineAminotransferase"]
             if isinstance(alt, dict):
                 value = alt.get("value", "Unknown")
                 unit = alt.get("unit", "Unknown")
-                lab_results.append(
-                    f"ALT is {value} {unit} (mCODE: AlanineAminotransferase)"
-                )
+                lab_results.append(f"ALT is {value} {unit} (mCODE: AlanineAminotransferase)")
 
         if lab_results:
             if len(lab_results) == 1:
@@ -489,12 +430,8 @@ class ClinicalNoteGenerator:
                         system = comorbid.get("system", "").replace(
                             "http://snomed.info/sct", "SNOMED"
                         )
-                        clean_display = (
-                            display.split(" (")[0] if " (" in display else display
-                        )
-                        mcode_format = self._format_mcode_element(
-                            "ComorbidCondition", system, code
-                        )
+                        clean_display = display.split(" (")[0] if " (" in display else display
+                        mcode_format = self._format_mcode_element("ComorbidCondition", system, code)
                         comorbidities.append(f"{clean_display} {mcode_format}")
 
         if comorbidities:
@@ -555,25 +492,17 @@ class ClinicalNoteGenerator:
                         system = immunization.get("system", "").replace(
                             "http://snomed.info/sct", "SNOMED"
                         )
-                        occurrence_date = immunization.get(
-                            "occurrenceDateTime", "Unknown"
-                        )
+                        occurrence_date = immunization.get("occurrenceDateTime", "Unknown")
                         status = immunization.get("status", "Unknown")
 
                         if occurrence_date and occurrence_date != "Unknown":
-                            mcode_format = self._format_mcode_element(
-                                "Immunization", system, code
-                            )
+                            mcode_format = self._format_mcode_element("Immunization", system, code)
                             immunizations.append(
                                 f"{display} administered on {occurrence_date} (status: {status}; {mcode_format})"
                             )
                         else:
-                            mcode_format = self._format_mcode_element(
-                                "Immunization", system, code
-                            )
-                            immunizations.append(
-                                f"{display} (status: {status}; {mcode_format})"
-                            )
+                            mcode_format = self._format_mcode_element("Immunization", system, code)
+                            immunizations.append(f"{display} (status: {status}; {mcode_format})")
 
         if immunizations:
             if len(immunizations) == 1:
@@ -590,9 +519,7 @@ class ClinicalNoteGenerator:
             if isinstance(family_list, list):
                 for family in family_list:
                     if isinstance(family, dict):
-                        relationship = family.get("relationship", {}).get(
-                            "display", "Unknown"
-                        )
+                        relationship = family.get("relationship", {}).get("display", "Unknown")
                         conditions = family.get("conditions", [])
                         born = family.get("born", "Unknown")
 
@@ -636,9 +563,7 @@ class ClinicalNoteGenerator:
             clinical_note = []
 
             # Patient header with demographics
-            clinical_note.append(
-                self._generate_patient_header(patient_id, demographics)
-            )
+            clinical_note.append(self._generate_patient_header(patient_id, demographics))
 
             # Demographics section
             demographics_section = self._generate_demographics_section(demographics)
@@ -706,9 +631,7 @@ class ClinicalNoteGenerator:
                 clinical_note.append(family_section)
 
             summary = " ".join(clinical_note)
-            self.logger.info(
-                f"Generated clinical note summary for patient {patient_id}: {summary}"
-            )
+            self.logger.info(f"Generated clinical note summary for patient {patient_id}: {summary}")
             return summary
 
         except Exception as e:

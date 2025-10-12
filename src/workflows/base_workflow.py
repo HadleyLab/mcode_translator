@@ -6,7 +6,7 @@ ensuring consistent interfaces, error handling, and CORE memory integration.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union, cast, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 
 if TYPE_CHECKING:
     from src.storage.mcode_memory_storage import OncoCoreMemory
@@ -102,9 +102,7 @@ class BaseWorkflow(ABC):
                 self.memory_storage.search_trials(namespaced_key, limit=1)
                 success = True  # Assume success for now
                 if success:
-                    self.logger.info(
-                        f"✅ Stored {key} to CORE memory space '{self.memory_space}'"
-                    )
+                    self.logger.info(f"✅ Stored {key} to CORE memory space '{self.memory_space}'")
                 else:
                     self.logger.warning(
                         f"❌ Failed to store {key} to CORE memory space '{self.memory_space}'"
@@ -112,9 +110,7 @@ class BaseWorkflow(ABC):
                 return success
             except Exception:
                 # Fallback to assuming success
-                self.logger.info(
-                    f"✅ Stored {key} to CORE memory space '{self.memory_space}'"
-                )
+                self.logger.info(f"✅ Stored {key} to CORE memory space '{self.memory_space}'")
                 return True
 
         except Exception as e:

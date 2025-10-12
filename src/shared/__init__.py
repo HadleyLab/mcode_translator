@@ -7,10 +7,16 @@ including data models, utility functions, and common interfaces.
 
 from .cli_utils import McodeCLI
 from .extractors import DataExtractor
-from .models import (ClinicalTrialData, McodeElement, PipelineResult,
-                     ProcessingMetadata, ValidationResult, WorkflowResult,
-                     create_mcode_results_structure,
-                     enhance_trial_with_mcode_results)
+from .models import (
+    ClinicalTrialData,
+    McodeElement,
+    PipelineResult,
+    ProcessingMetadata,
+    ValidationResult,
+    WorkflowResult,
+    create_mcode_results_structure,
+    enhance_trial_with_mcode_results,
+)
 from .types import TaskStatus
 
 __all__ = [

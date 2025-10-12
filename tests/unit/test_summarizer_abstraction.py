@@ -5,6 +5,7 @@ All functionality is now within methods/functions - testing core rules.
 """
 
 import unittest
+
 from src.services.summarizer import McodeSummarizer
 
 
@@ -33,18 +34,14 @@ class TestSummarizerAbstraction(unittest.TestCase):
             },
         ]
 
-        sentences = self.summarizer._generate_sentences_from_elements(
-            elements, "Patient"
-        )
+        sentences = self.summarizer._generate_sentences_from_elements(elements, "Patient")
 
         for sentence in sentences:
             if "mCODE:" in sentence:
                 # mCODE should be subject (before verb)
                 mcode_pos = sentence.find("(mCODE:")
                 verb_pos = sentence.find(" is ")
-                self.assertLess(
-                    mcode_pos, verb_pos, f"mCODE not subject in: {sentence}"
-                )
+                self.assertLess(mcode_pos, verb_pos, f"mCODE not subject in: {sentence}")
 
                 # Should have codes in predicate
                 self.assertIn("(", sentence.split("(mCODE:")[1].split(")")[1])
@@ -105,9 +102,7 @@ class TestSummarizerAbstraction(unittest.TestCase):
         trial_sentence = self.summarizer._create_abstracted_sentence(
             "NCT123456", "Trial", "Clinical Trial", "", ""
         )
-        self.assertEqual(
-            trial_sentence, "NCT123456 is a Clinical Trial (mCODE: Trial)."
-        )
+        self.assertEqual(trial_sentence, "NCT123456 is a Clinical Trial (mCODE: Trial).")
 
     def test_complex_elements_and_validation(self):
         """Test complex elements with dates/codes and strict validation."""
@@ -124,9 +119,7 @@ class TestSummarizerAbstraction(unittest.TestCase):
 
         # Strict validation - should fail for unconfigured elements
         with self.assertRaises(ValueError) as context:
-            self.summarizer._create_abstracted_sentence(
-                "Patient", "InvalidElement", "test", "", ""
-            )
+            self.summarizer._create_abstracted_sentence("Patient", "InvalidElement", "test", "", "")
         self.assertIn("not configured", str(context.exception))
 
 

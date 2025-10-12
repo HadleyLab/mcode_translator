@@ -2,11 +2,12 @@
 Tests for TrialsOptimizerWorkflow.
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
-from src.workflows.trials_optimizer import TrialsOptimizerWorkflow
+import pytest
+
 from src.utils.config import Config
+from src.workflows.trials_optimizer import TrialsOptimizerWorkflow
 
 
 class TestTrialsOptimizerWorkflow:
@@ -87,7 +88,6 @@ class TestTrialsOptimizerWorkflow:
         ]
         assert combinations == expected_combinations
 
-
     def test_create_kfold_splits(self, workflow, mock_trials_data):
         """Test k-fold split creation via execution manager."""
         n_samples = len(mock_trials_data)  # 3 trials
@@ -107,22 +107,16 @@ class TestTrialsOptimizerWorkflow:
         """Test combination validation."""
         # Valid combination
         assert (
-            workflow.validate_combination(
-                "direct_mcode_evidence_based_concise", "deepseek-coder"
-            )
+            workflow.validate_combination("direct_mcode_evidence_based_concise", "deepseek-coder")
             is True
         )
 
         # Invalid prompt
-        assert (
-            workflow.validate_combination("invalid_prompt", "deepseek-coder") is False
-        )
+        assert workflow.validate_combination("invalid_prompt", "deepseek-coder") is False
 
         # Invalid model
         assert (
-            workflow.validate_combination(
-                "direct_mcode_evidence_based_concise", "invalid_model"
-            )
+            workflow.validate_combination("direct_mcode_evidence_based_concise", "invalid_model")
             is False
         )
 
@@ -141,9 +135,7 @@ class TestTrialsOptimizerWorkflow:
         assert "deepseek-coder" in models
 
     @patch("src.pipeline.McodePipeline")
-    def test_execute_success(
-        self, mock_pipeline_class, workflow, mock_trials_data
-    ):
+    def test_execute_success(self, mock_pipeline_class, workflow, mock_trials_data):
         """Test successful workflow execution."""
         # Mock pipeline for successful processing
         from unittest.mock import AsyncMock
@@ -213,9 +205,7 @@ class TestTrialsOptimizerWorkflow:
         assert "No trial data provided" in result.error_message
 
     @patch("src.pipeline.McodePipeline")
-    @patch(
-        "src.workflows.trials_optimizer_workflow.TrialsOptimizerWorkflow._set_default_llm_spec"
-    )
+    @patch("src.workflows.trials_optimizer_workflow.TrialsOptimizerWorkflow._set_default_llm_spec")
     def test_execute_calls_set_default_spec(
         self, mock_set_default, mock_pipeline_class, workflow, mock_trials_data
     ):
@@ -331,9 +321,7 @@ class TestTrialsOptimizerWorkflow:
         """Test CV folds adjustment when more folds than trials."""
         trials_count = len(mock_trials_data)  # 3 trials
 
-        with patch(
-            "src.pipeline.McodePipeline"
-        ) as mock_pipeline_class:
+        with patch("src.pipeline.McodePipeline") as mock_pipeline_class:
             from unittest.mock import AsyncMock
 
             mock_pipeline = AsyncMock()

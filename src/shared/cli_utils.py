@@ -30,9 +30,7 @@ class McodeCLI:
             help="Set logging level (default: INFO)",
         )
 
-        parser.add_argument(
-            "--config", help="Path to configuration file (overrides default)"
-        )
+        parser.add_argument("--config", help="Path to configuration file (overrides default)")
 
     @staticmethod
     def add_memory_args(parser: argparse.ArgumentParser) -> None:

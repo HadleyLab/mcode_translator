@@ -1,0 +1,48 @@
+{
+  "webhooks": {
+    "trial_processed": {
+      "url": "https://your-app.com/webhooks/mcode-results",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer your-webhook-token"
+      },
+      "events": ["trial.processed"],
+      "retries": 3,
+      "timeout": 30
+    },
+    "batch_completed": {
+      "url": "https://your-app.com/webhooks/batch-results",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer your-webhook-token"
+      },
+      "events": ["batch.completed"],
+      "retries": 3,
+      "timeout": 30
+    },
+    "error_occurred": {
+      "url": "https://your-app.com/webhooks/errors",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer your-webhook-token"
+      },
+      "events": ["error.occurred"],
+      "retries": 3,
+      "timeout": 30
+    }
+  },
+  "rate_limiting": {
+    "requests_per_second": 10,
+    "burst_limit": 50,
+    "backoff_multiplier": 2.0,
+    "max_backoff_seconds": 300
+  },
+  "authentication": {
+    "method": "hmac_sha256",
+    "secret_key": "your-hmac-secret",
+    "header_name": "X-Webhook-Signature"
+  }
+}

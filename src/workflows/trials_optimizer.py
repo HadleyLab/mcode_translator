@@ -7,8 +7,8 @@ configuration files, not to CORE Memory.
 """
 
 import asyncio
-import json
 from datetime import datetime
+import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, cast
 
@@ -46,19 +46,19 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         """Optimizer workflows use 'optimization' space."""
         return "optimization"
 
-    def execute(self, **kwargs: Any) -> WorkflowResult:
+    async def execute_async(self, **kwargs: Any) -> WorkflowResult:
         """
-        Execute the optimization workflow with cross validation.
+        Execute the optimization workflow with cross validation asynchronously.
 
         Args:
             **kwargs: Workflow parameters including:
-                - trials_data: List of trial data for testing
-                - prompts: List of prompt templates to test
-                - models: List of LLM models to test
-                - max_combinations: Maximum combinations to test
-                - cv_folds: Number of cross validation folds
-                - output_config: Where to save optimal settings
-                - cli_args: CLI arguments for concurrency configuration
+                 - trials_data: List of trial data for testing
+                 - prompts: List of prompt templates to test
+                 - models: List of LLM models to test
+                 - max_combinations: Maximum combinations to test
+                 - cv_folds: Number of cross validation folds
+                 - output_config: Where to save optimal settings
+                 - cli_args: CLI arguments for concurrency configuration
 
         Returns:
             WorkflowResult: Optimization results
@@ -104,9 +104,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             self.logger.info(f"   📊 Total possible: {total_possible}")
             self.logger.info(f"   ✅ Actually testing: {len(combinations)}")
             if len(combinations) < total_possible:
-                self.logger.info(
-                    f"   ✂️  Limited by max_combinations={max_combinations}"
-                )
+                self.logger.info(f"   ✂️  Limited by max_combinations={max_combinations}")
             else:
                 self.logger.info("   🎉 Testing ALL possible combinations!")
 
@@ -115,10 +113,8 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                 self.logger.info(f"  {i}. {combo['model']} + {combo['prompt']}")
 
             # Execute optimization using the execution manager
-            combo_results = asyncio.run(
-                self.execution_manager.execute_optimization(
-                    trials_data, combinations, cv_folds, cli_args
-                )
+            combo_results = await self.execution_manager.execute_optimization(
+                trials_data, combinations, cv_folds, cli_args
             )
 
             # Create directory for saving individual runs
@@ -172,17 +168,13 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             inter_rater_analysis = None
             if kwargs.get("run_inter_rater_reliability", False):
                 try:
-                    inter_rater_analysis = asyncio.run(
-                        self._run_inter_rater_reliability_analysis(
-                            trials_data,
-                            combinations,
-                            kwargs.get("inter_rater_max_concurrent", 3),
-                        )
+                    inter_rater_analysis = await self._run_inter_rater_reliability_analysis(
+                        trials_data,
+                        combinations,
+                        kwargs.get("inter_rater_max_concurrent", 3),
                     )
                 except Exception as e:
-                    self.logger.warning(
-                        f"Failed to run inter-rater reliability analysis: {e}"
-                    )
+                    self.logger.warning(f"Failed to run inter-rater reliability analysis: {e}")
 
             return self._create_result(
                 success=len(optimization_results) > 0,
@@ -194,9 +186,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
                         [r for r in optimization_results if r.get("success", False)]
                     ),
                     "best_score": best_score,
-                    "best_combination": (
-                        best_result.get("combination") if best_result else None
-                    ),
+                    "best_combination": (best_result.get("combination") if best_result else None),
                     "config_saved": output_config is not None,
                     "inter_rater_reliability": inter_rater_analysis is not None,
                 },
@@ -205,9 +195,27 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         except Exception as e:
             return self._handle_error(e, "trials optimization")
 
-    def _save_optimal_config(
-        self, best_result: Dict[str, Any], output_path: str
-    ) -> None:
+    def execute(self, **kwargs: Any) -> WorkflowResult:
+        """
+        Execute the optimization workflow with cross validation.
+
+        Args:
+            **kwargs: Workflow parameters including:
+                 - trials_data: List of trial data for testing
+                 - prompts: List of prompt templates to test
+                 - models: List of LLM models to test
+                 - max_combinations: Maximum combinations to test
+                 - cv_folds: Number of cross validation folds
+                 - output_config: Where to save optimal settings
+                 - cli_args: CLI arguments for concurrency configuration
+
+        Returns:
+            WorkflowResult: Optimization results
+        """
+        import asyncio
+        return asyncio.run(self.execute_async(**kwargs))
+
+    def _save_optimal_config(self, best_result: Dict[str, Any], output_path: str) -> None:
         """Save optimal settings to configuration file."""
         try:
             config_data = {
@@ -246,16 +254,14 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         """Set the default LLM specification based on optimization results."""
         best_model = best_result["combination"]["model"]
         best_prompt = best_result["combination"]["prompt"]
-        best_score = best_result.get(
-            "cv_average_score", best_result.get("average_score", 0)
-        )
+        best_score = best_result.get("cv_average_score", best_result.get("average_score", 0))
 
         # Update the LLM config file
         llm_config_path = Path("src/config/llms_config.json")
         if not llm_config_path.exists():
             raise FileNotFoundError(f"LLM config file not found: {llm_config_path}")
 
-        with open(llm_config_path, "r", encoding="utf-8") as f:
+        with open(llm_config_path, encoding="utf-8") as f:
             llm_config = json.load(f)
 
         # Update the default model
@@ -268,9 +274,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         llm_config["models"]["optimization"]["optimized_model"] = best_model
         llm_config["models"]["optimization"]["optimized_prompt"] = best_prompt
         llm_config["models"]["optimization"]["optimization_score"] = best_score
-        llm_config["models"]["optimization"][
-            "last_optimized"
-        ] = datetime.now().isoformat()
+        llm_config["models"]["optimization"]["last_optimized"] = datetime.now().isoformat()
 
         with open(llm_config_path, "w", encoding="utf-8") as f:
             json.dump(llm_config, f, indent=2, ensure_ascii=False)
@@ -278,11 +282,9 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
         # Update the prompts config file
         prompts_config_path = Path("src/config/prompts_config.json")
         if not prompts_config_path.exists():
-            raise FileNotFoundError(
-                f"Prompts config file not found: {prompts_config_path}"
-            )
+            raise FileNotFoundError(f"Prompts config file not found: {prompts_config_path}")
 
-        with open(prompts_config_path, "r", encoding="utf-8") as f:
+        with open(prompts_config_path, encoding="utf-8") as f:
             prompts_config = json.load(f)
 
         # Update the default prompt
@@ -294,9 +296,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
 
         prompts_config["prompts"]["optimization"]["optimized_prompt"] = best_prompt
         prompts_config["prompts"]["optimization"]["optimization_score"] = best_score
-        prompts_config["prompts"]["optimization"][
-            "last_optimized"
-        ] = datetime.now().isoformat()
+        prompts_config["prompts"]["optimization"]["last_optimized"] = datetime.now().isoformat()
 
         with open(prompts_config_path, "w", encoding="utf-8") as f:
             json.dump(prompts_config, f, indent=2, ensure_ascii=False)
@@ -361,15 +361,13 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
     ) -> Optional[Dict[str, Any]]:
         """Run inter-rater reliability analysis on optimization results."""
         try:
-            from src.optimization.inter_rater_reliability import \
-                InterRaterReliabilityAnalyzer
+            from src.optimization.inter_rater_reliability import InterRaterReliabilityAnalyzer
 
             self.logger.info("🤝 Starting inter-rater reliability analysis...")
 
             # Convert combinations to rater configs
             rater_configs = [
-                {"model": combo["model"], "prompt": combo["prompt"]}
-                for combo in combinations
+                {"model": combo["model"], "prompt": combo["prompt"]} for combo in combinations
             ]
 
             # Initialize analyzer
@@ -377,9 +375,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             analyzer.initialize()
 
             # Run analysis
-            analysis = await analyzer.run_analysis(
-                trials_data, rater_configs, max_concurrent
-            )
+            analysis = await analyzer.run_analysis(trials_data, rater_configs, max_concurrent)
 
             # Save results
             analyzer.save_results()
@@ -393,9 +389,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow):
             with open(report_path, "w") as f:
                 f.write(report)
 
-            self.logger.info(
-                f"📊 Inter-rater reliability report saved to: {report_path}"
-            )
+            self.logger.info(f"📊 Inter-rater reliability report saved to: {report_path}")
 
             # Return summary for metadata
             return {

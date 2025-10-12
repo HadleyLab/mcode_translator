@@ -4,14 +4,16 @@ Unit tests for llm_loader module.
 
 import json
 import os
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import Mock, mock_open, patch
+
 import pytest
+
 from src.utils.llm_loader import (
     LLMConfig,
     LLMLoader,
+    get_default_llm,
     load_llm,
     reload_llms_config,
-    get_default_llm,
 )
 
 
@@ -159,9 +161,7 @@ class TestLLMLoader:
     @patch("src.utils.llm_loader.Path")
     @patch("builtins.open", new_callable=mock_open)
     @patch("src.utils.llm_loader.json.load")
-    def test_load_llms_config_nested_structure(
-        self, mock_json_load, mock_file, mock_path
-    ):
+    def test_load_llms_config_nested_structure(self, mock_json_load, mock_file, mock_path):
         """Test loading config with nested structure."""
         mock_path_instance = Mock()
         mock_path_instance.exists.return_value = True
@@ -188,9 +188,7 @@ class TestLLMLoader:
     @patch("src.utils.llm_loader.Path")
     @patch("builtins.open", new_callable=mock_open)
     @patch("src.utils.llm_loader.json.load")
-    def test_load_llms_config_flat_structure(
-        self, mock_json_load, mock_file, mock_path
-    ):
+    def test_load_llms_config_flat_structure(self, mock_json_load, mock_file, mock_path):
         """Test loading config with flat structure."""
         mock_path_instance = Mock()
         mock_path_instance.exists.return_value = True
@@ -296,9 +294,7 @@ class TestLLMLoader:
             }
         }
 
-        with pytest.raises(
-            ValueError, match="Environment variable 'MISSING_VAR' is not set"
-        ):
+        with pytest.raises(ValueError, match="Environment variable 'MISSING_VAR' is not set"):
             loader.get_llm("test-llm")
 
     @patch.dict(os.environ, {"TEST_API_KEY": "test-key"})

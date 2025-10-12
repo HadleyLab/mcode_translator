@@ -72,9 +72,7 @@ class LLMService:
         llm_config = self.llm_loader.get_llm(self.model_name)
 
         # Get prompt from existing file-based system - STRICT: No fallback, fail fast
-        prompt = self.prompt_loader.get_prompt(
-            self.prompt_name, clinical_text=clinical_text
-        )
+        prompt = self.prompt_loader.get_prompt(self.prompt_name, clinical_text=clinical_text)
 
         # Use enhanced caching for better performance
         cache_key = self._enhanced_cache_key(clinical_text)
@@ -84,9 +82,7 @@ class LLMService:
 
         if cached_result is not None:
             self.logger.info(f"💾 CACHE HIT: {self.model_name}")
-            return [
-                McodeElement(**elem) for elem in cached_result.get("mcode_elements", [])
-            ]
+            return [McodeElement(**elem) for elem in cached_result.get("mcode_elements", [])]
 
         # Make async LLM call using existing infrastructure - STRICT: No fallback, fail fast
         self.logger.debug(f"🔍 CACHE MISS → 🚀 ASYNC API CALL: {self.model_name}")
@@ -129,19 +125,11 @@ class LLMService:
                     self.logger.warning(
                         f"No API key available for {self.model_name} - skipping API call"
                     )
-                    raise ValueError(
-                        f"API key not configured for model {self.model_name}"
-                    )
+                    raise ValueError(f"API key not configured for model {self.model_name}")
             except Exception as e:
-                if "not found in config" in str(e) or "API key not configured" in str(
-                    e
-                ):
-                    self.logger.warning(
-                        f"API key configuration issue for {self.model_name}: {e}"
-                    )
-                    raise ValueError(
-                        f"API key not configured for model {self.model_name}"
-                    )
+                if "not found in config" in str(e) or "API key not configured" in str(e):
+                    self.logger.warning(f"API key configuration issue for {self.model_name}: {e}")
+                    raise ValueError(f"API key not configured for model {self.model_name}")
                 else:
                     raise
 
@@ -168,12 +156,9 @@ class LLMService:
             )
 
             # Extract token usage using existing utility
-            from src.utils.token_tracker import \
-                extract_token_usage_from_response
+            from src.utils.token_tracker import extract_token_usage_from_response
 
-            token_usage = extract_token_usage_from_response(
-                response, self.model_name, "provider"
-            )
+            token_usage = extract_token_usage_from_response(response, self.model_name, "provider")
 
             # Track tokens using existing global tracker
             self.token_tracker.add_usage(token_usage, "llm_service")
@@ -204,16 +189,12 @@ class LLMService:
                             )
 
                     # STRICT: Fail fast on truncated or incomplete JSON - no fallback processing
-                    if cleaned_content.startswith("{") and not cleaned_content.endswith(
-                        "}"
-                    ):
+                    if cleaned_content.startswith("{") and not cleaned_content.endswith("}"):
                         raise ValueError(
                             f"DeepSeek response contains truncated JSON (missing closing brace): {cleaned_content[:200]}..."
                         )
 
-                    if cleaned_content.startswith("[") and not cleaned_content.endswith(
-                        "]"
-                    ):
+                    if cleaned_content.startswith("[") and not cleaned_content.endswith("]"):
                         raise ValueError(
                             f"DeepSeek response contains truncated JSON (missing closing bracket): {cleaned_content[:200]}..."
                         )
@@ -235,9 +216,7 @@ class LLMService:
                         self.logger.warning(
                             f"DeepSeek response contains trailing commas, attempting cleanup: {cleaned_content[:100]}..."
                         )
-                        cleaned_content = cleaned_content.replace(",}", "}").replace(
-                            ",]", "]"
-                        )
+                        cleaned_content = cleaned_content.replace(",}", "}").replace(",]", "]")
 
                     # Additional cleanup for deepseek-reasoner which may produce more verbose output
                     if self.model_name == "deepseek-reasoner":
@@ -263,9 +242,7 @@ class LLMService:
                                     break
 
                 # Handle general markdown-wrapped JSON responses
-                elif cleaned_content.startswith("```json") and cleaned_content.endswith(
-                    "```"
-                ):
+                elif cleaned_content.startswith("```json") and cleaned_content.endswith("```"):
                     # Extract JSON from markdown code block
                     json_start = cleaned_content.find("{")
                     json_end = cleaned_content.rfind("}")
@@ -274,9 +251,7 @@ class LLMService:
 
                 # Clean up common JSON formatting issues
                 cleaned_content = cleaned_content.strip()
-                if cleaned_content.startswith("```") and cleaned_content.endswith(
-                    "```"
-                ):
+                if cleaned_content.startswith("```") and cleaned_content.endswith("```"):
                     # Remove markdown code blocks if still present
                     lines = cleaned_content.split("\n")
                     if len(lines) > 2:
@@ -285,16 +260,12 @@ class LLMService:
                 return json.loads(cleaned_content)  # type: ignore[no-any-return]
             except json.JSONDecodeError as e:
                 # Provide detailed error information for debugging
-                self.logger.error(
-                    f"❌ JSON parsing error for {self.model_name}: {str(e)}"
-                )
+                self.logger.error(f"❌ JSON parsing error for {self.model_name}: {str(e)}")
                 self.logger.error(f"  Response preview: {response_content[:500]}...")
 
                 # Check for common issues
                 if "Expecting ',' delimiter" in str(e):
-                    self.logger.error(
-                        "  Issue: Missing comma or malformed JSON structure"
-                    )
+                    self.logger.error("  Issue: Missing comma or malformed JSON structure")
                 elif "Expecting ':' delimiter" in str(e):
                     self.logger.error("  Issue: Missing colon in key-value pair")
                 elif "Expecting value" in str(e):
@@ -370,9 +341,7 @@ class LLMService:
             or "deepseek" in llm_config.model_identifier.lower()
         ):
             call_params["response_format"] = {"type": "json_object"}
-            self.logger.debug(
-                f"Using response_format for model: {llm_config.model_identifier}"
-            )
+            self.logger.debug(f"Using response_format for model: {llm_config.model_identifier}")
 
         for attempt in range(max_retries + 1):
             try:
@@ -417,15 +386,9 @@ class LLMService:
 
                 if is_quota_error:
                     # Quota errors should be flagged and the model should be skipped
-                    self.logger.error(
-                        f"💰 QUOTA ERROR for {llm_config.model_identifier}: {str(e)}"
-                    )
-                    self.logger.error(
-                        "  This model has exceeded its quota and will be skipped"
-                    )
-                    self.logger.error(
-                        "  Consider upgrading your plan or using a different model"
-                    )
+                    self.logger.error(f"💰 QUOTA ERROR for {llm_config.model_identifier}: {str(e)}")
+                    self.logger.error("  This model has exceeded its quota and will be skipped")
+                    self.logger.error("  Consider upgrading your plan or using a different model")
                     raise ValueError(
                         f"Model {llm_config.model_identifier} has exceeded its quota"
                     ) from e
@@ -450,9 +413,7 @@ class LLMService:
                         if "Please try again in" in error_message:
                             try:
                                 # Extract milliseconds from message like "Please try again in 524ms"
-                                retry_match = error_message.split(
-                                    "Please try again in"
-                                )[1].strip()
+                                retry_match = error_message.split("Please try again in")[1].strip()
                                 if retry_match.endswith("ms"):
                                     retry_after = (
                                         float(retry_match[:-2]) / 1000.0
@@ -462,15 +423,11 @@ class LLMService:
                             except (ValueError, IndexError):
                                 pass
 
-                        self.logger.warning(
-                            f"🚦 RATE LIMIT hit for {llm_config.model_identifier}"
-                        )
+                        self.logger.warning(f"🚦 RATE LIMIT hit for {llm_config.model_identifier}")
                         self.logger.warning(f"  Type: {error_type}")
                         self.logger.warning(f"  Message: {error_message}")
                         if retry_after:
-                            self.logger.warning(
-                                f"  Suggested retry after: {retry_after:.2f}s"
-                            )
+                            self.logger.warning(f"  Suggested retry after: {retry_after:.2f}s")
                     else:
                         # Fallback for rate limit detection without structured error data
                         self.logger.warning(
@@ -512,15 +469,11 @@ class LLMService:
                     raise
                 else:
                     # For non-rate-limit errors, use shorter delay
-                    delay = min(
-                        base_delay * (1.5**attempt), 10.0
-                    )  # Shorter backoff for API errors
+                    delay = min(base_delay * (1.5**attempt), 10.0)  # Shorter backoff for API errors
                     jitter = random.uniform(0.1, 1.0) * delay * 0.1
                     total_delay = delay + jitter
 
-                    self.logger.warning(
-                        f"⚠️ API error on attempt {attempt + 1}: {str(e)}"
-                    )
+                    self.logger.warning(f"⚠️ API error on attempt {attempt + 1}: {str(e)}")
                     self.logger.info(f"⏳ Waiting {total_delay:.2f}s before retry")
                     await asyncio.sleep(total_delay)
 
@@ -561,19 +514,13 @@ class LLMService:
                     transformed_item = {
                         "element_type": item["mcode_element"],
                         "code": (
-                            item["code"].get("code")
-                            if isinstance(item["code"], dict)
-                            else None
+                            item["code"].get("code") if isinstance(item["code"], dict) else None
                         ),
                         "display": (
-                            item["code"].get("display")
-                            if isinstance(item["code"], dict)
-                            else None
+                            item["code"].get("display") if isinstance(item["code"], dict) else None
                         ),
                         "system": (
-                            item["code"].get("system")
-                            if isinstance(item["code"], dict)
-                            else None
+                            item["code"].get("system") if isinstance(item["code"], dict) else None
                         ),
                         "confidence_score": item.get("mapping_confidence"),
                         "evidence_text": item.get("source_text_fragment"),

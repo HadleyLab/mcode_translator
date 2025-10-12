@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from src.pipeline import McodePipeline
 from src.shared.extractors import DataExtractor
-from src.utils.concurrency import AsyncQueue, create_async_queue_from_args
+from src.utils.concurrency import AsyncTaskQueue, create_async_task_queue_from_args
 from src.utils.metrics import PerformanceMetrics
 
 
@@ -32,10 +32,10 @@ class OptimizationExecutionManager:
 
         # Setup concurrency
         if cli_args:
-            task_queue = create_async_queue_from_args(cli_args, "optimizer")
+            task_queue = create_async_task_queue_from_args(cli_args, "optimizer")
             workers = task_queue.max_concurrent
         else:
-            task_queue = AsyncQueue(max_concurrent=1, name="OptimizerAsyncQueue")
+            task_queue = AsyncTaskQueue(max_concurrent=1, name="OptimizerAsyncQueue")
             workers = task_queue.max_concurrent
 
         # Initialize results storage
@@ -51,9 +51,7 @@ class OptimizationExecutionManager:
 
         # Producer-consumer execution
         queue: asyncio.Queue[Optional[Dict[str, Any]]] = asyncio.Queue()
-        await self._run_producer(
-            queue, combinations, trials_data, fold_indices, cv_folds, workers
-        )
+        await self._run_producer(queue, combinations, trials_data, fold_indices, cv_folds, workers)
         await self._run_workers(
             queue, workers, combo_results, completed_tasks, progress_lock, total_tasks
         )
@@ -123,9 +121,7 @@ class OptimizationExecutionManager:
         """Run worker tasks."""
         worker_tasks = [
             asyncio.create_task(
-                self._worker(
-                    i, queue, combo_results, completed_tasks, progress_lock, total_tasks
-                )
+                self._worker(i, queue, combo_results, completed_tasks, progress_lock, total_tasks)
             )
             for i in range(workers)
         ]
@@ -206,16 +202,16 @@ class OptimizationExecutionManager:
 
             except Exception as e:
                 combo_idx = task_data["combo_idx"]
-                combo_name = f"{task_data['combination']['model']} + {task_data['combination']['prompt']}"
+                combo_name = (
+                    f"{task_data['combination']['model']} + {task_data['combination']['prompt']}"
+                )
                 nctid = self.extractor.extract_trial_id(task_data["trial"])
 
                 if "quota" in str(e).lower():
                     quota_exceeded_models.add(model_name)
                     async with progress_lock:
                         completed_tasks["count"] += 1
-                    combo_results[combo_idx]["errors"].append(
-                        f"Quota exceeded for {model_name}"
-                    )
+                    combo_results[combo_idx]["errors"].append(f"Quota exceeded for {model_name}")
                     continue
                 else:
                     async with progress_lock:
@@ -225,9 +221,7 @@ class OptimizationExecutionManager:
                         f"❌ Worker {worker_id}: Failed {combo_name} (NCT{nctid}) - {e}"
                     )
 
-        self.logger.info(
-            f"🏁 Worker {worker_id}: Finished processing {worker_completed} tasks"
-        )
+        self.logger.info(f"🏁 Worker {worker_id}: Finished processing {worker_completed} tasks")
 
     async def _test_single_trial(
         self,
@@ -255,9 +249,7 @@ class OptimizationExecutionManager:
             token_usage = global_token_tracker.get_total_usage()
             tokens_used = token_usage.total_tokens if token_usage else 0
 
-            perf_metrics.stop_tracking(
-                tokens_used=tokens_used, elements_processed=num_elements
-            )
+            perf_metrics.stop_tracking(tokens_used=tokens_used, elements_processed=num_elements)
             score = min(num_elements / 10.0, 1.0)
 
             metrics = {

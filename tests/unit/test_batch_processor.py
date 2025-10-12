@@ -2,11 +2,12 @@
 Unit tests for BatchProcessor with comprehensive coverage.
 """
 
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 
 from src.core.batch_processor import BatchProcessor
-from src.shared.models import PipelineResult, ValidationResult, ProcessingMetadata
+from src.shared.models import PipelineResult, ProcessingMetadata, ValidationResult
 
 
 @pytest.fixture
@@ -18,13 +19,9 @@ def mock_pipeline():
         mcode_mappings=[],
         source_references=[],
         validation_results=ValidationResult(compliance_score=1.0),
-        metadata=ProcessingMetadata(
-            engine_type="test",
-            entities_count=0,
-            mapped_count=0
-        ),
+        metadata=ProcessingMetadata(engine_type="test", entities_count=0, mapped_count=0),
         original_data={},
-        error=None
+        error=None,
     )
     return pipeline
 
@@ -88,7 +85,7 @@ class TestBatchProcessor:
                 validation_results=ValidationResult(compliance_score=1.0),
                 metadata=ProcessingMetadata(engine_type="test", entities_count=0, mapped_count=0),
                 original_data={},
-                error=None
+                error=None,
             ),
             PipelineResult(
                 extracted_entities=[],
@@ -97,7 +94,7 @@ class TestBatchProcessor:
                 validation_results=ValidationResult(compliance_score=0.0),
                 metadata=ProcessingMetadata(engine_type="test", entities_count=0, mapped_count=0),
                 original_data={},
-                error="Processing failed"
+                error="Processing failed",
             ),
         ]
 
@@ -119,7 +116,7 @@ class TestBatchProcessor:
             validation_results=ValidationResult(compliance_score=0.0),
             metadata=ProcessingMetadata(engine_type="test", entities_count=0, mapped_count=0),
             original_data={},
-            error="Processing failed"
+            error="Processing failed",
         )
 
         processor = BatchProcessor(mock_pipeline)
@@ -144,13 +141,9 @@ class TestBatchProcessor:
         assert len(result.data) == total_batches
 
     @pytest.mark.parametrize("num_trials", [0, 1, 3, 10])
-    def test_process_trials_in_batches_various_trial_counts(
-        self, mock_pipeline, num_trials
-    ):
+    def test_process_trials_in_batches_various_trial_counts(self, mock_pipeline, num_trials):
         """Test batch processing with various numbers of trials."""
-        trial_data = [
-            {"nct_id": f"NCT{i:08d}", "title": f"Trial {i}"} for i in range(num_trials)
-        ]
+        trial_data = [{"nct_id": f"NCT{i:08d}", "title": f"Trial {i}"} for i in range(num_trials)]
 
         processor = BatchProcessor(mock_pipeline)
 
@@ -163,14 +156,8 @@ class TestBatchProcessor:
             assert result.success is True
             assert result.metadata["total_processed"] == num_trials
 
-    @pytest.mark.parametrize("error_scenario", [
-        "all_fail",
-        "mixed_results",
-        "pipeline_exception"
-    ])
-    def test_process_trials_in_batches_error_scenarios(
-        self, sample_trial_data, error_scenario
-    ):
+    @pytest.mark.parametrize("error_scenario", ["all_fail", "mixed_results", "pipeline_exception"])
+    def test_process_trials_in_batches_error_scenarios(self, sample_trial_data, error_scenario):
         """Test batch processing with various error scenarios."""
         if error_scenario == "all_fail":
             mock_pipeline = Mock()
@@ -180,18 +167,22 @@ class TestBatchProcessor:
                     mcode_mappings=[],
                     source_references=[],
                     validation_results=ValidationResult(compliance_score=0.0),
-                    metadata=ProcessingMetadata(engine_type="test", entities_count=0, mapped_count=0),
+                    metadata=ProcessingMetadata(
+                        engine_type="test", entities_count=0, mapped_count=0
+                    ),
                     original_data={},
-                    error="Processing failed"
+                    error="Processing failed",
                 ),
                 PipelineResult(
                     extracted_entities=[],
                     mcode_mappings=[],
                     source_references=[],
                     validation_results=ValidationResult(compliance_score=0.0),
-                    metadata=ProcessingMetadata(engine_type="test", entities_count=0, mapped_count=0),
+                    metadata=ProcessingMetadata(
+                        engine_type="test", entities_count=0, mapped_count=0
+                    ),
                     original_data={},
-                    error="Processing failed"
+                    error="Processing failed",
                 ),
             ]
         elif error_scenario == "mixed_results":
@@ -202,18 +193,22 @@ class TestBatchProcessor:
                     mcode_mappings=[],
                     source_references=[],
                     validation_results=ValidationResult(compliance_score=1.0),
-                    metadata=ProcessingMetadata(engine_type="test", entities_count=0, mapped_count=0),
+                    metadata=ProcessingMetadata(
+                        engine_type="test", entities_count=0, mapped_count=0
+                    ),
                     original_data={},
-                    error=None
+                    error=None,
                 ),
                 PipelineResult(
                     extracted_entities=[],
                     mcode_mappings=[],
                     source_references=[],
                     validation_results=ValidationResult(compliance_score=0.0),
-                    metadata=ProcessingMetadata(engine_type="test", entities_count=0, mapped_count=0),
+                    metadata=ProcessingMetadata(
+                        engine_type="test", entities_count=0, mapped_count=0
+                    ),
                     original_data={},
-                    error="Processing failed"
+                    error="Processing failed",
                 ),
             ]
         elif error_scenario == "pipeline_exception":
@@ -247,9 +242,7 @@ class TestBatchProcessor:
 
     def test_process_trials_in_batches_large_dataset(self, mock_pipeline):
         """Test batch processing with large dataset."""
-        large_trial_data = [
-            {"nct_id": f"NCT{i:08d}", "title": f"Trial {i}"} for i in range(25)
-        ]
+        large_trial_data = [{"nct_id": f"NCT{i:08d}", "title": f"Trial {i}"} for i in range(25)]
 
         processor = BatchProcessor(mock_pipeline)
 
@@ -259,7 +252,9 @@ class TestBatchProcessor:
         assert len(result.data) == 3  # 25 trials / 10 batch_size = 3 batches (rounded up)
         assert result.metadata["total_processed"] == 25
 
-    def test_process_trials_in_batches_custom_batch_size_override(self, mock_pipeline, sample_trial_data):
+    def test_process_trials_in_batches_custom_batch_size_override(
+        self, mock_pipeline, sample_trial_data
+    ):
         """Test that batch_size parameter overrides instance batch_size."""
         processor = BatchProcessor(mock_pipeline)
 
@@ -316,8 +311,10 @@ class TestBatchProcessorPerformance:
         assert len(result.data) == 5  # 100 / 20 = 5 batches
         assert result.metadata["total_processed"] == 100
 
-    @patch('src.core.batch_processor.get_logger')
-    def test_batch_processor_logger_integration(self, mock_get_logger, mock_pipeline, sample_trial_data):
+    @patch("src.core.batch_processor.get_logger")
+    def test_batch_processor_logger_integration(
+        self, mock_get_logger, mock_pipeline, sample_trial_data
+    ):
         """Test that BatchProcessor properly integrates with logging."""
         mock_logger = MagicMock()
         mock_get_logger.return_value = mock_logger
@@ -334,7 +331,7 @@ class TestBatchProcessorPerformance:
         # Verify success
         assert result.success is True
 
-    @patch('src.core.batch_processor.get_logger')
+    @patch("src.core.batch_processor.get_logger")
     def test_batch_processor_error_logging(self, mock_get_logger, sample_trial_data):
         """Test that errors are properly logged."""
         mock_logger = MagicMock()

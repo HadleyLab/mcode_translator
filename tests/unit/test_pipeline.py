@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 
 from src.pipeline import McodePipeline
-from src.shared.models import PipelineResult, McodeElement, ValidationResult
+from src.shared.models import McodeElement, PipelineResult, ValidationResult
 from src.utils.config import Config
 
 
@@ -42,9 +42,7 @@ class TestMcodePipeline:
         """Test successful processing of a trial."""
         # Mock the LLM service to return a sample mCODE element
         mock_map_to_mcode.return_value = [
-            McodeElement(
-                element_type="CancerCondition", code="C123", display="Test Cancer"
-            )
+            McodeElement(element_type="CancerCondition", code="C123", display="Test Cancer")
         ]
 
         pipeline = McodePipeline()
@@ -100,9 +98,7 @@ class TestMcodePipeline:
             )
 
             pipeline = McodePipeline()
-            batch_results = await pipeline.process_batch(
-                [sample_trial_data, sample_trial_data]
-            )
+            batch_results = await pipeline.process_batch([sample_trial_data, sample_trial_data])
 
             assert len(batch_results) == 2
             assert mock_process.call_count == 2
@@ -134,7 +130,9 @@ class TestMcodePipeline:
 
         with pytest.raises(Exception) as exc_info:
             await pipeline.process(empty_data)
-        assert "protocolSection" in str(exc_info.value) or "validation" in str(exc_info.value).lower()
+        assert (
+            "protocolSection" in str(exc_info.value) or "validation" in str(exc_info.value).lower()
+        )
 
     @pytest.mark.asyncio
     async def test_process_with_minimal_valid_data(self):
@@ -161,7 +159,9 @@ class TestMcodePipeline:
 
         # Mock to avoid actual LLM call
         with patch("src.services.llm.service.LLMService.map_to_mcode") as mock_map:
-            mock_map.return_value = [McodeElement(element_type="CancerCondition", code="C123", display="Test")]
+            mock_map.return_value = [
+                McodeElement(element_type="CancerCondition", code="C123", display="Test")
+            ]
 
             result = await pipeline.process(large_data)
             assert result is not None
@@ -176,8 +176,12 @@ class TestMcodePipeline:
             mock_map.side_effect = Exception("Network timeout")
 
             with pytest.raises(Exception) as exc_info:
-                await pipeline.process({"protocolSection": {"identificationModule": {"nctId": "NCT123"}}})
-            assert "timeout" in str(exc_info.value).lower() or "network" in str(exc_info.value).lower()
+                await pipeline.process(
+                    {"protocolSection": {"identificationModule": {"nctId": "NCT123"}}}
+                )
+            assert (
+                "timeout" in str(exc_info.value).lower() or "network" in str(exc_info.value).lower()
+            )
 
     @pytest.mark.asyncio
     async def test_process_with_invalid_llm_response(self):
@@ -188,7 +192,9 @@ class TestMcodePipeline:
             mock_map.return_value = "Invalid response"  # Not a list of McodeElement
 
             with pytest.raises(Exception):
-                await pipeline.process({"protocolSection": {"identificationModule": {"nctId": "NCT123"}}})
+                await pipeline.process(
+                    {"protocolSection": {"identificationModule": {"nctId": "NCT123"}}}
+                )
 
     def test_pipeline_initialization_edge_cases(self):
         """Test pipeline initialization with edge case parameters."""

@@ -6,7 +6,6 @@ This script demonstrates the new engine-based architecture with RegexEngine and 
 Shows how both engines are drop-in replacements in the same sophisticated pipeline.
 """
 
-import time
 
 def demo_engine_architecture():
     """Demonstrate the engine architecture concepts."""
@@ -154,6 +153,7 @@ def demo_engine_architecture():
     print("🎊 Demo completed successfully!")
     print("The engine architecture provides maximum flexibility")
     print("while maintaining clean, maintainable code.")
+
 
 if __name__ == "__main__":
     demo_engine_architecture()

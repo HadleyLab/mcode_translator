@@ -58,7 +58,7 @@ class PromptLoader:
                     f"Prompts config file not found: {self.prompts_config_path}"
                 )
 
-            with open(self.prompts_config_path, "r") as f:
+            with open(self.prompts_config_path) as f:
                 config_data = json.load(f)
 
             # Handle the new flat structure: { "prompts": { "category": [prompt1, prompt2, ...] } }
@@ -74,9 +74,7 @@ class PromptLoader:
 
                 return flattened_config
             else:
-                logger.warning(
-                    "Prompt library structure not found in config, using raw config"
-                )
+                logger.warning("Prompt library structure not found in config, using raw config")
                 return cast(Dict[str, Any], config_data)
 
         except Exception as e:
@@ -91,7 +89,7 @@ class PromptLoader:
                     f"Prompts config file not found: {self.prompts_config_path}"
                 )
 
-            with open(self.prompts_config_path, "r") as f:
+            with open(self.prompts_config_path) as f:
                 config_data = json.load(f)
 
             # Extract pipelines configuration
@@ -128,16 +126,14 @@ class PromptLoader:
 
             prompt_file_path = prompt_config.get("prompt_file")
             if not prompt_file_path:
-                raise ValueError(
-                    f"No prompt_file specified for prompt key '{prompt_key}'"
-                )
+                raise ValueError(f"No prompt_file specified for prompt key '{prompt_key}'")
 
             # Load prompt content from file - paths are relative to prompts directory
             prompt_file = self.prompts_config_path.parent / prompt_file_path
             if not prompt_file.exists():
                 raise FileNotFoundError(f"Prompt file not found: {prompt_file}")
 
-            with open(prompt_file, "r") as f:
+            with open(prompt_file) as f:
                 prompt_content = f.read().strip()
 
             # Validate prompt content against strict requirements
@@ -165,9 +161,7 @@ class PromptLoader:
             logger.error(f"Error loading prompt '{prompt_key}': {str(e)}")
             raise
 
-    def _validate_prompt_strict(
-        self, prompt_content: str, prompt_config: Dict[str, Any]
-    ) -> None:
+    def _validate_prompt_strict(self, prompt_content: str, prompt_config: Dict[str, Any]) -> None:
         """
         Validate prompt content against strict requirements based on prompt type
 
@@ -181,17 +175,13 @@ class PromptLoader:
         prompt_type = prompt_config.get("prompt_type")
 
         if not prompt_type:
-            logger.warning(
-                "Prompt type not specified in config, skipping validation for prompt"
-            )
+            logger.warning("Prompt type not specified in config, skipping validation for prompt")
             return
 
         required_placeholders = self.PROMPT_REQUIREMENTS.get(prompt_type)
 
         if not required_placeholders:
-            logger.warning(
-                f"No validation requirements defined for prompt type '{prompt_type}'"
-            )
+            logger.warning(f"No validation requirements defined for prompt type '{prompt_type}'")
             return
 
         # Check for required placeholders
@@ -257,9 +247,7 @@ class PromptLoader:
             try:
                 # First try to parse as JSON - this will work for complete JSON examples
                 parsed_json = json.loads(json_example)
-                errors = self._validate_json_structure(
-                    parsed_json, response_requirements
-                )
+                errors = self._validate_json_structure(parsed_json, response_requirements)
                 if errors:
                     validation_errors.extend(errors)
             except json.JSONDecodeError:
@@ -336,9 +324,7 @@ class PromptLoader:
 
                 if cleaned_match and self._looks_like_json(cleaned_match):
                     json_examples.append(cleaned_match)
-                    logger.debug(
-                        f"Added JSON example for validation: {cleaned_match[:100]}..."
-                    )
+                    logger.debug(f"Added JSON example for validation: {cleaned_match[:100]}...")
                 elif cleaned_match:
                     logger.debug(
                         f"Found text that doesn't look like JSON: {cleaned_match[:100]}..."
@@ -442,9 +428,7 @@ class PromptLoader:
         """Get metadata for a specific prompt"""
         return self.prompts_config.get(prompt_key)
 
-    def get_prompts_by_pipeline(
-        self, pipeline_key: str
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    def get_prompts_by_pipeline(self, pipeline_key: str) -> Dict[str, List[Dict[str, Any]]]:
         """
         Get prompts organized by prompt type for a specific pipeline
 
@@ -516,9 +500,7 @@ class PromptLoader:
             The default prompt content, formatted if arguments provided
         """
         try:
-            return self.get_prompt(
-                "direct_mcode_evidence_based_concise", **format_kwargs
-            )
+            return self.get_prompt("direct_mcode_evidence_based_concise", **format_kwargs)
         except Exception as e:
             logger.warning(
                 f"Could not load default prompt 'direct_mcode_evidence_based_concise': {e}"
@@ -526,9 +508,7 @@ class PromptLoader:
             # Fallback to first available prompt if default fails
             available_prompts = list(self.prompts_config.keys())
             if available_prompts:
-                logger.info(
-                    f"Falling back to first available prompt: {available_prompts[0]}"
-                )
+                logger.info(f"Falling back to first available prompt: {available_prompts[0]}")
                 return self.get_prompt(available_prompts[0], **format_kwargs)
             else:
                 raise ValueError("No prompts available in configuration")

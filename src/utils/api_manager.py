@@ -34,9 +34,7 @@ class APIManager:
         # Create base cache directory if it doesn't exist
         os.makedirs(cache_dir, exist_ok=True)
 
-        logger.info(
-            f"APIManager initialized with config TTL: {self.default_ttl} seconds"
-        )
+        logger.info(f"APIManager initialized with config TTL: {self.default_ttl} seconds")
 
     def get_cache(self, cache_namespace: str = "default") -> APICache:
         """
@@ -162,9 +160,7 @@ class APIManager:
         if cache_namespace is None:
             # Clear all async caches
             tasks = [
-                cache.aclear()
-                for cache in self.caches.values()
-                if isinstance(cache, AsyncAPICache)
+                cache.aclear() for cache in self.caches.values() if isinstance(cache, AsyncAPICache)
             ]
             await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -196,9 +192,7 @@ class APIManager:
                     f"Failed to clear namespace cache directory {namespace_cache_dir}: {e}"
                 )
 
-    async def aget_cache_stats(
-        self, cache_namespace: Optional[str] = None
-    ) -> Dict[str, Any]:
+    async def aget_cache_stats(self, cache_namespace: Optional[str] = None) -> Dict[str, Any]:
         """
         Async get cache statistics for a specific namespace or all caches
 
@@ -222,14 +216,10 @@ class APIManager:
             total_size = 0
 
             for (namespace, cache), result in zip(self.caches.items(), results):
-                if isinstance(cache, AsyncAPICache) and not isinstance(
-                    result, Exception
-                ):
+                if isinstance(cache, AsyncAPICache) and not isinstance(result, Exception):
                     stats[namespace] = result
                     total_items += cast(Dict[str, Any], result).get("cached_items", 0)
-                    total_size += cast(Dict[str, Any], result).get(
-                        "total_size_bytes", 0
-                    )
+                    total_size += cast(Dict[str, Any], result).get("total_size_bytes", 0)
 
             stats["total"] = {
                 "cached_items": total_items,

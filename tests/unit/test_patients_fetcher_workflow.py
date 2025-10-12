@@ -2,12 +2,13 @@
 Unit tests for PatientsFetcherWorkflow.
 """
 
-import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import Mock, mock_open, patch
 
-from src.workflows.patients_fetcher import PatientsFetcherWorkflow
+import pytest
+
 from src.utils.config import Config
+from src.workflows.patients_fetcher import PatientsFetcherWorkflow
 
 
 class TestPatientsFetcherWorkflow:
@@ -62,9 +63,7 @@ class TestPatientsFetcherWorkflow:
         mock_generator.get_patient_by_id.return_value = mock_patient_data
         mock_create_generator.return_value = mock_generator
 
-        result = workflow.execute(
-            archive_path="breast_cancer_10_years", patient_id="patient_123"
-        )
+        result = workflow.execute(archive_path="breast_cancer_10_years", patient_id="patient_123")
 
         assert result.success is True
         assert len(result.data) == 1
@@ -95,9 +94,7 @@ class TestPatientsFetcherWorkflow:
         # Mock generator
         mock_generator = Mock()
         # Configure the mock to be iterable
-        mock_generator.__iter__ = Mock(
-            return_value=iter([mock_patient_data, mock_patient_data])
-        )
+        mock_generator.__iter__ = Mock(return_value=iter([mock_patient_data, mock_patient_data]))
         mock_generator.__len__ = Mock(return_value=100)
         mock_create_generator.return_value = mock_generator
 
@@ -110,9 +107,7 @@ class TestPatientsFetcherWorkflow:
         # Note: requested_limit is not stored in metadata, only in the internal method
 
     @patch("src.workflows.patients_fetcher.create_patient_generator")
-    def test_execute_multiple_patients_empty_archive(
-        self, mock_create_generator, workflow
-    ):
+    def test_execute_multiple_patients_empty_archive(self, mock_create_generator, workflow):
         """Test multiple patients fetch from empty archive."""
         # Mock generator
         mock_generator = Mock()
@@ -164,32 +159,24 @@ class TestPatientsFetcherWorkflow:
         mock_generator.get_patient_by_id.return_value = mock_patient_data
         mock_create_generator.return_value = mock_generator
 
-        result = workflow.execute(
-            archive_path="breast_cancer_10_years", patient_id="patient_123"
-        )
+        result = workflow.execute(archive_path="breast_cancer_10_years", patient_id="patient_123")
 
         assert result.success is True
         # Verify stdout was used
         assert mock_stdout.write.called
 
     @patch("src.workflows.patients_fetcher.create_patient_generator")
-    def test_fetch_single_patient_generator_error(
-        self, mock_create_generator, workflow
-    ):
+    def test_fetch_single_patient_generator_error(self, mock_create_generator, workflow):
         """Test single patient fetch handles generator errors."""
         mock_create_generator.side_effect = Exception("Generator initialization failed")
 
-        result = workflow.execute(
-            archive_path="invalid_archive", patient_id="patient_123"
-        )
+        result = workflow.execute(archive_path="invalid_archive", patient_id="patient_123")
 
         assert result.success is False
         assert "Failed to fetch patient" in result.error_message
 
     @patch("src.workflows.patients_fetcher.create_patient_generator")
-    def test_fetch_multiple_patients_generator_error(
-        self, mock_create_generator, workflow
-    ):
+    def test_fetch_multiple_patients_generator_error(self, mock_create_generator, workflow):
         """Test multiple patients fetch handles generator errors."""
         mock_create_generator.side_effect = Exception("Generator initialization failed")
 
@@ -223,9 +210,7 @@ class TestPatientsFetcherWorkflow:
         mock_file_handle.write.assert_any_call("\n")
 
     @patch("sys.stdout")
-    def test_output_to_stdout_ndjson_format(
-        self, mock_stdout, workflow, mock_patient_data
-    ):
+    def test_output_to_stdout_ndjson_format(self, mock_stdout, workflow, mock_patient_data):
         """Test stdout output writes NDJSON format."""
         workflow._output_to_stdout([mock_patient_data, mock_patient_data])
 

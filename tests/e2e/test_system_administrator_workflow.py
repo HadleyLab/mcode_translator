@@ -8,7 +8,6 @@ Tests the complete system administrator workflow from configuration to maintenan
 
 import json
 
-
 from src.cli import main as mcode_translate_main
 
 
@@ -105,11 +104,7 @@ class TestSystemAdministratorWorkflowE2E:
         output = captured_output.getvalue()
 
         # Verify CLI help shows logging options
-        assert (
-            "--verbose" in output
-            or "--log-level" in output
-            or "logging" in output.lower()
-        )
+        assert "--verbose" in output or "--log-level" in output or "logging" in output.lower()
 
     def test_system_administrator_workflow_maintenance_testing(self, tmp_path):
         """Test maintenance testing phase of system administrator workflow."""
@@ -213,9 +208,7 @@ class TestSystemAdministratorWorkflowE2E:
         output = captured_output.getvalue()
 
         # Verify archive listing was shown
-        assert (
-            "Available synthetic patient archives" in output or "📚 Available" in output
-        )
+        assert "Available synthetic patient archives" in output or "📚 Available" in output
 
     def test_system_administrator_workflow_error_handling_and_recovery(self, tmp_path):
         """Test error handling and recovery in system administrator workflow."""

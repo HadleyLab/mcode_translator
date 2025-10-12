@@ -101,16 +101,12 @@ class APICache:
             return None
 
         try:
-            with open(cache_path, "r") as f:
+            with open(cache_path) as f:
                 cached_data = json.load(f)
 
             # Check if cache has expired (ttl=0 means never expire)
             ttl = cached_data.get("ttl", None)
-            if (
-                ttl is not None
-                and ttl > 0
-                and time.time() - cached_data.get("timestamp", 0) > ttl
-            ):
+            if ttl is not None and ttl > 0 and time.time() - cached_data.get("timestamp", 0) > ttl:
                 os.remove(cache_path)
                 return None
 
@@ -249,9 +245,7 @@ class APICache:
                     os.remove(file_path)
             logger.info(f"Cache cleared for namespace '{self.namespace}'")
         except Exception as e:
-            logger.warning(
-                f"Failed to clear cache for namespace '{self.namespace}': {e}"
-            )
+            logger.warning(f"Failed to clear cache for namespace '{self.namespace}': {e}")
 
     def clear_cache(self) -> None:
         """Alias for clear() method"""
@@ -274,9 +268,7 @@ class APICache:
                 "total_size_bytes": total_size,
             }
         except Exception as e:
-            logger.warning(
-                f"Failed to get cache stats for namespace '{self.namespace}': {e}"
-            )
+            logger.warning(f"Failed to get cache stats for namespace '{self.namespace}': {e}")
             return {
                 "cache_dir": self.cache_dir,
                 "namespace": self.namespace,

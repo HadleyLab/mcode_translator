@@ -157,17 +157,13 @@ def validate_required(value: Any, name: str, error_msg: Optional[str] = None) ->
         raise ValueError(msg)
 
 
-def log_operation_start(
-    operation: str, logger_instance: Optional[logging.Logger] = None
-) -> None:
+def log_operation_start(operation: str, logger_instance: Optional[logging.Logger] = None) -> None:
     """Log the start of an operation."""
     log = logger_instance or logger
     log.info(f"🚀 Starting: {operation}")
 
 
-def log_operation_success(
-    operation: str, logger_instance: Optional[logging.Logger] = None
-) -> None:
+def log_operation_success(operation: str, logger_instance: Optional[logging.Logger] = None) -> None:
     """Log the successful completion of an operation."""
     log = logger_instance or logger
     log.info(f"✅ Completed: {operation}")

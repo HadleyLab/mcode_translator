@@ -8,7 +8,6 @@ This script provides a convenient entry point for the mCODE Translator CLI.
 It handles path setup and launches the Typer-based CLI application.
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -21,10 +20,13 @@ if heysol_path.exists():
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
+
 def main():
     """Launch the mCODE Translator CLI."""
     from cli import app
+
     app()
+
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,5 @@
 """
-Async API Cache - Asynchronous disk-based cache for API responses
+Async API Cache - Pure asynchronous disk-based cache for API responses
 """
 
 import asyncio
@@ -8,7 +8,6 @@ import json
 import logging
 import os
 import time
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Callable, Dict, List, Optional
 
 # Set up logging
@@ -18,25 +17,21 @@ logger = logging.getLogger(__name__)
 class AsyncAPICache:
     """Async version of disk-based cache for API responses"""
 
-    def __init__(
-        self, cache_dir: str, namespace: str, default_ttl: int, max_workers: int = 4
-    ):
+    def __init__(self, cache_dir: str, namespace: str, default_ttl: int):
         """
-        Initialize the async cache with thread pool for I/O operations
+        Initialize the pure async cache without thread pools
 
         Args:
             cache_dir: Base directory for cache files
             namespace: Namespace for this cache instance
             default_ttl: Required TTL for this cache from config
-            max_workers: Maximum worker threads for I/O operations
         """
         self.cache_dir = cache_dir
         self.namespace = namespace
         self.default_ttl = default_ttl
-        self.executor = ThreadPoolExecutor(max_workers=max_workers)
         os.makedirs(cache_dir, exist_ok=True)
         logger.info(
-            f"Initialized Async API cache for namespace '{namespace}' at {cache_dir} with TTL {default_ttl}"
+            f"Initialized Pure Async API cache for namespace '{namespace}' at {cache_dir} with TTL {default_ttl}"
         )
 
     def _get_cache_key(self, func_name: str, *args: Any, **kwargs: Any) -> str:
@@ -71,7 +66,7 @@ class AsyncAPICache:
 
     async def _aget_by_key(self, cache_key_data: Any) -> Optional[Any]:
         """
-        Async get cached result by cache key data
+        Pure async get cached result by cache key data
 
         Args:
             cache_key_data: Data to generate cache key from
@@ -79,42 +74,41 @@ class AsyncAPICache:
         Returns:
             Cached result or None if not found/expired
         """
-        loop = asyncio.get_event_loop()
+        cache_key = self._generate_cache_key(cache_key_data)
+        cache_path = self._get_cache_path(cache_key)
 
-        def _sync_get() -> Optional[Any]:
-            cache_key = self._generate_cache_key(cache_key_data)
-            cache_path = self._get_cache_path(cache_key)
+        if not os.path.exists(cache_path):
+            return None
 
-            if not os.path.exists(cache_path):
-                return None
-
+        try:
+            # Use aiofiles for async file I/O if available, otherwise use asyncio.to_thread
             try:
-                with open(cache_path, "r") as f:
-                    cached_data = json.load(f)
+                import aiofiles
+                async with aiofiles.open(cache_path, 'r') as f:
+                    content = await f.read()
+                    cached_data = json.loads(content)
+            except ImportError:
+                # Fallback to asyncio.to_thread for Python 3.9+
+                cached_data = await asyncio.to_thread(self._sync_load_json, cache_path)
 
-                # Check expiration
-                ttl = cached_data.get("ttl", None)
-                if (
-                    ttl
-                    and ttl > 0
-                    and time.time() - cached_data.get("timestamp", 0) > ttl
-                ):
-                    os.remove(cache_path)
-                    return None
-
-                logger.debug(
-                    f"Async Cache HIT {cache_key[:8]}... in '{self.namespace}'"
-                )
-                return cached_data["result"]
-            except Exception as e:
-                logger.warning(f"Cache read failed: {e}")
+            # Check expiration
+            ttl = cached_data.get("ttl", None)
+            if ttl and ttl > 0 and time.time() - cached_data.get("timestamp", 0) > ttl:
+                await asyncio.to_thread(os.remove, cache_path)
                 return None
 
-        return await loop.run_in_executor(self.executor, _sync_get)
+            logger.debug(f"Async Cache HIT {cache_key[:8]}... in '{self.namespace}'")
+            return cached_data["result"]
+        except Exception as e:
+            logger.warning(f"Cache read failed: {e}")
+            return None
 
-    async def aset(
-        self, result: Any, func_name: str, *args: Any, **kwargs: Any
-    ) -> None:
+    def _sync_load_json(self, cache_path: str) -> Dict[str, Any]:
+        """Synchronous JSON loading helper"""
+        with open(cache_path, 'r') as f:
+            return json.load(f)
+
+    async def aset(self, result: Any, func_name: str, *args: Any, **kwargs: Any) -> None:
         """
         Async store result in cache
 
@@ -136,7 +130,7 @@ class AsyncAPICache:
         kwargs: dict[str, Any] = {},
     ) -> None:
         """
-        Async store result in cache by cache key
+        Pure async store result in cache by cache key
 
         Args:
             result: Result to cache
@@ -145,33 +139,37 @@ class AsyncAPICache:
             args: Positional arguments (for logging)
             kwargs: Keyword arguments (for logging)
         """
-        loop = asyncio.get_event_loop()
+        cache_path = self._get_cache_path(cache_key)
 
-        def _sync_set() -> None:
-            cache_path = self._get_cache_path(cache_key)
+        try:
+            serializable_result = self._make_serializable(result)
+            cached_data = {
+                "result": serializable_result,
+                "timestamp": time.time(),
+                "ttl": self.default_ttl,
+                "namespace": self.namespace,
+                "function": func_name,
+                "args": str(args),
+                "kwargs": str(kwargs),
+            }
 
+            # Use aiofiles for async file I/O if available, otherwise use asyncio.to_thread
             try:
-                serializable_result = self._make_serializable(result)
-                cached_data = {
-                    "result": serializable_result,
-                    "timestamp": time.time(),
-                    "ttl": self.default_ttl,
-                    "namespace": self.namespace,
-                    "function": func_name,
-                    "args": str(args),
-                    "kwargs": str(kwargs),
-                }
+                import aiofiles
+                async with aiofiles.open(cache_path, 'w') as f:
+                    await f.write(json.dumps(cached_data, default=str))
+            except ImportError:
+                # Fallback to asyncio.to_thread for Python 3.9+
+                await asyncio.to_thread(self._sync_write_json, cache_path, cached_data)
 
-                with open(cache_path, "w") as f:
-                    json.dump(cached_data, f, default=str)
+            logger.debug(f"Async Cache STORED {cache_key[:8]}... in '{self.namespace}'")
+        except Exception as e:
+            logger.warning(f"Cache write failed: {e}")
 
-                logger.debug(
-                    f"Async Cache STORED {cache_key[:8]}... in '{self.namespace}'"
-                )
-            except Exception as e:
-                logger.warning(f"Cache write failed: {e}")
-
-        await loop.run_in_executor(self.executor, _sync_set)
+    def _sync_write_json(self, cache_path: str, data: Dict[str, Any]) -> None:
+        """Synchronous JSON writing helper"""
+        with open(cache_path, 'w') as f:
+            json.dump(data, f, default=str)
 
     async def aget_by_key(self, cache_key_data: Any) -> Optional[Any]:
         """
@@ -197,56 +195,54 @@ class AsyncAPICache:
         await self._aset_by_key(result, cache_key)
 
     async def aclear(self) -> None:
-        """Async clear all cached data for this namespace"""
-        loop = asyncio.get_event_loop()
+        """Pure async clear all cached data for this namespace"""
+        try:
+            # Use asyncio.to_thread for directory operations
+            await asyncio.to_thread(self._sync_clear_cache)
+            logger.info(f"Async Cache cleared for namespace '{self.namespace}'")
+        except Exception as e:
+            logger.warning(f"Failed to clear async cache for namespace '{self.namespace}': {e}")
 
-        def _sync_clear() -> None:
-            try:
-                for filename in os.listdir(self.cache_dir):
-                    file_path = os.path.join(self.cache_dir, filename)
-                    if os.path.isfile(file_path):
-                        os.remove(file_path)
-                logger.info(f"Async Cache cleared for namespace '{self.namespace}'")
-            except Exception as e:
-                logger.warning(
-                    f"Failed to clear async cache for namespace '{self.namespace}': {e}"
-                )
-
-        await loop.run_in_executor(self.executor, _sync_clear)
+    def _sync_clear_cache(self) -> None:
+        """Synchronous cache clearing helper"""
+        for filename in os.listdir(self.cache_dir):
+            file_path = os.path.join(self.cache_dir, filename)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
 
     async def aget_stats(self) -> Dict[str, Any]:
-        """Async get cache statistics"""
-        loop = asyncio.get_event_loop()
+        """Pure async get cache statistics"""
+        try:
+            # Use asyncio.to_thread for directory operations
+            return await asyncio.to_thread(self._sync_get_stats)
+        except Exception as e:
+            logger.warning(
+                f"Failed to get async cache stats for namespace '{self.namespace}': {e}"
+            )
+            return {
+                "cache_dir": self.cache_dir,
+                "namespace": self.namespace,
+                "cached_items": 0,
+                "total_items": 0,
+                "total_size_bytes": 0,
+                "error": str(e),
+            }
 
-        def _sync_stats() -> Dict[str, Any]:
-            try:
-                cache_files = os.listdir(self.cache_dir)
-                total_size = sum(
-                    os.path.getsize(os.path.join(self.cache_dir, f))
-                    for f in cache_files
-                    if os.path.isfile(os.path.join(self.cache_dir, f))
-                )
-                return {
-                    "cache_dir": self.cache_dir,
-                    "namespace": self.namespace,
-                    "cached_items": len(cache_files),
-                    "total_items": len(cache_files),
-                    "total_size_bytes": total_size,
-                }
-            except Exception as e:
-                logger.warning(
-                    f"Failed to get async cache stats for namespace '{self.namespace}': {e}"
-                )
-                return {
-                    "cache_dir": self.cache_dir,
-                    "namespace": self.namespace,
-                    "cached_items": 0,
-                    "total_items": 0,
-                    "total_size_bytes": 0,
-                    "error": str(e),
-                }
-
-        return await loop.run_in_executor(self.executor, _sync_stats)
+    def _sync_get_stats(self) -> Dict[str, Any]:
+        """Synchronous stats gathering helper"""
+        cache_files = os.listdir(self.cache_dir)
+        total_size = sum(
+            os.path.getsize(os.path.join(self.cache_dir, f))
+            for f in cache_files
+            if os.path.isfile(os.path.join(self.cache_dir, f))
+        )
+        return {
+            "cache_dir": self.cache_dir,
+            "namespace": self.namespace,
+            "cached_items": len(cache_files),
+            "total_items": len(cache_files),
+            "total_size_bytes": total_size,
+        }
 
     def _make_serializable(self, obj: Any) -> Any:
         """Make an object serializable (same as sync version)"""
@@ -302,9 +298,7 @@ class AsyncAPICache:
         await asyncio.gather(*tasks, return_exceptions=True)
 
     # Cache Warming
-    async def awarm_cache(
-        self, key_data_list: List[Any], fetch_func: Callable[..., Any]
-    ) -> None:
+    async def awarm_cache(self, key_data_list: List[Any], fetch_func: Callable[..., Any]) -> None:
         """
         Async warm cache by pre-fetching and caching results
 
@@ -312,9 +306,7 @@ class AsyncAPICache:
             key_data_list: List of cache key data to warm
             fetch_func: Function to fetch data if not cached
         """
-        logger.info(
-            f"Warming cache for {len(key_data_list)} items in namespace '{self.namespace}'"
-        )
+        logger.info(f"Warming cache for {len(key_data_list)} items in namespace '{self.namespace}'")
 
         # Check what's already cached
         cached_results = await self.abatch_get(key_data_list)
@@ -340,9 +332,7 @@ class AsyncAPICache:
         await asyncio.gather(*fetch_tasks, return_exceptions=True)
         logger.info(f"Cache warming completed for namespace '{self.namespace}'")
 
-    async def _fetch_and_cache(
-        self, key_data: Any, fetch_func: Callable[..., Any]
-    ) -> None:
+    async def _fetch_and_cache(self, key_data: Any, fetch_func: Callable[..., Any]) -> None:
         """Fetch data and cache it"""
         try:
             result = await fetch_func(key_data)
@@ -358,18 +348,14 @@ class AsyncAPICache:
         Args:
             cleanup_interval: Interval in seconds for cleanup operations
         """
-        logger.info(
-            f"Starting background maintenance for cache namespace '{self.namespace}'"
-        )
+        logger.info(f"Starting background maintenance for cache namespace '{self.namespace}'")
 
         while True:
             try:
                 await asyncio.sleep(cleanup_interval)
                 await self._aperform_maintenance()
             except asyncio.CancelledError:
-                logger.info(
-                    f"Background maintenance stopped for namespace '{self.namespace}'"
-                )
+                logger.info(f"Background maintenance stopped for namespace '{self.namespace}'")
                 break
             except Exception as e:
                 logger.warning(f"Background maintenance error: {e}")
@@ -384,48 +370,47 @@ class AsyncAPICache:
             logger.warning(f"Maintenance failed: {e}")
 
     async def _acleanup_expired(self) -> int:
-        """Async cleanup expired cache entries"""
-        loop = asyncio.get_event_loop()
+        """Pure async cleanup expired cache entries"""
+        try:
+            # Use asyncio.to_thread for cleanup operations
+            return await asyncio.to_thread(self._sync_cleanup_expired)
+        except Exception as e:
+            logger.warning(f"Failed to cleanup expired cache entries: {e}")
+            return 0
 
-        def _sync_cleanup() -> int:
+    def _sync_cleanup_expired(self) -> int:
+        """Synchronous cleanup helper"""
+        cleaned_count = 0
+        current_time = time.time()
+
+        for filename in os.listdir(self.cache_dir):
+            if not filename.endswith(".json"):
+                continue
+
+            file_path = os.path.join(self.cache_dir, filename)
             try:
-                cleaned_count = 0
-                current_time = time.time()
+                with open(file_path) as f:
+                    cached_data = json.load(f)
 
-                for filename in os.listdir(self.cache_dir):
-                    if not filename.endswith(".json"):
-                        continue
+                ttl = cached_data.get("ttl", None)
+                if (
+                    ttl is not None
+                    and ttl > 0
+                    and current_time - cached_data.get("timestamp", 0) > ttl
+                ):
+                    os.remove(file_path)
+                    cleaned_count += 1
+            except Exception:
+                # If we can't read the file, remove it
+                try:
+                    os.remove(file_path)
+                    cleaned_count += 1
+                except Exception:
+                    pass
 
-                    file_path = os.path.join(self.cache_dir, filename)
-                    try:
-                        with open(file_path, "r") as f:
-                            cached_data = json.load(f)
+        if cleaned_count > 0:
+            logger.info(
+                f"Cleaned up {cleaned_count} expired cache entries in '{self.namespace}'"
+            )
 
-                        ttl = cached_data.get("ttl", None)
-                        if (
-                            ttl is not None
-                            and ttl > 0
-                            and current_time - cached_data.get("timestamp", 0) > ttl
-                        ):
-                            os.remove(file_path)
-                            cleaned_count += 1
-                    except Exception:
-                        # If we can't read the file, remove it
-                        try:
-                            os.remove(file_path)
-                            cleaned_count += 1
-                        except Exception:
-                            pass
-
-                if cleaned_count > 0:
-                    logger.info(
-                        f"Cleaned up {cleaned_count} expired cache entries in '{self.namespace}'"
-                    )
-
-                return cleaned_count
-
-            except Exception as e:
-                logger.warning(f"Failed to cleanup expired cache entries: {e}")
-                return 0
-
-        return await loop.run_in_executor(self.executor, _sync_cleanup)
+        return cleaned_count

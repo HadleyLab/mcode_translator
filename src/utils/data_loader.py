@@ -33,16 +33,14 @@ def load_ndjson_data(input_path: Path, data_type: str = "data") -> List[Dict[str
         raise FileNotFoundError(f"{data_type.title()} file not found: {input_path}")
 
     data: List[Dict[str, Any]] = []
-    with open(input_path, "r", encoding="utf-8") as f:
+    with open(input_path, encoding="utf-8") as f:
         for line_num, line in enumerate(f, 1):
             line = line.strip()
             if line:
                 try:
                     data.append(json.loads(line))
                 except json.JSONDecodeError as e:
-                    logger.warning(
-                        f"Invalid JSON at line {line_num} in {input_path}: {e}"
-                    )
+                    logger.warning(f"Invalid JSON at line {line_num} in {input_path}: {e}")
                     continue
 
     if not data:

@@ -5,20 +5,20 @@ Implements full pairwise comparisons: prompts × models × trials
 Each combination serves as both gold standard and comparator.
 """
 
-import json
-import statistics
-import time
-import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
+import json
 from pathlib import Path
+import statistics
+import time
 from typing import Any, Dict, List, Optional
+import uuid
 
 from src.pipeline import McodePipeline
 from src.shared.models import BenchmarkResult, McodeElement
 from src.shared.types import TaskStatus
-from src.utils.concurrency import TaskQueue
+from src.utils.concurrency import AsyncTaskQueue
 from src.utils.llm_loader import LLMLoader
 from src.utils.logging_config import get_logger, setup_logging
 from src.utils.prompt_loader import PromptLoader
@@ -70,13 +70,11 @@ class PairwiseCrossValidator:
 
         # Results storage
         self.pairwise_results: List[PairwiseComparisonTask] = []
-        self.combination_cache: Dict[str, BenchmarkResult] = (
-            {}
-        )  # prompt_model_trial -> result
+        self.combination_cache: Dict[str, BenchmarkResult] = {}  # prompt_model_trial -> result
         self.summary_stats: Dict[str, Any] = {}
 
         # Task queue for async processing
-        self.task_queue: Optional[TaskQueue] = None
+        self.task_queue: Optional[AsyncTaskQueue] = None
 
     def initialize(self) -> None:
         """Initialize the validator."""
@@ -103,7 +101,7 @@ class PairwiseCrossValidator:
         if not trials_path.exists():
             raise FileNotFoundError(f"Trials file not found: {trials_path}")
 
-        with open(trials_path, "r") as f:
+        with open(trials_path) as f:
             data: Any = json.load(f)
 
         if isinstance(data, dict) and "successful_trials" in data:
@@ -135,9 +133,7 @@ class PairwiseCrossValidator:
                     all_combinations.append((prompt, model, trial_id, trial))
 
         # Generate pairwise comparisons
-        for i, (gold_prompt, gold_model, gold_trial_id, gold_trial) in enumerate(
-            all_combinations
-        ):
+        for i, (gold_prompt, gold_model, gold_trial_id, gold_trial) in enumerate(all_combinations):
             for j, (comp_prompt, comp_model, comp_trial_id, comp_trial) in enumerate(
                 all_combinations
             ):
@@ -172,9 +168,7 @@ class PairwiseCrossValidator:
 
         # Initialize task queue if not already done
         if self.task_queue is None:
-            self.task_queue = TaskQueue(
-                max_workers=max_workers, name="PairwiseValidator"
-            )
+            self.task_queue = AsyncTaskQueue(max_concurrent=max_workers, name="PairwiseValidator")
 
         # Convert tasks to Task objects for TaskQueue
         from src.utils.concurrency import Task
@@ -189,9 +183,7 @@ class PairwiseCrossValidator:
             )
             queue_tasks.append(queue_task)
 
-        self.logger.info(
-            f"🚀 Starting concurrent processing with {max_workers} workers"
-        )
+        self.logger.info(f"🚀 Starting concurrent processing with {max_workers} workers")
 
         def progress_callback(completed: int, total: int, result: Any) -> None:
             if completed % 10 == 0:
@@ -199,9 +191,10 @@ class PairwiseCrossValidator:
                 self.logger.info(f"📊 Progress: {completed}/{total} ({progress:.1f}%)")
 
         # Execute tasks concurrently
-        task_results = self.task_queue.execute_tasks(
+        import asyncio
+        task_results = asyncio.run(self.task_queue.execute_tasks(
             queue_tasks, progress_callback=progress_callback
-        )
+        ))
 
         # Process results
         successful_tasks = 0
@@ -318,9 +311,7 @@ class PairwiseCrossValidator:
             task.error_message = str(e)
             raise
 
-    async def _process_pairwise_task_async(
-        self, task: PairwiseComparisonTask
-    ) -> Dict[str, Any]:
+    async def _process_pairwise_task_async(self, task: PairwiseComparisonTask) -> Dict[str, Any]:
         """Async version of pairwise task processing for TaskQueue."""
         try:
             await self._process_pairwise_task(task)
@@ -395,20 +386,12 @@ class PairwiseCrossValidator:
                 if (true_positives + false_negatives) > 0
                 else 0
             )
-            f1 = (
-                2 * (precision * recall) / (precision + recall)
-                if (precision + recall) > 0
-                else 0
-            )
+            f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
             # Get detailed examples with better formatting
             true_positive_examples = list(intersection)[:5]  # Limit to 5 examples
-            false_positive_examples = list(comp_set - gold_set)[
-                :5
-            ]  # Limit to 5 examples
-            false_negative_examples = list(gold_set - comp_set)[
-                :5
-            ]  # Limit to 5 examples
+            false_positive_examples = list(comp_set - gold_set)[:5]  # Limit to 5 examples
+            false_negative_examples = list(gold_set - comp_set)[:5]  # Limit to 5 examples
 
             # Additional metrics for quality assessment
             gold_confidence_avg = (
@@ -462,9 +445,7 @@ class PairwiseCrossValidator:
     def _extract_trial_id(self, trial_data: Dict[str, Any], index: int) -> str:
         """Extract trial ID from trial data."""
         try:
-            trial_id: str = trial_data["protocolSection"]["identificationModule"][
-                "nctId"
-            ]
+            trial_id: str = trial_data["protocolSection"]["identificationModule"]["nctId"]
             return trial_id
         except (KeyError, TypeError):
             return f"trial_{index}"
@@ -474,9 +455,7 @@ class PairwiseCrossValidator:
         if not self.pairwise_results:
             return {}
 
-        successful_results = [
-            r for r in self.pairwise_results if r.status == TaskStatus.SUCCESS
-        ]
+        successful_results = [r for r in self.pairwise_results if r.status == TaskStatus.SUCCESS]
 
         # Group by configuration pairs
         config_stats = defaultdict(list)
@@ -505,9 +484,7 @@ class PairwiseCrossValidator:
         if successful_results:
             for metric_name in successful_results[0].comparison_metrics.keys():
                 values = [
-                    m.get(metric_name, 0)
-                    for m in all_metrics
-                    if m.get(metric_name) is not None
+                    m.get(metric_name, 0) for m in all_metrics if m.get(metric_name) is not None
                 ]
 
                 # Only calculate statistics for numeric values (not lists or strings)
@@ -542,9 +519,7 @@ class PairwiseCrossValidator:
                             config_metrics[metric_name] = {
                                 "mean": statistics.mean(values),
                                 "median": statistics.median(values),
-                                "stdev": (
-                                    statistics.stdev(values) if len(values) > 1 else 0
-                                ),
+                                "stdev": (statistics.stdev(values) if len(values) > 1 else 0),
                                 "count": len(values),
                             }
                         except (TypeError, ValueError) as e:
@@ -570,11 +545,7 @@ class PairwiseCrossValidator:
                         "timestamp": datetime.now().isoformat(),
                         "total_tasks": len(self.pairwise_results),
                         "successful_tasks": len(
-                            [
-                                r
-                                for r in self.pairwise_results
-                                if r.status == TaskStatus.SUCCESS
-                            ]
+                            [r for r in self.pairwise_results if r.status == TaskStatus.SUCCESS]
                         ),
                     },
                     "results": [
@@ -653,9 +624,7 @@ class PairwiseCrossValidator:
             summary = self.summary_stats.get("summary", {})
             f.write("## Summary\n\n")
             f.write(f"- **Total Comparisons**: {summary.get('total_comparisons', 0)}\n")
-            f.write(
-                f"- **Successful Comparisons**: {summary.get('successful_comparisons', 0)}\n"
-            )
+            f.write(f"- **Successful Comparisons**: {summary.get('successful_comparisons', 0)}\n")
             f.write(f"- **Success Rate**: {summary.get('success_rate', 0):.1%}\n")
             f.write(
                 f"- **Unique Configuration Pairs**: {summary.get('unique_config_pairs', 0)}\n\n"
@@ -671,16 +640,12 @@ class PairwiseCrossValidator:
             f.write(
                 "- Pre-defined SNOMED CT codes for common cancer conditions, treatments, and demographics\n"
             )
-            f.write(
-                "- Generates actual medical codes instead of null/placeholder values\n"
-            )
+            f.write("- Generates actual medical codes instead of null/placeholder values\n")
             f.write("- Higher code coverage and medical accuracy\n")
             f.write("- Maintains strict evidence-based approach\n\n")
 
             f.write("### Evidence-Based Prompts 🔍\n")
-            f.write(
-                "**Strategy**: Strict fidelity to source text with conservative mapping\n"
-            )
+            f.write("**Strategy**: Strict fidelity to source text with conservative mapping\n")
             f.write("**Key Features**:\n")
             f.write("- Only extracts information explicitly stated in source\n")
             f.write("- No inference or extrapolation\n")
@@ -719,9 +684,7 @@ class PairwiseCrossValidator:
                 "- Different models show varying performance with different prompt strategies\n"
             )
             f.write("- Mapping F1-score provides comprehensive quality metric\n")
-            f.write(
-                "- Jaccard similarity measures overlap between extraction methods\n\n"
-            )
+            f.write("- Jaccard similarity measures overlap between extraction methods\n\n")
 
     def print_summary(self) -> None:
         """Print summary of pairwise validation results to console."""
@@ -734,13 +697,9 @@ class PairwiseCrossValidator:
 
         self.logger.info("🎯 Pairwise Cross-Validation Summary")
         self.logger.info(f"📊 Total Comparisons: {summary.get('total_comparisons', 0)}")
-        self.logger.info(
-            f"✅ Successful Comparisons: {summary.get('successful_comparisons', 0)}"
-        )
+        self.logger.info(f"✅ Successful Comparisons: {summary.get('successful_comparisons', 0)}")
         self.logger.info(f"📈 Success Rate: {summary.get('success_rate', 0):.1%}")
-        self.logger.info(
-            f"🔄 Unique Configuration Pairs: {summary.get('unique_config_pairs', 0)}"
-        )
+        self.logger.info(f"🔄 Unique Configuration Pairs: {summary.get('unique_config_pairs', 0)}")
 
         # Log key metrics
         if overall_metrics:
@@ -775,9 +734,7 @@ class PairwiseCrossValidator:
                 for config_key, f1_score in best_configs:
                     # Highlight SNOMED-enabled prompts
                     if "evidence_based_with_codes" in config_key:
-                        self.logger.info(
-                            f"   ⭐ {config_key}: {f1_score:.3f} (SNOMED-enabled)"
-                        )
+                        self.logger.info(f"   ⭐ {config_key}: {f1_score:.3f} (SNOMED-enabled)")
                     else:
                         self.logger.info(f"   {config_key}: {f1_score:.3f}")
 
@@ -801,11 +758,7 @@ class PairwiseCrossValidator:
                 if prompt_name not in prompt_performance:
                     prompt_performance[prompt_name] = []
 
-                f1_score = (
-                    config_analysis[config_key]
-                    .get("mapping_f1_score", {})
-                    .get("mean", 0)
-                )
+                f1_score = config_analysis[config_key].get("mapping_f1_score", {}).get("mean", 0)
                 prompt_performance[prompt_name].append(f1_score)
 
                 # Categorize prompts
@@ -826,15 +779,11 @@ class PairwiseCrossValidator:
                 f"⭐ SNOMED-Enabled Prompts: {snomed_avg:.3f} avg F1 ({len(snomed_prompts)} configs)"
             )
             self.logger.info("   → Includes integrated SNOMED CT code reference table")
-            self.logger.info(
-                "   → Generates actual medical codes instead of null values"
-            )
+            self.logger.info("   → Generates actual medical codes instead of null values")
             self.logger.info("   → Higher code coverage and medical accuracy")
 
         if evidence_based_prompts:
-            evidence_avg = sum(f1 for _, f1 in evidence_based_prompts) / len(
-                evidence_based_prompts
-            )
+            evidence_avg = sum(f1 for _, f1 in evidence_based_prompts) / len(evidence_based_prompts)
             self.logger.info(
                 f"🔍 Evidence-Based Prompts: {evidence_avg:.3f} avg F1 ({len(evidence_based_prompts)} configs)"
             )
@@ -854,15 +803,11 @@ class PairwiseCrossValidator:
             if all_non_snomed:
                 best_non_snomed = max(all_non_snomed, key=lambda x: x[1])
                 if best_non_snomed[1] > 0:
-                    improvement = (
-                        (best_snomed[1] - best_non_snomed[1]) / best_non_snomed[1]
-                    ) * 100
+                    improvement = ((best_snomed[1] - best_non_snomed[1]) / best_non_snomed[1]) * 100
                     self.logger.info(
                         f"\n📈 Best SNOMED vs Best Non-SNOMED: {improvement:+.1f}% improvement"
                     )
-                    self.logger.info(
-                        "   → Demonstrates value of integrated medical coding"
-                    )
+                    self.logger.info("   → Demonstrates value of integrated medical coding")
                 else:
                     self.logger.info(
                         "\n📈 Best SNOMED vs Best Non-SNOMED: N/A (non-SNOMED F1 is zero)"

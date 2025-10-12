@@ -1,0 +1,28 @@
+{
+  "processing": {
+    "engines": ["regex", "llm"],
+    "batch_size": 5,
+    "parallel_processing": true,
+    "timeout_seconds": 300
+  },
+  "validation": {
+    "enabled": true,
+    "strict_mode": false,
+    "min_confidence": 0.8
+  },
+  "storage": {
+    "core_memory_enabled": false,
+    "local_cache_enabled": true,
+    "results_format": "json"
+  },
+  "logging": {
+    "level": "INFO",
+    "file_logging": false,
+    "console_output": true
+  },
+  "optimization": {
+    "performance_monitoring": true,
+    "metrics_collection": true,
+    "error_recovery": true
+  }
+}

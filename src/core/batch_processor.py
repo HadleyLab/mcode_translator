@@ -52,9 +52,7 @@ class BatchProcessor:
         self.logger.info("🔬 Processing trials in batches")
 
         if not trials_data:
-            return WorkflowResult(
-                success=False, error_message="No trial data to process", data={}
-            )
+            return WorkflowResult(success=False, error_message="No trial data to process", data={})
 
         # Process in batches to manage memory and provide progress updates
         all_results = []
@@ -126,9 +124,7 @@ class BatchProcessor:
                 "total_processed": total_processed,
                 "total_successful": total_successful,
                 "total_failed": total_processed - total_successful,
-                "success_rate": (
-                    total_successful / total_processed if total_processed > 0 else 0
-                ),
+                "success_rate": (total_successful / total_processed if total_processed > 0 else 0),
                 "batches_processed": len(all_results),
             },
         )

@@ -51,9 +51,7 @@ class FlowSummaryGenerator:
         # Calculate overall success rate
         if total_requested > 0:
             fetch_success_rate = total_fetched / total_requested
-            processing_success_rate = (
-                total_successful / total_fetched if total_fetched > 0 else 0
-            )
+            processing_success_rate = total_successful / total_fetched if total_fetched > 0 else 0
             overall_success_rate = total_successful / total_requested
         else:
             fetch_success_rate = 0.0

@@ -27,9 +27,7 @@ class TrialsSummarizerWorkflow(BaseSummarizerWorkflow):
         """Trials summarizers use 'trials_summaries' space."""
         return "trials_summaries"
 
-    def __init__(
-        self, config: Any, memory_storage: Optional[OncoCoreMemory] = None
-    ):
+    def __init__(self, config: Any, memory_storage: Optional[OncoCoreMemory] = None):
         """
         Initialize the trials summarizer workflow.
 
@@ -78,7 +76,9 @@ class TrialsSummarizerWorkflow(BaseSummarizerWorkflow):
 
                     # Generate natural language summary using McodeSummarizer with processed mCODE elements
                     mcode_elements = trial.get("McodeResults", {}).get("mcode_mappings", [])
-                    self.logger.info(f"Found {len(mcode_elements)} mCODE elements for summarization")
+                    self.logger.info(
+                        f"Found {len(mcode_elements)} mCODE elements for summarization"
+                    )
                     if mcode_elements:
                         # Convert processed mCODE elements to summarizer format
                         formatted_elements = []
@@ -86,53 +86,65 @@ class TrialsSummarizerWorkflow(BaseSummarizerWorkflow):
                             # element is an McodeElement object, access attributes directly
                             element_type = element.element_type
                             # Only strip "Trial" prefix if it's followed by a capital letter (e.g., "TrialTitle" -> "Title")
-                            if element_type.startswith("Trial") and len(element_type) > 5 and element_type[5].isupper():
+                            if (
+                                element_type.startswith("Trial")
+                                and len(element_type) > 5
+                                and element_type[5].isupper()
+                            ):
                                 element_name = element_type[5:]  # Remove "Trial" prefix
                             else:
                                 element_name = element_type
 
-                            codes = f"{element.system}:{element.code}" if element.system and element.code else ""
+                            codes = (
+                                f"{element.system}:{element.code}"
+                                if element.system and element.code
+                                else ""
+                            )
                             formatted_element = {
                                 "element_name": element_name,
                                 "value": element.display or "",
                                 "codes": codes,
-                                "date_qualifier": ""
+                                "date_qualifier": "",
                             }
                             formatted_elements.append(formatted_element)
-                            self.logger.debug(f"Converted element: {element_type} -> {element_name} = '{element.display}'")
+                            self.logger.debug(
+                                f"Converted element: {element_type} -> {element_name} = '{element.display}'"
+                            )
 
-                        self.logger.info(f"Converted {len(formatted_elements)} elements for summarization")
+                        self.logger.info(
+                            f"Converted {len(formatted_elements)} elements for summarization"
+                        )
 
                         # Use processed elements to generate summary
                         trial_id = self._extract_trial_id(trial)
-                        prioritized = self.summarizer._group_elements_by_priority(formatted_elements, "Trial")
+                        prioritized = self.summarizer._group_elements_by_priority(
+                            formatted_elements, "Trial"
+                        )
                         self.logger.info(f"Prioritized {len(prioritized)} elements")
-                        sentences = self.summarizer._generate_sentences_from_elements(prioritized, trial_id)
+                        sentences = self.summarizer._generate_sentences_from_elements(
+                            prioritized, trial_id
+                        )
                         self.logger.info(f"Generated {len(sentences)} sentences")
                         summary = " ".join(sentences)
                         self.logger.info(f"Final summary: {summary[:200]}...")
                     else:
                         # Fallback to basic extraction if no processed elements
-                        self.logger.warning("No processed mCODE elements found, using basic extraction")
+                        self.logger.warning(
+                            "No processed mCODE elements found, using basic extraction"
+                        )
                         summary = self.summarizer.create_trial_summary(trial)
-                    self.logger.debug(
-                        f"Generated summary for trial {trial_id}: {summary[:100]}..."
-                    )
+                    self.logger.debug(f"Generated summary for trial {trial_id}: {summary[:100]}...")
 
                     # Create processed trial with summary
                     processed_trial = trial.copy()
                     if "McodeResults" not in processed_trial:
                         processed_trial["McodeResults"] = {}
-                    processed_trial["McodeResults"][
-                        "natural_language_summary"
-                    ] = summary
+                    processed_trial["McodeResults"]["natural_language_summary"] = summary
 
                     # Store in CORE Memory if requested
                     if store_in_memory and self.memory_storage:
                         # Extract mCODE elements if available
-                        mcode_elements = trial.get("McodeResults", {}).get(
-                            "mcode_mappings", []
-                        )
+                        mcode_elements = trial.get("McodeResults", {}).get("mcode_mappings", [])
                         trial_metadata = self._extract_trial_metadata(trial)
 
                         mcode_data = {
@@ -148,9 +160,7 @@ class TrialsSummarizerWorkflow(BaseSummarizerWorkflow):
                         if success:
                             self.logger.info(f"✅ Stored trial {trial_id} summary")
                         else:
-                            self.logger.warning(
-                                f"❌ Failed to store trial {trial_id} summary"
-                            )
+                            self.logger.warning(f"❌ Failed to store trial {trial_id} summary")
 
                     processed_trials.append(processed_trial)
                     successful_count += 1
@@ -179,17 +189,14 @@ class TrialsSummarizerWorkflow(BaseSummarizerWorkflow):
                     "successful": successful_count,
                     "failed": failed_count,
                     "success_rate": success_rate,
-                    "stored_in_memory": store_in_memory
-                    and self.memory_storage is not None,
+                    "stored_in_memory": store_in_memory and self.memory_storage is not None,
                 },
             )
 
         except Exception as e:
             return self._handle_error(e, "trials summarization")
 
-    def process_single_trial(
-        self, trial: Dict[str, Any], **kwargs: Any
-    ) -> WorkflowResult:
+    def process_single_trial(self, trial: Dict[str, Any], **kwargs: Any) -> WorkflowResult:
         """
         Process a single trial for summarization.
 
@@ -209,9 +216,7 @@ class TrialsSummarizerWorkflow(BaseSummarizerWorkflow):
             and isinstance(result.data, list)
             and len(result.data) > 0
         ):
-            return self._create_result(
-                success=True, data=result.data[0], metadata=result.metadata
-            )
+            return self._create_result(success=True, data=result.data[0], metadata=result.metadata)
         else:
             return result
 
@@ -221,9 +226,7 @@ class TrialsSummarizerWorkflow(BaseSummarizerWorkflow):
         if "protocolSection" in trial:
             protocol = trial["protocolSection"]
             if "identificationModule" in protocol:
-                return cast(
-                    str, protocol["identificationModule"].get("nctId", "unknown")
-                )
+                return cast(str, protocol["identificationModule"].get("nctId", "unknown"))
 
         # Check for direct trial_id field
         if "trial_id" in trial:
@@ -255,9 +258,7 @@ class TrialsSummarizerWorkflow(BaseSummarizerWorkflow):
                 status = protocol["statusModule"]
                 metadata["overall_status"] = status.get("overallStatus")
                 metadata["start_date"] = status.get("startDateStruct", {}).get("date")
-                metadata["completion_date"] = status.get(
-                    "completionDateStruct", {}
-                ).get("date")
+                metadata["completion_date"] = status.get("completionDateStruct", {}).get("date")
 
             # Conditions
             if "conditionsModule" in protocol:

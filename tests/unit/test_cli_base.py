@@ -9,10 +9,10 @@ across individual CLI test files.
 import argparse
 import json
 import tempfile
+from abc import ABC
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
-from abc import ABC
 
 
 class BaseCLITest(ABC):
@@ -194,6 +194,7 @@ class BaseCLITest(ABC):
         def handle_cli_error_side_effect(*args, **kwargs):
             # Raise SystemExit to simulate the actual behavior
             raise SystemExit(1)
+
         mock_handle_cli_error.side_effect = handle_cli_error_side_effect
 
         # Create mock args without input file
@@ -202,6 +203,7 @@ class BaseCLITest(ABC):
 
         # Call main - should handle error and exit
         import pytest
+
         with pytest.raises(SystemExit):
             self.get_cli_module().main(args)
 
@@ -213,9 +215,7 @@ class BaseCLITest(ABC):
 
     @patch("src.shared.cli_utils.McodeCLI.create_config")
     @patch("src.shared.cli_utils.McodeCLI.setup_logging")
-    def test_main_input_file_not_found(
-        self, mock_setup_logging, mock_create_config
-    ):
+    def test_main_input_file_not_found(self, mock_setup_logging, mock_create_config):
         """Test error when input file does not exist."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -226,9 +226,7 @@ class BaseCLITest(ABC):
         args.input_file = "nonexistent.ndjson"
 
         # Mock Path.exists to return False
-        with patch("pathlib.Path.exists", return_value=False), patch(
-            "sys.exit"
-        ) as mock_exit:
+        with patch("pathlib.Path.exists", return_value=False), patch("sys.exit") as mock_exit:
             # Call main - should exit with error
             self.get_cli_module().main(args)
 
@@ -237,9 +235,7 @@ class BaseCLITest(ABC):
 
     @patch("src.shared.cli_utils.McodeCLI.create_config")
     @patch("src.shared.cli_utils.McodeCLI.setup_logging")
-    def test_main_workflow_failure(
-        self, mock_setup_logging, mock_create_config
-    ):
+    def test_main_workflow_failure(self, mock_setup_logging, mock_create_config):
         """Test handling of workflow execution failure."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -272,9 +268,7 @@ class BaseCLITest(ABC):
 
     @patch("src.cli.trials_processor.McodeCLI.create_config")
     @patch("src.cli.trials_processor.McodeCLI.setup_logging")
-    def test_main_keyboard_interrupt_handling(
-        self, mock_setup_logging, mock_create_config
-    ):
+    def test_main_keyboard_interrupt_handling(self, mock_setup_logging, mock_create_config):
         """Test handling of keyboard interrupt."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -331,9 +325,7 @@ class BaseCLITest(ABC):
         mock_logger = MagicMock()
 
         # Create temporary file
-        with tempfile.NamedTemporaryFile(
-            mode="w", delete=False, suffix=".ndjson"
-        ) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".ndjson") as temp_file:
             temp_path = temp_file.name
 
         try:
@@ -441,9 +433,7 @@ class BaseCLITest(ABC):
 
     @patch("src.cli.trials_processor.McodeCLI.create_config")
     @patch("src.cli.trials_processor.McodeCLI.setup_logging")
-    def test_main_with_concurrency_settings(
-        self, mock_setup_logging, mock_create_config
-    ):
+    def test_main_with_concurrency_settings(self, mock_setup_logging, mock_create_config):
         """Test that concurrency settings are properly passed to workflow."""
         # Mock configuration and logging
         mock_config = MagicMock()
@@ -530,7 +520,9 @@ class BaseCLITest(ABC):
         args = self.get_default_args()
 
         # Mock workflow and empty result
-        with patch("src.cli.trials_processor.ClinicalTrialsProcessorWorkflow") as mock_workflow_class:
+        with patch(
+            "src.cli.trials_processor.ClinicalTrialsProcessorWorkflow"
+        ) as mock_workflow_class:
             with patch("src.cli.trials_processor.McodeCLI.create_config", return_value=mock_config):
                 with patch("src.cli.trials_processor.McodeCLI.setup_logging"):
                     with patch("pathlib.Path.exists", return_value=True):
@@ -559,11 +551,16 @@ class BaseCLITest(ABC):
         args = self.get_default_args()
 
         # Mock workflow - patch the actual import location
-        with patch("src.workflows.trials_processor_workflow.ClinicalTrialsProcessorWorkflow") as mock_workflow_class:
+        with patch(
+            "src.workflows.trials_processor_workflow.ClinicalTrialsProcessorWorkflow"
+        ) as mock_workflow_class:
             with patch("src.shared.cli_utils.McodeCLI.create_config", return_value=mock_config):
                 with patch("src.cli.McodeCLI.setup_logging"):
                     with patch("pathlib.Path.exists", return_value=True):
-                        with patch("src.cli.load_ndjson_data", side_effect=json.JSONDecodeError("Invalid JSON", "", 0)):
+                        with patch(
+                            "src.cli.load_ndjson_data",
+                            side_effect=json.JSONDecodeError("Invalid JSON", "", 0),
+                        ):
                             with patch("sys.exit") as mock_exit:
                                 mock_workflow = MagicMock()
                                 mock_workflow_class.return_value = mock_workflow
@@ -587,7 +584,10 @@ class BaseCLITest(ABC):
             with patch("src.cli.McodeCLI.create_config", return_value=mock_config):
                 with patch("src.cli.McodeCLI.setup_logging"):
                     with patch("pathlib.Path.exists", return_value=True):
-                        with patch("src.cli.load_ndjson_data", side_effect=PermissionError("Permission denied")):
+                        with patch(
+                            "src.cli.load_ndjson_data",
+                            side_effect=PermissionError("Permission denied"),
+                        ):
                             with patch("sys.exit") as mock_exit:
                                 mock_workflow = MagicMock()
                                 mock_workflow_class.return_value = mock_workflow
@@ -711,11 +711,13 @@ class BaseCLITest(ABC):
         args = self.get_default_args()
 
         # Create mock data with Unicode characters
-        unicode_data = [{
-            "nct_id": "NCT12345678",
-            "title": "Trial with émojis 🎉 and spëcial chärs",
-            "description": "测试 with 中文 characters"
-        }]
+        unicode_data = [
+            {
+                "nct_id": "NCT12345678",
+                "title": "Trial with émojis 🎉 and spëcial chärs",
+                "description": "测试 with 中文 characters",
+            }
+        ]
 
         # Mock workflow
         with patch(f"src.cli.{self.get_workflow_class_name()}") as mock_workflow_class:
@@ -758,7 +760,10 @@ class BaseCLITest(ABC):
             with patch("src.cli.McodeCLI.create_config", return_value=mock_config):
                 with patch("src.cli.McodeCLI.setup_logging"):
                     with patch("pathlib.Path.exists", return_value=True):
-                        with patch("src.cli.load_ndjson_data", side_effect=OSError("File is locked by another process")):
+                        with patch(
+                            "src.cli.load_ndjson_data",
+                            side_effect=OSError("File is locked by another process"),
+                        ):
                             with patch("sys.exit") as mock_exit:
                                 mock_workflow = MagicMock()
                                 mock_workflow_class.return_value = mock_workflow
@@ -779,9 +784,7 @@ class TestDataHelper:
         return {
             "nct_id": "NCT12345678",
             "title": "Sample Clinical Trial",
-            "eligibility": {
-                "criteria": "Inclusion: Age >= 18\nExclusion: Prior chemotherapy"
-            },
+            "eligibility": {"criteria": "Inclusion: Age >= 18\nExclusion: Prior chemotherapy"},
             "conditions": ["Breast Cancer"],
             "phases": ["Phase 2"],
             "interventions": [{"type": "Drug", "name": "Sample Drug"}],
@@ -809,9 +812,7 @@ class TestDataHelper:
         """Create sample mCODE result data."""
         return {
             "trial_id": "NCT12345678",
-            "McodeResults": {
-                "mcode_mappings": [{"element_type": "CancerCondition"}]
-            },
+            "McodeResults": {"mcode_mappings": [{"element_type": "CancerCondition"}]},
             "original_trial_data": TestDataHelper.create_sample_trial_data(),
         }
 

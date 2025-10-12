@@ -2,8 +2,9 @@
 Unit tests for ClinicalNoteGenerator class.
 """
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from src.services.clinical_note_generator import ClinicalNoteGenerator
 
@@ -22,31 +23,19 @@ class TestClinicalNoteGenerator:
 
     def test_generate_patient_header_basic(self, generator):
         """Test patient header generation with basic demographics."""
-        demographics = {
-            "name": "John Doe",
-            "age": "45",
-            "gender": "Male"
-        }
+        demographics = {"name": "John Doe", "age": "45", "gender": "Male"}
         result = generator._generate_patient_header("P001", demographics)
         assert "John Doe is a 45 year old Male Patient (ID: P001)." in result
 
     def test_generate_patient_header_unknown_name(self, generator):
         """Test patient header with unknown name."""
-        demographics = {
-            "name": "Unknown Patient",
-            "age": "Unknown",
-            "gender": "Unknown"
-        }
+        demographics = {"name": "Unknown Patient", "age": "Unknown", "gender": "Unknown"}
         result = generator._generate_patient_header("P001", demographics)
         assert "Unknown Patient is a age unknown Unknown Patient (ID: P001)." in result
 
     def test_generate_patient_header_name_parsing(self, generator):
         """Test patient header with complex name parsing."""
-        demographics = {
-            "name": "Jane Mary Smith",
-            "age": "30",
-            "gender": "Female"
-        }
+        demographics = {"name": "Jane Mary Smith", "age": "30", "gender": "Female"}
         result = generator._generate_patient_header("P002", demographics)
         assert "Jane Mary Smith is a 30 year old Female Patient (ID: P002)." in result
 
@@ -57,7 +46,7 @@ class TestClinicalNoteGenerator:
             "gender": "Female",
             "birthSex": "F",
             "maritalStatus": "M",
-            "language": "English"
+            "language": "English",
         }
         result = generator._generate_demographics_section(demographics)
         assert "Patient date of birth is 1980-01-01 (mCODE: BirthDate)" in result
@@ -68,9 +57,7 @@ class TestClinicalNoteGenerator:
 
     def test_generate_demographics_section_minimal(self, generator):
         """Test demographics section with minimal fields."""
-        demographics = {
-            "gender": "Male"
-        }
+        demographics = {"gender": "Male"}
         result = generator._generate_demographics_section(demographics)
         assert "Patient administrative gender is Male (mCODE: AdministrativeGender)" in result
         assert "Patient race is White" in result
@@ -91,11 +78,14 @@ class TestClinicalNoteGenerator:
                 "display": "Invasive ductal carcinoma (morphology)",
                 "code": "444714004",
                 "system": "http://snomed.info/sct",
-                "onsetDateTime": "2023-06-15"
+                "onsetDateTime": "2023-06-15",
             }
         }
         result = generator._generate_cancer_diagnosis_section(mcode_elements)
-        assert "Invasive ductal carcinoma diagnosed on 2023-06-15 (mCODE: CancerCondition; SNOMED:444714004)" in result
+        assert (
+            "Invasive ductal carcinoma diagnosed on 2023-06-15 (mCODE: CancerCondition; SNOMED:444714004)"
+            in result
+        )
 
     def test_generate_cancer_diagnosis_section_no_date(self, generator):
         """Test cancer diagnosis section without date."""
@@ -103,7 +93,7 @@ class TestClinicalNoteGenerator:
             "CancerCondition": {
                 "display": "Breast Cancer",
                 "code": "254837009",
-                "system": "http://snomed.info/sct"
+                "system": "http://snomed.info/sct",
             }
         }
         result = generator._generate_cancer_diagnosis_section(mcode_elements)
@@ -115,18 +105,18 @@ class TestClinicalNoteGenerator:
             "HER2ReceptorStatus": {
                 "display": "Positive",
                 "code": "10828004",
-                "system": "http://snomed.info/sct"
+                "system": "http://snomed.info/sct",
             },
             "ERReceptorStatus": {
                 "display": "Positive",
                 "code": "373572006",
-                "system": "http://snomed.info/sct"
+                "system": "http://snomed.info/sct",
             },
             "PRReceptorStatus": {
                 "display": "Negative",
                 "code": "260385009",
-                "system": "http://snomed.info/sct"
-            }
+                "system": "http://snomed.info/sct",
+            },
         }
         result = generator._generate_biomarker_section(mcode_elements)
         assert "HER2 receptor status is Positive" in result
@@ -139,13 +129,13 @@ class TestClinicalNoteGenerator:
             "TNMStage": {
                 "display": "T2N1M0",
                 "code": "261650005",
-                "system": "http://snomed.info/sct"
+                "system": "http://snomed.info/sct",
             },
             "CancerStage": {
                 "display": "Stage IIB",
                 "code": "261650005",
-                "system": "http://snomed.info/sct"
-            }
+                "system": "http://snomed.info/sct",
+            },
         }
         result = generator._generate_staging_section(mcode_elements)
         assert "T2N1M0" in result
@@ -159,23 +149,23 @@ class TestClinicalNoteGenerator:
                     "display": "Mastectomy",
                     "code": "387713003",
                     "system": "http://snomed.info/sct",
-                    "performedDateTime": "2023-07-01"
+                    "performedDateTime": "2023-07-01",
                 }
             ],
             "CancerRelatedMedicationStatement": [
                 {
                     "display": "Tamoxifen",
                     "code": "10324",
-                    "system": "http://www.nlm.nih.gov/research/umls/rxnorm"
+                    "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
                 }
             ],
             "CancerRelatedRadiationProcedure": [
                 {
                     "display": "Radiation therapy",
                     "code": "108290001",
-                    "system": "http://snomed.info/sct"
+                    "system": "http://snomed.info/sct",
                 }
-            ]
+            ],
         }
         result = generator._generate_treatments_section(mcode_elements)
         assert "Mastectomy performed on 2023-07-01" in result
@@ -189,7 +179,7 @@ class TestClinicalNoteGenerator:
                 {
                     "display": "BRCA1 gene mutation",
                     "code": "412734009",
-                    "system": "http://snomed.info/sct"
+                    "system": "http://snomed.info/sct",
                 }
             ]
         }
@@ -202,13 +192,13 @@ class TestClinicalNoteGenerator:
             "ECOGPerformanceStatus": {
                 "display": "0 - Fully active",
                 "code": "425389002",
-                "system": "http://snomed.info/sct"
+                "system": "http://snomed.info/sct",
             },
             "KarnofskyPerformanceStatus": {
                 "display": "90%",
                 "code": "426927009",
-                "system": "http://snomed.info/sct"
-            }
+                "system": "http://snomed.info/sct",
+            },
         }
         result = generator._generate_performance_section(mcode_elements)
         assert "ECOG performance status is 0 - Fully active" in result
@@ -220,7 +210,7 @@ class TestClinicalNoteGenerator:
             "BodyWeight": {"value": "70", "unit": "kg"},
             "BodyHeight": {"value": "170", "unit": "cm"},
             "BodyMassIndex": {"value": "24.2"},
-            "BloodPressure": {"systolic": "120", "diastolic": "80"}
+            "BloodPressure": {"systolic": "120", "diastolic": "80"},
         }
         result = generator._generate_vitals_section(mcode_elements)
         assert "Body weight is 70 kg" in result
@@ -236,7 +226,7 @@ class TestClinicalNoteGenerator:
             "PlateletCount": {"value": "250", "unit": "10^9/L"},
             "Creatinine": {"value": "0.8", "unit": "mg/dL"},
             "TotalBilirubin": {"value": "0.5", "unit": "mg/dL"},
-            "AlanineAminotransferase": {"value": "25", "unit": "U/L"}
+            "AlanineAminotransferase": {"value": "25", "unit": "U/L"},
         }
         result = generator._generate_lab_section(mcode_elements)
         assert "Hemoglobin is 12.5 g/dL" in result
@@ -250,11 +240,7 @@ class TestClinicalNoteGenerator:
         """Test comorbidities section."""
         mcode_elements = {
             "ComorbidCondition": [
-                {
-                    "display": "Hypertension",
-                    "code": "38341003",
-                    "system": "http://snomed.info/sct"
-                }
+                {"display": "Hypertension", "code": "38341003", "system": "http://snomed.info/sct"}
             ]
         }
         result = generator._generate_comorbidities_section(mcode_elements)
@@ -269,7 +255,7 @@ class TestClinicalNoteGenerator:
                     "code": "91936005",
                     "system": "http://snomed.info/sct",
                     "criticality": "high",
-                    "recordedDate": "2023-01-15"
+                    "recordedDate": "2023-01-15",
                 }
             ]
         }
@@ -286,7 +272,7 @@ class TestClinicalNoteGenerator:
                     "code": "207",
                     "system": "http://hl7.org/fhir/sid/cvx",
                     "occurrenceDateTime": "2023-03-01",
-                    "status": "completed"
+                    "status": "completed",
                 }
             ]
         }
@@ -304,10 +290,10 @@ class TestClinicalNoteGenerator:
                         {
                             "display": "Breast Cancer",
                             "code": "254837009",
-                            "system": "http://snomed.info/sct"
+                            "system": "http://snomed.info/sct",
                         }
                     ],
-                    "born": "1950"
+                    "born": "1950",
                 }
             ]
         }
@@ -316,20 +302,16 @@ class TestClinicalNoteGenerator:
 
     def test_generate_summary_success(self, generator):
         """Test successful summary generation."""
-        with patch.object(generator.logger, 'info') as mock_info:
+        with patch.object(generator.logger, "info") as mock_info:
             patient_id = "P001"
             mcode_elements = {
                 "CancerCondition": {
                     "display": "Breast Cancer",
                     "code": "254837009",
-                    "system": "http://snomed.info/sct"
+                    "system": "http://snomed.info/sct",
                 }
             }
-            demographics = {
-                "name": "Jane Doe",
-                "age": "50",
-                "gender": "Female"
-            }
+            demographics = {"name": "Jane Doe", "age": "50", "gender": "Female"}
 
             result = generator.generate_summary(patient_id, mcode_elements, demographics)
 
@@ -339,9 +321,11 @@ class TestClinicalNoteGenerator:
 
     def test_generate_summary_exception(self, generator):
         """Test summary generation with exception."""
-        with patch.object(generator.logger, 'error') as mock_error:
+        with patch.object(generator.logger, "error") as mock_error:
             # Force an exception by passing invalid data that causes issues
-            with patch.object(generator, '_generate_patient_header', side_effect=Exception("Test error")):
+            with patch.object(
+                generator, "_generate_patient_header", side_effect=Exception("Test error")
+            ):
                 result = generator.generate_summary("P001", {}, {})
 
             assert "Error generating clinical note" in result
@@ -375,11 +359,15 @@ class TestClinicalNoteGenerator:
         assert result == "(mCODE: TestElement; LOINC:67890)"
 
         # RxNorm
-        result = generator._format_mcode_element("TestElement", "http://www.nlm.nih.gov/research/umls/rxnorm", "11111")
+        result = generator._format_mcode_element(
+            "TestElement", "http://www.nlm.nih.gov/research/umls/rxnorm", "11111"
+        )
         assert result == "(mCODE: TestElement; RxNorm:11111)"
 
         # ICD
-        result = generator._format_mcode_element("TestElement", "http://hl7.org/fhir/sid/icd-10", "C50")
+        result = generator._format_mcode_element(
+            "TestElement", "http://hl7.org/fhir/sid/icd-10", "C50"
+        )
         assert result == "(mCODE: TestElement; ICD:C50)"
 
         # Unknown system
@@ -394,27 +382,27 @@ class TestClinicalNoteGenerator:
                 "display": "Breast Cancer",
                 "code": "254837009",
                 "system": "http://snomed.info/sct",
-                "onsetDateTime": "2023-01-01"
+                "onsetDateTime": "2023-01-01",
             },
             "HER2ReceptorStatus": {
                 "display": "Positive",
                 "code": "10828004",
-                "system": "http://snomed.info/sct"
+                "system": "http://snomed.info/sct",
             },
             "TNMStage": {
                 "display": "T2N0M0",
                 "code": "261650005",
-                "system": "http://snomed.info/sct"
+                "system": "http://snomed.info/sct",
             },
             "BodyWeight": {"value": "65", "unit": "kg"},
-            "Hemoglobin": {"value": "13.2", "unit": "g/dL"}
+            "Hemoglobin": {"value": "13.2", "unit": "g/dL"},
         }
         demographics = {
             "name": "Alice Johnson",
             "age": "45",
             "gender": "Female",
             "birthDate": "1978-03-15",
-            "language": "English"
+            "language": "English",
         }
 
         result = generator.generate_summary(patient_id, mcode_elements, demographics)

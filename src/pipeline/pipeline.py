@@ -4,12 +4,18 @@ Ultra-Lean McodePipeline
 Zero redundancy, maximum performance. Leverages existing infrastructure.
 """
 
-from typing import Any, Dict, List, Optional, Union
+import asyncio
+from typing import Any, Dict, List, Optional
 
 from src.pipeline.document_ingestor import DocumentIngestor
 from src.services.llm.service import LLMService
-from src.shared.models import (ClinicalTrialData, McodeElement, PipelineResult,
-                                ProcessingMetadata, ValidationResult)
+from src.shared.models import (
+    ClinicalTrialData,
+    McodeElement,
+    PipelineResult,
+    ProcessingMetadata,
+    ValidationResult,
+)
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
 
@@ -66,6 +72,7 @@ class McodePipeline:
         # Initialize appropriate service based on engine
         if engine == "regex":
             from src.services.regex.service import RegexService
+
             self.service = RegexService(self.config, self.model_name, self.prompt_name)
         else:
             self.service = LLMService(self.config, self.model_name, self.prompt_name)
@@ -83,8 +90,7 @@ class McodePipeline:
             PipelineResult with existing validated models
         """
         self.logger.info(
-            f"🚀 Pipeline.process called with trial data keys: "
-            f"{list(trial_data.keys())[:5]}..."
+            f"🚀 Pipeline.process called with trial data keys: " f"{list(trial_data.keys())[:5]}..."
         )
 
         # Validate input using existing ClinicalTrialData model - STRICT: No fallback, fail fast
@@ -108,9 +114,7 @@ class McodePipeline:
                     # For regex, we need full trial data, not sections
                     # Use the service's trial mapping method
                     elements = self.service.map_trial_to_mcode(trial_data)
-                    self.logger.info(
-                        f"✅ REGEX service returned {len(elements)} elements"
-                    )
+                    self.logger.info(f"✅ REGEX service returned {len(elements)} elements")
                     all_elements.extend(elements)
                     break  # Regex processes the whole trial at once, not per section
                 else:
@@ -118,8 +122,7 @@ class McodePipeline:
                     self.logger.info(f"🚀 Calling LLM service for section {i+1}")
                     elements = await self.service.map_to_mcode(section.content)
                     self.logger.info(
-                        f"✅ LLM service returned {len(elements)} elements "
-                        f"for section {i+1}"
+                        f"✅ LLM service returned {len(elements)} elements " f"for section {i+1}"
                     )
                     all_elements.extend(elements)
             else:
@@ -146,11 +149,9 @@ class McodePipeline:
             error=None,
         )
 
-    async def process_batch(
-        self, trials_data: List[Dict[str, Any]]
-    ) -> List[PipelineResult]:
+    async def process_batch(self, trials_data: List[Dict[str, Any]]) -> List[PipelineResult]:
         """
-        Process multiple trials efficiently.
+        Process multiple trials efficiently using asyncio.gather for concurrent batch processing.
 
         Args:
             trials_data: List of raw clinical trial data dictionaries
@@ -158,13 +159,41 @@ class McodePipeline:
         Returns:
             List of PipelineResult instances
         """
-        results = []
-        for trial_data in trials_data:
-            result = await self.process(trial_data)
-            results.append(result)
+        self.logger.info(f"🚀 Starting concurrent batch processing of {len(trials_data)} trials")
 
-        self.logger.info(f"Batch processing completed: {len(results)} trials")
-        return results
+        # Use asyncio.gather for concurrent processing instead of sequential loop
+        tasks = [self.process(trial_data) for trial_data in trials_data]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Handle any exceptions that occurred during processing
+        processed_results = []
+        for i, result in enumerate(results):
+            if isinstance(result, Exception):
+                self.logger.error(f"❌ Batch processing failed for trial {i}: {result}")
+                # Create error result for failed trial
+                error_result = PipelineResult(
+                    extracted_entities=[],
+                    mcode_mappings=[],
+                    source_references=[],
+                    validation_results=ValidationResult(compliance_score=0.0),
+                    metadata=ProcessingMetadata(
+                        engine_type=self.engine.upper(),
+                        entities_count=0,
+                        mapped_count=0,
+                        model_used=self.model_name if self.engine == "llm" else None,
+                        prompt_used=self.prompt_name if self.engine == "llm" else None,
+                        processing_time_seconds=None,
+                        token_usage=None,
+                    ),
+                    original_data=trials_data[i],
+                    error=str(result),
+                )
+                processed_results.append(error_result)
+            else:
+                processed_results.append(result)
+
+        self.logger.info(f"✅ Batch processing completed: {len(processed_results)} trials")
+        return processed_results
 
     def _calculate_compliance_score(self, elements: List[McodeElement]) -> float:
         """

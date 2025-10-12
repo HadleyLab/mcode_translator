@@ -6,6 +6,7 @@ This script shows the basic usage patterns for the new engine-based architecture
 Perfect for getting started quickly with both RegexEngine and LLMEngine.
 """
 
+
 def show_quick_start():
     """Show quick start information."""
     print("🚀 mCODE Translator - Quick Start")
@@ -116,11 +117,15 @@ def show_quick_start():
     print()
 
     print("2️⃣ Try RegexEngine first (fastest):")
-    print("   python mcode-cli.py data ingest-trials --cancer-type 'breast' --limit 5 --engine 'regex'")
+    print(
+        "   python mcode-cli.py data ingest-trials --cancer-type 'breast' --limit 5 --engine 'regex'"
+    )
     print()
 
     print("3️⃣ Try LLMEngine for comparison:")
-    print("   python mcode-cli.py data ingest-trials --cancer-type 'breast' --limit 5 --engine 'llm' --model 'deepseek-coder'")
+    print(
+        "   python mcode-cli.py data ingest-trials --cancer-type 'breast' --limit 5 --engine 'llm' --model 'deepseek-coder'"
+    )
     print()
 
     print("4️⃣ Compare both engines:")
@@ -161,6 +166,7 @@ def show_quick_start():
 
     print("🎊 You're ready to go!")
     print("The engine architecture gives you the best of both worlds.")
+
 
 if __name__ == "__main__":
     show_quick_start()

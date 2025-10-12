@@ -12,43 +12,33 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from src.services.regex_engine import RegexEngine
 from src.services.llm_engine import LLMEngine
-from src.services.unified_summarizer import UnifiedSummarizer
+from src.services.regex_engine import RegexEngine
 from src.services.unified_processor import UnifiedTrialProcessor
-
+from src.services.unified_summarizer import UnifiedSummarizer
 
 # Sample trial data for testing
 SAMPLE_TRIAL_DATA = {
     "protocolSection": {
         "identificationModule": {
             "nctId": "NCT01234567",
-            "briefTitle": "A Study of Treatment X for Breast Cancer"
+            "briefTitle": "A Study of Treatment X for Breast Cancer",
         },
         "designModule": {
             "studyType": "INTERVENTIONAL",
             "phase": "PHASE2",
-            "primaryPurpose": "TREATMENT"
+            "primaryPurpose": "TREATMENT",
         },
-        "statusModule": {
-            "overallStatus": "RECRUITING"
-        },
-        "conditionsModule": {
-            "conditions": ["Breast Cancer", "Metastatic Breast Cancer"]
-        },
+        "statusModule": {"overallStatus": "RECRUITING"},
+        "conditionsModule": {"conditions": ["Breast Cancer", "Metastatic Breast Cancer"]},
         "armsInterventionsModule": {
             "interventions": [
                 {"name": "TRASTUZUMAB", "type": "DRUG"},
-                {"name": "CHEMOTHERAPY", "type": "DRUG"}
+                {"name": "CHEMOTHERAPY", "type": "DRUG"},
             ]
         },
-        "eligibilityModule": {
-            "minimumAge": "18 Years",
-            "sex": "FEMALE"
-        },
-        "sponsorCollaboratorsModule": {
-            "leadSponsor": {"name": "Test Sponsor Inc."}
-        }
+        "eligibilityModule": {"minimumAge": "18 Years", "sex": "FEMALE"},
+        "sponsorCollaboratorsModule": {"leadSponsor": {"name": "Test Sponsor Inc."}},
     }
 }
 
@@ -86,7 +76,7 @@ async def test_llm_engine():
 
     try:
         # Initialize engine (this will fail without API key, but we can test initialization)
-        engine = LLMEngine()
+        LLMEngine()
 
         print("✅ LLMEngine initialized successfully")
 

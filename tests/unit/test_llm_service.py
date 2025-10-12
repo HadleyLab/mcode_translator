@@ -3,11 +3,13 @@ Ultra-Lean LLM Service Tests
 Tests the streamlined LLM service interface with focus on core functionality.
 """
 
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
+
 from src.services.llm.service import LLMService
-from src.utils.config import Config
 from src.shared.models import McodeElement
+from src.utils.config import Config
 
 
 class TestLLMServiceCore:
@@ -17,9 +19,7 @@ class TestLLMServiceCore:
     def llm_service(self):
         """Create LLM service instance for testing."""
         config = Config()
-        return LLMService(
-            config, "deepseek-coder", "direct_mcode_evidence_based_concise"
-        )
+        return LLMService(config, "deepseek-coder", "direct_mcode_evidence_based_concise")
 
     @pytest.fixture
     def mock_config(self):
@@ -38,9 +38,7 @@ class TestLLMServiceCore:
         # Mock the LLM loader and prompt loader
         with patch("src.utils.llm_loader.llm_loader") as mock_llm_loader, patch(
             "src.utils.prompt_loader.prompt_loader"
-        ) as mock_prompt_loader, patch.object(
-            llm_service, "_call_llm_api_async"
-        ) as mock_call_api:
+        ) as mock_prompt_loader, patch.object(llm_service, "_call_llm_api_async") as mock_call_api:
 
             # Setup mocks
             mock_llm_config = Mock()
@@ -121,9 +119,7 @@ class TestLLMServiceCore:
     def test_parse_llm_response_alternative_formats(self, llm_service):
         """Test parsing alternative response formats."""
         # Test 'mappings' format
-        response_json = {
-            "mappings": [{"element_type": "CancerTreatment", "code": "T456"}]
-        }
+        response_json = {"mappings": [{"element_type": "CancerTreatment", "code": "T456"}]}
 
         elements = llm_service._parse_llm_response(response_json)
         assert len(elements) == 1
@@ -194,9 +190,7 @@ class TestLLMServiceCore:
     @pytest.mark.asyncio
     async def test_map_to_mcode_missing_config(self, llm_service):
         """Test mCODE mapping with missing LLM config - should make actual API call."""
-        with patch(
-            "src.utils.llm_loader.llm_loader"
-        ) as mock_llm_loader, patch.object(
+        with patch("src.utils.llm_loader.llm_loader") as mock_llm_loader, patch.object(
             llm_service.api_manager, "get_cache"
         ) as mock_get_cache:
 
@@ -246,9 +240,7 @@ class TestLLMServiceCore:
                 )
 
     @pytest.mark.asyncio
-    async def test_call_llm_api_async_deepseek_response_parsing(
-        self, llm_service, mock_config
-    ):
+    async def test_call_llm_api_async_deepseek_response_parsing(self, llm_service, mock_config):
         """Test _call_llm_api_async with DeepSeek response parsing."""
         llm_service.config = mock_config
         llm_service.model_name = "deepseek-coder"
@@ -278,9 +270,7 @@ class TestLLMServiceCore:
             assert len(result["mcode_mappings"]) == 1
 
     @pytest.mark.asyncio
-    async def test_call_llm_api_async_deepseek_reasoner_cleanup(
-        self, llm_service, mock_config
-    ):
+    async def test_call_llm_api_async_deepseek_reasoner_cleanup(self, llm_service, mock_config):
         """Test _call_llm_api_async with DeepSeek reasoner reasoning content removal."""
         llm_service.config = mock_config
         llm_service.model_name = "deepseek-reasoner"
@@ -309,9 +299,7 @@ class TestLLMServiceCore:
             assert "mcode_mappings" in result
 
     @pytest.mark.asyncio
-    async def test_call_llm_api_async_json_parsing_error(
-        self, llm_service, mock_config
-    ):
+    async def test_call_llm_api_async_json_parsing_error(self, llm_service, mock_config):
         """Test _call_llm_api_async with JSON parsing error."""
         llm_service.config = mock_config
 
@@ -336,9 +324,7 @@ class TestLLMServiceCore:
                 )
 
     @pytest.mark.asyncio
-    async def test_call_llm_api_async_rate_limiting_retry(
-        self, llm_service, mock_config
-    ):
+    async def test_call_llm_api_async_rate_limiting_retry(self, llm_service, mock_config):
         """Test _call_llm_api_async with rate limiting and retry logic."""
         llm_service.config = mock_config
 
@@ -376,9 +362,7 @@ class TestLLMServiceCore:
             mock_openai.return_value = mock_client
 
             # Mock quota error
-            mock_client.chat.completions.create.side_effect = Exception(
-                "insufficient_quota"
-            )
+            mock_client.chat.completions.create.side_effect = Exception("insufficient_quota")
 
             with pytest.raises(ValueError, match="has exceeded its quota"):
                 await llm_service._call_llm_api_async(
@@ -428,9 +412,7 @@ class TestLLMServiceCore:
 
     def test_parse_llm_response_mapped_elements_format(self, llm_service):
         """Test parsing mapped_elements format."""
-        response_json = {
-            "mapped_elements": [{"element_type": "CancerTreatment", "code": "T456"}]
-        }
+        response_json = {"mapped_elements": [{"element_type": "CancerTreatment", "code": "T456"}]}
 
         elements = llm_service._parse_llm_response(response_json)
 
@@ -456,9 +438,7 @@ class TestLLMServiceCore:
 
     def test_generate_semantic_fingerprint_medium_text(self, llm_service):
         """Test semantic fingerprint for medium text."""
-        medium_text = (
-            "Patient with cancer receiving treatment in clinical trial study. " * 10
-        )
+        medium_text = "Patient with cancer receiving treatment in clinical trial study. " * 10
         fingerprint = llm_service._generate_semantic_fingerprint(medium_text)
 
         assert "short" in fingerprint  # 700 chars < 1000, so "short"

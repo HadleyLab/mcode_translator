@@ -41,9 +41,7 @@ class TrialExtractor:
 
         return mcode_elements
 
-    def _extract_trial_identification(
-        self, identification: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _extract_trial_identification(self, identification: Dict[str, Any]) -> Dict[str, Any]:
         """Extract trial identification information."""
         elements = {}
 
@@ -69,9 +67,7 @@ class TrialExtractor:
 
         return elements
 
-    def _extract_trial_eligibility_mcode(
-        self, eligibility: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _extract_trial_eligibility_mcode(self, eligibility: Dict[str, Any]) -> Dict[str, Any]:
         """Extract eligibility criteria in mCODE space for patient matching."""
         elements = {}
 
@@ -121,9 +117,7 @@ class TrialExtractor:
 
         return elements
 
-    def _extract_trial_conditions_mcode(
-        self, conditions: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _extract_trial_conditions_mcode(self, conditions: Dict[str, Any]) -> Dict[str, Any]:
         """Extract trial conditions as mCODE CancerCondition for matching."""
         elements = {}
 
@@ -173,9 +167,7 @@ class TrialExtractor:
                             "system": "http://snomed.info/sct",
                             "code": condition_code,
                             "display": (
-                                condition_name
-                                if condition_name
-                                else "Unknown cancer condition"
+                                condition_name if condition_name else "Unknown cancer condition"
                             ),
                             "interpretation": "Confirmed",
                         }
@@ -185,11 +177,7 @@ class TrialExtractor:
                         {
                             "system": "http://snomed.info/sct",
                             "code": condition_code,
-                            "display": (
-                                condition_name
-                                if condition_name
-                                else "Unknown condition"
-                            ),
+                            "display": (condition_name if condition_name else "Unknown condition"),
                         }
                     )
 
@@ -200,9 +188,7 @@ class TrialExtractor:
 
         return elements
 
-    def _extract_trial_interventions_mcode(
-        self, interventions: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _extract_trial_interventions_mcode(self, interventions: Dict[str, Any]) -> Dict[str, Any]:
         """Extract trial interventions as mCODE CancerRelatedMedicationStatement."""
         elements = {}
 
@@ -331,9 +317,7 @@ class TrialExtractor:
             }
 
         # Primary completion date
-        primary_completion_date = status.get("primaryCompletionDateStruct", {}).get(
-            "date"
-        )
+        primary_completion_date = status.get("primaryCompletionDateStruct", {}).get("date")
         if primary_completion_date:
             elements["TrialPrimaryCompletionDate"] = {
                 "date": primary_completion_date,
@@ -478,8 +462,7 @@ class TrialExtractor:
             if interventions and len(interventions) > 0:
                 # Check if interventions have detailed descriptions
                 detailed_interventions = any(
-                    isinstance(i, dict) and i.get("description", "")
-                    for i in interventions
+                    isinstance(i, dict) and i.get("description", "") for i in interventions
                 )
                 if detailed_interventions:
                     indicators.append(True)

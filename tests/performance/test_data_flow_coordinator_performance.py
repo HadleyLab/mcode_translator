@@ -2,8 +2,10 @@
 Performance benchmarks for DataFlowCoordinator operations.
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
+
 from src.core.data_flow_coordinator import DataFlowCoordinator
 
 
@@ -37,13 +39,10 @@ class TestDataFlowCoordinatorPerformance:
                 "title": f"Performance Test Trial {i}",
                 "conditions": ["Cancer", "Breast Cancer", "Lung Cancer"] * 5,
                 "eligibility": {
-                    "criteria": "Age >= 18\n"
-                    + "\n".join([f"Criterion {j}" for j in range(20)])
+                    "criteria": "Age >= 18\n" + "\n".join([f"Criterion {j}" for j in range(20)])
                 },
                 "phases": ["Phase 1", "Phase 2", "Phase 3"],
-                "interventions": [
-                    {"type": "Drug", "name": f"Drug {j}"} for j in range(5)
-                ],
+                "interventions": [{"type": "Drug", "name": f"Drug {j}"} for j in range(5)],
             }
             for i in range(50)  # Large batch for performance testing
         ]
@@ -63,9 +62,7 @@ class TestDataFlowCoordinatorPerformance:
             pytest.skip("benchmark fixture not available")
 
         # Mock successful fetch of all trials
-        mock_batch_fetch.return_value = {
-            trial["nct_id"]: trial for trial in large_trial_dataset
-        }
+        mock_batch_fetch.return_value = {trial["nct_id"]: trial for trial in large_trial_dataset}
 
         coordinator = DataFlowCoordinator()
 
@@ -91,9 +88,7 @@ class TestDataFlowCoordinatorPerformance:
         coordinator = DataFlowCoordinator(pipeline=mock_pipeline)
 
         def batch_processing():
-            return coordinator._process_trials_in_batches(
-                large_trial_dataset, batch_size=10
-            )
+            return coordinator._process_trials_in_batches(large_trial_dataset, batch_size=10)
 
         result = benchmark(batch_processing)
 
@@ -122,9 +117,7 @@ class TestDataFlowCoordinatorPerformance:
         trial_ids = [f"NCT{i:08d}" for i in range(100)]
 
         def summary_generation():
-            return coordinator._generate_flow_summary(
-                trial_ids, fetch_result, processing_result
-            )
+            return coordinator._generate_flow_summary(trial_ids, fetch_result, processing_result)
 
         result = benchmark(summary_generation)
 
@@ -134,9 +127,7 @@ class TestDataFlowCoordinatorPerformance:
         print(f"Summary generation performance: {benchmark.stats.stats.mean:.6f}s")
 
     @patch("src.core.data_fetcher.get_full_studies_batch")
-    def test_complete_flow_performance_small(
-        self, mock_batch_fetch, benchmark, mock_pipeline
-    ):
+    def test_complete_flow_performance_small(self, mock_batch_fetch, benchmark, mock_pipeline):
         """Benchmark complete flow with small dataset."""
         # Small dataset for baseline performance
         small_trials = [
@@ -148,9 +139,7 @@ class TestDataFlowCoordinatorPerformance:
             for i in range(5)
         ]
 
-        mock_batch_fetch.return_value = {
-            trial["nct_id"]: trial for trial in small_trials
-        }
+        mock_batch_fetch.return_value = {trial["nct_id"]: trial for trial in small_trials}
 
         coordinator = DataFlowCoordinator(pipeline=mock_pipeline)
 
@@ -165,9 +154,7 @@ class TestDataFlowCoordinatorPerformance:
         print(f"Small flow performance: {benchmark.stats.stats.mean:.3f}s")
 
     @patch("src.core.data_fetcher.get_full_studies_batch")
-    def test_complete_flow_performance_medium(
-        self, mock_batch_fetch, benchmark, mock_pipeline
-    ):
+    def test_complete_flow_performance_medium(self, mock_batch_fetch, benchmark, mock_pipeline):
         """Benchmark complete flow with medium dataset."""
         # Medium dataset
         medium_trials = [
@@ -180,9 +167,7 @@ class TestDataFlowCoordinatorPerformance:
             for i in range(20)
         ]
 
-        mock_batch_fetch.return_value = {
-            trial["nct_id"]: trial for trial in medium_trials
-        }
+        mock_batch_fetch.return_value = {trial["nct_id"]: trial for trial in medium_trials}
 
         coordinator = DataFlowCoordinator(pipeline=mock_pipeline)
 

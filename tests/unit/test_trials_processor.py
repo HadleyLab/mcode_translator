@@ -27,4 +27,4 @@ class TestTrialsProcessorWorkflow:
         """Test execution with trials data."""
         workflow = TrialsProcessor(config=None)
         # Test that the method exists
-        assert hasattr(workflow, 'execute')
+        assert hasattr(workflow, "execute")

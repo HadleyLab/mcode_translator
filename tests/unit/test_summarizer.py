@@ -3,6 +3,7 @@ Unit tests for McodeSummarizer with mocked dependencies.
 """
 
 import pytest
+
 from src.services.summarizer import McodeSummarizer
 
 
@@ -75,17 +76,13 @@ class TestMcodeSummarizer:
             ],
         }
 
-        elements = summarizer._extract_patient_elements(
-            patient_data, include_dates=True
-        )
+        elements = summarizer._extract_patient_elements(patient_data, include_dates=True)
 
         assert isinstance(elements, list)
         assert len(elements) >= 1
 
         # Check for Patient element
-        patient_element = next(
-            (e for e in elements if e.get("element_name") == "Patient"), None
-        )
+        patient_element = next((e for e in elements if e.get("element_name") == "Patient"), None)
         assert patient_element is not None
         assert "Jane Doe" in patient_element["value"]
         assert "ID: 12345" in patient_element["value"]
@@ -110,16 +107,12 @@ class TestMcodeSummarizer:
         assert len(elements) >= 1
 
         # Check for Trial element
-        trial_element = next(
-            (e for e in elements if e.get("element_name") == "Trial"), None
-        )
+        trial_element = next((e for e in elements if e.get("element_name") == "Trial"), None)
         assert trial_element is not None
         assert "Clinical Trial" in trial_element["value"]
 
         # Check for TrialTitle element
-        title_element = next(
-            (e for e in elements if e.get("element_name") == "TrialTitle"), None
-        )
+        title_element = next((e for e in elements if e.get("element_name") == "TrialTitle"), None)
         assert title_element is not None
         assert "Test Trial" in title_element["value"]
 
@@ -298,9 +291,7 @@ class TestMcodeSummarizer:
         assert "SNOMED:407377005" in result  # Default "Other gender" code
 
         # Test BirthDate default code
-        result = summarizer._create_abstracted_sentence(
-            "Patient", "BirthDate", "1980-01-01"
-        )
+        result = summarizer._create_abstracted_sentence("Patient", "BirthDate", "1980-01-01")
         assert "SNOMED:184099003" in result
 
     def test_create_abstracted_sentence_no_mcode_annotations(self):
@@ -322,9 +313,7 @@ class TestMcodeSummarizer:
 
         # Mock a template that references undefined variable
         original_template = summarizer.element_configs["CancerCondition"]["template"]
-        summarizer.element_configs["CancerCondition"][
-            "template"
-        ] = "{undefined_var} has {value}"
+        summarizer.element_configs["CancerCondition"]["template"] = "{undefined_var} has {value}"
 
         result = summarizer._create_abstracted_sentence(
             "Patient", "CancerCondition", "Breast Cancer"
@@ -427,9 +416,7 @@ class TestMcodeSummarizer:
 
         elements = summarizer._extract_patient_elements(patient_data, True)
 
-        tnm_element = next(
-            (e for e in elements if e.get("element_name") == "TNMStageGroup"), None
-        )
+        tnm_element = next((e for e in elements if e.get("element_name") == "TNMStageGroup"), None)
         assert tnm_element is not None
         assert "T4N1M0" in tnm_element["value"]
 

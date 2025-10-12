@@ -6,14 +6,16 @@ import os
 import tempfile
 import zipfile
 from unittest.mock import Mock, patch
+
 import pytest
+
 from src.utils.patient_generator import (
+    ArchiveLoadError,
     PatientGenerator,
+    PatientNotFoundError,
+    _extract_patient_id_from_bundle,
     create_patient_generator,
     extract_patient_id,
-    _extract_patient_id_from_bundle,
-    PatientNotFoundError,
-    ArchiveLoadError,
 )
 
 
@@ -22,9 +24,7 @@ class TestExtractPatientId:
 
     def test_extract_patient_id_from_bundle_with_id(self):
         """Test extracting patient ID when ID is present."""
-        bundle = {
-            "entry": [{"resource": {"resourceType": "Patient", "id": "patient-123"}}]
-        }
+        bundle = {"entry": [{"resource": {"resourceType": "Patient", "id": "patient-123"}}]}
 
         result = _extract_patient_id_from_bundle(bundle)
         assert result == "patient-123"
@@ -77,9 +77,7 @@ class TestExtractPatientId:
 
     def test_extract_patient_id_wrapper(self):
         """Test the public extract_patient_id wrapper."""
-        bundle = {
-            "entry": [{"resource": {"resourceType": "Patient", "id": "patient-789"}}]
-        }
+        bundle = {"entry": [{"resource": {"resourceType": "Patient", "id": "patient-789"}}]}
 
         result = extract_patient_id(bundle)
         assert result == "patient-789"
@@ -107,9 +105,7 @@ class TestPatientGeneratorInit:
     @patch("src.utils.patient_generator.os.path.exists")
     def test_init_with_named_archive(self, mock_exists, mock_config):
         """Test initialization with named archive resolution."""
-        mock_exists.side_effect = (
-            lambda p: p == "/data/synthetic_patients/cancer/type1/archive.zip"
-        )
+        mock_exists.side_effect = lambda p: p == "/data/synthetic_patients/cancer/type1/archive.zip"
         mock_config_instance = Mock()
         mock_config_instance.synthetic_data_config = {
             "synthetic_data": {
@@ -123,8 +119,7 @@ class TestPatientGeneratorInit:
             generator = PatientGenerator("cancer_type1")
 
             assert (
-                generator.archive_path
-                == "/data/synthetic_patients/cancer/type1/cancer_type1.zip"
+                generator.archive_path == "/data/synthetic_patients/cancer/type1/cancer_type1.zip"
             )
 
     @patch("src.utils.patient_generator.Config")
@@ -257,9 +252,7 @@ class TestPatientGeneratorPatientOperations:
         with patch("src.utils.patient_generator.Config"):
             generator = PatientGenerator.__new__(PatientGenerator)
             generator._patient_files = ["file1.json"]
-            generator._load_patient_from_file = Mock(
-                side_effect=Exception("Load failed")
-            )
+            generator._load_patient_from_file = Mock(side_effect=Exception("Load failed"))
             generator.logger = Mock()
 
             with pytest.raises(PatientNotFoundError):
@@ -285,9 +278,7 @@ class TestPatientGeneratorPatientOperations:
             generator._current_index = 0
             generator._load_patient_from_file = Mock(
                 return_value={
-                    "entry": [
-                        {"resource": {"resourceType": "Patient", "id": "patient-123"}}
-                    ]
+                    "entry": [{"resource": {"resourceType": "Patient", "id": "patient-123"}}]
                 }
             )
             generator.extract_patient_id = Mock(return_value="patient-123")
@@ -308,13 +299,9 @@ class TestCreatePatientGenerator:
         mock_config_instance = Mock()
         mock_config.return_value = mock_config_instance
 
-        create_patient_generator(
-            "test.zip", config=mock_config_instance, shuffle=True, seed=42
-        )
+        create_patient_generator("test.zip", config=mock_config_instance, shuffle=True, seed=42)
 
-        mock_generator.assert_called_once_with(
-            "test.zip", mock_config_instance, True, 42
-        )
+        mock_generator.assert_called_once_with("test.zip", mock_config_instance, True, 42)
 
     @patch("src.utils.patient_generator.Config")
     @patch("src.utils.patient_generator.PatientGenerator")
@@ -325,9 +312,7 @@ class TestCreatePatientGenerator:
 
         create_patient_generator("test.zip")
 
-        mock_generator.assert_called_once_with(
-            "test.zip", mock_config_instance, False, None
-        )
+        mock_generator.assert_called_once_with("test.zip", mock_config_instance, False, None)
 
 
 class TestPatientGeneratorLoadPatientFromFile:

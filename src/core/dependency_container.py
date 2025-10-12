@@ -8,6 +8,7 @@ and creating configured pipeline components.
 from typing import Any, Dict, Optional, cast
 
 from src.pipeline import McodePipeline
+
 # Removed unified_pipeline imports - using simplified pipeline directly
 from src.storage.mcode_memory_storage import OncoCoreMemory
 from src.utils.config import Config
@@ -32,9 +33,7 @@ class DependencyContainer:
         self._components: Dict[str, Any] = {}
         self._singletons: Dict[str, Any] = {}
 
-    def register_component(
-        self, name: str, component: Any, singleton: bool = False
-    ) -> None:
+    def register_component(self, name: str, component: Any, singleton: bool = False) -> None:
         """
         Register a component in the container.
 
@@ -74,9 +73,7 @@ class DependencyContainer:
         """
         # Extract configuration from kwargs or use defaults
         prompt_name = kwargs.get("prompt_name", "direct_mcode_evidence_based_concise")
-        model_name = kwargs.get(
-            "model_name", "deepseek-coder"
-        )  # Use configured default model
+        model_name = kwargs.get("model_name", "deepseek-coder")  # Use configured default model
 
         # Create and return the processor
         return McodePipeline(prompt_name=prompt_name, model_name=model_name)

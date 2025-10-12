@@ -2,10 +2,12 @@
 Integration tests for API interactions with comprehensive mocking and edge cases.
 """
 
+import json
+from unittest.mock import MagicMock, patch
+
 import pytest
 import requests
-import json
-from unittest.mock import patch, MagicMock
+
 from src.utils.fetcher import ClinicalTrialsAPIError, get_full_study, search_trials
 
 
@@ -64,9 +66,7 @@ class TestApiIntegration:
     @patch("src.utils.fetcher.requests.get")
     def test_get_full_study_network_error(self, mock_get):
         """Test network connection error handling."""
-        mock_get.side_effect = requests.exceptions.ConnectionError(
-            "Network is unreachable"
-        )
+        mock_get.side_effect = requests.exceptions.ConnectionError("Network is unreachable")
 
         with pytest.raises(ClinicalTrialsAPIError):
             get_full_study("NCT123456")
@@ -99,9 +99,7 @@ class TestApiIntegration:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            "studies": [
-                {"protocolSection": {"identificationModule": {"nctId": "NCT123456"}}}
-            ]
+            "studies": [{"protocolSection": {"identificationModule": {"nctId": "NCT123456"}}}]
         }
         mock_get.return_value = mock_response
 
@@ -109,8 +107,7 @@ class TestApiIntegration:
         assert results is not None
         assert len(results["studies"]) == 1
         assert (
-            results["studies"][0]["protocolSection"]["identificationModule"]["nctId"]
-            == "NCT123456"
+            results["studies"][0]["protocolSection"]["identificationModule"]["nctId"] == "NCT123456"
         )
 
     @patch("src.utils.fetcher.requests.get")
@@ -119,9 +116,7 @@ class TestApiIntegration:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            "studies": [
-                {"protocolSection": {"identificationModule": {"nctId": "NCT123456"}}}
-            ],
+            "studies": [{"protocolSection": {"identificationModule": {"nctId": "NCT123456"}}}],
             "nextPageToken": "token123",
         }
         mock_get.return_value = mock_response

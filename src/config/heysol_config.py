@@ -5,10 +5,10 @@ This module provides a typed configuration system that integrates
 heysol_api_client's HeySolConfig with mCODE Translator's specific needs.
 """
 
-import os
-import sys
 from dataclasses import dataclass, field
+import os
 from pathlib import Path
+import sys
 from typing import Optional
 
 try:
@@ -18,9 +18,7 @@ except ImportError:
     BaseHeySolConfig = None
 
 # Add heysol_api_client to path for imports
-heysol_client_path = (
-    Path(__file__).parent.parent.parent.parent / "heysol_api_client" / "src"
-)
+heysol_client_path = Path(__file__).parent.parent.parent.parent / "heysol_api_client" / "src"
 if str(heysol_client_path) not in sys.path:
     sys.path.insert(0, str(heysol_client_path))
 
@@ -49,18 +47,13 @@ class McodeHeySolConfig:
 
     # mCODE-specific settings
     mcode_cache_enabled: bool = field(
-        default_factory=lambda: os.getenv("MCODE_CACHE_ENABLED", "true").lower()
-        == "true"
+        default_factory=lambda: os.getenv("MCODE_CACHE_ENABLED", "true").lower() == "true"
     )
     mcode_cache_directory: str = field(
         default_factory=lambda: os.getenv("MCODE_CACHE_DIRECTORY", "./data/cache")
     )
-    mcode_batch_size: int = field(
-        default_factory=lambda: int(os.getenv("MCODE_BATCH_SIZE", "10"))
-    )
-    mcode_workers: int = field(
-        default_factory=lambda: int(os.getenv("MCODE_WORKERS", "0"))
-    )
+    mcode_batch_size: int = field(default_factory=lambda: int(os.getenv("MCODE_BATCH_SIZE", "10")))
+    mcode_workers: int = field(default_factory=lambda: int(os.getenv("MCODE_WORKERS", "0")))
 
     # LLM settings
     mcode_default_model: str = field(
@@ -84,8 +77,7 @@ class McodeHeySolConfig:
         default_factory=lambda: os.getenv("MCODE_STORAGE_FORMAT", "ndjson")
     )
     mcode_compression_enabled: bool = field(
-        default_factory=lambda: os.getenv("MCODE_COMPRESSION_ENABLED", "false").lower()
-        == "true"
+        default_factory=lambda: os.getenv("MCODE_COMPRESSION_ENABLED", "false").lower() == "true"
     )
 
     # Validation settings
@@ -93,8 +85,7 @@ class McodeHeySolConfig:
         default_factory=lambda: os.getenv("MCODE_STRICT_MODE", "true").lower() == "true"
     )
     mcode_require_api_keys: bool = field(
-        default_factory=lambda: os.getenv("MCODE_REQUIRE_API_KEYS", "true").lower()
-        == "true"
+        default_factory=lambda: os.getenv("MCODE_REQUIRE_API_KEYS", "true").lower() == "true"
     )
 
     @classmethod
@@ -108,18 +99,13 @@ class McodeHeySolConfig:
         heysol_config = None
         if BaseHeySolConfig and api_key:
             try:
-                heysol_config = BaseHeySolConfig(
-                    api_key=api_key,
-                    base_url=base_url
-                )
+                heysol_config = BaseHeySolConfig(api_key=api_key, base_url=base_url)
             except Exception:
                 # Fallback if HeySol config creation fails
                 pass
 
         return cls(
-            heysol=heysol_config,
-            api_key=api_key,
-            user=None  # User would be set from CLI args
+            heysol=heysol_config, api_key=api_key, user=None  # User would be set from CLI args
         )
 
     @classmethod
@@ -127,7 +113,7 @@ class McodeHeySolConfig:
         cls,
         api_key: Optional[str] = None,
         user: Optional[str] = None,
-        base_url: Optional[str] = None
+        base_url: Optional[str] = None,
     ) -> "McodeHeySolConfig":
         """Create configuration with explicit authentication."""
         # Validate authentication
@@ -146,18 +132,13 @@ class McodeHeySolConfig:
         if BaseHeySolConfig and resolved_api_key:
             try:
                 heysol_config = BaseHeySolConfig(
-                    api_key=resolved_api_key,
-                    base_url=resolved_base_url
+                    api_key=resolved_api_key, base_url=resolved_base_url
                 )
             except Exception:
                 # Fallback if HeySol config creation fails
                 pass
 
-        return cls(
-            heysol=heysol_config,
-            api_key=resolved_api_key,
-            user=user
-        )
+        return cls(heysol=heysol_config, api_key=resolved_api_key, user=user)
 
     @classmethod
     def with_mcode_integration(
@@ -172,9 +153,7 @@ class McodeHeySolConfig:
                 # Override with mCODE-specific settings
                 config.mcode_cache_enabled = mcode_config.is_cache_enabled()
                 config.mcode_cache_directory = mcode_config.get_api_cache_directory()
-                config.mcode_clinical_trials_base_url = (
-                    mcode_config.get_clinical_trials_base_url()
-                )
+                config.mcode_clinical_trials_base_url = mcode_config.get_clinical_trials_base_url()
 
                 # Get LLM settings
                 try:
@@ -198,7 +177,7 @@ class McodeHeySolConfig:
         """Get HeySol API key."""
         if self.api_key:
             return self.api_key
-        if self.heysol and hasattr(self.heysol, 'api_key'):
+        if self.heysol and hasattr(self.heysol, "api_key"):
             api_key = self.heysol.api_key
             return api_key if isinstance(api_key, str) else None
         return None
@@ -229,7 +208,7 @@ class McodeHeySolConfig:
 
     def get_timeout(self) -> int:
         """Get HeySol timeout."""
-        if self.heysol and hasattr(self.heysol, 'timeout'):
+        if self.heysol and hasattr(self.heysol, "timeout"):
             timeout = self.heysol.timeout
             return timeout if isinstance(timeout, int) else 60
         return 60  # Default fallback

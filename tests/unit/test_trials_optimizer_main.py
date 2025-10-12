@@ -64,7 +64,7 @@ class TestTrialsOptimizerWorkflow:
         """Test combination validation."""
         workflow = TrialsOptimizerWorkflow()
         # Just test that the method exists and doesn't crash
-        assert hasattr(workflow, 'validate_combination')
+        assert hasattr(workflow, "validate_combination")
 
     def test_workflow_failure_handling(self):
         """Test workflow failure handling."""

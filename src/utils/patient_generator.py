@@ -12,10 +12,10 @@ License: MIT
 
 import json
 import os
-import random
-import zipfile
 from pathlib import Path
+import random
 from typing import Any, Dict, Iterator, List, Optional
+import zipfile
 
 from .config import Config
 from .logging_config import get_logger
@@ -146,9 +146,7 @@ class PatientGenerator:
             for duration, archive_info in durations.items():
                 if self._matches_archive_name(archive_path, cancer_type, duration):
                     # For test compatibility, check existence of archive.zip but return cancer_type1.zip as archive_path
-                    check_path = self._build_check_path(
-                        synthetic_config, cancer_type, duration
-                    )
+                    check_path = self._build_check_path(synthetic_config, cancer_type, duration)
                     expected_path = self._build_archive_path(
                         synthetic_config, cancer_type, duration
                     )
@@ -172,14 +170,10 @@ class PatientGenerator:
             archive_name = "archive.zip"
         else:
             archive_name = f"{cancer_type}_{duration}.zip"
-        base_directory = synthetic_config.get(
-            "base_directory", "data/synthetic_patients"
-        )
+        base_directory = synthetic_config.get("base_directory", "data/synthetic_patients")
         return os.path.join(base_directory, cancer_type, duration, archive_name)
 
-    def _matches_archive_name(
-        self, archive_path: str, cancer_type: str, duration: str
-    ) -> bool:
+    def _matches_archive_name(self, archive_path: str, cancer_type: str, duration: str) -> bool:
         """Check if archive path matches the expected patterns."""
         archive_name = f"{cancer_type}_{duration}.zip"
         archive_name_no_ext = f"{cancer_type}_{duration}"
@@ -195,18 +189,14 @@ class PatientGenerator:
     ) -> str:
         """Build full archive path from configuration."""
         archive_name = f"{cancer_type}_{duration}.zip"
-        base_directory = synthetic_config.get(
-            "base_directory", "data/synthetic_patients"
-        )
+        base_directory = synthetic_config.get("base_directory", "data/synthetic_patients")
         return os.path.join(base_directory, cancer_type, duration, archive_name)
 
     def _resolve_direct_path(self, archive_path: str) -> str:
         """Resolve direct file path."""
         resolved_path = Path(archive_path).resolve()
         if not resolved_path.exists():
-            raise ArchiveLoadError(
-                f"Archive not found: {archive_path} (resolved: {resolved_path})"
-            )
+            raise ArchiveLoadError(f"Archive not found: {archive_path} (resolved: {resolved_path})")
         return str(resolved_path)
 
     def _load_file_list(self) -> None:
@@ -246,13 +236,9 @@ class PatientGenerator:
                 self._loaded = True
 
         except zipfile.BadZipFile as e:
-            raise ArchiveLoadError(
-                f"Invalid ZIP archive: {self.archive_path} - {str(e)}"
-            )
+            raise ArchiveLoadError(f"Invalid ZIP archive: {self.archive_path} - {str(e)}")
         except Exception as e:
-            raise ArchiveLoadError(
-                f"Failed to scan archive {self.archive_path}: {str(e)}"
-            )
+            raise ArchiveLoadError(f"Failed to scan archive {self.archive_path}: {str(e)}")
 
     def _find_patient_files(self, zf: zipfile.ZipFile) -> Dict[str, Dict[str, Any]]:
         """Find patient data files in the archive."""
@@ -289,9 +275,7 @@ class PatientGenerator:
                     "size": zf.getinfo(fname).file_size,
                 }
             # Also include files that look like patient records (contain underscores and UUIDs)
-            elif (
-                fname.endswith(".json") and "_" in fname and len(fname.split("_")) >= 3
-            ):
+            elif fname.endswith(".json") and "_" in fname and len(fname.split("_")) >= 3:
                 patient_files[fname] = {
                     "format": "json",
                     "size": zf.getinfo(fname).file_size,
@@ -340,14 +324,10 @@ class PatientGenerator:
                         self._patient_index[patient_id] = len(self._patients) - 1
 
                     if (i + 1) % 100 == 0:  # Progress logging every 100 patients
-                        self.logger.info(
-                            f"Loaded patient {i+1}/{len(lines)} from {source_file}"
-                        )
+                        self.logger.info(f"Loaded patient {i+1}/{len(lines)} from {source_file}")
 
             except json.JSONDecodeError as e:
-                self.logger.debug(
-                    f"Skipping invalid JSON line {i+1} in {source_file}: {str(e)}"
-                )
+                self.logger.debug(f"Skipping invalid JSON line {i+1} in {source_file}: {str(e)}")
                 continue
 
     def _load_json(self, content: str, source_file: str) -> None:
@@ -474,9 +454,7 @@ class PatientGenerator:
                         bundle = self._normalize_to_bundle(data)
 
                         if not bundle:
-                            raise ValueError(
-                                f"Could not normalize data to FHIR bundle in {fname}"
-                            )
+                            raise ValueError(f"Could not normalize data to FHIR bundle in {fname}")
 
                         return bundle
 
@@ -490,9 +468,7 @@ class PatientGenerator:
             self._load_file_list()
         return len(getattr(self, "_patient_files", []))
 
-    def get_random_patient(
-        self, exclude_ids: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+    def get_random_patient(self, exclude_ids: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Get a random patient bundle.
 
@@ -522,9 +498,7 @@ class PatientGenerator:
                     if patient_id not in exclude_ids:
                         return patient
                 except Exception as e:
-                    self.logger.warning(
-                        f"Skipping invalid patient file {fname}: {str(e)}"
-                    )
+                    self.logger.warning(f"Skipping invalid patient file {fname}: {str(e)}")
                     continue
             raise ValueError("Could not find available patient after exclusions")
 
@@ -568,13 +542,9 @@ class PatientGenerator:
                 self.logger.warning(f"Skipping invalid patient file {fname}: {str(e)}")
                 continue
 
-        raise PatientNotFoundError(
-            f"Patient with ID '{patient_id}' not found in archive"
-        )
+        raise PatientNotFoundError(f"Patient with ID '{patient_id}' not found in archive")
 
-    def get_patients(
-        self, limit: Optional[int] = None, start: int = 0
-    ) -> List[Dict[str, Any]]:
+    def get_patients(self, limit: Optional[int] = None, start: int = 0) -> List[Dict[str, Any]]:
         """
         Get a slice of patients.
 
@@ -605,9 +575,7 @@ class PatientGenerator:
 
     def get_patient_ids(self) -> List[str]:
         """Get list of all patient IDs in the archive (loads all patients)."""
-        self.logger.warning(
-            "get_patient_ids() requires loading all patients - this may be slow"
-        )
+        self.logger.warning("get_patient_ids() requires loading all patients - this may be slow")
         patient_ids = []
         original_index = self._current_index
         self._current_index = 0
@@ -672,9 +640,7 @@ if __name__ == "__main__":
     generator = create_patient_generator(archive, config)
 
     print(f"Loaded {len(generator)} patients from {archive}")
-    print(
-        f"Available patient IDs: {generator.get_patient_ids()[:5]}..."
-    )  # Show first 5
+    print(f"Available patient IDs: {generator.get_patient_ids()[:5]}...")  # Show first 5
 
     # Show first patient
     first_patient = next(iter(generator))

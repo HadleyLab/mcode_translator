@@ -2,8 +2,8 @@
 Optimization Result Aggregator - Handles result processing and aggregation.
 """
 
-import json
 from datetime import datetime
+import json
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -45,19 +45,11 @@ class OptimizationResultAggregator:
 
             if scores:
                 cv_average_score = sum(scores) / len(scores)
-                cv_std = (
-                    sum((s - cv_average_score) ** 2 for s in scores) / len(scores)
-                ) ** 0.5
+                cv_std = (sum((s - cv_average_score) ** 2 for s in scores) / len(scores)) ** 0.5
 
-                avg_precision = sum(m.get("precision", 0) for m in all_metrics) / len(
-                    all_metrics
-                )
-                avg_recall = sum(m.get("recall", 0) for m in all_metrics) / len(
-                    all_metrics
-                )
-                avg_f1 = sum(m.get("f1_score", 0) for m in all_metrics) / len(
-                    all_metrics
-                )
+                avg_precision = sum(m.get("precision", 0) for m in all_metrics) / len(all_metrics)
+                avg_recall = sum(m.get("recall", 0) for m in all_metrics) / len(all_metrics)
+                avg_f1 = sum(m.get("f1_score", 0) for m in all_metrics) / len(all_metrics)
 
                 result = {
                     "combination": combo,
@@ -80,7 +72,9 @@ class OptimizationResultAggregator:
                 optimization_results.append(result)
 
                 # Save individual run
-                run_filename = f"run_{run_timestamp}_{combo['model']}_{combo['prompt'].replace('/', '_')}.json"
+                run_filename = (
+                    f"run_{run_timestamp}_{combo['model']}_{combo['prompt'].replace('/', '_')}.json"
+                )
                 run_path = runs_dir / run_filename
                 with open(run_path, "w", encoding="utf-8") as f:
                     json.dump(result, f, indent=2, ensure_ascii=False)
@@ -135,18 +129,12 @@ class OptimizationResultAggregator:
         analysis_summary = self.performance_analyzer.analyze_by_category(
             optimization_results, "model"
         )
-        provider_analysis = self.performance_analyzer.analyze_by_provider(
-            optimization_results
-        )
-        error_analysis = self.performance_analyzer.summarize_errors(
-            optimization_results
-        )
+        provider_analysis = self.performance_analyzer.analyze_by_provider(optimization_results)
+        error_analysis = self.performance_analyzer.summarize_errors(optimization_results)
 
         # Collect valid timestamps
         timestamps = [
-            str(r.get("timestamp"))
-            for r in optimization_results
-            if r.get("timestamp") is not None
+            str(r.get("timestamp")) for r in optimization_results if r.get("timestamp") is not None
         ]
 
         mega_analysis = {
@@ -154,9 +142,7 @@ class OptimizationResultAggregator:
             "provider_stats": provider_analysis,
             "error_analysis": error_analysis,
             "total_runs": len(optimization_results),
-            "successful_runs": len(
-                [r for r in optimization_results if r.get("success", False)]
-            ),
+            "successful_runs": len([r for r in optimization_results if r.get("success", False)]),
             "time_range": {
                 "earliest": min(timestamps) if timestamps else None,
                 "latest": max(timestamps) if timestamps else None,
@@ -165,18 +151,14 @@ class OptimizationResultAggregator:
 
         # Generate mega report
         try:
-            mega_report = self.report_generator.generate_mega_report(
-                mega_analysis, "", ""
-            )
+            mega_report = self.report_generator.generate_mega_report(mega_analysis, "", "")
             mega_report_path = (
                 Path("optimization_runs")
                 / f"mega_optimization_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
             )
             with open(mega_report_path, "w", encoding="utf-8") as f:
                 f.write(mega_report)
-            self.logger.info(
-                f"📊 Mega optimization report saved to: {mega_report_path}"
-            )
+            self.logger.info(f"📊 Mega optimization report saved to: {mega_report_path}")
         except Exception as e:
             self.logger.warning(f"Failed to generate mega report: {e}")
 
@@ -260,12 +242,8 @@ class OptimizationResultAggregator:
             )
 
         if sorted_models:
-            cheapest_model = min(
-                sorted_models, key=lambda x: x[1].get("avg_cost", float("inf"))
-            )
-            most_expensive_model = max(
-                sorted_models, key=lambda x: x[1].get("avg_cost", 0)
-            )
+            cheapest_model = min(sorted_models, key=lambda x: x[1].get("avg_cost", float("inf")))
+            most_expensive_model = max(sorted_models, key=lambda x: x[1].get("avg_cost", 0))
             self.logger.info(
                 f"   💰 Cheapest model: {cheapest_model[0]} (${cheapest_model[1].get('avg_cost', 0):.4f} avg)"
             )
@@ -297,14 +275,10 @@ class OptimizationResultAggregator:
             if error_count > 0:
                 error_types = stats.get("error_types", {})
                 primary_error = (
-                    max(error_types.items(), key=lambda x: x[1])
-                    if error_types
-                    else None
+                    max(error_types.items(), key=lambda x: x[1]) if error_types else None
                 )
 
-            model_reliability.append(
-                (model, success_rate, error_count, primary_error, runs)
-            )
+            model_reliability.append((model, success_rate, error_count, primary_error, runs))
 
         model_reliability.sort(key=lambda x: (x[1], -x[2]))
         for model, success_rate, error_count, primary_error, runs in model_reliability:

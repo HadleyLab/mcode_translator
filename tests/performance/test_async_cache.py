@@ -10,9 +10,10 @@ Tests for async cache operations including:
 """
 
 import asyncio
-import time
-import pytest
 import tempfile
+import time
+
+import pytest
 
 from src.utils.api_manager import APIManager
 from src.utils.logging_config import get_logger
@@ -68,9 +69,7 @@ async def test_batch_async_operations(temp_cache_dir):
     results = await cache.abatch_get(keys_to_get)
 
     # Verify results
-    successful_gets = sum(
-        1 for r in results if r is not None and not isinstance(r, Exception)
-    )
+    successful_gets = sum(1 for r in results if r is not None and not isinstance(r, Exception))
 
     assert successful_gets == 10, "All batch items should be retrieved"
 
@@ -110,15 +109,12 @@ async def test_background_maintenance(temp_cache_dir):
 
     # Add some test data
     test_items = [
-        {"result": {"data": f"maintenance_{i}"}, "key_data": f"maint_key_{i}"}
-        for i in range(3)
+        {"result": {"data": f"maintenance_{i}"}, "key_data": f"maint_key_{i}"} for i in range(3)
     ]
     await cache.abatch_set(test_items)
 
     # Start background maintenance (short interval for testing)
-    maintenance_task = asyncio.create_task(
-        cache.astart_background_maintenance(cleanup_interval=2)
-    )
+    maintenance_task = asyncio.create_task(cache.astart_background_maintenance(cleanup_interval=2))
 
     # Let it run for a few seconds
     await asyncio.sleep(3)  # Reduced time to avoid timeout
@@ -155,9 +151,7 @@ async def test_performance_comparison(temp_cache_dir):
     # Async performance test
     async_start = time.time()
     await async_cache.abatch_set(test_items)
-    async_results = await async_cache.abatch_get(
-        [item["key_data"] for item in test_items]
-    )
+    async_results = await async_cache.abatch_get([item["key_data"] for item in test_items])
     async_time = time.time() - async_start
 
     # Sync performance test
@@ -227,16 +221,12 @@ async def test_error_handling(temp_cache_dir):
         pytest.fail(f"Unexpected error: {e}")
 
     # Test batch operations with some failures
-    batch_items = [
-        {"result": {"item": i}, "key_data": f"batch_error_{i}"} for i in range(5)
-    ]
+    batch_items = [{"result": {"item": i}, "key_data": f"batch_error_{i}"} for i in range(5)]
 
     # This should handle any errors gracefully
     await cache.abatch_set(batch_items)
     results = await cache.abatch_get([item["key_data"] for item in batch_items])
 
-    successful = sum(
-        1 for r in results if r is not None and not isinstance(r, Exception)
-    )
+    successful = sum(1 for r in results if r is not None and not isinstance(r, Exception))
 
     assert successful >= 0, "Should handle batch operations gracefully"

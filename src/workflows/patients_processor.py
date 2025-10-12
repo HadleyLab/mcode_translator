@@ -12,10 +12,9 @@ from src.services.demographics_extractor import DemographicsExtractor
 from src.services.fhir_extractors import FHIRResourceExtractors
 from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import OncoCoreMemory
-from src.utils.concurrency import TaskQueue, create_task
+from src.utils.concurrency import AsyncTaskQueue, create_task
 
-from .base_workflow import \
-    PatientsProcessorWorkflow as BasePatientsProcessorWorkflow
+from .base_workflow import PatientsProcessorWorkflow as BasePatientsProcessorWorkflow
 from .base_workflow import WorkflowResult
 
 
@@ -26,9 +25,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
     Processes patient data and stores mCODE summaries to CORE Memory.
     """
 
-    def __init__(
-        self, config: Any, memory_storage: Optional[OncoCoreMemory] = None
-    ):
+    def __init__(self, config: Any, memory_storage: Optional[OncoCoreMemory] = None):
         """
         Initialize the patients processor workflow.
 
@@ -42,17 +39,17 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
         self.demographics_extractor = DemographicsExtractor()
         self.fhir_extractors = FHIRResourceExtractors()
 
-    def execute(self, **kwargs: Any) -> WorkflowResult:
+    async def execute_async(self, **kwargs: Any) -> WorkflowResult:
         """
-        Execute the patients processing workflow.
+        Execute the patients processing workflow asynchronously.
 
         By default, does NOT store results to CORE memory. Use store_in_memory=True to enable.
 
         Args:
             **kwargs: Workflow parameters including:
-                - patients_data: List of patient data to process
-                - trials_criteria: Optional trial criteria for filtering
-                - store_in_memory: Whether to store results in CORE memory (default: False)
+                 - patients_data: List of patient data to process
+                 - trials_criteria: Optional trial criteria for filtering
+                 - store_in_memory: Whether to store results in CORE memory (default: False)
 
         Returns:
             WorkflowResult: Processing results
@@ -71,7 +68,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                     error_message="No patient data provided for processing.",
                 )
 
-            # Process patients concurrently using TaskQueue
+            # Process patients concurrently using AsyncTaskQueue
             self.logger.info(
                 f"🔬 Processing {len(patients_data)} patients with mCODE mapping (concurrent)"
             )
@@ -90,10 +87,10 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                 tasks.append(task)
 
             # Execute tasks concurrently
-            task_queue = TaskQueue(
-                max_workers=8, name="PatientProcessor"
+            task_queue = AsyncTaskQueue(
+                max_concurrent=8, name="PatientProcessorQueue"
             )  # Use 8 workers for patient processing
-            task_results = task_queue.execute_tasks(tasks)
+            task_results = await task_queue.execute_tasks(tasks)
 
             # Process results
             processed_patients = []
@@ -130,13 +127,30 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                     "failed": failed_count,
                     "success_rate": success_rate,
                     "trial_criteria_applied": trials_criteria is not None,
-                    "stored_in_memory": store_in_memory
-                    and self.memory_storage is not None,
+                    "stored_in_memory": store_in_memory and self.memory_storage is not None,
                 },
             )
 
         except Exception as e:
             return self._handle_error(e, "patients processing")
+
+    def execute(self, **kwargs: Any) -> WorkflowResult:
+        """
+        Execute the patients processing workflow.
+
+        By default, does NOT store results to CORE memory. Use store_in_memory=True to enable.
+
+        Args:
+            **kwargs: Workflow parameters including:
+                 - patients_data: List of patient data to process
+                 - trials_criteria: Optional trial criteria for filtering
+                 - store_in_memory: Whether to store results in CORE memory (default: False)
+
+        Returns:
+            WorkflowResult: Processing results
+        """
+        import asyncio
+        return asyncio.run(self.execute_async(**kwargs))
 
     def _process_single_patient(
         self,
@@ -170,9 +184,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                 resource = entry.get("resource", {})
                 if resource.get("resourceType") == "Patient":
                     name = resource.get("name", [])
-                    self.logger.debug(
-                        f"Patient {patient_index+1} name before processing: {name}"
-                    )
+                    self.logger.debug(f"Patient {patient_index+1} name before processing: {name}")
                     break
 
             # Extract mCODE elements from patient data
@@ -180,9 +192,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
 
             # Filter based on trial criteria if provided
             if trials_criteria:
-                filtered_mcode = self._filter_by_trial_criteria(
-                    patient_mcode, trials_criteria
-                )
+                filtered_mcode = self._filter_by_trial_criteria(patient_mcode, trials_criteria)
                 self.logger.info(
                     f"Filtered patient mCODE elements: {len(filtered_mcode)}/{len(patient_mcode)}"
                 )
@@ -233,9 +243,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                             f"PatientSex type: {type(patient_sex)}, value: {patient_sex}"
                         )
                         if isinstance(patient_sex, dict):
-                            demographics["gender"] = patient_sex.get(
-                                "display", "Unknown"
-                            )
+                            demographics["gender"] = patient_sex.get("display", "Unknown")
                         else:
                             demographics["gender"] = str(patient_sex)
                 except Exception as e:
@@ -249,15 +257,11 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                     "metadata": processed_patient.get("mcode_processing_metadata", {}),
                 }
 
-                success = self.memory_storage.store_patient_mcode_summary(
-                    patient_id, mcode_data
-                )
+                success = self.memory_storage.store_patient_mcode_summary(patient_id, mcode_data)
                 if success:
                     self.logger.info(f"✅ Stored patient {patient_id} mCODE summary")
                 else:
-                    self.logger.warning(
-                        f"❌ Failed to store patient {patient_id} mCODE summary"
-                    )
+                    self.logger.warning(f"❌ Failed to store patient {patient_id} mCODE summary")
 
             return processed_patient
 
@@ -275,9 +279,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                     "original_patient": str(patient),
                 }
 
-    def _extract_patient_mcode_elements(
-        self, patient: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _extract_patient_mcode_elements(self, patient: Dict[str, Any]) -> Dict[str, Any]:
         """
         Extract mCODE elements from patient FHIR Bundle.
 
@@ -328,9 +330,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                     )
                 elif resource_type == "Condition":
                     # Extract conditions as mCODE CancerCondition or ComorbidCondition
-                    condition_data = self.fhir_extractors.extract_condition_mcode(
-                        resource
-                    )
+                    condition_data = self.fhir_extractors.extract_condition_mcode(resource)
                     if condition_data:
                         # Check if this is a cancer condition or comorbidity
                         display = condition_data.get("display", "").lower()
@@ -361,9 +361,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
 
                 elif resource_type == "Immunization":
                     # Extract immunizations as mCODE elements
-                    immunization_data = self.fhir_extractors.extract_immunization_mcode(
-                        resource
-                    )
+                    immunization_data = self.fhir_extractors.extract_immunization_mcode(resource)
                     if immunization_data:
                         if "Immunization" not in mcode_elements:
                             mcode_elements["Immunization"] = []
@@ -371,9 +369,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
 
                 elif resource_type == "FamilyMemberHistory":
                     # Extract family history as mCODE elements
-                    family_data = self.fhir_extractors.extract_family_history_mcode(
-                        resource
-                    )
+                    family_data = self.fhir_extractors.extract_family_history_mcode(resource)
                     if family_data:
                         if "FamilyMemberHistory" not in mcode_elements:
                             mcode_elements["FamilyMemberHistory"] = []
@@ -381,31 +377,23 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
 
                 elif resource_type == "Observation":
                     # Extract observations as various mCODE elements
-                    observation_data = self.fhir_extractors.extract_observation_mcode(
-                        resource
-                    )
+                    observation_data = self.fhir_extractors.extract_observation_mcode(resource)
                     if observation_data:
                         mcode_elements.update(observation_data)
 
                     # Extract comprehensive observations (performance status, vitals, labs)
                     comprehensive_obs = (
-                        self.fhir_extractors.extract_observation_mcode_comprehensive(
-                            resource
-                        )
+                        self.fhir_extractors.extract_observation_mcode_comprehensive(resource)
                     )
                     if comprehensive_obs:
                         mcode_elements.update(comprehensive_obs)
                 elif resource_type == "Procedure":
                     # Extract procedures as mCODE CancerRelatedSurgicalProcedure
-                    procedure_data = self.fhir_extractors.extract_procedure_mcode(
-                        resource
-                    )
+                    procedure_data = self.fhir_extractors.extract_procedure_mcode(resource)
                     if procedure_data:
                         if "CancerRelatedSurgicalProcedure" not in mcode_elements:
                             mcode_elements["CancerRelatedSurgicalProcedure"] = []
-                        mcode_elements["CancerRelatedSurgicalProcedure"].append(
-                            procedure_data
-                        )
+                        mcode_elements["CancerRelatedSurgicalProcedure"].append(procedure_data)
             except Exception as e:
                 self.logger.error(f"Error processing {resource_type} resource: {e}")
                 self.logger.debug(f"Resource content: {resource}")
@@ -482,10 +470,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                     systolic = diastolic = None
                     for comp in components:
                         comp_code = (
-                            comp.get("code", {})
-                            .get("coding", [{}])[0]
-                            .get("display", "")
-                            .lower()
+                            comp.get("code", {}).get("coding", [{}])[0].get("display", "").lower()
                         )
                         comp_value = comp.get("valueQuantity", {}).get("value")
                         if "systolic" in comp_code:
@@ -582,15 +567,11 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                 filtered[element_type] = element_data
                 self.logger.debug(f"Keeping patient mCODE element: {element_type}")
             else:
-                self.logger.debug(
-                    f"Filtering out patient mCODE element: {element_type}"
-                )
+                self.logger.debug(f"Filtering out patient mCODE element: {element_type}")
 
         return filtered
 
-    def _convert_to_mappings_format(
-        self, mcode_elements: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    def _convert_to_mappings_format(self, mcode_elements: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Convert mCODE elements dict to mappings format expected by storage."""
         mappings = []
 
@@ -640,9 +621,7 @@ class PatientsProcessorWorkflow(BasePatientsProcessorWorkflow):
                         }
                     mappings.append(mapping)
         except Exception as e:
-            self.logger.error(
-                f"Error converting mCODE elements to mappings format: {e}"
-            )
+            self.logger.error(f"Error converting mCODE elements to mappings format: {e}")
             self.logger.debug(f"mcode_elements: {mcode_elements}")
             raise
 

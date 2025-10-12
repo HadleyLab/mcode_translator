@@ -24,7 +24,7 @@ class LLMEngine:
     def __init__(
         self,
         model_name: str = "deepseek-coder",
-        prompt_name: str = "direct_mcode_evidence_based_concise"
+        prompt_name: str = "direct_mcode_evidence_based_concise",
     ):
         """Initialize the LLM engine with model and prompt configuration."""
         self.logger = get_logger(__name__)
@@ -35,7 +35,9 @@ class LLMEngine:
         self.config = Config()
         self.llm_service = LLMService(self.config, model_name, prompt_name)
 
-        self.logger.info(f"✅ LLMEngine initialized with model: {model_name}, prompt: {prompt_name}")
+        self.logger.info(
+            f"✅ LLMEngine initialized with model: {model_name}, prompt: {prompt_name}"
+        )
 
     async def process_section(self, section_content: str) -> List[McodeElement]:
         """
@@ -47,7 +49,9 @@ class LLMEngine:
         Returns:
             List of extracted mCODE elements from LLM analysis
         """
-        self.logger.debug(f"🤖 LLMEngine processing section content (length: {len(section_content)})")
+        self.logger.debug(
+            f"🤖 LLMEngine processing section content (length: {len(section_content)})"
+        )
 
         try:
             # Use the sophisticated LLM service for processing

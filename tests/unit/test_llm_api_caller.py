@@ -2,8 +2,10 @@
 Unit tests for LLMAPICaller class.
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+
 from src.services.llm.api_caller import LLMAPICaller
 
 
@@ -38,13 +40,20 @@ class TestLLMAPICaller:
         caller = LLMAPICaller(mock_config, "test-model")
         assert caller.config == mock_config
         assert caller.model_name == "test-model"
-        assert hasattr(caller, 'logger')
+        assert hasattr(caller, "logger")
 
     @pytest.mark.asyncio
-    @patch('src.utils.token_tracker.extract_token_usage_from_response')
-    @patch('src.utils.token_tracker.global_token_tracker')
-    @patch('openai.AsyncOpenAI')
-    async def test_call_llm_api_async_success(self, mock_openai_class, mock_token_tracker, mock_extract_tokens, api_caller, mock_llm_config):
+    @patch("src.utils.token_tracker.extract_token_usage_from_response")
+    @patch("src.utils.token_tracker.global_token_tracker")
+    @patch("openai.AsyncOpenAI")
+    async def test_call_llm_api_async_success(
+        self,
+        mock_openai_class,
+        mock_token_tracker,
+        mock_extract_tokens,
+        api_caller,
+        mock_llm_config,
+    ):
         """Test successful async LLM API call."""
         # Setup mocks
         mock_client = AsyncMock()
@@ -84,8 +93,10 @@ class TestLLMAPICaller:
             await api_caller.call_llm_api_async("test prompt", mock_llm_config)
 
     @pytest.mark.asyncio
-    @patch('openai.AsyncOpenAI')
-    async def test_call_llm_api_async_empty_response(self, mock_openai_class, api_caller, mock_llm_config):
+    @patch("openai.AsyncOpenAI")
+    async def test_call_llm_api_async_empty_response(
+        self, mock_openai_class, api_caller, mock_llm_config
+    ):
         """Test API call with empty response."""
         mock_client = AsyncMock()
         mock_openai_class.return_value = mock_client
@@ -99,8 +110,10 @@ class TestLLMAPICaller:
             await api_caller.call_llm_api_async("test prompt", mock_llm_config)
 
     @pytest.mark.asyncio
-    @patch('openai.AsyncOpenAI')
-    async def test_call_llm_api_async_general_exception(self, mock_openai_class, api_caller, mock_llm_config):
+    @patch("openai.AsyncOpenAI")
+    async def test_call_llm_api_async_general_exception(
+        self, mock_openai_class, api_caller, mock_llm_config
+    ):
         """Test API call with general exception."""
         mock_client = AsyncMock()
         mock_openai_class.return_value = mock_client
@@ -191,21 +204,25 @@ class TestLLMAPICaller:
     def test_parse_and_clean_response_deepseek_mismatched_brackets(self, api_caller):
         """Test parsing DeepSeek JSON with mismatched brackets."""
         api_caller.model_name = "deepseek-coder"
-        response = '{"key": "value", "array": ["item1", "item2"}'  # Missing closing bracket for array
+        response = (
+            '{"key": "value", "array": ["item1", "item2"}'  # Missing closing bracket for array
+        )
 
         with pytest.raises(ValueError, match="mismatched brackets"):
             api_caller._parse_and_clean_response(response)
 
     def test_parse_and_clean_response_markdown_cleanup(self, api_caller):
         """Test parsing response with markdown code blocks that need cleanup."""
-        response = "```\n{\"key\": \"value\"}\n```"
+        response = '```\n{"key": "value"}\n```'
 
         result = api_caller._parse_and_clean_response(response)
         assert result == {"key": "value"}
 
     @pytest.mark.asyncio
-    @patch('src.services.llm.api_caller.LLMAPICaller._parse_and_clean_response')
-    async def test_call_llm_api_async_unexpected_config_exception(self, mock_parse, api_caller, mock_llm_config):
+    @patch("src.services.llm.api_caller.LLMAPICaller._parse_and_clean_response")
+    async def test_call_llm_api_async_unexpected_config_exception(
+        self, mock_parse, api_caller, mock_llm_config
+    ):
         """Test API call with unexpected config exception."""
         # Mock the config to raise an unexpected exception
         api_caller.config.get_api_key.side_effect = RuntimeError("unexpected error")
@@ -214,8 +231,10 @@ class TestLLMAPICaller:
             await api_caller.call_llm_api_async("test prompt", mock_llm_config)
 
     @pytest.mark.asyncio
-    @patch('openai.AsyncOpenAI')
-    async def test_make_async_api_call_with_rate_limiting_success(self, mock_openai_class, api_caller, mock_llm_config):
+    @patch("openai.AsyncOpenAI")
+    async def test_make_async_api_call_with_rate_limiting_success(
+        self, mock_openai_class, api_caller, mock_llm_config
+    ):
         """Test successful async API call with rate limiting."""
         mock_client = AsyncMock()
         mock_openai_class.return_value = mock_client
@@ -231,8 +250,10 @@ class TestLLMAPICaller:
         mock_client.chat.completions.create.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch('openai.AsyncOpenAI')
-    async def test_make_async_api_call_with_rate_limiting_quota_error(self, mock_openai_class, api_caller, mock_llm_config):
+    @patch("openai.AsyncOpenAI")
+    async def test_make_async_api_call_with_rate_limiting_quota_error(
+        self, mock_openai_class, api_caller, mock_llm_config
+    ):
         """Test API call with quota error."""
         mock_client = AsyncMock()
         mock_openai_class.return_value = mock_client
@@ -245,9 +266,11 @@ class TestLLMAPICaller:
             )
 
     @pytest.mark.asyncio
-    @patch('asyncio.sleep')
-    @patch('openai.AsyncOpenAI')
-    async def test_make_async_api_call_with_rate_limiting_retry_success(self, mock_openai_class, mock_sleep, api_caller, mock_llm_config):
+    @patch("asyncio.sleep")
+    @patch("openai.AsyncOpenAI")
+    async def test_make_async_api_call_with_rate_limiting_retry_success(
+        self, mock_openai_class, mock_sleep, api_caller, mock_llm_config
+    ):
         """Test API call with rate limiting that succeeds on retry."""
         mock_client = AsyncMock()
         mock_openai_class.return_value = mock_client
@@ -256,7 +279,7 @@ class TestLLMAPICaller:
         mock_response = MagicMock()
         mock_client.chat.completions.create.side_effect = [
             Exception("rate limit exceeded"),
-            mock_response
+            mock_response,
         ]
 
         result = await api_caller._make_async_api_call_with_rate_limiting(
@@ -268,9 +291,11 @@ class TestLLMAPICaller:
         mock_sleep.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch('asyncio.sleep')
-    @patch('openai.AsyncOpenAI')
-    async def test_make_async_api_call_with_rate_limiting_max_retries_exceeded(self, mock_openai_class, mock_sleep, api_caller, mock_llm_config):
+    @patch("asyncio.sleep")
+    @patch("openai.AsyncOpenAI")
+    async def test_make_async_api_call_with_rate_limiting_max_retries_exceeded(
+        self, mock_openai_class, mock_sleep, api_caller, mock_llm_config
+    ):
         """Test API call with rate limiting that exhausts all retries."""
         mock_client = AsyncMock()
         mock_openai_class.return_value = mock_client
@@ -288,9 +313,11 @@ class TestLLMAPICaller:
         assert mock_sleep.call_count == 10  # 10 retries
 
     @pytest.mark.asyncio
-    @patch('asyncio.sleep')
-    @patch('openai.AsyncOpenAI')
-    async def test_make_async_api_call_with_rate_limiting_api_error_retry(self, mock_openai_class, mock_sleep, api_caller, mock_llm_config):
+    @patch("asyncio.sleep")
+    @patch("openai.AsyncOpenAI")
+    async def test_make_async_api_call_with_rate_limiting_api_error_retry(
+        self, mock_openai_class, mock_sleep, api_caller, mock_llm_config
+    ):
         """Test API call with general API error that retries."""
         mock_client = AsyncMock()
         mock_openai_class.return_value = mock_client
@@ -298,7 +325,7 @@ class TestLLMAPICaller:
         mock_response = MagicMock()
         mock_client.chat.completions.create.side_effect = [
             Exception("connection timeout"),
-            mock_response
+            mock_response,
         ]
 
         result = await api_caller._make_async_api_call_with_rate_limiting(
@@ -310,7 +337,7 @@ class TestLLMAPICaller:
         mock_sleep.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch('openai.AsyncOpenAI')
+    @patch("openai.AsyncOpenAI")
     async def test_make_async_api_call_response_format_gpt4(self, mock_openai_class, api_caller):
         """Test that response_format is used for GPT-4 models."""
         mock_llm_config = MagicMock()
@@ -329,8 +356,10 @@ class TestLLMAPICaller:
         assert call_args[1]["response_format"] == {"type": "json_object"}
 
     @pytest.mark.asyncio
-    @patch('openai.AsyncOpenAI')
-    async def test_make_async_api_call_response_format_deepseek(self, mock_openai_class, api_caller):
+    @patch("openai.AsyncOpenAI")
+    async def test_make_async_api_call_response_format_deepseek(
+        self, mock_openai_class, api_caller
+    ):
         """Test that response_format is used for DeepSeek models."""
         mock_llm_config = MagicMock()
         mock_llm_config.model_identifier = "deepseek-coder"
@@ -348,7 +377,7 @@ class TestLLMAPICaller:
         assert call_args[1]["response_format"] == {"type": "json_object"}
 
     @pytest.mark.asyncio
-    @patch('openai.AsyncOpenAI')
+    @patch("openai.AsyncOpenAI")
     async def test_make_async_api_call_no_response_format(self, mock_openai_class, api_caller):
         """Test that response_format is not used for unsupported models."""
         mock_llm_config = MagicMock()
@@ -366,10 +395,12 @@ class TestLLMAPICaller:
         assert "response_format" not in call_args[1]
 
     @pytest.mark.asyncio
-    @patch('random.uniform')
-    @patch('asyncio.sleep')
-    @patch('openai.AsyncOpenAI')
-    async def test_make_async_api_call_retry_after_parsing(self, mock_openai_class, mock_sleep, mock_uniform, api_caller, mock_llm_config):
+    @patch("random.uniform")
+    @patch("asyncio.sleep")
+    @patch("openai.AsyncOpenAI")
+    async def test_make_async_api_call_retry_after_parsing(
+        self, mock_openai_class, mock_sleep, mock_uniform, api_caller, mock_llm_config
+    ):
         """Test parsing of retry-after time from rate limit error."""
         mock_uniform.return_value = 0.5  # Fixed jitter value
         mock_client = AsyncMock()
@@ -392,10 +423,12 @@ class TestLLMAPICaller:
         assert sleep_time == 5.25  # 5s + (0.5 * 5 * 0.1) jitter
 
     @pytest.mark.asyncio
-    @patch('random.uniform')
-    @patch('asyncio.sleep')
-    @patch('openai.AsyncOpenAI')
-    async def test_make_async_api_call_retry_after_ms_parsing(self, mock_openai_class, mock_sleep, mock_uniform, api_caller, mock_llm_config):
+    @patch("random.uniform")
+    @patch("asyncio.sleep")
+    @patch("openai.AsyncOpenAI")
+    async def test_make_async_api_call_retry_after_ms_parsing(
+        self, mock_openai_class, mock_sleep, mock_uniform, api_caller, mock_llm_config
+    ):
         """Test parsing of retry-after time in milliseconds."""
         mock_uniform.return_value = 0.5  # Fixed jitter value
         mock_client = AsyncMock()

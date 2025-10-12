@@ -21,9 +21,7 @@ class BiologicalAnalyzer:
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
-    def analyze_trial_biology(
-        self, trials_data: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def analyze_trial_biology(self, trials_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Analyze the biological content of trial data with robust error handling."""
         biology_stats: Dict[str, Any] = {
             "total_trials": len(trials_data),
@@ -47,23 +45,16 @@ class BiologicalAnalyzer:
                         if "conditionsModule" in protocol and isinstance(
                             protocol["conditionsModule"], dict
                         ):
-                            conditions = protocol["conditionsModule"].get(
-                                "conditions", []
-                            )
+                            conditions = protocol["conditionsModule"].get("conditions", [])
                             if isinstance(conditions, list):
                                 for condition in conditions:
                                     if isinstance(condition, dict):
-                                        cond_name = condition.get(
-                                            "condition", "Unknown"
-                                        )
+                                        cond_name = condition.get("condition", "Unknown")
                                         if isinstance(cond_name, str):
-                                            conditions_dict = biology_stats[
-                                                "conditions"
-                                            ]
+                                            conditions_dict = biology_stats["conditions"]
                                             if isinstance(conditions_dict, dict):
                                                 conditions_dict[cond_name] = (
-                                                    conditions_dict.get(cond_name, 0)
-                                                    + 1
+                                                    conditions_dict.get(cond_name, 0) + 1
                                                 )
 
                         # Interventions
@@ -78,13 +69,10 @@ class BiologicalAnalyzer:
                                     if isinstance(intervention, dict):
                                         int_type = intervention.get("type", "Unknown")
                                         if isinstance(int_type, str):
-                                            interventions_dict = biology_stats[
-                                                "interventions"
-                                            ]
+                                            interventions_dict = biology_stats["interventions"]
                                             if isinstance(interventions_dict, dict):
                                                 interventions_dict[int_type] = (
-                                                    interventions_dict.get(int_type, 0)
-                                                    + 1
+                                                    interventions_dict.get(int_type, 0) + 1
                                                 )
 
                         # Study phase
@@ -93,11 +81,7 @@ class BiologicalAnalyzer:
                         ):
                             phases = protocol["designModule"].get("phases", [])
                             if isinstance(phases, list) and phases:
-                                phase = (
-                                    phases[0]
-                                    if isinstance(phases[0], str)
-                                    else "Unknown"
-                                )
+                                phase = phases[0] if isinstance(phases[0], str) else "Unknown"
                                 biology_stats["phases"][phase] = (
                                     biology_stats["phases"].get(phase, 0) + 1
                                 )
@@ -129,10 +113,7 @@ class BiologicalAnalyzer:
 
                             # Age extraction (simplified)
                             criteria = eligibility.get("eligibilityCriteria", "")
-                            if (
-                                isinstance(criteria, str)
-                                and "years" in criteria.lower()
-                            ):
+                            if isinstance(criteria, str) and "years" in criteria.lower():
                                 # Simple age extraction - could be enhanced
                                 biology_stats["ages"].append("Has age criteria")
 
@@ -190,9 +171,7 @@ class BiologicalAnalyzer:
                 elem_type = element.element_type
                 element_types_dict = combo_analysis["element_types"]
                 if isinstance(element_types_dict, dict):
-                    element_types_dict[elem_type] = (
-                        element_types_dict.get(elem_type, 0) + 1
-                    )
+                    element_types_dict[elem_type] = element_types_dict.get(elem_type, 0) + 1
 
                 # Confidence scores
                 confidence = element.confidence_score or 0.0
@@ -212,9 +191,7 @@ class BiologicalAnalyzer:
                         condition = element.display or "Unknown"
                         top_conditions = combo_analysis["top_conditions"]
                         if isinstance(top_conditions, dict):
-                            top_conditions[condition] = (
-                                top_conditions.get(condition, 0) + 1
-                            )
+                            top_conditions[condition] = top_conditions.get(condition, 0) + 1
                     elif elem_type in [
                         "CancerTreatment",
                         "ChemotherapyTreatment",
@@ -225,9 +202,7 @@ class BiologicalAnalyzer:
                         treatment = element.display or "Unknown"
                         top_treatments = combo_analysis["top_treatments"]
                         if isinstance(top_treatments, dict):
-                            top_treatments[treatment] = (
-                                top_treatments.get(treatment, 0) + 1
-                            )
+                            top_treatments[treatment] = top_treatments.get(treatment, 0) + 1
                     elif elem_type in ["PatientDemographics", "Patient"]:
                         biological_categories["patient_characteristics"] += 1
                     elif elem_type in ["TNMStage", "CancerStage"]:
@@ -279,24 +254,15 @@ class BiologicalAnalyzer:
                     # Evidence source tracking
                     evidence_sources = combo_analysis["evidence_sources"]
                     if isinstance(evidence_sources, dict):
-                        if (
-                            "patients" in evidence.lower()
-                            or "eligibility" in evidence.lower()
-                        ):
+                        if "patients" in evidence.lower() or "eligibility" in evidence.lower():
                             evidence_sources["patient_criteria"] = (
                                 evidence_sources.get("patient_criteria", 0) + 1
                             )
-                        elif (
-                            "treatment" in evidence.lower()
-                            or "intervention" in evidence.lower()
-                        ):
+                        elif "treatment" in evidence.lower() or "intervention" in evidence.lower():
                             evidence_sources["treatment_info"] = (
                                 evidence_sources.get("treatment_info", 0) + 1
                             )
-                        elif (
-                            "cancer" in evidence.lower()
-                            or "condition" in evidence.lower()
-                        ):
+                        elif "cancer" in evidence.lower() or "condition" in evidence.lower():
                             evidence_sources["condition_info"] = (
                                 evidence_sources.get("condition_info", 0) + 1
                             )
@@ -305,9 +271,7 @@ class BiologicalAnalyzer:
                                 evidence_sources.get("study_design", 0) + 1
                             )
                         else:
-                            evidence_sources["other"] = (
-                                evidence_sources.get("other", 0) + 1
-                            )
+                            evidence_sources["other"] = evidence_sources.get("other", 0) + 1
 
             analysis[combo_key] = combo_analysis
 
@@ -382,8 +346,7 @@ class BiologicalAnalyzer:
             comparative["best_performers"]["highest_quality"] = max(
                 mcode_analysis.items(),
                 key=lambda x: (
-                    sum(x[1]["confidence_distribution"])
-                    / len(x[1]["confidence_distribution"])
+                    sum(x[1]["confidence_distribution"]) / len(x[1]["confidence_distribution"])
                     if x[1]["confidence_distribution"]
                     else 0
                 ),
@@ -422,12 +385,8 @@ class BiologicalAnalyzer:
         # Trial Biology Overview
         report.append("## Trial Data Biology Overview")
         report.append(f"- **Total Trials:** {trial_biology['total_trials']}")
-        report.append(
-            f"- **Primary Conditions:** {len(trial_biology['conditions'])} unique"
-        )
-        report.append(
-            f"- **Intervention Types:** {len(trial_biology['interventions'])} types"
-        )
+        report.append(f"- **Primary Conditions:** {len(trial_biology['conditions'])} unique")
+        report.append(f"- **Intervention Types:** {len(trial_biology['interventions'])} types")
         report.append("")
 
         # Top conditions
@@ -457,8 +416,7 @@ class BiologicalAnalyzer:
             conditions = analysis["biological_categories"]["cancer_conditions"]
             treatments = analysis["biological_categories"]["treatments"]
             avg_conf = (
-                sum(analysis["confidence_distribution"])
-                / len(analysis["confidence_distribution"])
+                sum(analysis["confidence_distribution"]) / len(analysis["confidence_distribution"])
                 if analysis["confidence_distribution"]
                 else 0
             )
@@ -569,18 +527,12 @@ class BiologicalAnalyzer:
         if comparative_analysis["best_performers"]["highest_quality"]:
             best_combo = comparative_analysis["best_performers"]["highest_quality"][0]
             model, prompt = best_combo.split("_", 1)
-            report.append(
-                f"1. **Recommended Configuration:** {model} + {prompt.replace('_', ' ')}"
-            )
-            report.append(
-                "   - Highest quality mCODE mappings with best evidence support"
-            )
+            report.append(f"1. **Recommended Configuration:** {model} + {prompt.replace('_', ' ')}")
+            report.append("   - Highest quality mCODE mappings with best evidence support")
 
         if comparative_analysis["best_performers"]["most_elements"]:
             most_combo = comparative_analysis["best_performers"]["most_elements"][0]
-            report.append(
-                f"2. **High Volume Option:** {most_combo.replace('_', ' + ')}"
-            )
+            report.append(f"2. **High Volume Option:** {most_combo.replace('_', ' + ')}")
             report.append("   - Generates the most comprehensive mCODE elements")
 
         report.append("")
@@ -604,9 +556,7 @@ class BiologicalAnalyzer:
             mcode_analysis = self.analyze_mcode_elements(combo_results, combinations)
 
             # Generate comparative analysis
-            comparative_analysis = self.generate_comparative_analysis(
-                mcode_analysis, combinations
-            )
+            comparative_analysis = self.generate_comparative_analysis(mcode_analysis, combinations)
 
             # Generate markdown report
             report = self.generate_markdown_report(

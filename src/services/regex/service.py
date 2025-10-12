@@ -66,9 +66,7 @@ class RegexService:
         Returns:
             List of McodeElement instances
         """
-        self.logger.info(
-            f"🔍 REGEX SERVICE: map_trial_to_mcode called for trial data"
-        )
+        self.logger.info("🔍 REGEX SERVICE: map_trial_to_mcode called for trial data")
 
         # Extract mCODE elements using the existing TrialExtractor
         mcode_elements = self.extractor.extract_trial_mcode_elements(trial_data)
@@ -85,7 +83,7 @@ class RegexService:
                             display=item.get("display"),
                             system=item.get("system"),
                             confidence_score=1.0,  # Regex is deterministic
-                            evidence_text=f"Extracted from trial data using regex patterns"
+                            evidence_text="Extracted from trial data using regex patterns",
                         )
                         elements.append(element)
             elif isinstance(element_data, dict):
@@ -95,11 +93,9 @@ class RegexService:
                     display=element_data.get("display"),
                     system=element_data.get("system"),
                     confidence_score=1.0,  # Regex is deterministic
-                    evidence_text=f"Extracted from trial data using regex patterns"
+                    evidence_text="Extracted from trial data using regex patterns",
                 )
                 elements.append(element)
 
-        self.logger.info(
-            f"✅ REGEX SERVICE: extracted {len(elements)} mCODE elements"
-        )
+        self.logger.info(f"✅ REGEX SERVICE: extracted {len(elements)} mCODE elements")
         return elements

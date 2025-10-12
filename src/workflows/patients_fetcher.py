@@ -76,9 +76,7 @@ class PatientsFetcherWorkflow(FetcherWorkflow):
         except Exception as e:
             return self._handle_error(e, "patients fetching")
 
-    def _fetch_single_patient(
-        self, archive_path: str, patient_id: str
-    ) -> Dict[str, Any]:
+    def _fetch_single_patient(self, archive_path: str, patient_id: str) -> Dict[str, Any]:
         """Fetch a single patient by ID."""
         try:
             self.logger.info(f"📥 Fetching patient {patient_id} from {archive_path}")
@@ -242,9 +240,7 @@ class PatientsFetcherWorkflow(FetcherWorkflow):
 
             return {
                 "archive_path": archive_path,
-                "total_patients": (
-                    len(generator) if hasattr(generator, "__len__") else "unknown"
-                ),
+                "total_patients": (len(generator) if hasattr(generator, "__len__") else "unknown"),
                 "patient_generator_type": type(generator).__name__,
             }
 

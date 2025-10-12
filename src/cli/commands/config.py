@@ -5,14 +5,15 @@ Commands for managing mCODE Translator configuration including
 validation, setup, and environment management.
 """
 
+import json
 import os
-import sys
 from pathlib import Path
+import sys
 from typing import Optional
 
-import typer
 from rich.console import Console
 from rich.table import Table
+import typer
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -31,7 +32,9 @@ app = typer.Typer(
 
 @app.command("check")
 def check_config(
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed configuration information"),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Show detailed configuration information"
+    ),
 ):
     """
     Check and validate current configuration.
@@ -111,6 +114,7 @@ def check_config(
 
     try:
         from utils.config import Config
+
         config = Config()
 
         # Check LLM configurations
@@ -139,6 +143,9 @@ def check_config(
     console.print("[blue]🧠 Checking CORE Memory configuration...[/blue]")
 
     try:
+        from utils.config import Config
+
+        config = Config()
         core_memory_config = config.get_core_memory_config()
         config_status["memory"]["core_config"] = "✅"
         console.print("[green]✅ CORE Memory configuration loaded[/green]")
@@ -168,7 +175,9 @@ def check_config(
         console.print("[green]🚀 System is ready for mCODE translation operations[/green]")
     else:
         console.print("\n[yellow]⚠️ Configuration issues detected[/yellow]")
-        console.print("[blue]💡 Run 'mcode-translator config setup' to configure missing settings[/blue]")
+        console.print(
+            "[blue]💡 Run 'mcode-translator config setup' to configure missing settings[/blue]"
+        )
 
     return config_status
 
@@ -187,14 +196,14 @@ def setup_config(
     console.print("[bold blue]⚙️ mCODE Translator Configuration Setup[/bold blue]")
 
     if interactive:
-        console.print("[yellow]This will guide you through configuring the mCODE Translator.[/yellow]")
+        console.print(
+            "[yellow]This will guide you through configuring the mCODE Translator.[/yellow]"
+        )
         console.print("[yellow]You'll need API keys for HeySol and OpenAI.[/yellow]")
 
         # Check for existing configuration
         if not force:
             try:
-                from utils.config import Config
-                config = Config()
                 console.print("[blue]Existing configuration detected.[/blue]")
                 proceed = typer.confirm("Overwrite existing configuration?", default=False)
                 if not proceed:
@@ -240,8 +249,12 @@ def setup_config(
         os.environ["MCODE_CACHE_ENABLED"] = str(cache_enabled).lower()
 
         console.print("\n[green]✅ Configuration setup completed![/green]")
-        console.print("[blue]💡 Restart your shell or run 'source ~/.bashrc' to apply environment variables[/blue]")
-        console.print("[blue]💡 Or run 'mcode-translator config check' to verify configuration[/blue]")
+        console.print(
+            "[blue]💡 Restart your shell or run 'source ~/.bashrc' to apply environment variables[/blue]"
+        )
+        console.print(
+            "[blue]💡 Or run 'mcode-translator config check' to verify configuration[/blue]"
+        )
 
     else:
         console.print("[red]Non-interactive setup not yet implemented[/red]")
@@ -250,7 +263,9 @@ def setup_config(
 
 @app.command("show")
 def show_config(
-    category: str = typer.Option("all", help="Configuration category to show (all, env, apis, memory)"),
+    category: str = typer.Option(
+        "all", help="Configuration category to show (all, env, apis, memory)"
+    ),
 ):
     """
     Display current configuration settings.
@@ -261,13 +276,18 @@ def show_config(
 
     try:
         from utils.config import Config
+
         config = Config()
 
         if category in ["all", "env"]:
             console.print("\n[cyan]Environment Variables:[/cyan]")
             env_vars = {
                 "HEYSOL_API_KEY": os.getenv("HEYSOL_API_KEY", "not set"),
-                "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY", "not set")[:20] + "..." if os.getenv("OPENAI_API_KEY") else "not set",
+                "OPENAI_API_KEY": (
+                    os.getenv("OPENAI_API_KEY", "not set")[:20] + "..."
+                    if os.getenv("OPENAI_API_KEY")
+                    else "not set"
+                ),
                 "MCODE_DEFAULT_MODEL": os.getenv("MCODE_DEFAULT_MODEL", "gpt-4"),
                 "MCODE_STRICT_MODE": os.getenv("MCODE_STRICT_MODE", "true"),
                 "MCODE_CACHE_ENABLED": os.getenv("MCODE_CACHE_ENABLED", "true"),
@@ -302,7 +322,9 @@ def show_config(
                 console.print(f"API Base URL: {core_memory.get('api_base_url', 'not set')}")
                 console.print(f"Source: {core_memory.get('source', 'not set')}")
                 console.print(f"Timeout: {core_memory.get('timeout_seconds', 'not set')}s")
-                console.print(f"Batch Size: {core_memory.get('storage_settings', {}).get('batch_size', 'not set')}")
+                console.print(
+                    f"Batch Size: {core_memory.get('storage_settings', {}).get('batch_size', 'not set')}"
+                )
 
             except Exception as e:
                 console.print(f"[red]Error loading memory config: {e}[/red]")
@@ -335,6 +357,7 @@ def validate_config(
 
     try:
         from utils.config import Config
+
         config = Config()
 
         # Validate configuration files exist and are readable
@@ -355,7 +378,7 @@ def validate_config(
             file_path = Path(config_file)
             if file_path.exists():
                 try:
-                    with open(file_path, 'r') as f:
+                    with open(file_path) as f:
                         json.load(f)
                     validation_results["files"][config_file] = "✅"
                     if verbose:
@@ -363,7 +386,7 @@ def validate_config(
                 except json.JSONDecodeError as e:
                     validation_results["syntax"][config_file] = f"❌ {e}"
                     console.print(f"[red]❌ {config_file}: invalid JSON - {e}[/red]")
-                except IOError as e:
+                except OSError as e:
                     validation_results["files"][config_file] = f"❌ {e}"
                     console.print(f"[red]❌ {config_file}: cannot read - {e}[/red]")
             else:
@@ -392,9 +415,13 @@ def validate_config(
                 validation_results["required_fields"]["llm_configs"] = "❌"
                 console.print("[red]❌ No LLM configurations found[/red]")
             else:
-                validation_results["required_fields"]["llm_configs"] = f"✅ {len(llm_configs)} configs"
+                validation_results["required_fields"][
+                    "llm_configs"
+                ] = f"✅ {len(llm_configs)} configs"
                 if verbose:
-                    console.print(f"[green]✅ LLM configurations: {len(llm_configs)} models available[/green]")
+                    console.print(
+                        f"[green]✅ LLM configurations: {len(llm_configs)} models available[/green]"
+                    )
 
         except Exception as e:
             validation_results["required_fields"]["config_loading"] = f"❌ {e}"
@@ -434,7 +461,9 @@ def validate_config(
             console.print("[green]🚀 All configuration files and settings are valid[/green]")
         else:
             console.print("\n[yellow]⚠️ Configuration validation found issues[/yellow]")
-            console.print("[blue]💡 Run 'mcode-translator config setup' to fix configuration issues[/blue]")
+            console.print(
+                "[blue]💡 Run 'mcode-translator config setup' to fix configuration issues[/blue]"
+            )
 
         return validation_results
 
@@ -508,7 +537,7 @@ def backup_config(
                 else:
                     env_vars[key] = value
 
-            with open(env_file, 'w') as f:
+            with open(env_file, "w") as f:
                 json.dump(env_vars, f, indent=2)
 
             if verbose:
@@ -520,11 +549,11 @@ def backup_config(
             "backup_directory": str(backup_dir),
             "config_files_backed_up": backed_up_files,
             "environment_variables_backed_up": include_env,
-            "total_files": len(backed_up_files) + (1 if include_env else 0)
+            "total_files": len(backed_up_files) + (1 if include_env else 0),
         }
 
         manifest_file = backup_dir / "backup_manifest.json"
-        with open(manifest_file, 'w') as f:
+        with open(manifest_file, "w") as f:
             json.dump(manifest, f, indent=2)
 
         console.print("[green]✅ Configuration backup completed[/green]")
@@ -568,7 +597,9 @@ def reload_config(
             console.print("[blue]💾 Reloading cache configuration...[/blue]")
             # Cache config reload would require cache system restart
             console.print("[green]✅ Cache configuration reload requested[/green]")
-            console.print("[blue]💡 Note: Cache system may need restart for changes to take effect[/blue]")
+            console.print(
+                "[blue]💡 Note: Cache system may need restart for changes to take effect[/blue]"
+            )
 
         console.print("[green]✅ Configuration reload completed[/green]")
 
@@ -580,7 +611,9 @@ def reload_config(
 
 @app.command("show-llm")
 def show_llm_config(
-    model: Optional[str] = typer.Option(None, help="Specific model to show (shows all if not specified)"),
+    model: Optional[str] = typer.Option(
+        None, help="Specific model to show (shows all if not specified)"
+    ),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed model information"),
 ):
     """
@@ -593,6 +626,7 @@ def show_llm_config(
 
     try:
         from utils.config import Config
+
         config = Config()
 
         if model:
@@ -603,14 +637,16 @@ def show_llm_config(
                 console.print(f"[cyan]Name: {model_config.name}[/cyan]")
                 console.print(f"[cyan]Base URL: {model_config.base_url}[/cyan]")
                 console.print(f"[cyan]API Key Env: {model_config.api_key_env_var}[/cyan]")
-                console.print(f"[cyan]Timeout: {getattr(model_config, 'timeout_seconds', 'default')}s[/cyan]")
+                console.print(
+                    f"[cyan]Timeout: {getattr(model_config, 'timeout_seconds', 'default')}s[/cyan]"
+                )
 
-                if hasattr(model_config, 'default_parameters') and model_config.default_parameters:
+                if hasattr(model_config, "default_parameters") and model_config.default_parameters:
                     console.print("[cyan]Default Parameters:[/cyan]")
                     for param, value in model_config.default_parameters.items():
                         console.print(f"  {param}: {value}")
 
-                if verbose and hasattr(model_config, 'capabilities'):
+                if verbose and hasattr(model_config, "capabilities"):
                     console.print("[cyan]Capabilities:[/cyan]")
                     for cap, supported in model_config.capabilities.items():
                         console.print(f"  {cap}: {'✅' if supported else '❌'}")
@@ -631,12 +667,7 @@ def show_llm_config(
             for model_key, model_config in llm_configs.items():
                 api_key_env = model_config.api_key_env_var
                 api_key_status = "✅" if api_key_env and os.getenv(api_key_env) else "❌"
-                table.add_row(
-                    model_key,
-                    model_config.name,
-                    model_config.base_url,
-                    api_key_status
-                )
+                table.add_row(model_key, model_config.name, model_config.base_url, api_key_status)
 
             console.print(table)
             console.print(f"\n[green]📊 Total models: {len(llm_configs)}[/green]")
@@ -661,9 +692,8 @@ def show_core_memory_config(
 
     try:
         from utils.config import Config
-        config = Config()
 
-        core_config = config.get_core_memory_config()
+        config = Config()
 
         console.print(f"[cyan]API Base URL:[/cyan] {config.get_core_memory_api_base_url()}")
         console.print(f"[cyan]Source:[/cyan] {config.get_core_memory_source()}")
@@ -671,19 +701,19 @@ def show_core_memory_config(
         console.print(f"[cyan]Max Retries:[/cyan] {config.get_core_memory_max_retries()}")
         console.print(f"[cyan]Batch Size:[/cyan] {config.get_core_memory_batch_size()}")
 
-        console.print(f"\n[cyan]Default Spaces:[/cyan]")
+        console.print("\n[cyan]Default Spaces:[/cyan]")
         default_spaces = config.get_core_memory_default_spaces()
         for space_name, space_id in default_spaces.items():
             console.print(f"  {space_name}: {space_id}")
 
-        console.print(f"\n[cyan]mCODE Settings:[/cyan]")
+        console.print("\n[cyan]mCODE Settings:[/cyan]")
         console.print(f"  Summary Format: {config.get_mcode_summary_format()}")
         console.print(f"  Include Codes: {config.get_mcode_include_codes()}")
         console.print(f"  Max Summary Length: {config.get_mcode_max_summary_length()}")
 
         if verbose:
-            console.print(f"\n[cyan]Full Configuration:[/cyan]")
-            console.print(json.dumps(core_config, indent=2))
+            console.print("\n[cyan]Full Configuration:[/cyan]")
+            console.print(json.dumps(config.get_core_memory_config(), indent=2))
 
     except Exception as e:
         console.print(f"[red]❌ Failed to load CORE Memory configuration: {e}[/red]")
@@ -704,6 +734,7 @@ def show_cache_config(
 
     try:
         from utils.config import Config
+
         config = Config()
 
         console.print(f"[cyan]Cache Enabled:[/cyan] {config.is_cache_enabled()}")
@@ -713,7 +744,7 @@ def show_cache_config(
         console.print(f"[cyan]Request Timeout:[/cyan] {config.get_request_timeout()} seconds")
 
         if verbose:
-            console.print(f"\n[cyan]Full Cache Configuration:[/cyan]")
+            console.print("\n[cyan]Full Cache Configuration:[/cyan]")
             console.print(json.dumps(config.cache_config, indent=2))
 
     except Exception as e:
@@ -735,13 +766,14 @@ def show_validation_config(
 
     try:
         from utils.config import Config
+
         config = Config()
 
         console.print(f"[cyan]Strict Mode:[/cyan] {config.is_strict_mode()}")
         console.print(f"[cyan]Require API Keys:[/cyan] {config.require_api_keys()}")
 
         if verbose:
-            console.print(f"\n[cyan]Full Validation Configuration:[/cyan]")
+            console.print("\n[cyan]Full Validation Configuration:[/cyan]")
             console.print(json.dumps(config.validation_config, indent=2))
 
     except Exception as e:

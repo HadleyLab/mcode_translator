@@ -96,9 +96,7 @@ class TokenTracker:
     def get_all_component_usage(self) -> Dict[str, TokenUsage]:
         """Get token usage for all components"""
         with self._lock:
-            return {
-                k: TokenUsage(**v.to_dict()) for k, v in self._component_usage.items()
-            }
+            return {k: TokenUsage(**v.to_dict()) for k, v in self._component_usage.items()}
 
     def reset(self) -> None:
         """Reset all token usage tracking"""
@@ -111,9 +109,7 @@ class TokenTracker:
         with self._lock:
             return {
                 "total": self._usage.to_dict(),
-                "components": {
-                    k: v.to_dict() for k, v in self._component_usage.items()
-                },
+                "components": {k: v.to_dict() for k, v in self._component_usage.items()},
             }
 
     @classmethod
@@ -162,11 +158,7 @@ def extract_token_usage_from_response(
             usage.total_tokens = api_usage.get("total_tokens", 0)
 
     # Try to infer total tokens if not provided
-    if (
-        usage.total_tokens == 0
-        and usage.prompt_tokens > 0
-        and usage.completion_tokens > 0
-    ):
+    if usage.total_tokens == 0 and usage.prompt_tokens > 0 and usage.completion_tokens > 0:
         usage.total_tokens = usage.prompt_tokens + usage.completion_tokens
 
     return usage

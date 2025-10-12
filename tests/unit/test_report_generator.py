@@ -4,6 +4,7 @@ Tests the report generation functionality.
 """
 
 import pytest
+
 from src.optimization.report_generator import ReportGenerator
 
 
@@ -21,25 +22,22 @@ class TestReportGenerator:
         return {
             "total_runs": 100,
             "successful_runs": 85,
-            "time_range": {
-                "earliest": "2024-01-01",
-                "latest": "2024-01-31"
-            },
+            "time_range": {"earliest": "2024-01-01", "latest": "2024-01-31"},
             "model_stats": {
                 "deepseek-coder": {
                     "runs": 50,
                     "successful": 45,
                     "avg_score": 0.92,
                     "avg_processing_time": 2.5,
-                    "avg_cost": 0.02
+                    "avg_cost": 0.02,
                 },
                 "gpt-4o": {
                     "runs": 30,
                     "successful": 25,
                     "avg_score": 0.88,
                     "avg_processing_time": 3.2,
-                    "avg_cost": 0.05
-                }
+                    "avg_cost": 0.05,
+                },
             },
             "provider_stats": {
                 "deepseek": {
@@ -47,17 +45,11 @@ class TestReportGenerator:
                     "successful": 45,
                     "avg_score": 0.92,
                     "avg_cost": 0.02,
-                    "models": ["deepseek-coder"]
+                    "models": ["deepseek-coder"],
                 }
             },
-            "performance_stats": {
-                "avg_elements": 12.5
-            },
-            "error_analysis": {
-                "rate_limit": 5,
-                "json_parsing": 3,
-                "quota_exceeded": 2
-            }
+            "performance_stats": {"avg_elements": 12.5},
+            "error_analysis": {"rate_limit": 5, "json_parsing": 3, "quota_exceeded": 2},
         }
 
     @pytest.fixture
@@ -114,7 +106,9 @@ class TestReportGenerator:
         assert "85.0%" in report  # success rate
         assert "12.5" in report  # avg elements
 
-    def test_generate_mega_report_with_biological(self, report_generator, sample_analysis, sample_biological_content):
+    def test_generate_mega_report_with_biological(
+        self, report_generator, sample_analysis, sample_biological_content
+    ):
         """Test mega report with biological content."""
         report = report_generator.generate_mega_report(
             sample_analysis, biological_content=sample_biological_content
@@ -124,7 +118,9 @@ class TestReportGenerator:
         assert "150" in report  # total trials
         assert "Chemotherapy" in report
 
-    def test_generate_mega_report_with_inter_rater(self, report_generator, sample_analysis, sample_inter_rater_content):
+    def test_generate_mega_report_with_inter_rater(
+        self, report_generator, sample_analysis, sample_inter_rater_content
+    ):
         """Test mega report with inter-rater content."""
         report = report_generator.generate_mega_report(
             sample_analysis, inter_rater_content=sample_inter_rater_content
@@ -134,12 +130,18 @@ class TestReportGenerator:
         assert "87.5%" in report  # presence agreement
         assert "0.76" in report  # fleiss kappa
 
-    def test_generate_mega_report_full(self, report_generator, sample_analysis, sample_biological_content, sample_inter_rater_content):
+    def test_generate_mega_report_full(
+        self,
+        report_generator,
+        sample_analysis,
+        sample_biological_content,
+        sample_inter_rater_content,
+    ):
         """Test full mega report with all content."""
         report = report_generator.generate_mega_report(
             sample_analysis,
             biological_content=sample_biological_content,
-            inter_rater_content=sample_inter_rater_content
+            inter_rater_content=sample_inter_rater_content,
         )
 
         assert "# mCODE Translation Optimization" in report
@@ -183,7 +185,9 @@ class TestReportGenerator:
 
     def test_get_model_reliability_with_data(self, report_generator, sample_inter_rater_content):
         """Test getting model reliability from content."""
-        reliability = report_generator._get_model_reliability("deepseek-coder", sample_inter_rater_content)
+        reliability = report_generator._get_model_reliability(
+            "deepseek-coder", sample_inter_rater_content
+        )
         assert reliability == "85.3%"
 
     def test_extract_combinations_data_empty(self, report_generator):
@@ -204,7 +208,9 @@ class TestReportGenerator:
         metrics = report_generator._extract_reliability_metrics("")
         assert metrics == {}
 
-    def test_extract_reliability_metrics_with_data(self, report_generator, sample_inter_rater_content):
+    def test_extract_reliability_metrics_with_data(
+        self, report_generator, sample_inter_rater_content
+    ):
         """Test extracting reliability metrics from content."""
         metrics = report_generator._extract_reliability_metrics(sample_inter_rater_content)
 
@@ -218,7 +224,9 @@ class TestReportGenerator:
         performance = report_generator._extract_rater_performance("")
         assert performance == {}
 
-    def test_extract_rater_performance_with_data(self, report_generator, sample_inter_rater_content):
+    def test_extract_rater_performance_with_data(
+        self, report_generator, sample_inter_rater_content
+    ):
         """Test extracting rater performance from content."""
         performance = report_generator._extract_rater_performance(sample_inter_rater_content)
 
@@ -234,7 +242,9 @@ class TestReportGenerator:
         assert insights["intervention_types"] == []
         assert insights["element_distribution"] == {}
 
-    def test_extract_biological_insights_with_data(self, report_generator, sample_biological_content):
+    def test_extract_biological_insights_with_data(
+        self, report_generator, sample_biological_content
+    ):
         """Test extracting biological insights from content."""
         insights = report_generator._extract_biological_insights(sample_biological_content)
 
@@ -255,7 +265,7 @@ class TestReportGenerator:
             "successful_runs": 5,
             "time_range": {"earliest": "2024-01-01", "latest": "2024-01-31"},
             "model_stats": {},  # Empty model stats
-            "performance_stats": {"avg_elements": 8.5}
+            "performance_stats": {"avg_elements": 8.5},
         }
         report = report_generator.generate_mega_report(analysis)
 
@@ -274,7 +284,9 @@ class TestReportGenerator:
         assert "json parsing" in report.lower()
         assert "quota exceeded" in report.lower()
 
-    def test_generate_mega_report_with_performance_optimization(self, report_generator, sample_analysis):
+    def test_generate_mega_report_with_performance_optimization(
+        self, report_generator, sample_analysis
+    ):
         """Test mega report with performance optimization recommendations."""
         report = report_generator.generate_mega_report(sample_analysis)
 
@@ -349,7 +361,9 @@ class TestReportGenerator:
         assert "deepseek" in report
         # Should contain provider stats table
 
-    def test_generate_mega_report_rater_performance_section(self, report_generator, sample_analysis, sample_inter_rater_content):
+    def test_generate_mega_report_rater_performance_section(
+        self, report_generator, sample_analysis, sample_inter_rater_content
+    ):
         """Test rater performance section generation."""
         # This tests line 134 and related rater performance logic
         report = report_generator.generate_mega_report(

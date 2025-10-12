@@ -5,8 +5,8 @@ Provides realistic test datasets for both valid and invalid cases.
 
 import json
 import random
-from typing import Dict, Any, List
 from dataclasses import dataclass
+from typing import Any, Dict, List
 
 
 @dataclass
@@ -100,9 +100,7 @@ class TrialFactory:
         return trial
 
     @staticmethod
-    def create_large_trial(
-        num_conditions: int = 50, num_locations: int = 100
-    ) -> Dict[str, Any]:
+    def create_large_trial(num_conditions: int = 50, num_locations: int = 100) -> Dict[str, Any]:
         """Create a large trial for performance testing."""
         conditions = [f"Condition {i}" for i in range(num_conditions)]
         locations = [
@@ -338,15 +336,13 @@ class TestDataManager:
         self.created_files = []
         self.temp_data = {}
 
-    def create_temp_trial_file(
-        self, trial_data: Dict[str, Any], filename: str = None
-    ) -> str:
+    def create_temp_trial_file(self, trial_data: Dict[str, Any], filename: str = None) -> str:
         """Create a temporary trial data file."""
         if filename is None:
             filename = f"temp_trial_{random.randint(1000, 9999)}.json"
 
-        import tempfile
         import os
+        import tempfile
 
         temp_dir = tempfile.gettempdir()
         filepath = os.path.join(temp_dir, filename)
@@ -357,15 +353,13 @@ class TestDataManager:
         self.created_files.append(filepath)
         return filepath
 
-    def create_temp_patient_file(
-        self, patient_data: Dict[str, Any], filename: str = None
-    ) -> str:
+    def create_temp_patient_file(self, patient_data: Dict[str, Any], filename: str = None) -> str:
         """Create a temporary patient data file."""
         if filename is None:
             filename = f"temp_patient_{random.randint(1000, 9999)}.json"
 
-        import tempfile
         import os
+        import tempfile
 
         temp_dir = tempfile.gettempdir()
         filepath = os.path.join(temp_dir, filename)

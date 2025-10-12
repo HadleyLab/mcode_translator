@@ -59,9 +59,7 @@ class TestDataManagerWorkflowE2E:
         """Mock HTTP response for data downloads."""
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.iter_content.return_value = [
-            b"fake zip content" * 1000
-        ]  # Mock zip content
+        mock_response.iter_content.return_value = [b"fake zip content" * 1000]  # Mock zip content
         mock_response.headers = {"content-length": "10000"}
         return mock_response
 
@@ -73,9 +71,7 @@ class TestDataManagerWorkflowE2E:
         return mock_storage
 
     @patch("src.utils.data_downloader.requests.get")
-    def test_data_manager_workflow_bulk_import(
-        self, mock_get, mock_download_response, tmp_path
-    ):
+    def test_data_manager_workflow_bulk_import(self, mock_get, mock_download_response, tmp_path):
         """Test the bulk data import phase of data manager workflow."""
         # Setup mock
         mock_get.return_value = mock_download_response
@@ -129,9 +125,7 @@ class TestDataManagerWorkflowE2E:
         # Verify mock was called
         mock_get.assert_called()
 
-    def test_data_manager_workflow_validation_and_processing(
-        self, sample_patient_data, tmp_path
-    ):
+    def test_data_manager_workflow_validation_and_processing(self, sample_patient_data, tmp_path):
         """Test the validation and processing phase of data manager workflow."""
         # Create input file with patient data
         input_file = tmp_path / "patients.ndjson"
@@ -144,6 +138,7 @@ class TestDataManagerWorkflowE2E:
 
         # Test workflow execution
         from config.heysol_config import get_config
+
         config = get_config()
 
         workflow = PatientsProcessorWorkflow(config=config)
@@ -187,6 +182,7 @@ class TestDataManagerWorkflowE2E:
 
         # Test workflow execution
         from config.heysol_config import get_config
+
         config = get_config()
 
         workflow = PatientsSummarizerWorkflow(config=config)
@@ -194,11 +190,16 @@ class TestDataManagerWorkflowE2E:
 
         # Write result to output file for compatibility
         with open(output_file, "w") as f:
-            json.dump({
-                "patient_id": mcode_patient_data["patient_id"],
-                "summary": result.data[0].get("summary", "No summary") if result.data else "No summary",
-                "mcode_elements": mcode_patient_data["mcode_elements"]
-            }, f)
+            json.dump(
+                {
+                    "patient_id": mcode_patient_data["patient_id"],
+                    "summary": (
+                        result.data[0].get("summary", "No summary") if result.data else "No summary"
+                    ),
+                    "mcode_elements": mcode_patient_data["mcode_elements"],
+                },
+                f,
+            )
             f.write("\n")
 
         # Verify output file was created
@@ -234,9 +235,7 @@ class TestDataManagerWorkflowE2E:
 
         # Step 1: Bulk Data Import (simulate download completion)
         # Create a mock downloaded file
-        archive_file = (
-            download_dir / "breast_cancer" / "10_years" / "breast_cancer_10_years.zip"
-        )
+        archive_file = download_dir / "breast_cancer" / "10_years" / "breast_cancer_10_years.zip"
         archive_file.parent.mkdir(parents=True)
         with open(archive_file, "wb") as f:
             f.write(b"fake zip content" * 1000)
@@ -247,7 +246,7 @@ class TestDataManagerWorkflowE2E:
             f.write("\n")
 
         # Step 2: Validation and Processing
-        processor_args = argparse.Namespace(
+        argparse.Namespace(
             input_file=str(patients_file),
             output_file=str(mcode_file),
             trials=None,
@@ -262,9 +261,10 @@ class TestDataManagerWorkflowE2E:
         )
 
         from config.heysol_config import get_config
+
         config = get_config()
         processor_workflow = PatientsProcessorWorkflow(config=config)
-        processor_result = processor_workflow.execute(patients_data=[sample_patient_data])
+        processor_workflow.execute(patients_data=[sample_patient_data])
         assert mcode_file.exists()
 
         # Step 3: Storage
@@ -281,7 +281,7 @@ class TestDataManagerWorkflowE2E:
             json.dump(mcode_data, f)
             f.write("\n")
 
-        summarizer_args = argparse.Namespace(
+        argparse.Namespace(
             input_file=str(mcode_file),
             output_file=str(summary_file),
             ingest=True,
@@ -296,9 +296,12 @@ class TestDataManagerWorkflowE2E:
         )
 
         from config.heysol_config import get_config
+
         config = get_config()
         summarizer_workflow = PatientsSummarizerWorkflow(config=config)
-        summarizer_result = summarizer_workflow.execute(patients_data=[mcode_data], store_in_memory=True)
+        summarizer_workflow.execute(
+            patients_data=[mcode_data], store_in_memory=True
+        )
         assert summary_file.exists()
 
         # Verify data flow between steps
@@ -315,7 +318,7 @@ class TestDataManagerWorkflowE2E:
 
         import argparse
 
-        args = argparse.Namespace(
+        argparse.Namespace(
             input_file=str(nonexistent_file),
             output_file=None,
             trials=None,
@@ -331,6 +334,7 @@ class TestDataManagerWorkflowE2E:
 
         # Test workflow with non-existent file
         from config.heysol_config import get_config
+
         config = get_config()
         workflow = PatientsProcessorWorkflow(config=config)
 
@@ -352,9 +356,7 @@ class TestDataManagerWorkflowE2E:
         from src.utils.data_downloader import _download_single_archive
 
         with pytest.raises(Exception, match="404 Not Found"):
-            _download_single_archive(
-                "http://fake.url/archive.zip", "/tmp/test.zip", "test_archive"
-            )
+            _download_single_archive("http://fake.url/archive.zip", "/tmp/test.zip", "test_archive")
 
     def test_data_manager_workflow_empty_data_validation(self, tmp_path):
         """Test validation of empty or invalid data files."""
@@ -364,7 +366,7 @@ class TestDataManagerWorkflowE2E:
 
         import argparse
 
-        args = argparse.Namespace(
+        argparse.Namespace(
             input_file=str(empty_file),
             output_file=None,
             trials=None,
@@ -380,6 +382,7 @@ class TestDataManagerWorkflowE2E:
 
         # Test workflow with empty patients data
         from config.heysol_config import get_config
+
         config = get_config()
         workflow = PatientsProcessorWorkflow(config=config)
 

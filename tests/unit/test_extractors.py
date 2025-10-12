@@ -10,13 +10,7 @@ class TestDataExtractor:
 
     def test_extract_trial_id_success(self):
         """Test successful trial ID extraction."""
-        trial = {
-            "protocolSection": {
-                "identificationModule": {
-                    "nctId": "NCT12345678"
-                }
-            }
-        }
+        trial = {"protocolSection": {"identificationModule": {"nctId": "NCT12345678"}}}
         result = DataExtractor.extract_trial_id(trial)
         assert result == "NCT12345678"
 
@@ -34,13 +28,7 @@ class TestDataExtractor:
 
     def test_extract_trial_id_missing_nct_id(self):
         """Test trial ID extraction when nctId is missing."""
-        trial = {
-            "protocolSection": {
-                "identificationModule": {
-                    "someOtherField": "value"
-                }
-            }
-        }
+        trial = {"protocolSection": {"identificationModule": {"someOtherField": "value"}}}
         result = DataExtractor.extract_trial_id(trial)
         assert result == ""
 
@@ -69,11 +57,7 @@ class TestDataExtractor:
 
     def test_extract_patient_id_identifier_value(self):
         """Test patient ID extraction using identifier.value field."""
-        patient = {
-            "identifier": [
-                {"value": "identifier789"}
-            ]
-        }
+        patient = {"identifier": [{"value": "identifier789"}]}
         result = DataExtractor.extract_patient_id(patient)
         assert result == "identifier789"
 
@@ -82,7 +66,7 @@ class TestDataExtractor:
         patient = {
             "identifier": [
                 {"system": "system1", "value": "value1"},
-                {"system": "system2", "value": "value2"}
+                {"system": "system2", "value": "value2"},
             ]
         }
         result = DataExtractor.extract_patient_id(patient)

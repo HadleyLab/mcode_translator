@@ -27,9 +27,7 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
         """Patients summarizers use 'patients_summaries' space."""
         return "patients_summaries"
 
-    def __init__(
-        self, config: Any, memory_storage: Optional[OncoCoreMemory] = None
-    ):
+    def __init__(self, config: Any, memory_storage: Optional[OncoCoreMemory] = None):
         """
         Initialize the patients summarizer workflow.
 
@@ -88,34 +86,24 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
             successful_count = 0
             failed_count = 0
 
-            self.logger.info(
-                f"📝 Generating summaries for {len(patients_data)} patients"
-            )
+            self.logger.info(f"📝 Generating summaries for {len(patients_data)} patients")
 
             for patient in patients_data:
                 try:
                     # Check if this is already processed mCODE data with summary
-                    if (
-                        "mcode_elements" in patient
-                        and "natural_language_summary"
-                        in patient.get("mcode_elements", {})
+                    if "mcode_elements" in patient and "natural_language_summary" in patient.get(
+                        "mcode_elements", {}
                     ):
                         # Use existing summary
                         summary = patient["mcode_elements"]["natural_language_summary"]
-                        patient_id = patient.get(
-                            "patient_id", self.extract_patient_id(patient)
-                        )
-                        self.logger.info(
-                            f"Using existing summary for patient {patient_id}"
-                        )
+                        patient_id = patient.get("patient_id", self.extract_patient_id(patient))
+                        self.logger.info(f"Using existing summary for patient {patient_id}")
 
                         # Create processed patient with existing summary
                         processed_patient = patient.copy()
                         if "McodeResults" not in processed_patient:
                             processed_patient["McodeResults"] = {}
-                        processed_patient["McodeResults"][
-                            "natural_language_summary"
-                        ] = summary
+                        processed_patient["McodeResults"]["natural_language_summary"] = summary
 
                     else:
                         # Generate new summary from raw data
@@ -127,9 +115,7 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
                                 f"Converted bundle has {len(patient.get('entry', []))} entries"
                             )
                             for i, entry in enumerate(patient.get("entry", [])):
-                                resource_type = entry.get("resource", {}).get(
-                                    "resourceType"
-                                )
+                                resource_type = entry.get("resource", {}).get("resourceType")
                                 self.logger.info(f"Entry {i}: {resource_type}")
                                 if resource_type == "Patient":
                                     patient_res = entry["resource"]
@@ -163,9 +149,7 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
                         processed_patient = patient.copy()
                         if "McodeResults" not in processed_patient:
                             processed_patient["McodeResults"] = {}
-                        processed_patient["McodeResults"][
-                            "natural_language_summary"
-                        ] = summary
+                        processed_patient["McodeResults"]["natural_language_summary"] = summary
 
                     # Debug: Check Patient resource structure
                     patient_resource = None
@@ -175,22 +159,12 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
                             break
 
                     if patient_resource:
-                        self.logger.debug(
-                            f"Patient resource keys: {list(patient_resource.keys())}"
-                        )
-                        self.logger.debug(
-                            f"Patient name: {patient_resource.get('name')}"
-                        )
-                        self.logger.debug(
-                            f"Patient gender: {patient_resource.get('gender')}"
-                        )
-                        self.logger.debug(
-                            f"Patient birthDate: {patient_resource.get('birthDate')}"
-                        )
+                        self.logger.debug(f"Patient resource keys: {list(patient_resource.keys())}")
+                        self.logger.debug(f"Patient name: {patient_resource.get('name')}")
+                        self.logger.debug(f"Patient gender: {patient_resource.get('gender')}")
+                        self.logger.debug(f"Patient birthDate: {patient_resource.get('birthDate')}")
                     else:
-                        self.logger.error(
-                            "No Patient resource found in converted bundle"
-                        )
+                        self.logger.error("No Patient resource found in converted bundle")
 
                     patient_id = self.extract_patient_id(patient)
 
@@ -204,52 +178,44 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
                     processed_patient = patient.copy()
                     if "McodeResults" not in processed_patient:
                         processed_patient["McodeResults"] = {}
-                    processed_patient["McodeResults"][
-                        "natural_language_summary"
-                    ] = summary
+                    processed_patient["McodeResults"]["natural_language_summary"] = summary
 
                     # Store in CORE Memory if requested
                     if store_in_memory and self.memory_storage:
-                        self.logger.info(f"Attempting to store patient {patient_id} in memory, memory_storage type: {type(self.memory_storage)}")
+                        self.logger.info(
+                            f"Attempting to store patient {patient_id} in memory, memory_storage type: {type(self.memory_storage)}"
+                        )
                         # Handle storage for both existing and newly generated summaries
                         if "mcode_elements" in patient:
                             # Use existing mCODE data
                             mcode_elements = patient.get("mcode_elements", {}).get(
                                 "mcode_mappings", []
                             )
-                            demographics = patient.get("mcode_elements", {}).get(
-                                "demographics", {}
-                            )
-                            metadata = patient.get("mcode_elements", {}).get(
-                                "metadata", {}
-                            )
+                            demographics = patient.get("mcode_elements", {}).get("demographics", {})
+                            metadata = patient.get("mcode_elements", {}).get("metadata", {})
                         else:
                             # Extract from newly processed data
                             mcode_elements = patient.get("filtered_mcode_elements", [])
                             demographics = self._extract_patient_demographics(patient)
                             metadata = patient.get("mcode_processing_metadata", {})
 
-                        mcode_data = {
+                        {
                             "original_patient_data": patient,
-                            "mcode_mappings": self._convert_to_mappings_format(
-                                mcode_elements
-                            ),
+                            "mcode_mappings": self._convert_to_mappings_format(mcode_elements),
                             "natural_language_summary": summary,
                             "demographics": demographics,
                             "metadata": metadata,
                         }
 
-                        self.logger.info(f"Calling store_patient_summary with patient_id: {patient_id}, summary length: {len(summary)}")
-                        success = self.memory_storage.store_patient_summary(
-                            patient_id, summary
+                        self.logger.info(
+                            f"Calling store_patient_summary with patient_id: {patient_id}, summary length: {len(summary)}"
                         )
+                        success = self.memory_storage.store_patient_summary(patient_id, summary)
                         self.logger.info(f"Storage result: {success}")
                         if success:
                             self.logger.info(f"✅ Stored patient {patient_id} summary")
                         else:
-                            self.logger.warning(
-                                f"❌ Failed to store patient {patient_id} summary"
-                            )
+                            self.logger.warning(f"❌ Failed to store patient {patient_id} summary")
 
                     processed_patients.append(processed_patient)
                     successful_count += 1
@@ -278,8 +244,7 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
                     "successful": successful_count,
                     "failed": failed_count,
                     "success_rate": success_rate,
-                    "stored_in_memory": store_in_memory
-                    and self.memory_storage is not None,
+                    "stored_in_memory": store_in_memory and self.memory_storage is not None,
                 },
             )
 
@@ -299,9 +264,7 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
 
         return {}
 
-    def process_single_patient(
-        self, patient: Dict[str, Any], **kwargs: Any
-    ) -> WorkflowResult:
+    def process_single_patient(self, patient: Dict[str, Any], **kwargs: Any) -> WorkflowResult:
         """
         Process a single patient for summarization.
 
@@ -321,15 +284,11 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
             and isinstance(result.data, list)
             and len(result.data) > 0
         ):
-            return self._create_result(
-                success=True, data=result.data[0], metadata=result.metadata
-            )
+            return self._create_result(success=True, data=result.data[0], metadata=result.metadata)
         else:
             return result
 
-    def _convert_patient_bundle_to_fhir(
-        self, patient_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _convert_patient_bundle_to_fhir(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
         """Convert custom patient_bundle format to FHIR bundle format."""
         patient_bundle = patient_data.get("patient_bundle", [])
 
@@ -356,9 +315,7 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
                 }
                 # Add extensions if present
                 if "race" in item:
-                    entry["resource"]["extension"] = entry["resource"].get(
-                        "extension", []
-                    )
+                    entry["resource"]["extension"] = entry["resource"].get("extension", [])
                     entry["resource"]["extension"].append(
                         {
                             "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race",
@@ -366,15 +323,11 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
                         }
                     )
                 if "ethnicity" in item:
-                    entry["resource"]["extension"] = entry["resource"].get(
-                        "extension", []
-                    )
+                    entry["resource"]["extension"] = entry["resource"].get("extension", [])
                     entry["resource"]["extension"].append(
                         {
                             "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
-                            "extension": [
-                                {"url": "text", "valueString": item["ethnicity"]}
-                            ],
+                            "extension": [{"url": "text", "valueString": item["ethnicity"]}],
                         }
                     )
                 entries.append(entry)
@@ -393,62 +346,40 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
                     if item["resource_type"] == "Observation":
                         resource = entry["resource"]
                         code_display = (
-                            resource.get("code", {})
-                            .get("coding", [{}])[0]
-                            .get("display", "")
+                            resource.get("code", {}).get("coding", [{}])[0].get("display", "")
                         )
 
                         # Add appropriate mCODE profiles based on content
                         if "estrogen receptor" in code_display.lower():
-                            resource.setdefault("meta", {}).setdefault(
-                                "profile", []
-                            ).append(
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
                                 "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tumor-marker-test"
                             )
                         elif "progesterone receptor" in code_display.lower():
-                            resource.setdefault("meta", {}).setdefault(
-                                "profile", []
-                            ).append(
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
                                 "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tumor-marker-test"
                             )
                         elif "her2" in code_display.lower():
-                            resource.setdefault("meta", {}).setdefault(
-                                "profile", []
-                            ).append(
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
                                 "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-tumor-marker-test"
                             )
-                        elif (
-                            "tumor" in code_display.lower()
-                            and "stage" in code_display.lower()
-                        ):
-                            resource.setdefault("meta", {}).setdefault(
-                                "profile", []
-                            ).append(
+                        elif "tumor" in code_display.lower() and "stage" in code_display.lower():
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
                                 "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-stage-group"
                             )
                         elif "cause of death" in code_display.lower():
-                            resource.setdefault("meta", {}).setdefault(
-                                "profile", []
-                            ).append(
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
                                 "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cause-of-death"
                             )
 
                     elif item["resource_type"] == "Condition":
                         resource = entry["resource"]
                         code_display = (
-                            resource.get("code", {})
-                            .get("coding", [{}])[0]
-                            .get("display", "")
+                            resource.get("code", {}).get("coding", [{}])[0].get("display", "")
                         )
 
                         # Add mCODE primary cancer condition profile
-                        if (
-                            "cancer" in code_display.lower()
-                            or "neoplasm" in code_display.lower()
-                        ):
-                            resource.setdefault("meta", {}).setdefault(
-                                "profile", []
-                            ).append(
+                        if "cancer" in code_display.lower() or "neoplasm" in code_display.lower():
+                            resource.setdefault("meta", {}).setdefault("profile", []).append(
                                 "http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-primary-cancer-condition"
                             )
 
@@ -523,10 +454,7 @@ class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
             )
 
         # Extract procedures/treatments
-        if (
-            "chemotherapy" in summary_text.lower()
-            or "treatment" in summary_text.lower()
-        ):
+        if "chemotherapy" in summary_text.lower() or "treatment" in summary_text.lower():
             mappings.append(
                 {
                     "element_type": "CancerTreatment",

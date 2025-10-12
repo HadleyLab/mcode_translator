@@ -4,22 +4,23 @@ Tests cover initialization, CORE memory integration, error handling,
 and abstract method implementations.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
 from datetime import datetime
+from unittest.mock import MagicMock, patch
 
+import pytest
+
+from src.shared.models import ProcessingMetadata, WorkflowResult
 from src.workflows.base_workflow import (
     BaseWorkflow,
     FetcherWorkflow,
-    ProcessorWorkflow,
-    TrialsProcessorWorkflow,
     PatientsProcessorWorkflow,
-    SummarizerWorkflow,
-    TrialsSummarizerWorkflow,
     PatientsSummarizerWorkflow,
+    ProcessorWorkflow,
+    SummarizerWorkflow,
+    TrialsProcessorWorkflow,
+    TrialsSummarizerWorkflow,
     WorkflowError,
 )
-from src.shared.models import WorkflowResult, ProcessingMetadata
 
 
 class ConcreteTestWorkflow(BaseWorkflow):
@@ -78,9 +79,7 @@ class TestBaseWorkflow:
 
     def test_init_with_config_and_memory(self, mock_config, mock_memory_storage):
         """Test initialization with custom config and memory storage."""
-        workflow = ConcreteTestWorkflow(
-            config=mock_config, memory_storage=mock_memory_storage
-        )
+        workflow = ConcreteTestWorkflow(config=mock_config, memory_storage=mock_memory_storage)
 
         assert workflow.config == mock_config
         assert workflow.memory_storage == mock_memory_storage
@@ -104,9 +103,7 @@ class TestBaseWorkflow:
 
     def test_init_with_default_memory(self):
         """Test initialization with default memory storage."""
-        with patch(
-            "src.workflows.base_workflow.McodeMemoryStorage"
-        ) as mock_storage_class:
+        with patch("src.workflows.base_workflow.McodeMemoryStorage") as mock_storage_class:
             mock_storage_instance = MagicMock()
             mock_storage_class.return_value = mock_storage_instance
 
@@ -156,16 +153,12 @@ class TestBaseWorkflowMemoryIntegration:
         """Create workflow with mocked memory storage."""
         return ConcreteTestWorkflow(memory_storage=mock_memory_storage)
 
-    def test_store_to_core_memory_success(
-        self, workflow_with_memory, mock_memory_storage
-    ):
+    def test_store_to_core_memory_success(self, workflow_with_memory, mock_memory_storage):
         """Test successful storage to CORE memory."""
         test_data = {"key": "value"}
         test_metadata = {"meta": "data"}
 
-        result = workflow_with_memory.store_to_core_memory(
-            "test_key", test_data, test_metadata
-        )
+        result = workflow_with_memory.store_to_core_memory("test_key", test_data, test_metadata)
 
         assert result is True
         mock_memory_storage.store.assert_called_once()
@@ -178,9 +171,7 @@ class TestBaseWorkflowMemoryIntegration:
         assert stored_data["memory_space"] == "test_space"
         assert "timestamp" in stored_data
 
-    def test_store_to_core_memory_without_metadata(
-        self, workflow_with_memory, mock_memory_storage
-    ):
+    def test_store_to_core_memory_without_metadata(self, workflow_with_memory, mock_memory_storage):
         """Test storage without metadata."""
         test_data = {"key": "value"}
 
@@ -190,9 +181,7 @@ class TestBaseWorkflowMemoryIntegration:
         stored_data = mock_memory_storage.store.call_args[0][1]
         assert stored_data["metadata"] == {}
 
-    def test_store_to_core_memory_failure(
-        self, workflow_with_memory, mock_memory_storage
-    ):
+    def test_store_to_core_memory_failure(self, workflow_with_memory, mock_memory_storage):
         """Test storage failure handling."""
         mock_memory_storage.store.return_value = False
 
@@ -200,9 +189,7 @@ class TestBaseWorkflowMemoryIntegration:
 
         assert result is False
 
-    def test_store_to_core_memory_exception(
-        self, workflow_with_memory, mock_memory_storage
-    ):
+    def test_store_to_core_memory_exception(self, workflow_with_memory, mock_memory_storage):
         """Test storage exception handling."""
         mock_memory_storage.store.side_effect = Exception("Storage error")
 
@@ -218,18 +205,14 @@ class TestBaseWorkflowMemoryIntegration:
 
         assert result is False
 
-    def test_retrieve_from_core_memory_success(
-        self, workflow_with_memory, mock_memory_storage
-    ):
+    def test_retrieve_from_core_memory_success(self, workflow_with_memory, mock_memory_storage):
         """Test successful retrieval from CORE memory."""
         result = workflow_with_memory.retrieve_from_core_memory("test_key")
 
         assert result == {"test": "data"}
         mock_memory_storage.retrieve.assert_called_once_with("test_space:test_key")
 
-    def test_retrieve_from_core_memory_not_found(
-        self, workflow_with_memory, mock_memory_storage
-    ):
+    def test_retrieve_from_core_memory_not_found(self, workflow_with_memory, mock_memory_storage):
         """Test retrieval when data not found."""
         mock_memory_storage.retrieve.return_value = None
 
@@ -237,9 +220,7 @@ class TestBaseWorkflowMemoryIntegration:
 
         assert result is None
 
-    def test_retrieve_from_core_memory_exception(
-        self, workflow_with_memory, mock_memory_storage
-    ):
+    def test_retrieve_from_core_memory_exception(self, workflow_with_memory, mock_memory_storage):
         """Test retrieval exception handling."""
         mock_memory_storage.retrieve.side_effect = Exception("Retrieval error")
 
@@ -506,9 +487,7 @@ class TestWorkflowEdgeCases:
         """Test result creation with None values."""
         workflow = ConcreteTestWorkflow()
 
-        result = workflow._create_result(
-            success=True, data=None, error_message=None, metadata=None
-        )
+        result = workflow._create_result(success=True, data=None, error_message=None, metadata=None)
 
         assert result.success is True
         assert result.data == {}

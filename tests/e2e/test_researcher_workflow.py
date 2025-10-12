@@ -11,10 +11,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.workflows.trials_fetcher import main as trials_fetcher_main
 from src.cli.commands.trials import trials_pipeline
-from src.cli.commands.patients import patients_pipeline
 from src.shared.models import WorkflowResult
+from src.workflows.trials_fetcher import main as trials_fetcher_main
 
 
 class TestResearcherWorkflowE2E:
@@ -166,10 +165,7 @@ class TestResearcherWorkflowE2E:
             content = f.read().strip()
             assert content
             trial_data = json.loads(content)
-            assert (
-                trial_data["protocolSection"]["identificationModule"]["nctId"]
-                == "NCT12345678"
-            )
+            assert trial_data["protocolSection"]["identificationModule"]["nctId"] == "NCT12345678"
 
         # Verify success message in stdout
         output = stdout_capture.getvalue()
@@ -359,7 +355,9 @@ class TestResearcherWorkflowE2E:
 
         # Setup summarizer mock
         mock_summarizer = MagicMock()
-        mock_summarizer.create_trial_summary.return_value = "This Phase 2 clinical trial evaluates Test Drug in patients with breast cancer."
+        mock_summarizer.create_trial_summary.return_value = (
+            "This Phase 2 clinical trial evaluates Test Drug in patients with breast cancer."
+        )
         mock_summarizer_class.return_value = mock_summarizer
 
         # Create temporary files
@@ -433,7 +431,7 @@ class TestResearcherWorkflowE2E:
 
         import argparse
 
-        args = argparse.Namespace(
+        argparse.Namespace(
             input_file=str(nonexistent_file),
             output_file=None,
             ingest=False,
@@ -470,7 +468,7 @@ class TestResearcherWorkflowE2E:
 
         import argparse
 
-        args = argparse.Namespace(
+        argparse.Namespace(
             condition=None,
             nct_id="INVALID",
             nct_ids=None,

@@ -9,10 +9,14 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from src.utils.concurrency import TaskQueue, create_task, get_fetcher_pool
-from src.utils.fetcher import (ClinicalTrialsAPIError, get_full_studies_batch,
-                               get_full_study, search_trials,
-                               search_trials_parallel)
+from src.utils.concurrency import AsyncTaskQueue, create_task, create_async_task_queue_from_args
+from src.utils.fetcher import (
+    ClinicalTrialsAPIError,
+    get_full_studies_batch,
+    get_full_study,
+    search_trials,
+    search_trials_parallel,
+)
 
 from .base_workflow import FetcherWorkflow, WorkflowResult
 
@@ -24,18 +28,18 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
     Fetches raw trial data without processing or storage to core memory.
     """
 
-    def execute(self, **kwargs: Any) -> WorkflowResult:
+    async def execute_async(self, **kwargs: Any) -> WorkflowResult:
         """
-        Execute the trials fetching workflow.
+        Execute the trials fetching workflow asynchronously.
 
         Args:
             **kwargs: Workflow parameters including:
-                - condition: Medical condition to search for
-                - nct_id: Specific NCT ID to fetch
-                - nct_ids: List of NCT IDs to fetch
-                - limit: Maximum number of results
-                - output_path: Where to save results
-                - cli_args: CLI arguments for concurrency configuration
+                 - condition: Medical condition to search for
+                 - nct_id: Specific NCT ID to fetch
+                 - nct_ids: List of NCT IDs to fetch
+                 - limit: Maximum number of results
+                 - output_path: Where to save results
+                 - cli_args: CLI arguments for concurrency configuration
 
         Returns:
             WorkflowResult: Fetch results
@@ -58,11 +62,11 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
 
             # Execute fetch
             if condition:
-                results = self._fetch_by_condition(condition, limit)
+                results = await self._fetch_by_condition_async(condition, limit)
             elif nct_id:
                 results = self._fetch_single_trial(nct_id)
             elif nct_ids:
-                results = self._fetch_multiple_trials(nct_ids)
+                results = await self._fetch_multiple_trials_async(nct_ids)
             else:
                 return self._create_result(
                     success=False, error_message="No valid fetch parameters provided."
@@ -86,6 +90,25 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
         except Exception as e:
             return self._handle_error(e, "trials fetching")
 
+    def execute(self, **kwargs: Any) -> WorkflowResult:
+        """
+        Execute the trials fetching workflow.
+
+        Args:
+            **kwargs: Workflow parameters including:
+                 - condition: Medical condition to search for
+                 - nct_id: Specific NCT ID to fetch
+                 - nct_ids: List of NCT IDs to fetch
+                 - limit: Maximum number of results
+                 - output_path: Where to save results
+                 - cli_args: CLI arguments for concurrency configuration
+
+        Returns:
+            WorkflowResult: Fetch results
+        """
+        import asyncio
+        return asyncio.run(self.execute_async(**kwargs))
+
     def _validate_fetch_params(
         self,
         condition: Optional[str],
@@ -97,7 +120,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
         provided = [p for p in params if p is not None]
         return len(provided) == 1  # Exactly one parameter should be provided
 
-    def _fetch_by_condition(self, condition: str, limit: int) -> Dict[str, Any]:
+    async def _fetch_by_condition_async(self, condition: str, limit: int) -> Dict[str, Any]:
         """Fetch trials by medical condition with full study data."""
         try:
             self.logger.info(f"🔍 Searching for trials: '{condition}' (limit: {limit})")
@@ -165,11 +188,8 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                 )
                 tasks.append(task)
 
-            # Execute tasks concurrently
-            fetcher_pool = get_fetcher_pool()
-            task_queue = TaskQueue(
-                max_workers=fetcher_pool.max_workers, name="FullDataFetcherQueue"
-            )
+            # Execute tasks concurrently using AsyncTaskQueue
+            task_queue = AsyncTaskQueue(max_concurrent=4, name="FullDataFetcherQueue")
 
             def progress_callback(completed: int, total: int, result: Any) -> None:
                 nct_id = nct_ids[int(result.task_id.split("_")[2])]
@@ -178,9 +198,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                 else:
                     self.logger.warning(f"❌ No data returned for {nct_id}")
 
-            task_results = task_queue.execute_tasks(
-                tasks, progress_callback=progress_callback
-            )
+            task_results = await task_queue.execute_tasks(tasks, progress_callback=progress_callback)
 
             # Process results
             for task_result in task_results:
@@ -275,12 +293,10 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
             self.logger.error(f"Unexpected error fetching {nct_id}: {e}")
             return {"success": False, "error": f"Unexpected error: {e}", "data": []}
 
-    def _fetch_multiple_trials(self, nct_ids: List[str]) -> Dict[str, Any]:
+    async def _fetch_multiple_trials_async(self, nct_ids: List[str]) -> Dict[str, Any]:
         """Fetch multiple trials by NCT IDs using optimized batch processing."""
         try:
-            self.logger.info(
-                f"📥 Fetching {len(nct_ids)} trials using batch processing"
-            )
+            self.logger.info(f"📥 Fetching {len(nct_ids)} trials using batch processing")
 
             # Get concurrency configuration from CLI args
             cli_args = self._get_cli_args()
@@ -289,9 +305,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
                 # Extract concurrency settings from CLI args if available
                 max_workers = getattr(cli_args, "max_workers", 8)
 
-            self.logger.info(
-                f"🤖 Using batch processing with {max_workers} concurrent workers"
-            )
+            self.logger.info(f"🤖 Using batch processing with {max_workers} concurrent workers")
 
             # Use the optimized batch processing function
             batch_results = get_full_studies_batch(nct_ids, max_workers=max_workers)
@@ -379,26 +393,20 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
         for trial in trials:
             score = self._calculate_trial_completeness(trial)
             quality_scores.append(score)
-            if (
-                score >= 0.8
-            ):  # Consider trial complete if 80%+ of expected fields present
+            if score >= 0.8:  # Consider trial complete if 80%+ of expected fields present
                 complete_trials += 1
 
         avg_score = sum(quality_scores) / len(quality_scores) if quality_scores else 0.0
 
         quality_assessment = {
             "status": (
-                "good"
-                if avg_score >= 0.8
-                else "partial" if avg_score >= 0.5 else "incomplete"
+                "good" if avg_score >= 0.8 else "partial" if avg_score >= 0.5 else "incomplete"
             ),
             "completeness_score": round(avg_score, 2),
             "complete_trials": complete_trials,
             "total_trials": total_trials,
             "completeness_percentage": (
-                round((complete_trials / total_trials) * 100, 1)
-                if total_trials > 0
-                else 0.0
+                round((complete_trials / total_trials) * 100, 1) if total_trials > 0 else 0.0
             ),
         }
 
@@ -469,6 +477,7 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
         """Set CLI arguments for concurrency configuration."""
         self._cli_args = args
 
+
 def main(args):
     """
     CLI main function for trials fetcher.
@@ -476,8 +485,8 @@ def main(args):
     Args:
         args: Parsed command line arguments
     """
-    import sys
     from pathlib import Path
+    import sys
 
     # Add src to path for imports
     sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -485,23 +494,23 @@ def main(args):
     from config.heysol_config import get_config
 
     try:
-        config = get_config()
+        get_config()
 
         # Create workflow instance
         workflow = TrialsFetcherWorkflow()
 
         # Extract parameters from args
         kwargs = {}
-        if hasattr(args, 'condition') and args.condition:
-            kwargs['condition'] = args.condition
-        if hasattr(args, 'nct_id') and args.nct_id:
-            kwargs['nct_ids'] = [args.nct_id]
-        if hasattr(args, 'nct_ids') and args.nct_ids:
-            kwargs['nct_ids'] = args.nct_ids
-        if hasattr(args, 'limit') and args.limit:
-            kwargs['limit'] = args.limit
-        if hasattr(args, 'output_path') and args.output_path:
-            kwargs['output_path'] = args.output_path
+        if hasattr(args, "condition") and args.condition:
+            kwargs["condition"] = args.condition
+        if hasattr(args, "nct_id") and args.nct_id:
+            kwargs["nct_ids"] = [args.nct_id]
+        if hasattr(args, "nct_ids") and args.nct_ids:
+            kwargs["nct_ids"] = args.nct_ids
+        if hasattr(args, "limit") and args.limit:
+            kwargs["limit"] = args.limit
+        if hasattr(args, "output_path") and args.output_path:
+            kwargs["output_path"] = args.output_path
 
         # Execute workflow
         result = workflow.execute(**kwargs)

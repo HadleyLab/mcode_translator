@@ -2,9 +2,11 @@
 Unit tests for metrics module.
 """
 
-import pytest
 from unittest.mock import patch
-from src.utils.metrics import MatchingMetrics, BenchmarkMetrics, PerformanceMetrics
+
+import pytest
+
+from src.utils.metrics import BenchmarkMetrics, MatchingMetrics, PerformanceMetrics
 
 
 class TestMatchingMetrics:
@@ -77,10 +79,7 @@ class TestMatchingMetrics:
         metrics.record_match(match_reasons, genomic_variants)
 
         assert metrics.total_matches == 1
-        assert (
-            metrics.match_reasons["Shared treatments: chemotherapy, hormone therapy"]
-            == 1
-        )
+        assert metrics.match_reasons["Shared treatments: chemotherapy, hormone therapy"] == 1
         assert metrics.treatment_match_counts["chemotherapy"] == 1
         assert metrics.treatment_match_counts["hormone therapy"] == 1
 
@@ -147,9 +146,7 @@ class TestBenchmarkMetrics:
         expected_precision = 10 / (10 + 2)  # 10/12
         expected_recall = 10 / (10 + 3)  # 10/13
         expected_f1 = (
-            2
-            * (expected_precision * expected_recall)
-            / (expected_precision + expected_recall)
+            2 * (expected_precision * expected_recall) / (expected_precision + expected_recall)
         )
 
         assert result["precision"] == expected_precision
@@ -289,10 +286,7 @@ class TestPerformanceMetrics:
         assert "tokens_per_second" in result
 
         # Check derived calculations
-        assert (
-            result["processing_time_per_element"]
-            == result["processing_time_seconds"] / 20
-        )
+        assert result["processing_time_per_element"] == result["processing_time_seconds"] / 20
         assert result["tokens_per_element"] == 2000 / 20
         assert result["cost_per_element_usd"] == result["estimated_cost_usd"] / 20
         assert result["elements_per_second"] == 20 / result["processing_time_seconds"]
@@ -310,10 +304,7 @@ class TestPerformanceMetrics:
         result = metrics.get_metrics()
 
         # Should handle division by zero gracefully
-        assert (
-            result["processing_time_per_element"]
-            == result["processing_time_seconds"] / 1
-        )
+        assert result["processing_time_per_element"] == result["processing_time_seconds"] / 1
         assert result["tokens_per_element"] == 1000 / 1
         assert result["cost_per_element_usd"] == result["estimated_cost_usd"] / 1
         assert result["elements_per_second"] == 0 / result["processing_time_seconds"]

@@ -75,9 +75,7 @@ class DataFlowCoordinator:
         """
         self.logger.info("🚀 Starting complete clinical trials data flow")
         self.logger.info(f"   📊 Trials to process: {len(trial_ids)}")
-        self.logger.info(
-            f"   ✅ Validation: {'enabled' if validate_data else 'disabled'}"
-        )
+        self.logger.info(f"   ✅ Validation: {'enabled' if validate_data else 'disabled'}")
         self.logger.info(f"   💾 Storage: {'enabled' if store_results else 'disabled'}")
         self.logger.info(f"   📦 Batch size: {batch_size}")
 
@@ -107,9 +105,7 @@ class DataFlowCoordinator:
 
         if processing_result.success:
             self.logger.info("🎉 Complete data flow finished successfully!")
-            self.logger.info(
-                f"   📈 Success rate: {summary['overall_success_rate']:.1%}"
-            )
+            self.logger.info(f"   📈 Success rate: {summary['overall_success_rate']:.1%}")
             self.logger.info(
                 f"   ✅ Processed: {summary['total_processed']}/{summary['total_requested']}"
             )

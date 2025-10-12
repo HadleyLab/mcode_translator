@@ -153,9 +153,7 @@ class Config:
         base_url = model_config.base_url
 
         if not base_url:
-            raise ConfigurationError(
-                f"Invalid or missing base URL for model '{model_name}'"
-            )
+            raise ConfigurationError(f"Invalid or missing base URL for model '{model_name}'")
 
         return base_url
 
@@ -181,9 +179,7 @@ class Config:
         validated_model_name = model_config.name
 
         if not validated_model_name:
-            raise ConfigurationError(
-                f"Invalid or missing model name for model '{model_name}'"
-            )
+            raise ConfigurationError(f"Invalid or missing model name for model '{model_name}'")
 
         return validated_model_name
 
@@ -209,9 +205,7 @@ class Config:
         temperature = model_config.default_parameters.get("temperature")
 
         if temperature is None or not isinstance(temperature, (int, float)):
-            raise ConfigurationError(
-                f"Invalid or missing temperature for model '{model_name}'"
-            )
+            raise ConfigurationError(f"Invalid or missing temperature for model '{model_name}'")
 
         return float(temperature)
 
@@ -237,9 +231,7 @@ class Config:
         max_tokens = model_config.default_parameters.get("max_tokens")
 
         if max_tokens is None or not isinstance(max_tokens, int) or max_tokens <= 0:
-            raise ConfigurationError(
-                f"Invalid or missing max tokens for model '{model_name}'"
-            )
+            raise ConfigurationError(f"Invalid or missing max tokens for model '{model_name}'")
 
         return cast(int, max_tokens)
 
@@ -317,27 +309,19 @@ class Config:
         Raises:
             ConfigurationError: If config file is missing or invalid
         """
-        config_path = (
-            Path(__file__).parent.parent / "config" / "core_memory_config.json"
-        )
+        config_path = Path(__file__).parent.parent / "config" / "core_memory_config.json"
 
         if not config_path.exists():
-            raise ConfigurationError(
-                f"CORE Memory configuration file not found: {config_path}"
-            )
+            raise ConfigurationError(f"CORE Memory configuration file not found: {config_path}")
 
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 config_data = json.load(f)
             return cast(Dict[str, Any], config_data)
         except json.JSONDecodeError as e:
-            raise ConfigurationError(
-                f"Invalid JSON in CORE Memory configuration file: {str(e)}"
-            )
-        except IOError as e:
-            raise ConfigurationError(
-                f"Failed to read CORE Memory configuration file: {str(e)}"
-            )
+            raise ConfigurationError(f"Invalid JSON in CORE Memory configuration file: {str(e)}")
+        except OSError as e:
+            raise ConfigurationError(f"Failed to read CORE Memory configuration file: {str(e)}")
 
     def get_core_memory_api_base_url(self) -> str:
         """Get CORE Memory API base URL from centralized config"""
@@ -391,15 +375,11 @@ class Config:
 
     def get_synthetic_data_default_archive(self) -> str:
         """Get default synthetic data archive"""
-        return cast(
-            str, self.synthetic_data_config["synthetic_data"]["default_archive"]
-        )
+        return cast(str, self.synthetic_data_config["synthetic_data"]["default_archive"])
 
     def get_synthetic_data_archives(self) -> Dict[str, Any]:
         """Get all synthetic data archives configuration"""
-        return cast(
-            Dict[str, Any], self.synthetic_data_config["synthetic_data"]["archives"]
-        )
+        return cast(Dict[str, Any], self.synthetic_data_config["synthetic_data"]["archives"])
 
     def is_synthetic_data_auto_download_enabled(self) -> bool:
         """Check if auto download is enabled for synthetic data"""
@@ -429,27 +409,19 @@ class Config:
 
     def get_biomarker_patterns(self) -> Dict[str, Any]:
         """Get biomarker regex patterns"""
-        return cast(
-            Dict[str, Any], self.patterns_config["patterns"]["biomarker_patterns"]
-        )
+        return cast(Dict[str, Any], self.patterns_config["patterns"]["biomarker_patterns"])
 
     def get_genomic_patterns(self) -> Dict[str, Any]:
         """Get genomic variant patterns"""
-        return cast(
-            Dict[str, Any], self.patterns_config["patterns"]["genomic_patterns"]
-        )
+        return cast(Dict[str, Any], self.patterns_config["patterns"]["genomic_patterns"])
 
     def get_condition_patterns(self) -> Dict[str, Any]:
         """Get condition patterns"""
-        return cast(
-            Dict[str, Any], self.patterns_config["patterns"]["condition_patterns"]
-        )
+        return cast(Dict[str, Any], self.patterns_config["patterns"]["condition_patterns"])
 
     def get_demographic_patterns(self) -> Dict[str, Any]:
         """Get demographic patterns"""
-        return cast(
-            Dict[str, Any], self.patterns_config["patterns"]["demographic_patterns"]
-        )
+        return cast(Dict[str, Any], self.patterns_config["patterns"]["demographic_patterns"])
 
     def _load_cache_config(self) -> Dict[str, Any]:
         """Load cache configuration from modular config file"""
@@ -491,17 +463,11 @@ class Config:
         """Load a modular configuration file"""
         config_path = Path(__file__).parent.parent / "config" / filename
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 return cast(Dict[str, Any], json.load(f))
         except FileNotFoundError:
-            raise ConfigurationError(
-                f"Modular configuration file not found: {config_path}"
-            )
+            raise ConfigurationError(f"Modular configuration file not found: {config_path}")
         except json.JSONDecodeError as e:
-            raise ConfigurationError(
-                f"Invalid JSON in modular config file {filename}: {str(e)}"
-            )
-        except IOError as e:
-            raise ConfigurationError(
-                f"Failed to read modular config file {filename}: {str(e)}"
-            )
+            raise ConfigurationError(f"Invalid JSON in modular config file {filename}: {str(e)}")
+        except OSError as e:
+            raise ConfigurationError(f"Failed to read modular config file {filename}: {str(e)}")

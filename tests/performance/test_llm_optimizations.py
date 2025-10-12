@@ -20,9 +20,7 @@ logger = get_logger(__name__)
 def test_connection_pooling():
     """Test connection pooling and reuse."""
     config = Config()
-    service = LLMService(
-        config, "deepseek-coder", "direct_mcode_evidence_based_concise"
-    )
+    service = LLMService(config, "deepseek-coder", "direct_mcode_evidence_based_concise")
 
     # Make multiple requests to test connection reuse
     test_texts = [
@@ -49,9 +47,7 @@ def test_connection_pooling():
 def test_batch_processing():
     """Test batch processing capabilities."""
     config = Config()
-    service = LLMService(
-        config, "deepseek-coder", "direct_mcode_evidence_based_concise"
-    )
+    service = LLMService(config, "deepseek-coder", "direct_mcode_evidence_based_concise")
 
     # Prepare batch of texts
     batch_texts = [
@@ -78,9 +74,7 @@ def test_batch_processing():
 def test_performance_monitoring():
     """Test performance monitoring capabilities."""
     config = Config()
-    service = LLMService(
-        config, "deepseek-coder", "direct_mcode_evidence_based_concise"
-    )
+    service = LLMService(config, "deepseek-coder", "direct_mcode_evidence_based_concise")
 
     # Make some requests to test basic functionality
     test_texts = [
@@ -105,9 +99,7 @@ def test_performance_monitoring():
 def test_enhanced_caching():
     """Test enhanced caching with semantic similarity."""
     config = Config()
-    service = LLMService(
-        config, "deepseek-coder", "direct_mcode_evidence_based_concise"
-    )
+    service = LLMService(config, "deepseek-coder", "direct_mcode_evidence_based_concise")
 
     # Test similar texts that should benefit from semantic caching
     similar_texts = [

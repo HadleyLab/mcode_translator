@@ -2,20 +2,19 @@
 Shared test fixtures and configuration for mcode_translator tests.
 """
 
-import pytest
-import tempfile
 import os
-from typing import Dict, Any, Generator
 import sys
+import tempfile
+from typing import Any, Dict, Generator
+
+import pytest
 
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
 
     # Load from heysol_api_client/.env relative to project root
-    env_file = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)), "heysol_api_client", ".env"
-    )
+    env_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "heysol_api_client", ".env")
     load_dotenv(env_file)
     print(f"Loaded environment from: {env_file}")
 except ImportError:
@@ -28,17 +27,17 @@ except Exception as e:
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Setup color logging for all tests
-from src.utils.logging_config import setup_logging, get_logger
+from src.utils.logging_config import get_logger, setup_logging
 
 setup_logging(level="DEBUG")
 
 # Import data factories
 try:
     from tests.data.factories import (
-        TrialFactory,
-        PatientFactory,
         McodeFactory,
+        PatientFactory,
         TestDataManager,
+        TrialFactory,
         test_data_manager,
     )
 except ImportError:
@@ -48,10 +47,10 @@ except ImportError:
     sys.path.insert(0, os.path.dirname(__file__))
     try:
         from data.factories import (
-            TrialFactory,
-            PatientFactory,
             McodeFactory,
+            PatientFactory,
             TestDataManager,
+            TrialFactory,
             test_data_manager,
         )
     except ImportError:
@@ -197,9 +196,7 @@ def sample_trial_data() -> Dict[str, Any]:
     return {
         "nct_id": "NCT12345678",
         "title": "Sample Clinical Trial",
-        "eligibility": {
-            "criteria": "Inclusion: Age >= 18\nExclusion: Prior chemotherapy"
-        },
+        "eligibility": {"criteria": "Inclusion: Age >= 18\nExclusion: Prior chemotherapy"},
         "conditions": ["Breast Cancer"],
         "phases": ["Phase 2"],
         "interventions": [{"type": "Drug", "name": "Sample Drug"}],
@@ -312,9 +309,7 @@ def pytest_configure(config):
     """Configure pytest markers."""
     config.addinivalue_line("markers", "live: mark test as using real data/services")
     config.addinivalue_line("markers", "slow: mark test as slow running")
-    config.addinivalue_line(
-        "markers", "performance: mark test as performance benchmark"
-    )
+    config.addinivalue_line("markers", "performance: mark test as performance benchmark")
     config.addinivalue_line("markers", "integration: mark test as integration test")
     config.addinivalue_line("markers", "unit: mark test as unit test")
 

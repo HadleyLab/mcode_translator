@@ -2,13 +2,15 @@
 Unit tests for DependencyContainer with mocked dependencies.
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
+
 from src.core.dependency_container import (
     DependencyContainer,
     get_container,
-    set_container,
     reset_container,
+    set_container,
 )
 
 
@@ -126,9 +128,7 @@ class TestGlobalContainerFunctions:
         """Test get_container creates default when none set."""
         reset_container()
 
-        with patch(
-            "src.core.dependency_container.DependencyContainer"
-        ) as mock_container_class:
+        with patch("src.core.dependency_container.DependencyContainer") as mock_container_class:
             mock_container = Mock()
             mock_container_class.return_value = mock_container
 

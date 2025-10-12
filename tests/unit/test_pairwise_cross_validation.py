@@ -7,11 +7,12 @@ import json
 import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
 
 from src.optimization.pairwise_cross_validation import (
-    PairwiseCrossValidator,
     PairwiseComparisonTask,
+    PairwiseCrossValidator,
 )
 from src.shared.types import TaskStatus
 
@@ -193,9 +194,7 @@ class TestPairwiseCrossValidatorMethods:
         """Test extracting trial ID with NCT ID present."""
         validator, _, _ = setup_validator
 
-        trial_data = {
-            "protocolSection": {"identificationModule": {"nctId": "NCT123456"}}
-        }
+        trial_data = {"protocolSection": {"identificationModule": {"nctId": "NCT123456"}}}
 
         result = validator._extract_trial_id(trial_data, 0)
 
@@ -303,9 +302,11 @@ class TestPairwiseCrossValidatorMethods:
         validator.shutdown()
         mock_logger.info.assert_called_with("🛑 Shutting down pairwise validator")
 
-    @patch('src.optimization.pairwise_cross_validation.TaskQueue')
-    @patch('src.optimization.pairwise_cross_validation.McodePipeline')
-    def test_run_pairwise_validation(self, mock_pipeline_class, mock_task_queue_class, setup_validator):
+    @patch("src.optimization.pairwise_cross_validation.TaskQueue")
+    @patch("src.optimization.pairwise_cross_validation.McodePipeline")
+    def test_run_pairwise_validation(
+        self, mock_pipeline_class, mock_task_queue_class, setup_validator
+    ):
         """Test running pairwise validation."""
         validator, _, _ = setup_validator
 
@@ -333,9 +334,11 @@ class TestPairwiseCrossValidatorMethods:
         mock_task_queue_class.assert_called_once_with(max_workers=2, name="PairwiseValidator")
         mock_task_queue.execute_tasks.assert_called_once()
 
-    @patch('src.optimization.pairwise_cross_validation.McodePipeline')
-    @patch('src.optimization.pairwise_cross_validation.BenchmarkResult')
-    def test_process_pairwise_task(self, mock_benchmark_class, mock_pipeline_class, setup_validator):
+    @patch("src.optimization.pairwise_cross_validation.McodePipeline")
+    @patch("src.optimization.pairwise_cross_validation.BenchmarkResult")
+    def test_process_pairwise_task(
+        self, mock_benchmark_class, mock_pipeline_class, setup_validator
+    ):
         """Test processing a single pairwise task."""
         validator, _, _ = setup_validator
 
@@ -359,7 +362,7 @@ class TestPairwiseCrossValidatorMethods:
             gold_prompt="prompt1",
             gold_model="model1",
             comp_prompt="prompt2",
-            comp_model="model2"
+            comp_model="model2",
         )
 
         # Process task
@@ -409,11 +412,11 @@ class TestPairwiseCrossValidatorMethods:
         # Create mock mappings
         gold_mappings = [
             Mock(element_type="Condition", code="C50", confidence_score=0.9),
-            Mock(element_type="Treatment", code="T123", confidence_score=0.8)
+            Mock(element_type="Treatment", code="T123", confidence_score=0.8),
         ]
         comp_mappings = [
             Mock(element_type="Condition", code="C50", confidence_score=0.85),
-            Mock(element_type="Treatment", code="T456", confidence_score=0.7)
+            Mock(element_type="Treatment", code="T456", confidence_score=0.7),
         ]
 
         # Calculate metrics
@@ -421,11 +424,20 @@ class TestPairwiseCrossValidatorMethods:
 
         # Verify all expected metrics are present
         expected_metrics = [
-            "mapping_jaccard_similarity", "mapping_precision", "mapping_recall",
-            "mapping_f1_score", "mapping_true_positives", "mapping_false_positives",
-            "mapping_false_negatives", "gold_mappings_count", "comp_mappings_count",
-            "gold_avg_confidence", "comp_avg_confidence", "true_positive_examples",
-            "false_positive_examples", "false_negative_examples"
+            "mapping_jaccard_similarity",
+            "mapping_precision",
+            "mapping_recall",
+            "mapping_f1_score",
+            "mapping_true_positives",
+            "mapping_false_positives",
+            "mapping_false_negatives",
+            "gold_mappings_count",
+            "comp_mappings_count",
+            "gold_avg_confidence",
+            "comp_avg_confidence",
+            "true_positive_examples",
+            "false_positive_examples",
+            "false_negative_examples",
         ]
 
         for metric in expected_metrics:
@@ -446,8 +458,8 @@ class TestPairwiseCrossValidatorMethods:
         result = validator._calculate_mapping_metrics(gold_mappings, comp_mappings)
         assert isinstance(result, dict)
 
-    @patch('src.optimization.pairwise_cross_validation.json.dump')
-    @patch('src.optimization.pairwise_cross_validation.datetime')
+    @patch("src.optimization.pairwise_cross_validation.json.dump")
+    @patch("src.optimization.pairwise_cross_validation.datetime")
     def test_save_results(self, mock_datetime, mock_json_dump, setup_validator):
         """Test saving results."""
         validator, _, _ = setup_validator
@@ -487,8 +499,14 @@ class TestPairwiseCrossValidatorMethods:
                 "unique_config_pairs": 5,
             },
             "overall_metrics": {
-                "mapping_f1_score": {"mean": 0.75, "median": 0.7, "stdev": 0.1, "min": 0.6, "max": 0.9}
-            }
+                "mapping_f1_score": {
+                    "mean": 0.75,
+                    "median": 0.7,
+                    "stdev": 0.1,
+                    "min": 0.6,
+                    "max": 0.9,
+                }
+            },
         }
 
         # Generate report
@@ -519,9 +537,7 @@ class TestPairwiseCrossValidatorMethods:
                 "evidence_based_with_codes_model1_vs_evidence_based_model2": {
                     "mapping_f1_score": {"mean": 0.85}
                 },
-                "evidence_based_model1_vs_other_model2": {
-                    "mapping_f1_score": {"mean": 0.75}
-                }
+                "evidence_based_model1_vs_other_model2": {"mapping_f1_score": {"mean": 0.75}},
             }
         }
 

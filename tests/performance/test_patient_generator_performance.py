@@ -6,6 +6,7 @@ Tests speed and efficiency of patient data processing.
 import tempfile
 import zipfile
 from unittest.mock import patch
+
 import pytest
 
 from src.utils.patient_generator import PatientGenerator
@@ -47,9 +48,7 @@ def sample_zip_archive():
 class TestPatientGeneratorPerformance:
     """Performance tests for PatientGenerator."""
 
-    def test_patient_generator_initialization_speed(
-        self, sample_zip_archive, benchmark
-    ):
+    def test_patient_generator_initialization_speed(self, sample_zip_archive, benchmark):
         """Benchmark patient generator initialization."""
 
         def init_generator():
@@ -210,9 +209,7 @@ class TestMemoryUsage:
                 for i in range(100):
                     patient_data = {
                         "resourceType": "Bundle",
-                        "entry": [
-                            {"resource": {"resourceType": "Patient", "id": f"p{i}"}}
-                        ],
+                        "entry": [{"resource": {"resourceType": "Patient", "id": f"p{i}"}}],
                     }
                     import json
 

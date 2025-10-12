@@ -40,9 +40,7 @@ class TestPipelineIntegration:
         return DependencyContainer()
 
     @pytest.mark.asyncio
-    async def test_mcode_pipeline_with_real_trial_data(
-        self, sample_trial_data, container
-    ):
+    async def test_mcode_pipeline_with_real_trial_data(self, sample_trial_data, container):
         """Test McodePipeline processing real trial data."""
         pipeline = container.create_clinical_trial_pipeline()
 
@@ -72,9 +70,7 @@ class TestPipelineIntegration:
         assert len(summary) > 0
 
     @pytest.mark.asyncio
-    async def test_pipeline_with_memory_storage(
-        self, sample_trial_data, container
-    ):
+    async def test_pipeline_with_memory_storage(self, sample_trial_data, container):
         """Test pipeline with memory storage integration."""
         pytest.skip("Storage integration test requires complex mocking - skipping for now")
 
@@ -84,9 +80,7 @@ class TestPipelineIntegration:
 
         coordinator = DataFlowCoordinator()
 
-        trial_ids = [
-            sample_trial_data["protocolSection"]["identificationModule"]["nctId"]
-        ]
+        trial_ids = [sample_trial_data["protocolSection"]["identificationModule"]["nctId"]]
 
         # This would normally fetch from real APIs, but we'll mock the fetch
         with patch("src.core.data_fetcher.DataFetcher.fetch_trial_data") as mock_fetch:
@@ -108,7 +102,6 @@ class TestPipelineIntegration:
 
     def test_config_loading_integration(self):
         """Test configuration loading with real config files."""
-        from src.utils.config import Config
 
         config = Config()
 
@@ -214,17 +207,14 @@ class TestPipelineIntegration:
     async def test_concurrent_pipeline_access(self):
         """Test concurrent access to pipeline resources."""
         import asyncio
+
         from src.pipeline import McodePipeline
 
         async def run_pipeline(data):
             pipeline = McodePipeline()
-            with patch(
-                "src.services.llm.service.LLMService.map_to_mcode"
-            ) as mock_map:
+            with patch("src.services.llm.service.LLMService.map_to_mcode") as mock_map:
                 mock_map.return_value = [
-                    McodeElement(
-                        element_type="CancerCondition", code="C123", display="Test"
-                    )
+                    McodeElement(element_type="CancerCondition", code="C123", display="Test")
                 ]
                 return await pipeline.process(data)
 
@@ -254,13 +244,9 @@ class TestPipelineIntegration:
             }
         }
 
-        with patch(
-            "src.services.llm.service.LLMService.map_to_mcode"
-        ) as mock_map:
+        with patch("src.services.llm.service.LLMService.map_to_mcode") as mock_map:
             mock_map.return_value = [
-                McodeElement(
-                    element_type="CancerCondition", code="C123", display="Test"
-                )
+                McodeElement(element_type="CancerCondition", code="C123", display="Test")
             ]
 
             # This should handle large data without crashing
@@ -269,7 +255,6 @@ class TestPipelineIntegration:
 
     def test_invalid_configuration_handling(self):
         """Test handling of invalid configurations."""
-        from src.utils.config import Config
 
         # Test with invalid config file
         try:
@@ -290,5 +275,7 @@ class TestPipelineIntegration:
             mock_map.side_effect = Exception("Rate limit exceeded")
 
             with pytest.raises(Exception) as exc_info:
-                await pipeline.process({"protocolSection": {"identificationModule": {"nctId": "NCT123"}}})
+                await pipeline.process(
+                    {"protocolSection": {"identificationModule": {"nctId": "NCT123"}}}
+                )
             assert "rate" in str(exc_info.value).lower() or "limit" in str(exc_info.value).lower()

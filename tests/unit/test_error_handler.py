@@ -2,22 +2,22 @@
 Unit tests for error_handler module.
 """
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from src.utils.error_handler import (
-    McodeError,
+    APIError,
     ConfigurationError,
     DataProcessingError,
-    APIError,
-    handle_error,
+    McodeError,
     handle_cli_error,
-    safe_execute,
-    validate_required,
+    handle_error,
+    log_operation_failure,
     log_operation_start,
     log_operation_success,
-    log_operation_failure,
+    safe_execute,
+    validate_required,
 )
 
 
@@ -45,7 +45,9 @@ class TestErrorHandlerBase:
 
     def assert_operation_logged(self, mock_logger, operation_name, log_method="info"):
         """Helper to assert operation logging."""
-        getattr(mock_logger, log_method).assert_called_once_with(f"{'🚀' if log_method == 'info' else '❌'} {'Starting' if log_method == 'info' else 'Failed'}: {operation_name}")
+        getattr(mock_logger, log_method).assert_called_once_with(
+            f"{'🚀' if log_method == 'info' else '❌'} {'Starting' if log_method == 'info' else 'Failed'}: {operation_name}"
+        )
 
 
 class TestMcodeError:
@@ -99,7 +101,7 @@ class TestAPIError:
 class TestHandleError(TestErrorHandlerBase):
     """Test handle_error function."""
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_handle_error_basic(self, mock_logger):
         """Test basic error handling."""
         error = ValueError("Test error")
@@ -107,7 +109,7 @@ class TestHandleError(TestErrorHandlerBase):
 
         self.assert_logger_called_once(mock_logger, "❌ Test error")
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_handle_error_with_context(self, mock_logger):
         """Test error handling with context."""
         error = ValueError("Test error")
@@ -115,7 +117,7 @@ class TestHandleError(TestErrorHandlerBase):
 
         self.assert_logger_called_once(mock_logger, "❌ Operation failed: Test error")
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_handle_error_with_custom_logger(self, mock_logger):
         """Test error handling with custom logger."""
         mock_custom_logger = MagicMock()
@@ -125,8 +127,8 @@ class TestHandleError(TestErrorHandlerBase):
         mock_custom_logger.error.assert_called_once_with("❌ Test error")
         self.assert_logger_not_called(mock_logger)
 
-    @patch('src.utils.error_handler.logger')
-    @patch('sys.exit')
+    @patch("src.utils.error_handler.logger")
+    @patch("sys.exit")
     def test_handle_error_with_exit_code(self, mock_exit, mock_logger):
         """Test error handling with exit code."""
         error = ValueError("Test error")
@@ -135,8 +137,8 @@ class TestHandleError(TestErrorHandlerBase):
         self.assert_logger_called_once(mock_logger, "❌ Test error")
         mock_exit.assert_called_once_with(1)
 
-    @patch('src.utils.error_handler.logger')
-    @patch('traceback.format_exc')
+    @patch("src.utils.error_handler.logger")
+    @patch("traceback.format_exc")
     def test_handle_error_verbose(self, mock_format_exc, mock_logger):
         """Test error handling with verbose output."""
         mock_format_exc.return_value = "Traceback details"
@@ -150,8 +152,8 @@ class TestHandleError(TestErrorHandlerBase):
 class TestHandleCliError(TestErrorHandlerBase):
     """Test handle_cli_error function."""
 
-    @patch('sys.stderr')
-    @patch('sys.exit')
+    @patch("sys.stderr")
+    @patch("sys.exit")
     def test_handle_cli_error_basic(self, mock_exit, mock_stderr):
         """Test basic CLI error handling."""
         error = ValueError("Test error")
@@ -159,8 +161,8 @@ class TestHandleCliError(TestErrorHandlerBase):
 
         self.assert_cli_error_output(mock_exit, mock_stderr, "❌ Test error")
 
-    @patch('sys.stderr')
-    @patch('sys.exit')
+    @patch("sys.stderr")
+    @patch("sys.exit")
     def test_handle_cli_error_with_context(self, mock_exit, mock_stderr):
         """Test CLI error handling with context."""
         error = ValueError("Test error")
@@ -168,9 +170,9 @@ class TestHandleCliError(TestErrorHandlerBase):
 
         self.assert_cli_error_output(mock_exit, mock_stderr, "❌ Command failed: Test error")
 
-    @patch('sys.stderr')
-    @patch('sys.exit')
-    @patch('traceback.format_exc')
+    @patch("sys.stderr")
+    @patch("sys.exit")
+    @patch("traceback.format_exc")
     def test_handle_cli_error_verbose(self, mock_format_exc, mock_exit, mock_stderr):
         """Test CLI error handling with verbose output."""
         mock_format_exc.return_value = "Traceback details"
@@ -184,8 +186,8 @@ class TestHandleCliError(TestErrorHandlerBase):
         mock_stderr.write.assert_any_call("Full traceback:\nTraceback details")
         mock_exit.assert_called_once_with(1)
 
-    @patch('sys.stderr')
-    @patch('sys.exit')
+    @patch("sys.stderr")
+    @patch("sys.exit")
     def test_handle_cli_error_custom_exit_code(self, mock_exit, mock_stderr):
         """Test CLI error handling with custom exit code."""
         error = ValueError("Test error")
@@ -197,9 +199,10 @@ class TestHandleCliError(TestErrorHandlerBase):
 class TestSafeExecute:
     """Test safe_execute function."""
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_safe_execute_success(self, mock_logger):
         """Test successful function execution."""
+
         def test_func(x, y=10):
             return x + y
 
@@ -207,9 +210,10 @@ class TestSafeExecute:
         assert result == 20
         mock_logger.error.assert_not_called()
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_safe_execute_failure(self, mock_logger):
         """Test function execution with exception."""
+
         def failing_func():
             raise ValueError("Function failed")
 
@@ -218,9 +222,10 @@ class TestSafeExecute:
 
         mock_logger.error.assert_called_once_with("❌ Operation failed: Function failed")
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_safe_execute_custom_error_msg(self, mock_logger):
         """Test function execution with custom error message."""
+
         def failing_func():
             raise ValueError("Function failed")
 
@@ -229,7 +234,7 @@ class TestSafeExecute:
 
         mock_logger.error.assert_called_once_with("❌ Custom error: Function failed")
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_safe_execute_custom_logger(self, mock_logger):
         """Test function execution with custom logger."""
         mock_custom_logger = MagicMock()
@@ -291,13 +296,13 @@ class TestValidateRequired(TestErrorHandlerBase):
 class TestLogOperationStart(TestErrorHandlerBase):
     """Test log_operation_start function."""
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_log_operation_start_default_logger(self, mock_logger):
         """Test operation start logging with default logger."""
         log_operation_start("Test operation")
         self.assert_operation_logged(mock_logger, "Test operation", "info")
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_log_operation_start_custom_logger(self, mock_logger):
         """Test operation start logging with custom logger."""
         mock_custom_logger = MagicMock()
@@ -310,13 +315,13 @@ class TestLogOperationStart(TestErrorHandlerBase):
 class TestLogOperationSuccess(TestErrorHandlerBase):
     """Test log_operation_success function."""
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_log_operation_success_default_logger(self, mock_logger):
         """Test operation success logging with default logger."""
         log_operation_success("Test operation")
         mock_logger.info.assert_called_once_with("✅ Completed: Test operation")
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_log_operation_success_custom_logger(self, mock_logger):
         """Test operation success logging with custom logger."""
         mock_custom_logger = MagicMock()
@@ -329,7 +334,7 @@ class TestLogOperationSuccess(TestErrorHandlerBase):
 class TestLogOperationFailure(TestErrorHandlerBase):
     """Test log_operation_failure function."""
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_log_operation_failure_default_logger(self, mock_logger):
         """Test operation failure logging with default logger."""
         error = ValueError("Test error")
@@ -337,7 +342,7 @@ class TestLogOperationFailure(TestErrorHandlerBase):
 
         self.assert_logger_called_once(mock_logger, "❌ Failed: Test operation - Test error")
 
-    @patch('src.utils.error_handler.logger')
+    @patch("src.utils.error_handler.logger")
     def test_log_operation_failure_custom_logger(self, mock_logger):
         """Test operation failure logging with custom logger."""
         mock_custom_logger = MagicMock()

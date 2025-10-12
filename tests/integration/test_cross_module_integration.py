@@ -2,8 +2,10 @@
 Integration tests for cross-module interactions.
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from src.core.data_flow_coordinator import DataFlowCoordinator
 from src.core.dependency_container import DependencyContainer
 from src.workflows.patients_fetcher import PatientsFetcherWorkflow
@@ -21,9 +23,7 @@ class TestCrossModuleIntegration:
     @pytest.fixture
     def sample_patient_data(self):
         """Load sample patient data for testing."""
-        return {
-            "entry": [{"resource": {"resourceType": "Patient", "id": "patient_123"}}]
-        }
+        return {"entry": [{"resource": {"resourceType": "Patient", "id": "patient_123"}}]}
 
     @pytest.fixture
     def container(self):

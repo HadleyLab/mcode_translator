@@ -21,9 +21,7 @@ class BaseSummarizerWorkflow(SummarizerWorkflow):
     for both patient and trial summarizers.
     """
 
-    def __init__(
-        self, config: Any, memory_storage: Optional[OncoCoreMemory] = None
-    ):
+    def __init__(self, config: Any, memory_storage: Optional[OncoCoreMemory] = None):
         """
         Initialize the base summarizer workflow.
 
@@ -38,7 +36,7 @@ class BaseSummarizerWorkflow(SummarizerWorkflow):
         self,
         data_items: List[Dict[str, Any]],
         store_in_memory: bool = False,
-        data_type: str = "data"  # "patients" or "trials"
+        data_type: str = "data",  # "patients" or "trials"
     ) -> WorkflowResult:
         """
         Execute summarization for a list of data items.
@@ -116,9 +114,7 @@ class BaseSummarizerWorkflow(SummarizerWorkflow):
         except Exception as e:
             return self._handle_error(e, f"{data_type} summarization")
 
-    def process_single_item(
-        self, item: Dict[str, Any], **kwargs: Any
-    ) -> WorkflowResult:
+    def process_single_item(self, item: Dict[str, Any], **kwargs: Any) -> WorkflowResult:
         """
         Process a single item for summarization.
 
@@ -138,9 +134,7 @@ class BaseSummarizerWorkflow(SummarizerWorkflow):
             and isinstance(result.data, list)
             and len(result.data) > 0
         ):
-            return self._create_result(
-                success=True, data=result.data[0], metadata=result.metadata
-            )
+            return self._create_result(success=True, data=result.data[0], metadata=result.metadata)
         else:
             return result
 
@@ -159,9 +153,7 @@ class BaseSummarizerWorkflow(SummarizerWorkflow):
         """
         raise NotImplementedError("Subclasses must implement _generate_item_summary")
 
-    def _store_item_summary(
-        self, item: Dict[str, Any], summary: str, data_type: str
-    ) -> None:
+    def _store_item_summary(self, item: Dict[str, Any], summary: str, data_type: str) -> None:
         """
         Store item summary in CORE memory.
 

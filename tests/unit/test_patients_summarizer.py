@@ -26,12 +26,8 @@ class TestPatientsSummarizerWorkflow:
         patients_data = [
             {
                 "patient_id": "PATIENT123",
-                "McodeResults": {
-                    "mcode_mappings": [{"element_type": "CancerCondition"}]
-                },
-                "entry": [
-                    {"resource": {"resourceType": "Patient", "id": "PATIENT123"}}
-                ],
+                "McodeResults": {"mcode_mappings": [{"element_type": "CancerCondition"}]},
+                "entry": [{"resource": {"resourceType": "Patient", "id": "PATIENT123"}}],
             }
         ]
 
@@ -59,9 +55,7 @@ class TestPatientsSummarizerWorkflow:
             {
                 "patient_id": "PATIENT123",
                 "McodeResults": {"mcode_mappings": []},
-                "entry": [
-                    {"resource": {"resourceType": "Patient", "id": "PATIENT123"}}
-                ],
+                "entry": [{"resource": {"resourceType": "Patient", "id": "PATIENT123"}}],
             }
         ]
 
@@ -102,9 +96,7 @@ class TestPatientsSummarizerWorkflow:
             {
                 "patient_id": "PATIENT123",
                 "McodeResults": {"mcode_mappings": []},
-                "entry": [
-                    {"resource": {"resourceType": "Patient", "id": "PATIENT123"}}
-                ],
+                "entry": [{"resource": {"resourceType": "Patient", "id": "PATIENT123"}}],
             }
         ]
 
@@ -129,9 +121,7 @@ class TestPatientsSummarizerWorkflow:
             {
                 "patient_id": "PATIENT123",
                 "McodeResults": {"mcode_mappings": []},
-                "entry": [
-                    {"resource": {"resourceType": "Patient", "id": "PATIENT123"}}
-                ],
+                "entry": [{"resource": {"resourceType": "Patient", "id": "PATIENT123"}}],
             }
         ]
 

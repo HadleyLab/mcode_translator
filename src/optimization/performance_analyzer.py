@@ -61,9 +61,7 @@ class PerformanceAnalyzer:
             stats["runs"] += 1
 
             # Track combination
-            combo_key = (
-                f"{combo.get('model', 'unknown')}+{combo.get('prompt', 'unknown')}"
-            )
+            combo_key = f"{combo.get('model', 'unknown')}+{combo.get('prompt', 'unknown')}"
             stats["combinations_tested"].add(combo_key)
 
             if result.get("success"):
@@ -74,9 +72,7 @@ class PerformanceAnalyzer:
                 # Performance metrics
                 perf = result.get("performance_metrics", {})
                 if perf:
-                    stats["processing_times"].append(
-                        perf.get("processing_time_seconds", 0)
-                    )
+                    stats["processing_times"].append(perf.get("processing_time_seconds", 0))
                     stats["token_usage"].append(perf.get("tokens_used", 0))
                     stats["costs"].append(perf.get("estimated_cost_usd", 0))
             else:
@@ -88,9 +84,7 @@ class PerformanceAnalyzer:
 
             for error in errors:
                 error_str = str(error).lower()
-                stats["error_patterns"].append(
-                    str(error)
-                )  # Store full error for pattern analysis
+                stats["error_patterns"].append(str(error))  # Store full error for pattern analysis
 
                 # Strict error categorization
                 if "json" in error_str and (
@@ -123,11 +117,7 @@ class PerformanceAnalyzer:
                     stats["error_types"]["auth_error"] += 1
                 elif "timeout" in error_str or "timed out" in error_str:
                     stats["error_types"]["timeout"] += 1
-                elif (
-                    "connection" in error_str
-                    or "network" in error_str
-                    or "dns" in error_str
-                ):
+                elif "connection" in error_str or "network" in error_str or "dns" in error_str:
                     stats["error_types"]["network_error"] += 1
                 elif "api" in error_str and not any(
                     x in error_str
@@ -219,9 +209,7 @@ class PerformanceAnalyzer:
                 # Performance metrics
                 perf = result.get("performance_metrics", {})
                 if perf:
-                    stats["processing_times"].append(
-                        perf.get("processing_time_seconds", 0)
-                    )
+                    stats["processing_times"].append(perf.get("processing_time_seconds", 0))
                     stats["token_usage"].append(perf.get("tokens_used", 0))
                     stats["costs"].append(perf.get("estimated_cost_usd", 0))
 
@@ -301,11 +289,7 @@ class PerformanceAnalyzer:
                     error_counts["auth_error"] += 1
                 elif "timeout" in error_str or "timed out" in error_str:
                     error_counts["timeout"] += 1
-                elif (
-                    "connection" in error_str
-                    or "network" in error_str
-                    or "dns" in error_str
-                ):
+                elif "connection" in error_str or "network" in error_str or "dns" in error_str:
                     error_counts["network_error"] += 1
                 elif "api" in error_str and not any(
                     x in error_str

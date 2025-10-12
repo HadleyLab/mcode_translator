@@ -3,17 +3,19 @@ Integration tests for workflow combinations and end-to-end processing.
 Tests complete workflow chains with proper mocking of external dependencies.
 """
 
-import pytest
 import json
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from src.core.dependency_container import DependencyContainer
-from src.workflows.trials_fetcher import TrialsFetcherWorkflow
-from src.workflows.trials_processor import TrialsProcessor
-from src.workflows.trials_summarizer import TrialsSummarizerWorkflow
 from src.workflows.patients_fetcher import PatientsFetcherWorkflow
 from src.workflows.patients_processor import PatientsProcessorWorkflow
 from src.workflows.patients_summarizer import PatientsSummarizerWorkflow
+from src.workflows.trials_fetcher import TrialsFetcherWorkflow
+from src.workflows.trials_processor import TrialsProcessor
+from src.workflows.trials_summarizer import TrialsSummarizerWorkflow
 
 
 @pytest.mark.integration
@@ -40,8 +42,8 @@ class TestWorkflowIntegration:
         mock = MagicMock()
         from src.shared.models import (
             PipelineResult,
-            ValidationResult,
             ProcessingMetadata,
+            ValidationResult,
         )
 
         # Make process method async
@@ -194,14 +196,10 @@ class TestWorkflowIntegration:
 
             # Process trials to get mCODE data
             trial_fetch_result = trial_fetcher.execute(nct_ids=["NCT123456"])
-            trial_process_result = trial_processor.execute(
-                trials_data=trial_fetch_result.data
-            )
+            trial_process_result = trial_processor.execute(trials_data=trial_fetch_result.data)
 
             # Process patients
-            patient_fetch_result = patient_fetcher.execute(
-                archive_path="test.zip", limit=1
-            )
+            patient_fetch_result = patient_fetcher.execute(archive_path="test.zip", limit=1)
             patient_process_result = patient_processor.execute(
                 patients_data=patient_fetch_result.data
             )
@@ -278,16 +276,10 @@ class TestWorkflowIntegration:
 
             # Execute workflows (simulating concurrent execution)
             trial_fetch_result = workflows[0].execute(nct_ids=["NCT123456"])
-            patient_fetch_result = workflows[2].execute(
-                archive_path="test.zip", limit=1
-            )
+            patient_fetch_result = workflows[2].execute(archive_path="test.zip", limit=1)
 
-            trial_process_result = workflows[1].execute(
-                trials_data=trial_fetch_result.data
-            )
-            patient_process_result = workflows[3].execute(
-                patients_data=patient_fetch_result.data
-            )
+            trial_process_result = workflows[1].execute(trials_data=trial_fetch_result.data)
+            patient_process_result = workflows[3].execute(patients_data=patient_fetch_result.data)
 
             # Verify all completed successfully
             assert trial_fetch_result.success

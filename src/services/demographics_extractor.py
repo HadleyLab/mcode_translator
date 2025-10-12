@@ -134,9 +134,7 @@ class DemographicsExtractor:
                     state = address.get("state", "")
                     country = address.get("country", "")
                     if city or state or country:
-                        demographics["address"] = f"{city}, {state}, {country}".strip(
-                            ", "
-                        )
+                        demographics["address"] = f"{city}, {state}, {country}".strip(", ")
                     else:
                         demographics["address"] = "Unknown"
                 else:

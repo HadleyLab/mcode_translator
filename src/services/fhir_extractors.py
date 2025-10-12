@@ -21,9 +21,7 @@ class FHIRResourceExtractors:
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
-    def extract_condition_mcode(
-        self, condition: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    def extract_condition_mcode(self, condition: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Extract mCODE elements from Condition resource."""
         try:
             # Simplified condition extraction
@@ -59,13 +57,9 @@ class FHIRResourceExtractors:
 
             # Map common observations to mCODE elements
             if "estrogen" in display and "receptor" in display:
-                elements["ERReceptorStatus"] = self._extract_receptor_status(
-                    observation
-                )
+                elements["ERReceptorStatus"] = self._extract_receptor_status(observation)
             elif "her2" in display.lower():
-                elements["HER2ReceptorStatus"] = self._extract_receptor_status(
-                    observation
-                )
+                elements["HER2ReceptorStatus"] = self._extract_receptor_status(observation)
             elif "stage" in display or "tnm" in display:
                 elements["TNMStage"] = self._extract_stage_info(observation)
 
@@ -144,10 +138,7 @@ class FHIRResourceExtractors:
                     systolic = diastolic = None
                     for comp in components:
                         comp_code = (
-                            comp.get("code", {})
-                            .get("coding", [{}])[0]
-                            .get("display", "")
-                            .lower()
+                            comp.get("code", {}).get("coding", [{}])[0].get("display", "").lower()
                         )
                         comp_value = comp.get("valueQuantity", {}).get("value")
                         if "systolic" in comp_code:
@@ -220,19 +211,14 @@ class FHIRResourceExtractors:
             self.logger.debug(f"Observation resource: {observation}")
             return {}
 
-    def extract_procedure_mcode(
-        self, procedure: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    def extract_procedure_mcode(self, procedure: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Extract mCODE elements from Procedure resource."""
         try:
             code = procedure.get("code", {})
             coding = code.get("coding", [{}])[0]
 
             display = coding.get("display", "").lower()
-            if any(
-                term in display
-                for term in ["biopsy", "mastectomy", "surgery", "resection"]
-            ):
+            if any(term in display for term in ["biopsy", "mastectomy", "surgery", "resection"]):
                 return {
                     "system": coding.get("system"),
                     "code": coding.get("code"),
@@ -245,9 +231,7 @@ class FHIRResourceExtractors:
 
         return None
 
-    def extract_allergy_mcode(
-        self, allergy: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    def extract_allergy_mcode(self, allergy: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Extract mCODE elements from AllergyIntolerance resource."""
         try:
             code = allergy.get("code", {})
@@ -265,9 +249,7 @@ class FHIRResourceExtractors:
             self.logger.debug(f"Allergy resource: {allergy}")
             return None
 
-    def extract_immunization_mcode(
-        self, immunization: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    def extract_immunization_mcode(self, immunization: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Extract mCODE elements from Immunization resource."""
         try:
             vaccine_code = immunization.get("vaccineCode", {})

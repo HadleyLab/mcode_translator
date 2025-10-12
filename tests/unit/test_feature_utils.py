@@ -3,9 +3,10 @@ Unit tests for feature_utils module.
 """
 
 import pytest
+
 from src.utils.feature_utils import (
-    standardize_features,
     standardize_biomarkers,
+    standardize_features,
     standardize_variants,
 )
 

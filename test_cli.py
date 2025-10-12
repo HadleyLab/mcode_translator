@@ -18,19 +18,22 @@ if heysol_path.exists():
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+
 def test_cli_imports():
     """Test CLI imports and basic structure."""
     print("Testing CLI imports...")
 
     try:
         from cli.main import app
+
         print("✅ Main CLI app imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import main CLI app: {e}")
         return False
 
     try:
-        from cli.commands import mcode, memory, config, data
+        from cli.commands import config, data, mcode, memory
+
         print("✅ CLI commands imported successfully")
     except ImportError as e:
         print(f"⚠️ Some CLI commands not available: {e}")
@@ -38,12 +41,14 @@ def test_cli_imports():
 
     return True
 
+
 def test_heysol_integration():
     """Test HeySol API client integration."""
     print("\nTesting HeySol integration...")
 
     try:
         from heysol import HeySolClient
+
         print("✅ HeySolClient imported successfully")
 
         # Test basic client creation (without API key for now)
@@ -61,12 +66,14 @@ def test_heysol_integration():
 
     return True
 
+
 def test_config_integration():
     """Test configuration integration."""
     print("\nTesting configuration integration...")
 
     try:
         from config.heysol_config import get_config
+
         config = get_config()
         print("✅ HeySol config loaded successfully")
         print(f"   Base URL: {config.get_base_url()}")
@@ -76,13 +83,15 @@ def test_config_integration():
 
     try:
         from utils.config import Config
-        main_config = Config()
+
+        Config()
         print("✅ Main config loaded successfully")
     except Exception as e:
         print(f"❌ Main config loading failed: {e}")
         return False
 
     return True
+
 
 def main():
     """Run all tests."""
@@ -110,6 +119,7 @@ def main():
     else:
         print("⚠️ Some tests failed - check implementation")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

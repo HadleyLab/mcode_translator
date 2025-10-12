@@ -61,7 +61,10 @@ class TestTrialsFetcherWorkflow:
 
         # Verify result
         assert result.success is False
-        assert "Invalid fetch parameters. Must provide condition, nct_id, or nct_ids." in result.error_message
+        assert (
+            "Invalid fetch parameters. Must provide condition, nct_id, or nct_ids."
+            in result.error_message
+        )
 
     # Additional workflow tests can be added here as needed
 

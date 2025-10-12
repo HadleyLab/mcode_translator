@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, cast
 
 import requests
 
-from src.utils.concurrency import TaskQueue, create_task
+from src.utils.concurrency import AsyncTaskQueue, create_task
 from src.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -161,7 +161,7 @@ def download_synthetic_patient_archives_concurrent(
         return archive_paths
 
     # Execute downloads concurrently
-    task_queue = TaskQueue(max_workers=max_workers, name="ArchiveDownloader")
+    task_queue = AsyncTaskQueue(max_concurrent=max_workers, name="ArchiveDownloader")
 
     def progress_callback(completed: int, total: int, result: Any) -> None:
         archive_name = result.task_id.replace("download_", "")
@@ -170,9 +170,7 @@ def download_synthetic_patient_archives_concurrent(
         else:
             logger.error(f"❌ Failed to download {archive_name}: {result.error}")
 
-    task_results = task_queue.execute_tasks(
-        download_tasks, progress_callback=progress_callback
-    )
+    task_results = await task_queue.execute_tasks(download_tasks, progress_callback=progress_callback)
 
     # Process results
     successful_downloads = 0
@@ -265,9 +263,7 @@ def download_multiple_files(
     Returns:
         Dict mapping filename to local path
     """
-    logger.info(
-        f"🔄 Downloading {len(file_urls)} files concurrently with {max_workers} workers"
-    )
+    logger.info(f"🔄 Downloading {len(file_urls)} files concurrently with {max_workers} workers")
 
     # Prepare download tasks
     download_tasks = []
@@ -296,7 +292,7 @@ def download_multiple_files(
         return downloaded_paths
 
     # Execute downloads concurrently
-    task_queue = TaskQueue(max_workers=max_workers, name="FileDownloader")
+    task_queue = AsyncTaskQueue(max_concurrent=max_workers, name="FileDownloader")
 
     def progress_callback(completed: int, total: int, result: Any) -> None:
         filename = result.task_id.replace("download_", "")
@@ -305,9 +301,7 @@ def download_multiple_files(
         else:
             logger.error(f"❌ Failed to download {filename}: {result.error}")
 
-    task_results = task_queue.execute_tasks(
-        download_tasks, progress_callback=progress_callback
-    )
+    task_results = await task_queue.execute_tasks(download_tasks, progress_callback=progress_callback)
 
     # Process results and clean up failed downloads
     successful_downloads = 0

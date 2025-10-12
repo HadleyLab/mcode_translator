@@ -354,9 +354,7 @@ class McodeSummarizer:
             else:
                 codes_part = ""
 
-            mcode_part = (
-                f" (mCODE: {element_name}{formatted_date})" if include_mcode else ""
-            )
+            mcode_part = f" (mCODE: {element_name}{formatted_date})" if include_mcode else ""
             return f"{subject}'s {element_name.lower()}{mcode_part} is {value}{codes_part}."
 
     def _group_elements_by_priority(
@@ -461,7 +459,9 @@ class McodeSummarizer:
                 return entry["resource"]
         return {}
 
-    def _extract_patient_demographics(self, patient_resource: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _extract_patient_demographics(
+        self, patient_resource: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Extract basic patient demographics from Patient resource."""
         elements = []
 
@@ -487,9 +487,7 @@ class McodeSummarizer:
                     "element_name": "Gender",
                     "value": gender.lower(),
                     "codes": (
-                        "SNOMED:248153007"
-                        if gender.lower() == "male"
-                        else "SNOMED:248152002"
+                        "SNOMED:248153007" if gender.lower() == "male" else "SNOMED:248152002"
                     ),
                     "date_qualifier": "",
                 }
@@ -509,7 +507,9 @@ class McodeSummarizer:
 
         return elements
 
-    def _extract_clinical_resources(self, patient_data: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
+    def _extract_clinical_resources(
+        self, patient_data: Dict[str, Any], include_dates: bool
+    ) -> List[Dict[str, Any]]:
         """Extract clinical elements from non-Patient resources."""
         elements = []
 
@@ -526,7 +526,9 @@ class McodeSummarizer:
 
         return elements
 
-    def _extract_condition_elements(self, resource: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
+    def _extract_condition_elements(
+        self, resource: Dict[str, Any], include_dates: bool
+    ) -> List[Dict[str, Any]]:
         """Extract elements from Condition resources."""
         elements = []
 
@@ -537,11 +539,7 @@ class McodeSummarizer:
         onset_date = resource.get("onsetDateTime", "")
 
         if display:
-            codes = (
-                f"{self._format_mcode_display('', system, code)}"
-                if system and code
-                else ""
-            )
+            codes = f"{self._format_mcode_display('', system, code)}" if system and code else ""
             date_qualifier = (
                 f" documented on {self._format_date_simple(onset_date)}"
                 if onset_date and include_dates
@@ -559,12 +557,14 @@ class McodeSummarizer:
 
         return elements
 
-    def _extract_observation_elements(self, resource: Dict[str, Any], include_dates: bool) -> List[Dict[str, Any]]:
+    def _extract_observation_elements(
+        self, resource: Dict[str, Any], include_dates: bool
+    ) -> List[Dict[str, Any]]:
         """Extract elements from Observation resources."""
         elements = []
 
         code_info = resource.get("code", {}).get("coding", [{}])[0]
-        display = code_info.get("display", "")
+        code_info.get("display", "")
         value_info = resource.get("valueCodeableConcept", {})
         value_coding = value_info.get("coding", [{}])[0] if value_info else {}
         value_display = value_coding.get("display", "")
@@ -595,9 +595,7 @@ class McodeSummarizer:
 
         return elements
 
-    def _extract_trial_elements(
-        self, trial_data: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    def _extract_trial_elements(self, trial_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Extract mCODE elements from trial data using abstracted processing."""
         elements = []
 
@@ -692,9 +690,7 @@ class McodeSummarizer:
         patient_name = ""
         for element in prioritized:
             if element.get("element_name") == "Patient":
-                patient_name = element.get("value", "").split(" (ID:")[
-                    0
-                ]  # Extract name without ID
+                patient_name = element.get("value", "").split(" (ID:")[0]  # Extract name without ID
                 break
 
         subject = patient_name if patient_name else "Patient"

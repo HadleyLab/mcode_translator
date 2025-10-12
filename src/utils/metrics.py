@@ -1,7 +1,7 @@
-import json
-import time
 from collections import defaultdict
 from datetime import datetime
+import json
+import time
 from typing import Any, Dict, List
 
 from src.utils.logging_config import get_logger
@@ -43,9 +43,7 @@ class MatchingMetrics:
             elif reason.startswith("Variant match:"):
                 gene = reason.split(":")[1].split()[0].strip()
                 self.gene_match_counts[gene] += 1
-            elif reason.startswith("Stage match:") or reason.startswith(
-                "Stage compatible:"
-            ):
+            elif reason.startswith("Stage match:") or reason.startswith("Stage compatible:"):
                 stage = reason.split(":")[1].split()[0].strip()
                 self.stage_match_counts[stage] += 1
             elif reason.startswith("Shared treatments:"):
@@ -59,20 +57,19 @@ class MatchingMetrics:
             "total_patients": self.total_patients,
             "total_trials": self.total_trials,
             "total_matches": self.total_matches,
-            "match_rate": self.total_matches
-            / max(1, self.total_patients * self.total_trials),
+            "match_rate": self.total_matches / max(1, self.total_patients * self.total_trials),
             "top_match_reasons": sorted(
                 self.match_reasons.items(), key=lambda x: x[1], reverse=True
             )[:5],
-            "top_genes": sorted(
-                self.gene_match_counts.items(), key=lambda x: x[1], reverse=True
-            )[:5],
+            "top_genes": sorted(self.gene_match_counts.items(), key=lambda x: x[1], reverse=True)[
+                :5
+            ],
             "top_biomarkers": sorted(
                 self.biomarker_match_counts.items(), key=lambda x: x[1], reverse=True
             )[:5],
-            "top_stages": sorted(
-                self.stage_match_counts.items(), key=lambda x: x[1], reverse=True
-            )[:5],
+            "top_stages": sorted(self.stage_match_counts.items(), key=lambda x: x[1], reverse=True)[
+                :5
+            ],
             "top_treatments": sorted(
                 self.treatment_match_counts.items(), key=lambda x: x[1], reverse=True
             )[:5],
@@ -130,11 +127,7 @@ class BenchmarkMetrics:
         """
         precision = self.tp / (self.tp + self.fp) if (self.tp + self.fp) > 0 else 0
         recall = self.tp / (self.tp + self.fn) if (self.tp + self.fn) > 0 else 0
-        f1 = (
-            2 * (precision * recall) / (precision + recall)
-            if (precision + recall) > 0
-            else 0
-        )
+        f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
         return {"precision": precision, "recall": recall, "f1_score": f1}
 
@@ -206,23 +199,16 @@ class PerformanceMetrics:
             "estimated_cost_usd": self.estimated_cost,
             "elements_processed": self.elements_processed,
             "start_time": (
-                datetime.fromtimestamp(self.start_time).isoformat()
-                if self.start_time
-                else None
+                datetime.fromtimestamp(self.start_time).isoformat() if self.start_time else None
             ),
             "end_time": (
-                datetime.fromtimestamp(self.end_time).isoformat()
-                if self.end_time
-                else None
+                datetime.fromtimestamp(self.end_time).isoformat() if self.end_time else None
             ),
             # Derived metrics
-            "processing_time_per_element": self.processing_time
-            / max(self.elements_processed, 1),
+            "processing_time_per_element": self.processing_time / max(self.elements_processed, 1),
             "tokens_per_element": self.tokens_used / max(self.elements_processed, 1),
-            "cost_per_element_usd": self.estimated_cost
-            / max(self.elements_processed, 1),
-            "elements_per_second": self.elements_processed
-            / max(self.processing_time, 0.001),
+            "cost_per_element_usd": self.estimated_cost / max(self.elements_processed, 1),
+            "elements_per_second": self.elements_processed / max(self.processing_time, 0.001),
             "tokens_per_second": self.tokens_used / max(self.processing_time, 0.001),
         }
 

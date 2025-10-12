@@ -30,7 +30,13 @@ class OncoCoreService:
         self.client = OncoCoreClient.from_env()
         self.source = source or "mcode-translator"
 
-    def store_trial_summary(self, trial_id: str, summary: str, space_id: Optional[str] = None, session_id: Optional[str] = None) -> bool:
+    def store_trial_summary(
+        self,
+        trial_id: str,
+        summary: str,
+        space_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+    ) -> bool:
         """
         Store a trial summary in the trials space.
 
@@ -48,7 +54,7 @@ class OncoCoreService:
                 message=summary,
                 source=self.source,
                 space_id=space_id or self.TRIALS_SPACE,
-                session_id=session_id
+                session_id=session_id,
             )
             return result.get("success", False)
         except Exception:
@@ -67,9 +73,7 @@ class OncoCoreService:
         """
         try:
             result = self.client.ingest(
-                message=summary,
-                source=self.source,
-                space_id=self.PATIENTS_SPACE
+                message=summary, source=self.source, space_id=self.PATIENTS_SPACE
             )
             return result.get("success", False)
         except Exception:
@@ -86,11 +90,7 @@ class OncoCoreService:
         Returns:
             Dict containing search results
         """
-        return self.client.search(
-            query=query,
-            space_ids=[self.TRIALS_SPACE],
-            limit=limit
-        )
+        return self.client.search(query=query, space_ids=[self.TRIALS_SPACE], limit=limit)
 
     def search_patients(self, query: str, limit: int = 10) -> Dict[str, Any]:
         """
@@ -103,11 +103,7 @@ class OncoCoreService:
         Returns:
             Dict containing search results
         """
-        return self.client.search(
-            query=query,
-            space_ids=[self.PATIENTS_SPACE],
-            limit=limit
-        )
+        return self.client.search(query=query, space_ids=[self.PATIENTS_SPACE], limit=limit)
 
     def get_spaces(self) -> list[Dict[str, Any]]:
         """Get all available spaces."""

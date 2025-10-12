@@ -1,0 +1,79 @@
+{
+  "pipeline": {
+    "name": "mcode_processing_pipeline",
+    "version": "1.0",
+    "description": "Complete mCODE processing pipeline with quality assurance"
+  },
+  "stages": {
+    "ingestion": {
+      "enabled": true,
+      "batch_size": 10,
+      "timeout_seconds": 60,
+      "retry_attempts": 3,
+      "validation_enabled": true
+    },
+    "validation": {
+      "enabled": true,
+      "strict_mode": false,
+      "schema_validation": true,
+      "required_fields_check": true,
+      "data_quality_threshold": 0.8
+    },
+    "extraction": {
+      "enabled": true,
+      "text_cleaning": true,
+      "encoding_detection": true,
+      "max_text_length": 10000,
+      "language_detection": false
+    },
+    "processing": {
+      "engines": ["regex", "llm"],
+      "parallel_execution": true,
+      "engine_timeout_seconds": 120,
+      "fallback_enabled": true,
+      "consensus_required": false
+    },
+    "aggregation": {
+      "enabled": true,
+      "conflict_resolution": "highest_confidence",
+      "min_confidence_threshold": 0.7,
+      "duplicate_handling": "merge",
+      "metadata_preservation": true
+    },
+    "quality_assurance": {
+      "enabled": true,
+      "mcode_compliance_check": true,
+      "element_validation": true,
+      "relationship_verification": true,
+      "completeness_score_required": 0.85
+    },
+    "export": {
+      "enabled": true,
+      "formats": ["json", "ndjson", "csv"],
+      "compression": "gzip",
+      "include_metadata": true,
+      "split_large_files": false
+    }
+  },
+  "monitoring": {
+    "metrics_collection": true,
+    "performance_tracking": true,
+    "error_reporting": true,
+    "stage_timing": true,
+    "resource_monitoring": true
+  },
+  "error_handling": {
+    "fail_fast": false,
+    "continue_on_error": true,
+    "max_errors_per_stage": 5,
+    "error_reporting_level": "WARNING",
+    "recovery_strategies": ["retry", "skip", "fallback"]
+  },
+  "optimization": {
+    "memory_efficient": true,
+    "concurrent_processing": true,
+    "caching_enabled": true,
+    "batch_optimization": true,
+    "adaptive_batch_sizing": true
+  }
+}

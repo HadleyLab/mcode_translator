@@ -1,0 +1,75 @@
+{
+  "protocolSection": {
+    "identificationModule": {
+      "nctId": "NCT02364999",
+      "briefTitle": "PALOMA-2: Phase III Trial of Palbociclib (PD-03329901) Plus Letrozole Versus Placebo Plus Letrozole for ER+",
+      "officialTitle": "A Randomized, Double-Blind, Placebo-Controlled, Phase 3 Trial of Palbociclib (PD-03329901) Plus Letrozole Versus Placebo Plus Letrozole for the Treatment of Hormone Receptor Positive, HER2 Negative Metastatic Breast Cancer",
+      "organization": {
+        "name": "Pfizer"
+      }
+    },
+    "eligibilityModule": {
+      "eligibilityCriteria": "Inclusion Criteria:\n• Postmenopausal women with HR+, HER2- MBC\n• No prior systemic therapy for MBC\n• Measurable disease per RECIST 1.1\n• ECOG PS 0-1\n• Adequate organ function\n\nExclusion Criteria:\n• Prior chemotherapy for MBC\n• Active CNS metastases\n• QTc prolongation\n• Severe hepatic impairment",
+      "sex": "Female",
+      "minimumAge": "18 Years",
+      "maximumAge": "No maximum",
+      "healthyVolunteers": false,
+      "stdAges": ["Adult", "Older Adult"]
+    },
+    "conditionsModule": {
+      "conditions": ["Breast Cancer", "Metastatic Breast Cancer"]
+    },
+    "armsInterventionsModule": {
+      "armGroups": [
+        {
+          "label": "Palbociclib + Letrozole",
+          "type": "Experimental",
+          "description": "Palbociclib 125mg daily + Letrozole 2.5mg daily"
+        },
+        {
+          "label": "Placebo + Letrozole",
+          "type": "Placebo Comparator",
+          "description": "Placebo + Letrozole 2.5mg daily"
+        }
+      ],
+      "interventions": [
+        {
+          "type": "Drug",
+          "name": "Palbociclib",
+          "description": "CDK4/6 inhibitor"
+        },
+        {
+          "type": "Drug",
+          "name": "Letrozole",
+          "description": "Aromatase inhibitor"
+        }
+      ]
+    },
+    "designModule": {
+      "studyType": "Interventional",
+      "phases": ["Phase 3"],
+      "designInfo": {
+        "allocation": "Randomized",
+        "interventionModel": "Parallel Assignment",
+        "primaryPurpose": "Treatment",
+        "maskingInfo": {
+          "masking": "Double",
+          "whoMasked": ["Participant", "Investigator"]
+        }
+      }
+    },
+    "statusModule": {
+      "overallStatus": "Completed",
+      "startDateStruct": {
+        "date": "2015-03"
+      },
+      "primaryCompletionDateStruct": {
+        "date": "2016-06"
+      }
+    }
+  },
+  "hasResults": true,
+  "studyType": "Interventional",
+  "overallStatus": "Completed",
+  "phase": "Phase 3"
+}

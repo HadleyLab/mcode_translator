@@ -5,9 +5,9 @@ This module provides functionality to load LLM configurations from the file-base
 instead of using hardcoded configurations in the source code.
 """
 
+from dataclasses import dataclass, field
 import json
 import os
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -85,11 +85,9 @@ class LLMLoader:
         """Load the LLMs configuration JSON file"""
         try:
             if not self.llms_config_path.exists():
-                raise FileNotFoundError(
-                    f"LLMs config file not found: {self.llms_config_path}"
-                )
+                raise FileNotFoundError(f"LLMs config file not found: {self.llms_config_path}")
 
-            with open(self.llms_config_path, "r") as f:
+            with open(self.llms_config_path) as f:
                 config_data: Dict[str, Any] = json.load(f)
 
             # Handle nested structure: models.available contains the actual models

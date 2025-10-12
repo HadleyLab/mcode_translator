@@ -45,10 +45,7 @@ class TestClinicalTrialData:
         trial = ClinicalTrialData(**data)
         assert trial.nct_id == "NCT12345678"
         assert trial.brief_title == "Test Trial"
-        assert (
-            trial.protocolSection.eligibilityModule.eligibilityCriteria
-            == "Inclusion: Age 18+"
-        )
+        assert trial.protocolSection.eligibilityModule.eligibilityCriteria == "Inclusion: Age 18+"
 
     def test_invalid_clinical_trial_data(self):
         """Test validation of invalid clinical trial data."""
@@ -87,9 +84,7 @@ class TestMcodeElement:
     def test_invalid_confidence_score(self):
         """Test validation of invalid confidence score."""
         with pytest.raises(ValueError):
-            McodeElement(
-                element_type="CancerCondition", confidence_score=1.5  # Invalid: > 1.0
-            )
+            McodeElement(element_type="CancerCondition", confidence_score=1.5)  # Invalid: > 1.0
 
 
 class TestPipelineResult:

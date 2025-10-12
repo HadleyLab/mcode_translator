@@ -3,14 +3,9 @@ Integration tests for CLI functionality.
 Tests end-to-end CLI operations and workflows.
 """
 
-import argparse
-import io
-from unittest.mock import Mock, patch
 import pytest
 
 from src.workflows.patients_fetcher import PatientsFetcherWorkflow
-from src.workflows.trials_fetcher import TrialsFetcherWorkflow
-from src.shared.cli_utils import McodeCLI
 
 
 class TestPatientsFetcherWorkflow:

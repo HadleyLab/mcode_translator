@@ -3,18 +3,20 @@ Unit tests for fetcher module.
 """
 
 from unittest.mock import Mock, patch
+
 import pytest
 import requests
+
 from src.utils.fetcher import (
-    search_trials,
-    get_full_studies_batch,
-    search_trials_parallel,
-    search_multiple_queries,
-    get_full_study,
-    calculate_total_studies,
     ClinicalTrialsAPIError,
     _fetch_single_study_with_error_handling,
     _search_single_page,
+    calculate_total_studies,
+    get_full_studies_batch,
+    get_full_study,
+    search_multiple_queries,
+    search_trials,
+    search_trials_parallel,
 )
 
 
@@ -29,9 +31,7 @@ class TestSearchTrials:
         # Mock config
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = (
-            "https://api.example.com"
-        )
+        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -65,9 +65,7 @@ class TestSearchTrials:
         """Test search without specifying fields."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = (
-            "https://api.example.com"
-        )
+        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -89,16 +87,12 @@ class TestSearchTrials:
         """Test API error handling."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = (
-            "https://api.example.com"
-        )
+        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
         mock_response = Mock()
-        mock_response.raise_for_status.side_effect = requests.RequestException(
-            "Network error"
-        )
+        mock_response.raise_for_status.side_effect = requests.RequestException("Network error")
         mock_get.return_value = mock_response
 
         with pytest.raises(ClinicalTrialsAPIError):
@@ -255,9 +249,7 @@ class TestGetFullStudy:
         """Test successful full study fetch."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = (
-            "https://api.example.com"
-        )
+        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -281,9 +273,7 @@ class TestGetFullStudy:
         """Test invalid response handling."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = (
-            "https://api.example.com"
-        )
+        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -302,9 +292,7 @@ class TestGetFullStudy:
         """Test non-dict response handling."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = (
-            "https://api.example.com"
-        )
+        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -327,9 +315,7 @@ class TestCalculateTotalStudies:
         """Test successful total calculation."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = (
-            "https://api.example.com"
-        )
+        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 
@@ -351,9 +337,7 @@ class TestCalculateTotalStudies:
         """Test calculation with zero results."""
         mock_config_instance = Mock()
         mock_config_instance.get_rate_limit_delay.return_value = 0.1
-        mock_config_instance.get_clinical_trials_base_url.return_value = (
-            "https://api.example.com"
-        )
+        mock_config_instance.get_clinical_trials_base_url.return_value = "https://api.example.com"
         mock_config_instance.get_request_timeout.return_value = 30
         mock_config.return_value = mock_config_instance
 

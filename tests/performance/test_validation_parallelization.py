@@ -10,6 +10,7 @@ Tests for validation pipeline parallelization:
 """
 
 import time
+
 import pytest
 
 from src.pipeline.pipeline import McodePipeline
@@ -95,9 +96,7 @@ def test_sequential_processing(trials_data):
     assert len(results) == len(trials_data), "Should process all trials"
     assert sequential_time >= 0, "Processing time should be non-negative"
     assert all(r is not None for r in results), "All results should be valid"
-    assert all(
-        len(r.mcode_mappings) > 0 for r in results
-    ), "Each result should have mappings"
+    assert all(len(r.mcode_mappings) > 0 for r in results), "Each result should have mappings"
 
 
 def test_parallel_processing(trials_data):
@@ -117,14 +116,13 @@ def test_parallel_processing(trials_data):
     assert len(results) == len(trials_data), "Should process all trials"
     assert parallel_time >= 0, "Processing time should be non-negative"
     assert all(r is not None for r in results), "All results should be valid"
-    assert all(
-        len(r.mcode_mappings) > 0 for r in results
-    ), "Each result should have mappings"
+    assert all(len(r.mcode_mappings) > 0 for r in results), "Each result should have mappings"
 
 
 def test_parallel_validation_only(trials_data):
     """Test parallel validation without full processing."""
     import asyncio
+
     from src.shared.models import ClinicalTrialData
 
     async def validate_trials():
@@ -144,7 +142,5 @@ def test_parallel_validation_only(trials_data):
 
     assert len(validation_results) == len(trials_data), "Should validate all trials"
     assert validation_time >= 0, "Validation time should be non-negative"
-    assert isinstance(
-        validation_results, list
-    ), "Should return list of validation results"
+    assert isinstance(validation_results, list), "Should return list of validation results"
     assert all(validation_results), "All trials should validate successfully"

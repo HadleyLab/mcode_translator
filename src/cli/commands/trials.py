@@ -7,12 +7,12 @@ fetch → process → summarize → optimize
 Supports flexible pipeline execution with flag combinations.
 """
 
-import sys
 from pathlib import Path
+import sys
 from typing import Optional
 
-import typer
 from rich.console import Console
+import typer
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -32,34 +32,49 @@ app = typer.Typer(
 @app.command("pipeline")
 def trials_pipeline(
     # Fetch flags
-    fetch: bool = typer.Option(False, "--fetch", help="Fetch trial data from ClinicalTrials.gov API"),
+    fetch: bool = typer.Option(
+        False, "--fetch", help="Fetch trial data from ClinicalTrials.gov API"
+    ),
     cancer_type: str = typer.Option("breast", help="Cancer type to search for"),
     phase: str = typer.Option("all", help="Trial phase filter"),
     status: str = typer.Option("all", help="Trial status filter"),
     fetch_limit: int = typer.Option(50, help="Maximum number of trials to fetch"),
-
     # Process flags
-    process: bool = typer.Option(False, "--process", help="Process trial data with mCODE extraction"),
-    input_file: Optional[str] = typer.Option(None, help="Path to trial data file (NDJSON format) for processing"),
+    process: bool = typer.Option(
+        False, "--process", help="Process trial data with mCODE extraction"
+    ),
+    input_file: Optional[str] = typer.Option(
+        None, help="Path to trial data file (NDJSON format) for processing"
+    ),
     engine: str = typer.Option("llm", help="Processing engine: 'regex' or 'llm'"),
     llm_model: str = typer.Option("deepseek-coder", help="LLM model for processing"),
-    llm_prompt: str = typer.Option("direct_mcode_evidence_based_concise", help="Prompt template for LLM processing"),
-    process_store_memory: bool = typer.Option(False, "--store-processed", help="Store processed data in CORE Memory"),
-
+    llm_prompt: str = typer.Option(
+        "direct_mcode_evidence_based_concise", help="Prompt template for LLM processing"
+    ),
+    workers: int = typer.Option(4, help="Number of concurrent workers for async processing"),
+    process_store_memory: bool = typer.Option(
+        False, "--store-processed", help="Store processed data in CORE Memory"
+    ),
     # Summarize flags
-    summarize: bool = typer.Option(False, "--summarize", help="Generate natural language summaries"),
-    summary_input_file: Optional[str] = typer.Option(None, help="Path to processed trial data file for summarization"),
+    summarize: bool = typer.Option(
+        False, "--summarize", help="Generate natural language summaries"
+    ),
+    summary_input_file: Optional[str] = typer.Option(
+        None, help="Path to processed trial data file for summarization"
+    ),
     trial_id: Optional[str] = typer.Option(None, help="Specific trial NCT ID to summarize"),
-    summary_store_memory: bool = typer.Option(False, "--store-summaries", help="Store summaries in CORE Memory"),
-
+    summary_store_memory: bool = typer.Option(
+        False, "--store-summaries", help="Store summaries in CORE Memory"
+    ),
     # Optimize flags
     optimize: bool = typer.Option(False, "--optimize", help="Optimize processing parameters"),
-    optimize_input_file: Optional[str] = typer.Option(None, help="Path to trial data file for optimization"),
+    optimize_input_file: Optional[str] = typer.Option(
+        None, help="Path to trial data file for optimization"
+    ),
     prompts: Optional[str] = typer.Option(None, help="Comma-separated list of prompts to test"),
     models: Optional[str] = typer.Option(None, help="Comma-separated list of models to test"),
     cv_folds: int = typer.Option(3, help="Number of cross-validation folds"),
     inter_rater: bool = typer.Option(False, help="Run inter-rater reliability analysis"),
-
     # Output options
     output_file: Optional[str] = typer.Option(None, help="Path to save results"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
@@ -77,37 +92,40 @@ def trials_pipeline(
     try:
         # Validate flag combinations
         if not any([fetch, process, summarize, optimize]):
-            console.print("[red]❌ Must specify at least one pipeline stage: --fetch, --process, --summarize, or --optimize[/red]")
+            console.print(
+                "[red]❌ Must specify at least one pipeline stage: --fetch, --process, --summarize, or --optimize[/red]"
+            )
             raise typer.Exit(1)
 
         # Import required components
         from src.utils.config import Config
+
         config = Config()
 
         # Track pipeline results
-        pipeline_results = {
-            "fetch": None,
-            "process": None,
-            "summarize": None,
-            "optimize": None
-        }
+        pipeline_results = {"fetch": None, "process": None, "summarize": None, "optimize": None}
 
         # Execute fetch stage
         if fetch:
             console.print("[bold blue]📥 Fetching clinical trial data...[/bold blue]")
-            console.print(f"[blue]🎯 Cancer type: {cancer_type}, Phase: {phase}, Status: {status}[/blue]")
+            console.print(
+                f"[blue]🎯 Cancer type: {cancer_type}, Phase: {phase}, Status: {status}[/blue]"
+            )
 
             from workflows.trials_fetcher import TrialsFetcherWorkflow
+
             fetcher = TrialsFetcherWorkflow(config)
 
             fetch_result = fetcher.execute(
                 condition=cancer_type if cancer_type != "all" else None,
                 limit=fetch_limit,
-                output_path=None  # We'll pass data to next stage
+                output_path=None,  # We'll pass data to next stage
             )
 
             if fetch_result.success:
-                console.print(f"[green]✅ Fetched {len(fetch_result.data) if fetch_result.data else 0} trials[/green]")
+                console.print(
+                    f"[green]✅ Fetched {len(fetch_result.data) if fetch_result.data else 0} trials[/green]"
+                )
                 pipeline_results["fetch"] = fetch_result
             else:
                 console.print(f"[red]❌ Fetch failed: {fetch_result.error_message}[/red]")
@@ -127,11 +145,12 @@ def trials_pipeline(
                 # Load from file
                 console.print(f"[blue]📖 Loading from: {input_file}[/blue]")
                 trials_data = []
-                with open(input_file, 'r') as f:
+                with open(input_file) as f:
                     for line in f:
                         line = line.strip()
                         if line:
                             import json
+
                             try:
                                 trial = json.loads(line)
                                 trials_data.append(trial)
@@ -147,6 +166,7 @@ def trials_pipeline(
                 raise typer.Exit(1)
 
             from workflows.trials_processor import TrialsProcessor
+
             processor = TrialsProcessor(config)
 
             process_result = processor.execute(
@@ -154,8 +174,8 @@ def trials_pipeline(
                 engine=engine,
                 model=llm_model,
                 prompt=llm_prompt,
-                workers=1,  # Process sequentially for now
-                store_in_memory=process_store_memory
+                workers=workers,  # Use async concurrency
+                store_in_memory=process_store_memory,
             )
 
             if process_result.success:
@@ -163,7 +183,9 @@ def trials_pipeline(
                 if process_result.metadata:
                     total = process_result.metadata.get("total_trials", 0)
                     successful = process_result.metadata.get("successful", 0)
-                    console.print(f"[green]📊 Processed {successful}/{total} trials successfully[/green]")
+                    console.print(
+                        f"[green]📊 Processed {successful}/{total} trials successfully[/green]"
+                    )
                 pipeline_results["process"] = process_result
             else:
                 console.print(f"[red]❌ Processing failed: {process_result.error_message}[/red]")
@@ -182,11 +204,12 @@ def trials_pipeline(
                 # Load from file
                 console.print(f"[blue]📖 Loading from: {summary_input_file}[/blue]")
                 trials_data = []
-                with open(summary_input_file, 'r') as f:
+                with open(summary_input_file) as f:
                     for line in f:
                         line = line.strip()
                         if line:
                             import json
+
                             try:
                                 trial = json.loads(line)
                                 trials_data.append(trial)
@@ -197,6 +220,7 @@ def trials_pipeline(
                 # Fetch single trial
                 console.print(f"[blue]🔍 Fetching single trial: {trial_id}[/blue]")
                 from workflows.trials_fetcher import TrialsFetcherWorkflow
+
                 fetcher = TrialsFetcherWorkflow(config)
                 fetch_result = fetcher.execute(nct_ids=[trial_id], output_path=None)
                 if fetch_result.success and fetch_result.data:
@@ -206,7 +230,9 @@ def trials_pipeline(
                     console.print(f"[red]❌ Failed to fetch trial {trial_id}[/red]")
                     raise typer.Exit(1)
             else:
-                console.print("[red]❌ Either --process, --summary-input-file, or --trial-id required for --summarize[/red]")
+                console.print(
+                    "[red]❌ Either --process, --summary-input-file, or --trial-id required for --summarize[/red]"
+                )
                 raise typer.Exit(1)
 
             if not trials_data:
@@ -214,11 +240,11 @@ def trials_pipeline(
                 raise typer.Exit(1)
 
             from workflows.trials_summarizer import TrialsSummarizerWorkflow
+
             summarizer = TrialsSummarizerWorkflow(config)
 
             summarize_result = summarizer.execute(
-                trials_data=trials_data,
-                store_in_memory=summary_store_memory
+                trials_data=trials_data, store_in_memory=summary_store_memory
             )
 
             if summarize_result.success:
@@ -226,10 +252,14 @@ def trials_pipeline(
                 if summarize_result.metadata:
                     total = summarize_result.metadata.get("total_trials", 0)
                     successful = summarize_result.metadata.get("successful", 0)
-                    console.print(f"[green]📊 Summarized {successful}/{total} trials successfully[/green]")
+                    console.print(
+                        f"[green]📊 Summarized {successful}/{total} trials successfully[/green]"
+                    )
                 pipeline_results["summarize"] = summarize_result
             else:
-                console.print(f"[red]❌ Summarization failed: {summarize_result.error_message}[/red]")
+                console.print(
+                    f"[red]❌ Summarization failed: {summarize_result.error_message}[/red]"
+                )
                 raise typer.Exit(1)
 
         # Execute optimize stage
@@ -243,11 +273,12 @@ def trials_pipeline(
             # Load trial data
             console.print(f"[blue]📖 Loading trials from: {optimize_input_file}[/blue]")
             trials_data = []
-            with open(optimize_input_file, 'r') as f:
+            with open(optimize_input_file) as f:
                 for line in f:
                     line = line.strip()
                     if line:
                         import json
+
                         try:
                             trial = json.loads(line)
                             trials_data.append(trial)
@@ -261,10 +292,13 @@ def trials_pipeline(
             console.print(f"[green]✅ Loaded {len(trials_data)} trials for optimization[/green]")
 
             from workflows.trials_optimizer import TrialsOptimizerWorkflow
+
             optimizer = TrialsOptimizerWorkflow(config)
 
             # Parse prompts and models
-            prompts_list = prompts.split(",") if prompts else ["direct_mcode_evidence_based_concise"]
+            prompts_list = (
+                prompts.split(",") if prompts else ["direct_mcode_evidence_based_concise"]
+            )
             models_list = models.split(",") if models else ["deepseek-coder"]
 
             optimize_result = optimizer.execute(
@@ -274,7 +308,7 @@ def trials_pipeline(
                 max_combinations=5,  # Default from original command
                 cv_folds=cv_folds,
                 output_config=None,  # Could add option later
-                run_inter_rater_reliability=inter_rater
+                run_inter_rater_reliability=inter_rater,
             )
 
             if optimize_result.success:
@@ -285,7 +319,9 @@ def trials_pipeline(
                     best_combo = optimize_result.metadata.get("best_combination")
                     console.print(f"[green]📊 Tested {combinations} combinations[/green]")
                     if best_combo:
-                        console.print(f"[green]🏆 Best: {best_combo['model']} + {best_combo['prompt']} (CV score: {best_score:.3f})[/green]")
+                        console.print(
+                            f"[green]🏆 Best: {best_combo['model']} + {best_combo['prompt']} (CV score: {best_score:.3f})[/green]"
+                        )
                 pipeline_results["optimize"] = optimize_result
             else:
                 console.print(f"[red]❌ Optimization failed: {optimize_result.error_message}[/red]")
@@ -294,14 +330,17 @@ def trials_pipeline(
         # Save final results if output file specified
         if output_file and pipeline_results.get("summarize") and pipeline_results["summarize"].data:
             console.print(f"[blue]💾 Saving results to: {output_file}[/blue]")
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 for trial in pipeline_results["summarize"].data:
                     import json
+
                     json.dump(trial, f, ensure_ascii=False)
-                    f.write('\n')
+                    f.write("\n")
             console.print("[green]✅ Results saved[/green]")
 
-        console.print("[bold green]🎉 Trial pipeline execution completed successfully![/bold green]")
+        console.print(
+            "[bold green]🎉 Trial pipeline execution completed successfully![/bold green]"
+        )
 
     except ImportError as e:
         console.print(f"[red]❌ Import error: {e}[/red]")

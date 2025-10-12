@@ -1,7 +1,7 @@
 import json
 import logging
-import sys
 from pathlib import Path
+import sys
 from typing import Optional, Union
 
 import colorlog
@@ -28,7 +28,7 @@ def setup_logging(level: Optional[str] = None) -> None:
     # Load logging configuration directly to avoid circular imports
     config_path = Path(__file__).parent.parent / "config" / "logging_config.json"
     try:
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             logging_config = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
         raise RuntimeError(
@@ -48,11 +48,9 @@ def setup_logging(level: Optional[str] = None) -> None:
 
     # Set up colored formatter if enabled
     if logging_config.get("colored_output", True):
-        formatter: Union[colorlog.ColoredFormatter, logging.Formatter] = (
-            colorlog.ColoredFormatter(
-                logging_config["format"],
-                log_colors=logging_config["handlers"]["console"]["colors"],
-            )
+        formatter: Union[colorlog.ColoredFormatter, logging.Formatter] = colorlog.ColoredFormatter(
+            logging_config["format"],
+            log_colors=logging_config["handlers"]["console"]["colors"],
         )
     else:
         formatter = logging.Formatter(logging_config["format"])
@@ -60,9 +58,7 @@ def setup_logging(level: Optional[str] = None) -> None:
     # Create console handler with immediate flushing
     console_handler = colorlog.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
-    console_handler.setLevel(
-        getattr(logging, logging_config["handlers"]["console"]["level"])
-    )
+    console_handler.setLevel(getattr(logging, logging_config["handlers"]["console"]["level"]))
     # Force immediate output by setting stream to unbuffered
     console_handler.stream = sys.stdout
     # Set handler to flush after each log message

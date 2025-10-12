@@ -2,8 +2,9 @@
 Unit tests for DataFlowCoordinator with comprehensive coverage.
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 from src.core.data_flow_coordinator import (
     DataFlowCoordinator,
@@ -58,9 +59,7 @@ class TestDataFlowCoordinator:
 
         assert coordinator.pipeline == mock_pipeline
         assert coordinator.config == {}
-        mock_create_pipeline.assert_called_once_with(
-            processor_config={}, include_storage=False
-        )
+        mock_create_pipeline.assert_called_once_with(processor_config={}, include_storage=False)
 
     def test_init_with_pipeline(self, mock_pipeline):
         """Test initialization with provided pipeline."""
@@ -146,9 +145,7 @@ class TestDataFlowCoordinator:
         assert result.data["summary"]["total_successful"] == 0  # All processing failed
 
     @patch("src.core.data_fetcher.get_full_studies_batch")
-    def test_fetch_trial_data_success(
-        self, mock_batch_fetch, sample_trial_ids, sample_trial_data
-    ):
+    def test_fetch_trial_data_success(self, mock_batch_fetch, sample_trial_ids, sample_trial_data):
         """Test successful trial data fetching."""
         mock_batch_fetch.return_value = {
             "NCT12345678": sample_trial_data[0],
@@ -217,9 +214,12 @@ class TestDataFlowCoordinator:
 
     def test_process_trials_in_batches_with_failures(self, sample_trial_data):
         """Test batch processing with some processing failures."""
+
         # Create a proper mock result class
         class MockResult:
-            def __init__(self, success=True, mcode_mappings=None, validation_results=None, error_message=None):
+            def __init__(
+                self, success=True, mcode_mappings=None, validation_results=None, error_message=None
+            ):
                 self.success = success
                 self.mcode_mappings = mcode_mappings or []
                 self.validation_results = validation_results or {}
@@ -247,9 +247,7 @@ class TestDataFlowCoordinator:
         """Test batch processing with different batch sizes."""
         coordinator = DataFlowCoordinator(pipeline=mock_pipeline)
 
-        result = coordinator._process_trials_in_batches(
-            sample_trial_data, batch_size=batch_size
-        )
+        result = coordinator._process_trials_in_batches(sample_trial_data, batch_size=batch_size)
 
         assert result.success is True
         total_batches = (len(sample_trial_data) + batch_size - 1) // batch_size
@@ -286,18 +284,14 @@ class TestDataFlowCoordinator:
         coordinator = DataFlowCoordinator()
 
         # Empty trial IDs
-        fetch_result = WorkflowResult(
-            success=True, data=[], metadata={"total_fetched": 0}
-        )
+        fetch_result = WorkflowResult(success=True, data=[], metadata={"total_fetched": 0})
         processing_result = WorkflowResult(
             success=True,
             data=[],
             metadata={"total_processed": 0, "total_successful": 0},
         )
 
-        summary = coordinator._generate_flow_summary(
-            [], fetch_result, processing_result
-        )
+        summary = coordinator._generate_flow_summary([], fetch_result, processing_result)
 
         assert summary["total_requested"] == 0
         assert summary["fetch_success_rate"] == 0.0
@@ -325,9 +319,7 @@ class TestDataFlowCoordinator:
         """Test convenience function for processing trials."""
         mock_coordinator = Mock()
         mock_result = Mock()
-        mock_coordinator.process_clinical_trials_complete_flow.return_value = (
-            mock_result
-        )
+        mock_coordinator.process_clinical_trials_complete_flow.return_value = mock_result
         mock_create_coordinator.return_value = mock_coordinator
 
         result = process_clinical_trials_flow(sample_trial_ids)
@@ -354,9 +346,7 @@ class TestDataFlowCoordinatorIntegration:
     @pytest.mark.integration
     def test_full_workflow_integration(self, sample_trial_ids):
         """Test full workflow with mocked external calls."""
-        with patch(
-            "src.core.data_fetcher.get_full_studies_batch"
-        ) as mock_batch, patch(
+        with patch("src.core.data_fetcher.get_full_studies_batch") as mock_batch, patch(
             "src.core.data_flow_coordinator.create_trial_pipeline"
         ) as mock_create_pipeline:
 
@@ -443,9 +433,7 @@ class TestDataFlowCoordinatorPerformance:
     @pytest.mark.performance
     def test_large_batch_processing(self, mock_pipeline):
         """Test processing large number of trials."""
-        large_trial_data = [
-            {"nct_id": f"NCT{i:08d}", "title": f"Trial {i}"} for i in range(100)
-        ]
+        large_trial_data = [{"nct_id": f"NCT{i:08d}", "title": f"Trial {i}"} for i in range(100)]
 
         coordinator = DataFlowCoordinator(pipeline=mock_pipeline)
 

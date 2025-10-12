@@ -3,9 +3,11 @@ Performance tests and benchmarks for mcode_translator components.
 Uses pytest-benchmark for measuring execution times and memory usage.
 """
 
-import pytest
 import json
 from unittest.mock import patch
+
+import pytest
+
 from src.services.summarizer import McodeSummarizer
 from src.utils.token_tracker import TokenTracker, TokenUsage
 
@@ -181,9 +183,7 @@ class TestPerformanceBenchmarks:
 
         # Pre-populate with data
         for i in range(100):
-            usage = TokenUsage(
-                prompt_tokens=i * 10, completion_tokens=i * 5, total_tokens=i * 15
-            )
+            usage = TokenUsage(prompt_tokens=i * 10, completion_tokens=i * 5, total_tokens=i * 15)
             tracker.add_usage(usage, f"component_{i % 5}")
 
         def get_stats():

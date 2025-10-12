@@ -1,0 +1,78 @@
+{
+  "optimization": {
+    "cross_validation": {
+      "enabled": true,
+      "folds": 5,
+      "stratified": true,
+      "shuffle": true,
+      "random_state": 42,
+      "metrics": ["accuracy", "precision", "recall", "f1", "kappa"]
+    },
+    "performance_analysis": {
+      "enabled": true,
+      "track_memory": true,
+      "track_cpu": true,
+      "track_api_calls": true,
+      "track_cache_hits": true,
+      "profiling_enabled": false,
+      "benchmark_iterations": 3
+    },
+    "inter_rater_reliability": {
+      "enabled": true,
+      "raters": ["regex_engine", "llm_engine", "human_expert"],
+      "kappa_threshold": 0.8,
+      "agreement_metrics": ["percentage", "kappa", "fleiss_kappa"],
+      "confidence_intervals": true,
+      "bootstrap_samples": 1000
+    },
+    "biological_analysis": {
+      "enabled": true,
+      "pathway_analysis": true,
+      "biomarker_discovery": true,
+      "drug_interaction_analysis": true,
+      "genetic_variant_analysis": false,
+      "clinical_relevance_filtering": true,
+      "literature_integration": false,
+      "validation_required": false
+    },
+    "result_aggregation": {
+      "enabled": true,
+      "conflict_resolution_strategy": "highest_confidence",
+      "consensus_threshold": 0.8,
+      "duplicate_handling": "merge_with_confidence_boost",
+      "quality_weighting": true,
+      "metadata_preservation": true,
+      "export_formats": ["json", "csv", "html", "pdf"]
+    }
+  },
+  "reporting": {
+    "generate_reports": true,
+    "report_formats": ["html", "json", "pdf"],
+    "include_visualizations": true,
+    "include_raw_data": false,
+    "anonymize_sensitive_data": true,
+    "report_sections": [
+      "executive_summary",
+      "methodology",
+      "results",
+      "performance_analysis",
+      "recommendations",
+      "technical_details"
+    ]
+  },
+  "thresholds": {
+    "min_accuracy": 0.85,
+    "min_kappa_score": 0.8,
+    "min_confidence_score": 0.7,
+    "max_error_rate": 0.05,
+    "min_completeness_score": 0.8,
+    "performance_regression_threshold": 0.95
+  },
+  "automation": {
+    "continuous_monitoring": false,
+    "auto_retraining": false,
+    "alert_on_regression": false,
+    "scheduled_optimization": false,
+    "optimization_frequency": "weekly"
+  }
+}

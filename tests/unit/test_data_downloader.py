@@ -2,16 +2,18 @@
 Unit tests for data_downloader module.
 """
 
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import Mock, mock_open, patch
+
 import pytest
 import requests
+
 from src.utils.data_downloader import (
-    download_synthetic_patient_archives,
-    get_archive_paths,
-    download_synthetic_patient_archives_concurrent,
-    download_multiple_files,
     _download_single_archive,
     _download_single_file,
+    download_multiple_files,
+    download_synthetic_patient_archives,
+    download_synthetic_patient_archives_concurrent,
+    get_archive_paths,
 )
 
 
@@ -65,9 +67,7 @@ class TestDownloadSyntheticPatientArchives:
         # Files don't exist initially
         mock_exists.return_value = False
         mock_response = Mock()
-        mock_response.raise_for_status.side_effect = requests.RequestException(
-            "Download failed"
-        )
+        mock_response.raise_for_status.side_effect = requests.RequestException("Download failed")
         mock_get.return_value = mock_response
 
         with patch("builtins.open", mock_open()):
@@ -190,9 +190,7 @@ class TestDownloadSingleArchive:
         mock_exists.return_value = True
 
         with pytest.raises(Exception):
-            _download_single_archive(
-                "http://example.com/test.zip", "/tmp/test.zip", "test.zip"
-            )
+            _download_single_archive("http://example.com/test.zip", "/tmp/test.zip", "test.zip")
 
         # Should clean up partial download
         mock_remove.assert_called_once_with("/tmp/test.zip")
@@ -210,9 +208,7 @@ class TestDownloadSingleArchive:
         mock_get.return_value = mock_response
 
         with patch("builtins.open", mock_open()):
-            _download_single_archive(
-                "http://example.com/large.zip", "/tmp/large.zip", "large.zip"
-            )
+            _download_single_archive("http://example.com/large.zip", "/tmp/large.zip", "large.zip")
 
         # Should have logged progress (can't easily test logger calls without more complex mocking)
 
@@ -223,9 +219,7 @@ class TestDownloadMultipleFiles:
     @patch("src.utils.data_downloader.TaskQueue")
     @patch("src.utils.data_downloader.create_task")
     @patch("src.utils.data_downloader.os.path.exists")
-    def test_download_multiple_files_success(
-        self, mock_exists, mock_create_task, mock_task_queue
-    ):
+    def test_download_multiple_files_success(self, mock_exists, mock_create_task, mock_task_queue):
         """Test successful multiple file download."""
         mock_exists.return_value = False
 
@@ -287,9 +281,7 @@ class TestDownloadSingleFile:
     @patch("src.utils.data_downloader.os.makedirs")
     @patch("src.utils.data_downloader.os.path.exists")
     @patch("src.utils.data_downloader.os.remove")
-    def test_download_single_file_failure(
-        self, mock_remove, mock_exists, mock_makedirs, mock_get
-    ):
+    def test_download_single_file_failure(self, mock_remove, mock_exists, mock_makedirs, mock_get):
         """Test single file download failure."""
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = Exception("Network error")
@@ -299,9 +291,7 @@ class TestDownloadSingleFile:
         mock_exists.return_value = True
 
         with pytest.raises(Exception):
-            _download_single_file(
-                "http://example.com/test.txt", "/tmp/test.txt", "test.txt"
-            )
+            _download_single_file("http://example.com/test.txt", "/tmp/test.txt", "test.txt")
 
         # Should clean up partial download
         mock_remove.assert_called_once_with("/tmp/test.txt")
@@ -324,9 +314,7 @@ class TestIntegrationScenarios:
             mock_get.return_value = mock_response
 
             with patch("builtins.open", mock_open()):
-                result = download_synthetic_patient_archives(
-                    archives_config=custom_config
-                )
+                result = download_synthetic_patient_archives(archives_config=custom_config)
 
             assert len(result) == 1
             assert "test_cancer_5_years.zip" in result
@@ -352,9 +340,7 @@ class TestIntegrationScenarios:
         """Test directory creation."""
         with patch("src.utils.data_downloader.requests.get") as mock_get, patch(
             "src.utils.data_downloader.os.makedirs"
-        ) as mock_makedirs, patch(
-            "src.utils.data_downloader.os.path.exists", return_value=False
-        ):
+        ) as mock_makedirs, patch("src.utils.data_downloader.os.path.exists", return_value=False):
 
             mock_response = Mock()
             mock_response.raise_for_status.return_value = None

@@ -5,13 +5,13 @@ Commands for managing HeySol CORE Memory operations including
 ingestion, search, space management, and analytics.
 """
 
-import sys
 from pathlib import Path
-from typing import List, Optional
+import sys
+from typing import Optional
 
-import typer
 from rich.console import Console
 from rich.table import Table
+import typer
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -44,7 +44,7 @@ def ingest_data(
     Stores clinical data, summaries, or any information in HeySol CORE Memory
     with optional metadata and space targeting.
     """
-    console.print(f"[bold blue]💾 Ingesting data into CORE Memory[/bold blue]")
+    console.print("[bold blue]💾 Ingesting data into CORE Memory[/bold blue]")
 
     try:
         # Initialize OncoCoreClient
@@ -60,6 +60,7 @@ def ingest_data(
         if metadata:
             try:
                 import json
+
                 parsed_metadata = json.loads(metadata)
                 console.print("[blue]📋 Metadata parsed successfully[/blue]")
             except json.JSONDecodeError as e:
@@ -73,7 +74,7 @@ def ingest_data(
             message=message,
             space_id=space_id,
             source=source or "mcode_cli",
-            metadata=parsed_metadata
+            metadata=parsed_metadata,
         )
 
         console.print("[green]✅ Data ingested successfully[/green]")
@@ -127,11 +128,7 @@ def search_memory(
         console.print("[blue]🔎 Performing search...[/blue]")
 
         # Perform search
-        results = client.search(
-            query=query,
-            space_ids=space_list,
-            limit=limit
-        )
+        results = client.search(query=query, space_ids=space_list, limit=limit)
 
         episodes = results.get("episodes", [])
 
@@ -150,11 +147,7 @@ def search_memory(
                 metadata = episode.get("metadata", {})
                 source = metadata.get("source", "unknown")
 
-                table.add_row(
-                    content + ("..." if len(content) == 100 else ""),
-                    str(score),
-                    source
-                )
+                table.add_row(content + ("..." if len(content) == 100 else ""), str(score), source)
 
             console.print(table)
 
@@ -291,11 +284,7 @@ def get_logs_by_source(
         console.print("[blue]🔍 Retrieving logs...[/blue]")
 
         # Get logs by source
-        result = client.get_logs_by_source(
-            source=source,
-            space_id=space_id,
-            limit=limit
-        )
+        result = client.get_logs_by_source(source=source, space_id=space_id, limit=limit)
 
         logs = result.get("logs", [])
         total_count = result.get("total_count", 0)
@@ -316,7 +305,12 @@ def get_logs_by_source(
                     content = log.get("content", "")[:50]
                     created_at = log.get("created_at", "unknown")
                     space_id_val = log.get("space_id", "none")[:16] + "..."
-                    table.add_row(log_id, content + ("..." if len(content) == 50 else ""), created_at, space_id_val)
+                    table.add_row(
+                        log_id,
+                        content + ("..." if len(content) == 50 else ""),
+                        created_at,
+                        space_id_val,
+                    )
 
             console.print(table)
 
@@ -380,11 +374,7 @@ def delete_logs_by_source(
         console.print("[red]🗑️ Deleting logs...[/red]")
 
         # Delete logs by source
-        result = client.delete_logs_by_source(
-            source=source,
-            space_id=space_id,
-            confirm=no_confirm
-        )
+        result = client.delete_logs_by_source(source=source, space_id=space_id, confirm=no_confirm)
 
         deleted_count = result.get("deleted_count", 0)
         console.print(f"[green]✅ Deleted {deleted_count} logs successfully[/green]")
@@ -472,7 +462,9 @@ def get_ingestion_logs(
             console.print(f"[blue]🎯 Space ID: {space_id or 'all'}[/blue]")
             console.print(f"[blue]📊 Limit: {limit}, Offset: {offset}[/blue]")
             console.print(f"[blue]🔍 Status: {status or 'all'}[/blue]")
-            console.print(f"[blue]📅 Date range: {start_date or 'none'} to {end_date or 'none'}[/blue]")
+            console.print(
+                f"[blue]📅 Date range: {start_date or 'none'} to {end_date or 'none'}[/blue]"
+            )
             console.print(f"[blue]🧠 Using MCP: {use_mcp}[/blue]")
 
         console.print("[blue]🔍 Retrieving ingestion logs...[/blue]")
@@ -484,7 +476,7 @@ def get_ingestion_logs(
             offset=offset,
             status=status,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
         )
 
         console.print(f"[green]✅ Found {len(logs)} ingestion logs[/green]")
@@ -505,7 +497,13 @@ def get_ingestion_logs(
                     space_id_val = log.get("space_id", "none")[:16] + "..."
                     created_at = log.get("created_at", "unknown")
                     message = log.get("message", "")[:50]
-                    table.add_row(log_id, log_status, space_id_val, created_at, message + ("..." if len(message) == 50 else ""))
+                    table.add_row(
+                        log_id,
+                        log_status,
+                        space_id_val,
+                        created_at,
+                        message + ("..." if len(message) == 50 else ""),
+                    )
 
             console.print(table)
 
@@ -558,7 +556,7 @@ def get_log(
             console.print(f"[cyan]Created:[/cyan] {log.get('created_at', 'unknown')}")
             console.print(f"[cyan]Message:[/cyan] {log.get('message', 'none')}")
 
-            if log.get('details'):
+            if log.get("details"):
                 console.print(f"[cyan]Details:[/cyan] {log['details']}")
 
             if verbose:
@@ -613,7 +611,9 @@ def delete_log(
         if result.get("success", False):
             console.print("[green]✅ Log entry deleted successfully[/green]")
         else:
-            console.print(f"[red]❌ Failed to delete log entry: {result.get('message', 'unknown error')}[/red]")
+            console.print(
+                f"[red]❌ Failed to delete log entry: {result.get('message', 'unknown error')}[/red]"
+            )
 
         if verbose:
             console.print(f"[blue]📊 Result: {result}[/blue]")
@@ -665,6 +665,7 @@ def add_to_queue(
         if metadata:
             try:
                 import json
+
                 parsed_metadata = json.loads(metadata)
                 console.print("[blue]📋 Metadata parsed successfully[/blue]")
             except json.JSONDecodeError as e:
@@ -679,7 +680,7 @@ def add_to_queue(
             space_id=space_id,
             priority=priority,
             tags=tags_list,
-            metadata=parsed_metadata
+            metadata=parsed_metadata,
         )
 
         console.print("[green]✅ Data added to ingestion queue[/green]")
@@ -729,10 +730,7 @@ def get_episode_facts(
 
         # Get episode facts
         facts = client.get_episode_facts(
-            episode_id=episode_id,
-            limit=limit,
-            offset=offset,
-            include_metadata=include_metadata
+            episode_id=episode_id, limit=limit, offset=offset, include_metadata=include_metadata
         )
 
         console.print(f"[green]✅ Found {len(facts)} episode facts[/green]")
@@ -853,9 +851,7 @@ def get_space_details(
 
         # Get space details
         details = client.get_space_details(
-            space_id=space_id,
-            include_stats=include_stats,
-            include_metadata=include_metadata
+            space_id=space_id, include_stats=include_stats, include_metadata=include_metadata
         )
 
         if details:
@@ -870,7 +866,7 @@ def get_space_details(
 
             if include_stats and details.get("stats"):
                 stats = details["stats"]
-                console.print(f"\n[cyan]Statistics:[/cyan]")
+                console.print("\n[cyan]Statistics:[/cyan]")
                 console.print(f"  Episodes: {stats.get('episode_count', 0)}")
                 console.print(f"  Facts: {stats.get('fact_count', 0)}")
                 console.print(f"  Storage Size: {stats.get('storage_size', 'unknown')}")
@@ -922,6 +918,7 @@ def update_space(
         if metadata:
             try:
                 import json
+
                 parsed_metadata = json.loads(metadata)
                 console.print("[blue]📋 Metadata parsed successfully[/blue]")
             except json.JSONDecodeError as e:
@@ -932,16 +929,15 @@ def update_space(
 
         # Update space
         result = client.update_space(
-            space_id=space_id,
-            name=name,
-            description=description,
-            metadata=parsed_metadata
+            space_id=space_id, name=name, description=description, metadata=parsed_metadata
         )
 
         if result.get("success", False):
             console.print("[green]✅ Space updated successfully[/green]")
         else:
-            console.print(f"[red]❌ Failed to update space: {result.get('message', 'unknown error')}[/red]")
+            console.print(
+                f"[red]❌ Failed to update space: {result.get('message', 'unknown error')}[/red]"
+            )
 
         if verbose:
             console.print(f"[blue]📊 Result: {result}[/blue]")
@@ -979,7 +975,9 @@ def delete_space(
 
         # Confirmation prompt
         if not no_confirm:
-            console.print("[yellow]⚠️ This will permanently delete the space and all its contents[/yellow]")
+            console.print(
+                "[yellow]⚠️ This will permanently delete the space and all its contents[/yellow]"
+            )
             if not typer.confirm("Are you sure you want to continue?"):
                 console.print("[blue]❌ Operation cancelled[/blue]")
                 client.close()
@@ -993,7 +991,9 @@ def delete_space(
         if result.get("success", False):
             console.print("[green]✅ Space deleted successfully[/green]")
         else:
-            console.print(f"[red]❌ Failed to delete space: {result.get('message', 'unknown error')}[/red]")
+            console.print(
+                f"[red]❌ Failed to delete space: {result.get('message', 'unknown error')}[/red]"
+            )
 
         if verbose:
             console.print(f"[blue]📊 Result: {result}[/blue]")
@@ -1040,11 +1040,7 @@ def register_webhook(
         console.print("[blue]📤 Registering webhook...[/blue]")
 
         # Register webhook
-        result = client.register_webhook(
-            url=url,
-            events=events_list,
-            secret=secret
-        )
+        result = client.register_webhook(url=url, events=events_list, secret=secret)
 
         console.print("[green]✅ Webhook registered successfully[/green]")
 
@@ -1093,10 +1089,7 @@ def list_webhooks(
 
         # List webhooks
         webhooks = client.list_webhooks(
-            space_id=space_id,
-            active=active,
-            limit=limit,
-            offset=offset
+            space_id=space_id, active=active, limit=limit, offset=offset
         )
 
         console.print(f"[green]✅ Found {len(webhooks)} webhooks[/green]")
@@ -1114,7 +1107,9 @@ def list_webhooks(
                 if isinstance(webhook, dict):
                     webhook_id = webhook.get("id", "unknown")[:16] + "..."
                     url = webhook.get("url", "")
-                    events = ", ".join(webhook.get("events", [])) if webhook.get("events") else "all"
+                    events = (
+                        ", ".join(webhook.get("events", [])) if webhook.get("events") else "all"
+                    )
                     is_active = "✅" if webhook.get("active", False) else "❌"
                     created_at = webhook.get("created_at", "unknown")
                     table.add_row(webhook_id, url, events, is_active, created_at)
@@ -1166,13 +1161,15 @@ def get_webhook(
             # Display webhook information
             console.print(f"[cyan]ID:[/cyan] {webhook.get('id', 'unknown')}")
             console.print(f"[cyan]URL:[/cyan] {webhook.get('url', 'unknown')}")
-            console.print(f"[cyan]Events:[/cyan] {', '.join(webhook.get('events', [])) if webhook.get('events') else 'all'}")
+            console.print(
+                f"[cyan]Events:[/cyan] {', '.join(webhook.get('events', [])) if webhook.get('events') else 'all'}"
+            )
             console.print(f"[cyan]Active:[/cyan] {webhook.get('active', False)}")
             console.print(f"[cyan]Created:[/cyan] {webhook.get('created_at', 'unknown')}")
             console.print(f"[cyan]Updated:[/cyan] {webhook.get('updated_at', 'unknown')}")
 
             if webhook.get("secret"):
-                console.print(f"[cyan]Secret:[/cyan] configured")
+                console.print("[cyan]Secret:[/cyan] configured")
 
             if verbose:
                 console.print(f"\n[blue]📊 Full webhook data: {webhook}[/blue]")
@@ -1223,17 +1220,15 @@ def update_webhook(
 
         # Update webhook
         result = client.update_webhook(
-            webhook_id=webhook_id,
-            url=url,
-            events=events_list,
-            secret=secret,
-            active=active
+            webhook_id=webhook_id, url=url, events=events_list, secret=secret, active=active
         )
 
         if result.get("success", False):
             console.print("[green]✅ Webhook updated successfully[/green]")
         else:
-            console.print(f"[red]❌ Failed to update webhook: {result.get('message', 'unknown error')}[/red]")
+            console.print(
+                f"[red]❌ Failed to update webhook: {result.get('message', 'unknown error')}[/red]"
+            )
 
         if verbose:
             console.print(f"[blue]📊 Result: {result}[/blue]")
@@ -1285,7 +1280,9 @@ def delete_webhook(
         if result.get("success", False):
             console.print("[green]✅ Webhook deleted successfully[/green]")
         else:
-            console.print(f"[red]❌ Failed to delete webhook: {result.get('message', 'unknown error')}[/red]")
+            console.print(
+                f"[red]❌ Failed to delete webhook: {result.get('message', 'unknown error')}[/red]"
+            )
 
         if verbose:
             console.print(f"[blue]📊 Result: {result}[/blue]")

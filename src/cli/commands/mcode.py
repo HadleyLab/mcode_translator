@@ -4,12 +4,12 @@ mCODE Translation Commands
 Commands for processing and translating clinical data using mCODE standards.
 """
 
-import sys
 from pathlib import Path
+import sys
 from typing import Optional
 
-import typer
 from rich.console import Console
+import typer
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -20,16 +20,11 @@ console = Console()
 logger = get_logger(__name__)
 
 
-
 app = typer.Typer(
     name="mcode",
     help="mCODE translation and processing operations",
     add_completion=True,
 )
-
-
-
-
 
 
 @app.command("summarize")
@@ -39,10 +34,17 @@ def summarize_trial(
     format: str = typer.Option("text", help="Output format (text, json, ndjson)"),
     include_codes: bool = typer.Option(True, help="Include mCODE codes in summary"),
     store_memory: bool = typer.Option(True, help="Store summary in CORE Memory"),
-    engine: str = typer.Option("llm", help="Processing engine: 'regex' (fast, deterministic) or 'llm' (flexible, intelligent)"),
+    engine: str = typer.Option(
+        "llm",
+        help="Processing engine: 'regex' (fast, deterministic) or 'llm' (flexible, intelligent)",
+    ),
     llm_model: str = typer.Option("deepseek-coder", help="LLM model to use for llm engine"),
-    llm_prompt: str = typer.Option("direct_mcode_evidence_based_concise", help="Prompt template for llm engine"),
-    compare_engines: bool = typer.Option(False, help="Compare both engines and show recommendation"),
+    llm_prompt: str = typer.Option(
+        "direct_mcode_evidence_based_concise", help="Prompt template for llm engine"
+    ),
+    compare_engines: bool = typer.Option(
+        False, help="Compare both engines and show recommendation"
+    ),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
 ):
     """
@@ -72,23 +74,28 @@ def summarize_trial(
         if verbose:
             console.print(f"[blue]📋 Output format: {format}[/blue]")
             console.print(f"[blue]📋 Include codes: {include_codes}[/blue]")
-            console.print(f"[blue]💾 Memory storage: {'enabled' if store_memory else 'disabled'}[/blue]")
+            console.print(
+                f"[blue]💾 Memory storage: {'enabled' if store_memory else 'disabled'}[/blue]"
+            )
 
         # Initialize trials processor workflow
-        from workflows.trials_processor import TrialsProcessor
         from config.heysol_config import get_config
+        from workflows.trials_processor import TrialsProcessor
+
         config = get_config()
         processor = TrialsProcessor(config)
-
 
         console.print("[blue]🔍 Fetching trial data...[/blue]")
         # Fetch trial data using TrialsFetcherWorkflow
         from workflows.trials_fetcher import TrialsFetcherWorkflow
+
         fetcher = TrialsFetcherWorkflow()
         fetch_result = fetcher.execute(nct_ids=[trial_id], output_path=None)
 
         if not fetch_result.success:
-            console.print(f"[red]❌ Failed to fetch trial {trial_id}: {fetch_result.error_message}[/red]")
+            console.print(
+                f"[red]❌ Failed to fetch trial {trial_id}: {fetch_result.error_message}[/red]"
+            )
             raise typer.Exit(1)
 
         trials = fetch_result.data
@@ -102,10 +109,7 @@ def summarize_trial(
         console.print("[blue]📝 Generating mCODE summary...[/blue]")
         # Process trial using workflow
         processing_result = processor.process_single_trial(
-            trial_data,
-            engine=engine,
-            model=llm_model,
-            prompt=llm_prompt
+            trial_data, engine=engine, model=llm_model, prompt=llm_prompt
         )
 
         if not processing_result.success:
@@ -114,6 +118,7 @@ def summarize_trial(
 
         # Use summarizer workflow to generate proper natural language summary
         from workflows.trials_summarizer import TrialsSummarizerWorkflow
+
         summarizer = TrialsSummarizerWorkflow(config)
 
         # Get processed trial with mCODE elements
@@ -121,45 +126,41 @@ def summarize_trial(
 
         # Generate natural language summary using summarizer workflow
         summary_result = summarizer.process_single_trial(
-            processed_trial,
-            store_in_memory=False  # Don't store during CLI usage
+            processed_trial, store_in_memory=False  # Don't store during CLI usage
         )
 
         if summary_result.success and summary_result.data:
             summary_data = summary_result.data
             # Extract the natural language summary
-            summary = summary_data.get("McodeResults", {}).get("natural_language_summary", "Summary not available")
+            summary = summary_data.get("McodeResults", {}).get(
+                "natural_language_summary", "Summary not available"
+            )
         else:
             summary = "Failed to generate summary"
 
-        console.print(f"[green]✅ Generated summary[/green]")
+        console.print("[green]✅ Generated summary[/green]")
         if verbose:
             if processing_result.metadata:
                 console.print(f"[blue]📊 Processing metadata: {processing_result.metadata}[/blue]")
 
         # Display summary based on format
         if format == "text":
-            console.print(f"\n[bold cyan]📋 Trial Summary:[/bold cyan]")
+            console.print("\n[bold cyan]📋 Trial Summary:[/bold cyan]")
             console.print(summary)
         elif format == "json":
             import json
-            console.print(json.dumps({"trial_id": trial_id, "summary": summary, "engine": engine}, indent=2))
+
+            console.print(
+                json.dumps({"trial_id": trial_id, "summary": summary, "engine": engine}, indent=2)
+            )
         elif format == "ndjson":
             import json
+
             console.print(json.dumps({"trial_id": trial_id, "summary": summary, "engine": engine}))
 
         if store_memory:
             console.print("[blue]💾 Storing in CORE Memory...[/blue]")
             memory = OncoCoreMemory()
-            mcode_data = {
-                "original_trial_data": trial_data,
-                "trial_metadata": {
-                    "nct_id": trial_id,
-                    "processing_engine": "llm",
-                },
-                "processing_metadata": processing_result.metadata,
-                "processed_trial": processed_trial
-            }
             success = memory.store_trial_summary(trial_id, summary)
             if success:
                 console.print("[green]✅ Summary stored in CORE Memory[/green]")
@@ -169,10 +170,13 @@ def summarize_trial(
         console.print("[green]✅ Trial summary completed successfully[/green]")
 
         if output_file:
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 if format == "json":
                     import json
-                    json.dump({"trial_id": trial_id, "summary": summary, "engine": engine}, f, indent=2)
+
+                    json.dump(
+                        {"trial_id": trial_id, "summary": summary, "engine": engine}, f, indent=2
+                    )
                 else:
                     f.write(summary)
             console.print(f"[green]💾 Summary saved to: {output_file}[/green]")
@@ -208,14 +212,17 @@ def extract_trial(
 
         # Fetch trial data
         console.print("[blue]🔍 Fetching trial data...[/blue]")
-        from workflows.trials_fetcher import TrialsFetcherWorkflow
         from config.heysol_config import get_config
+        from workflows.trials_fetcher import TrialsFetcherWorkflow
+
         config = get_config()
         fetcher = TrialsFetcherWorkflow(config)
         fetch_result = fetcher.execute(nct_ids=[trial_id], output_path=None)
 
         if not fetch_result.success:
-            console.print(f"[red]❌ Failed to fetch trial {trial_id}: {fetch_result.error_message}[/red]")
+            console.print(
+                f"[red]❌ Failed to fetch trial {trial_id}: {fetch_result.error_message}[/red]"
+            )
             raise typer.Exit(1)
 
         trials = fetch_result.data
@@ -236,17 +243,18 @@ def extract_trial(
         # Display results based on format
         if format == "json":
             import json
+
             output_data = {
                 "trial_id": trial_id,
                 "mcode_elements": mcode_elements,
                 "extraction_metadata": {
                     "total_categories": len(mcode_elements),
-                    "categories": list(mcode_elements.keys())
-                }
+                    "categories": list(mcode_elements.keys()),
+                },
             }
 
             if output_file:
-                with open(output_file, 'w') as f:
+                with open(output_file, "w") as f:
                     json.dump(output_data, f, indent=2)
                 console.print(f"[green]💾 mCODE elements saved to: {output_file}[/green]")
             else:
@@ -259,30 +267,30 @@ def extract_trial(
                 if isinstance(elements, list):
                     for i, element in enumerate(elements, 1):
                         if isinstance(element, dict):
-                            display = element.get('display', str(element))
+                            display = element.get("display", str(element))
                             console.print(f"  {i}. {display}")
                         else:
                             console.print(f"  {i}. {element}")
                 elif isinstance(elements, dict):
-                    display = elements.get('display', str(elements))
+                    display = elements.get("display", str(elements))
                     console.print(f"  {display}")
                 else:
                     console.print(f"  {elements}")
 
             if output_file:
-                with open(output_file, 'w') as f:
+                with open(output_file, "w") as f:
                     f.write(f"mCODE Elements for Trial {trial_id}:\n\n")
                     for category, elements in mcode_elements.items():
                         f.write(f"{category}:\n")
                         if isinstance(elements, list):
                             for i, element in enumerate(elements, 1):
                                 if isinstance(element, dict):
-                                    display = element.get('display', str(element))
+                                    display = element.get("display", str(element))
                                     f.write(f"  {i}. {display}\n")
                                 else:
                                     f.write(f"  {i}. {element}\n")
                         elif isinstance(elements, dict):
-                            display = elements.get('display', str(elements))
+                            display = elements.get("display", str(elements))
                             f.write(f"  {display}\n")
                         else:
                             f.write(f"  {elements}\n")
@@ -290,7 +298,9 @@ def extract_trial(
                 console.print(f"[green]💾 mCODE elements saved to: {output_file}[/green]")
 
         if verbose:
-            console.print(f"\n[blue]📊 Extraction details: {len(mcode_elements)} categories extracted[/blue]")
+            console.print(
+                f"\n[blue]📊 Extraction details: {len(mcode_elements)} categories extracted[/blue]"
+            )
 
     except ImportError as e:
         console.print(f"[red]❌ Import error: {e}[/red]")
@@ -323,9 +333,10 @@ def optimize_trials(
 
     try:
         # Import required components
-        from workflows.trials_optimizer import TrialsOptimizerWorkflow
-        from config.heysol_config import get_config
         import json
+
+        from config.heysol_config import get_config
+        from workflows.trials_optimizer import TrialsOptimizerWorkflow
 
         # Get configuration
         config = get_config()
@@ -347,7 +358,7 @@ def optimize_trials(
         # Load trial data
         console.print("[blue]📖 Loading trial data...[/blue]")
         trials_data = []
-        with open(input_file, 'r') as f:
+        with open(input_file) as f:
             for line in f:
                 line = line.strip()
                 if line:
@@ -374,7 +385,7 @@ def optimize_trials(
             max_combinations=max_combinations,
             cv_folds=cv_folds,
             output_config=output_config,
-            run_inter_rater_reliability=inter_rater
+            run_inter_rater_reliability=inter_rater,
         )
 
         if result.success:
@@ -386,9 +397,13 @@ def optimize_trials(
                 best_score = result.metadata.get("best_score", 0)
                 best_combination = result.metadata.get("best_combination")
 
-                console.print(f"[green]📊 Combinations tested: {successful_tests}/{total_combinations}[/green]")
+                console.print(
+                    f"[green]📊 Combinations tested: {successful_tests}/{total_combinations}[/green]"
+                )
                 if best_combination:
-                    console.print(f"[green]🏆 Best combination: {best_combination['model']} + {best_combination['prompt']}[/green]")
+                    console.print(
+                        f"[green]🏆 Best combination: {best_combination['model']} + {best_combination['prompt']}[/green]"
+                    )
                     console.print(f"[green]📈 Best CV score: {best_score:.3f}[/green]")
 
                 if result.metadata.get("config_saved"):
@@ -399,12 +414,16 @@ def optimize_trials(
 
             # Display results summary
             if result.data and verbose:
-                console.print(f"\n[blue]📋 Detailed results: {len(result.data)} combinations[/blue]")
+                console.print(
+                    f"\n[blue]📋 Detailed results: {len(result.data)} combinations[/blue]"
+                )
                 for i, combo_result in enumerate(result.data, 1):
                     if combo_result.get("success"):
                         combo = combo_result.get("combination", {})
                         avg_score = combo_result.get("cv_average_score", 0)
-                        console.print(f"  {i}. {combo.get('model')} + {combo.get('prompt')}: {avg_score:.3f}")
+                        console.print(
+                            f"  {i}. {combo.get('model')} + {combo.get('prompt')}: {avg_score:.3f}"
+                        )
 
         else:
             console.print(f"[red]❌ Optimization failed: {result.error_message}[/red]")

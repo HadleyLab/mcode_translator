@@ -15,13 +15,13 @@ Key metrics:
 """
 
 import asyncio
-import json
-import statistics
-import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
+import json
 from pathlib import Path
+import statistics
+import time
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -172,20 +172,14 @@ class InterRaterReliabilityAnalyzer:
                 tasks.append(task)
 
         # Create async queue and execute tasks
-        queue = AsyncQueue(
-            max_concurrent=max_concurrent, name="InterRaterDataCollection"
-        )
+        queue = AsyncQueue(max_concurrent=max_concurrent, name="InterRaterDataCollection")
 
         def progress_callback(completed, total, result):  # type: ignore
             if completed % 5 == 0:
-                self.logger.info(
-                    f"📊 Progress: {completed}/{total} evaluations completed"
-                )
+                self.logger.info(f"📊 Progress: {completed}/{total} evaluations completed")
 
         # Execute all tasks
-        task_results = await queue.execute_tasks(
-            tasks, progress_callback=progress_callback
-        )
+        task_results = await queue.execute_tasks(tasks, progress_callback=progress_callback)
 
         # Process results
         for task_result in task_results:
@@ -196,9 +190,7 @@ class InterRaterReliabilityAnalyzer:
                     trial_id, rater_id = task_id_parts
                     self.rater_results[trial_id][rater_id] = task_result.result
             else:
-                self.logger.warning(
-                    f"❌ Task {task_result.task_id} failed: {task_result.error}"
-                )
+                self.logger.warning(f"❌ Task {task_result.task_id} failed: {task_result.error}")
 
         self.logger.info(
             f"📊 Collected data from {len(self.rater_results)} trials × {len(rater_configs)} raters"
@@ -211,9 +203,7 @@ class InterRaterReliabilityAnalyzer:
 
         start_time = time.time()
 
-        result = RaterResult(
-            rater_id=rater_id, trial_id=self._extract_trial_id(trial_data)
-        )
+        result = RaterResult(rater_id=rater_id, trial_id=self._extract_trial_id(trial_data))
 
         try:
             # Create event loop if needed
@@ -283,9 +273,7 @@ class InterRaterReliabilityAnalyzer:
         self, trial_id: str, trial_results: Dict[str, RaterResult]
     ) -> Dict[str, Any]:
         """Analyze agreement for a single trial."""
-        successful_raters = {
-            rid: result for rid, result in trial_results.items() if result.success
-        }
+        successful_raters = {rid: result for rid, result in trial_results.items() if result.success}
 
         if len(successful_raters) < 2:
             return {"error": "Insufficient successful raters for agreement analysis"}
@@ -316,9 +304,7 @@ class InterRaterReliabilityAnalyzer:
         # Get all unique element types across all raters
         all_element_types: set[str] = set()
         for result in rater_results.values():
-            all_element_types.update(
-                elem.element_type for elem in result.mcode_elements
-            )
+            all_element_types.update(elem.element_type for elem in result.mcode_elements)
 
         element_types = sorted(all_element_types)
 
@@ -331,9 +317,7 @@ class InterRaterReliabilityAnalyzer:
         for elem_idx, elem_type in enumerate(element_types):
             for rater_idx, rater_id in enumerate(rater_ids):
                 result = rater_results[rater_id]
-                has_element = any(
-                    elem.element_type == elem_type for elem in result.mcode_elements
-                )
+                has_element = any(elem.element_type == elem_type for elem in result.mcode_elements)
                 presence_matrix[elem_idx, rater_idx] = 1 if has_element else 0
 
         # Calculate agreement metrics
@@ -369,9 +353,7 @@ class InterRaterReliabilityAnalyzer:
 
         return metrics
 
-    def _calculate_values_agreement(
-        self, rater_results: Dict[str, RaterResult]
-    ) -> Dict[str, Any]:
+    def _calculate_values_agreement(self, rater_results: Dict[str, RaterResult]) -> Dict[str, Any]:
         """Calculate agreement on element values and codes."""
         # Group elements by type
         elements_by_type: Dict[str, Dict[str, List[McodeElement]]] = defaultdict(
@@ -407,10 +389,7 @@ class InterRaterReliabilityAnalyzer:
                     for elem_i in elems_i:
                         for elem_j in elems_j:
                             total_comparisons += 1
-                            if (
-                                elem_i.code == elem_j.code
-                                and elem_i.display == elem_j.display
-                            ):
+                            if elem_i.code == elem_j.code and elem_i.display == elem_j.display:
                                 exact_matches += 1
                                 break
 
@@ -440,9 +419,7 @@ class InterRaterReliabilityAnalyzer:
 
         for rater_id, result in rater_results.items():
             for elem in result.mcode_elements:
-                confidence_by_type[elem.element_type][rater_id].append(
-                    elem.confidence_score or 0.0
-                )
+                confidence_by_type[elem.element_type][rater_id].append(elem.confidence_score or 0.0)
 
         agreement_stats = {}
 
@@ -485,21 +462,15 @@ class InterRaterReliabilityAnalyzer:
             "element_type_stats": agreement_stats,
         }
 
-    def _calculate_cohens_kappa(
-        self, ratings1: np.ndarray, ratings2: np.ndarray
-    ) -> float:
+    def _calculate_cohens_kappa(self, ratings1: np.ndarray, ratings2: np.ndarray) -> float:
         """Calculate Cohen's Kappa for two raters."""
         if len(ratings1) != len(ratings2):
             return 0.0
 
         # Confusion matrix
         a = np.sum((ratings1 == 1) & (ratings2 == 1))  # Both positive
-        b = np.sum(
-            (ratings1 == 1) & (ratings2 == 0)
-        )  # Rater1 positive, Rater2 negative
-        c = np.sum(
-            (ratings1 == 0) & (ratings2 == 1)
-        )  # Rater1 negative, Rater2 positive
+        b = np.sum((ratings1 == 1) & (ratings2 == 0))  # Rater1 positive, Rater2 negative
+        c = np.sum((ratings1 == 0) & (ratings2 == 1))  # Rater1 negative, Rater2 positive
         d = np.sum((ratings1 == 0) & (ratings2 == 0))  # Both negative
 
         total = a + b + c + d
@@ -577,9 +548,7 @@ class InterRaterReliabilityAnalyzer:
             ),
         }
 
-    def _aggregate_presence_metrics(
-        self, analysis: InterRaterAnalysis
-    ) -> AgreementMetrics:
+    def _aggregate_presence_metrics(self, analysis: InterRaterAnalysis) -> AgreementMetrics:
         """Aggregate presence/absence agreement across all trials."""
         all_kappas = []
         all_percentages = []
@@ -604,25 +573,19 @@ class InterRaterReliabilityAnalyzer:
 
         return aggregated
 
-    def _aggregate_values_metrics(
-        self, analysis: InterRaterAnalysis
-    ) -> Dict[str, float]:
+    def _aggregate_values_metrics(self, analysis: InterRaterAnalysis) -> Dict[str, float]:
         """Aggregate values agreement across all trials."""
         all_overall = []
 
         for trial_analysis in analysis.trial_analyses.values():
             if "values_agreement" in trial_analysis:
-                overall = trial_analysis["values_agreement"].get(
-                    "overall_values_agreement", 0
-                )
+                overall = trial_analysis["values_agreement"].get("overall_values_agreement", 0)
                 if overall > 0:
                     all_overall.append(overall)
 
         return {"overall": statistics.mean(all_overall) if all_overall else 0.0}
 
-    def _aggregate_confidence_metrics(
-        self, analysis: InterRaterAnalysis
-    ) -> Dict[str, float]:
+    def _aggregate_confidence_metrics(self, analysis: InterRaterAnalysis) -> Dict[str, float]:
         """Aggregate confidence agreement across all trials."""
         all_overall = []
 
@@ -702,9 +665,7 @@ class InterRaterReliabilityAnalyzer:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # Save raw rater results
-        rater_results_file = (
-            self.output_dir / f"inter_rater_rater_results_{timestamp}.json"
-        )
+        rater_results_file = self.output_dir / f"inter_rater_rater_results_{timestamp}.json"
         with open(rater_results_file, "w") as f:
             # Convert to serializable format
             serializable_results: Dict[str, Dict[str, Any]] = {}
@@ -714,9 +675,7 @@ class InterRaterReliabilityAnalyzer:
                     serializable_results[trial_id][rater_id] = {
                         "rater_id": result.rater_id,
                         "trial_id": result.trial_id,
-                        "mcode_elements": [
-                            elem.model_dump() for elem in result.mcode_elements
-                        ],
+                        "mcode_elements": [elem.model_dump() for elem in result.mcode_elements],
                         "success": result.success,
                         "error_message": result.error_message,
                         "execution_time_seconds": result.execution_time_seconds,
@@ -800,9 +759,7 @@ class InterRaterReliabilityAnalyzer:
         # Overall metrics
         for metric_name, metrics in self.analysis_results.overall_metrics.items():
             report += f"### {metric_name.replace('_', ' ').title()}\n"
-            report += (
-                f"- **Percentage Agreement:** {metrics.percentage_agreement:.3f}\n"
-            )
+            report += f"- **Percentage Agreement:** {metrics.percentage_agreement:.3f}\n"
             if metrics.fleiss_kappa != 0:
                 report += f"- **Fleiss' Kappa:** {metrics.fleiss_kappa:.3f}\n"
             if metrics.cohens_kappa != 0:
@@ -827,9 +784,7 @@ class InterRaterReliabilityAnalyzer:
 
             if "presence_agreement" in trial_analysis:
                 presence = trial_analysis["presence_agreement"]
-                report += (
-                    f"- **Presence Agreement:** {presence.percentage_agreement:.3f}\n"
-                )
+                report += f"- **Presence Agreement:** {presence.percentage_agreement:.3f}\n"
                 if presence.fleiss_kappa != 0:
                     report += f"- **Fleiss' Kappa:** {presence.fleiss_kappa:.3f}\n"
 

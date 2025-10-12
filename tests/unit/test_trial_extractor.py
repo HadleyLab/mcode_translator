@@ -2,8 +2,10 @@
 Unit tests for TrialExtractor class.
 """
 
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from src.workflows.trial_extractor import TrialExtractor
 
 
@@ -23,20 +25,20 @@ class TestTrialExtractor:
                 "identificationModule": {
                     "nctId": "NCT12345678",
                     "briefTitle": "Test Trial",
-                    "officialTitle": "Official Test Trial Title"
+                    "officialTitle": "Official Test Trial Title",
                 },
                 "eligibilityModule": {
                     "minimumAge": "18 Years",
                     "maximumAge": "65 Years",
                     "sex": "All",
                     "healthyVolunteers": True,
-                    "eligibilityCriteria": "Detailed eligibility criteria text"
+                    "eligibilityCriteria": "Detailed eligibility criteria text",
                 },
                 "conditionsModule": {
                     "conditions": [
                         {"name": "Breast Cancer", "code": "C50"},
                         {"name": "Diabetes", "code": "E10"},
-                        "Lung Cancer"
+                        "Lung Cancer",
                     ]
                 },
                 "armsInterventionsModule": {
@@ -44,41 +46,35 @@ class TestTrialExtractor:
                         {
                             "type": "Drug",
                             "name": "Test Drug",
-                            "description": "Test drug description"
+                            "description": "Test drug description",
                         },
                         {
                             "type": "Procedure",
                             "name": "Surgery",
-                            "description": "Surgical procedure"
-                        }
+                            "description": "Surgical procedure",
+                        },
                     ]
                 },
                 "designModule": {
                     "studyType": "Interventional",
                     "phases": ["Phase 1", "Phase 2"],
                     "primaryPurpose": "Treatment",
-                    "enrollmentInfo": {
-                        "count": 100,
-                        "type": "Actual"
-                    }
+                    "enrollmentInfo": {"count": 100, "type": "Actual"},
                 },
                 "statusModule": {
                     "overallStatus": "Completed",
                     "startDateStruct": {"date": "2020-01-01"},
                     "completionDateStruct": {"date": "2022-01-01"},
-                    "primaryCompletionDateStruct": {"date": "2021-12-31"}
+                    "primaryCompletionDateStruct": {"date": "2021-12-31"},
                 },
                 "sponsorCollaboratorsModule": {
-                    "leadSponsor": {
-                        "name": "Test Sponsor",
-                        "class": "Industry"
-                    },
+                    "leadSponsor": {"name": "Test Sponsor", "class": "Industry"},
                     "responsibleParty": {
                         "name": "Test Investigator",
                         "type": "Principal Investigator",
-                        "affiliation": "Test University"
-                    }
-                }
+                        "affiliation": "Test University",
+                    },
+                },
             }
         }
 
@@ -107,7 +103,9 @@ class TestTrialExtractor:
 
     def test_extract_trial_mcode_elements_exception_handling(self, trial_extractor):
         """Test exception handling during extraction."""
-        with patch.object(trial_extractor, '_extract_trial_identification', side_effect=Exception("Test error")):
+        with patch.object(
+            trial_extractor, "_extract_trial_identification", side_effect=Exception("Test error")
+        ):
             result = trial_extractor.extract_trial_mcode_elements({"protocolSection": {}})
             # Should return empty dict on exception
             assert result == {}
@@ -161,7 +159,9 @@ class TestTrialExtractor:
         result = trial_extractor._extract_trial_eligibility_mcode("invalid")
         assert result == {}
 
-    def test_extract_trial_conditions_mcode_cancer_conditions(self, trial_extractor, sample_trial_data):
+    def test_extract_trial_conditions_mcode_cancer_conditions(
+        self, trial_extractor, sample_trial_data
+    ):
         """Test extraction of cancer conditions."""
         conditions = sample_trial_data["protocolSection"]["conditionsModule"]
         result = trial_extractor._extract_trial_conditions_mcode(conditions)
@@ -199,7 +199,9 @@ class TestTrialExtractor:
         result = trial_extractor._extract_trial_conditions_mcode(conditions)
         assert result == {}
 
-    def test_extract_trial_interventions_mcode_medication_and_other(self, trial_extractor, sample_trial_data):
+    def test_extract_trial_interventions_mcode_medication_and_other(
+        self, trial_extractor, sample_trial_data
+    ):
         """Test extraction of interventions with medication and other types."""
         interventions = sample_trial_data["protocolSection"]["armsInterventionsModule"]
         result = trial_extractor._extract_trial_interventions_mcode(interventions)
@@ -326,7 +328,7 @@ class TestTrialExtractor:
 
     def test_extract_trial_metadata_exception_handling(self, trial_extractor):
         """Test exception handling in metadata extraction."""
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             # Create data that will cause an exception
             trial_data = {"protocolSection": None}
             result = trial_extractor.extract_trial_metadata(trial_data)
@@ -353,9 +355,13 @@ class TestTrialExtractor:
         """Test checking if trial has full data - should return True."""
         # Add derived section and outcomes to make it appear complete
         sample_trial_data["derivedSection"] = {"someData": "test"}
-        sample_trial_data["protocolSection"]["outcomesModule"] = {"primaryOutcomes": [{"title": "Test Outcome"}]}
+        sample_trial_data["protocolSection"]["outcomesModule"] = {
+            "primaryOutcomes": [{"title": "Test Outcome"}]
+        }
         # Add collaborators to reach the 3 indicator threshold
-        sample_trial_data["protocolSection"]["sponsorCollaboratorsModule"]["collaborators"] = [{"name": "Test Collaborator"}]
+        sample_trial_data["protocolSection"]["sponsorCollaboratorsModule"]["collaborators"] = [
+            {"name": "Test Collaborator"}
+        ]
         result = trial_extractor.check_trial_has_full_data(sample_trial_data)
         assert result is True
 
@@ -364,7 +370,7 @@ class TestTrialExtractor:
         partial_trial = {
             "protocolSection": {
                 "identificationModule": {"nctId": "NCT12345678"},
-                "eligibilityModule": {"eligibilityCriteria": "Short criteria"}
+                "eligibilityModule": {"eligibilityCriteria": "Short criteria"},
             }
         }
         result = trial_extractor.check_trial_has_full_data(partial_trial)

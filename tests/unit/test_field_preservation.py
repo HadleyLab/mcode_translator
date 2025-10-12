@@ -3,19 +3,21 @@
 Test script to verify that log copying preserves all fields including timestamp.
 """
 
-import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'heysol_api_client'))
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "heysol_api_client"))
 
 from heysol import HeySolClient
+
 
 def test_field_preservation():
     """Test that copying logs preserves timestamp and other fields."""
 
     # Create test clients (these will fail with invalid keys but we can test the logic)
     try:
-        source_client = HeySolClient(api_key="test-key", base_url="https://test.com")
-        target_client = HeySolClient(api_key="test-key", base_url="https://test.com")
+        HeySolClient(api_key="test-key", base_url="https://test.com")
+        HeySolClient(api_key="test-key", base_url="https://test.com")
     except Exception as e:
         print(f"Expected error creating clients: {e}")
         return
@@ -31,8 +33,8 @@ def test_field_preservation():
             "referenceTime": "2025-09-26T15:00:00.000Z",
             "metadata": {"test": "metadata"},
             "sessionId": "session-123",
-            "source": "original-source"
-        }
+            "source": "original-source",
+        },
     }
 
     # Test the field extraction logic from the transfer method
@@ -56,6 +58,7 @@ def test_field_preservation():
     assert original_session_id == "session-123"
 
     print("✅ All fields are properly preserved!")
+
 
 if __name__ == "__main__":
     test_field_preservation()

@@ -1,5 +1,5 @@
-import json
 from dataclasses import dataclass
+import json
 from typing import Any, Dict, List, Optional
 
 from src.utils.logging_config import Loggable, logging
@@ -40,9 +40,7 @@ class DocumentIngestor(Loggable):
             },
         }
 
-    def ingest_clinical_trial_document(
-        self, trial_data: Dict[str, Any]
-    ) -> List[DocumentSection]:
+    def ingest_clinical_trial_document(self, trial_data: Dict[str, Any]) -> List[DocumentSection]:
         """
         Ingest clinical trial document and extract relevant sections
 
@@ -61,9 +59,7 @@ class DocumentIngestor(Loggable):
         self.logger.debug(f"Protocol section keys: {list(protocol_section.keys())}")
 
         # Process each module in protocol section
-        for module_name, section_type in self.supported_sections[
-            "protocolSection"
-        ].items():
+        for module_name, section_type in self.supported_sections["protocolSection"].items():
             module_data = protocol_section.get(module_name, {})
             self.logger.debug(f"Processing module {module_name}: {bool(module_data)}")
             if module_data:
@@ -85,9 +81,7 @@ class DocumentIngestor(Loggable):
 
         # Process results section if available
         results_section = trial_data.get("resultsSection", {})
-        for module_name, section_type in self.supported_sections[
-            "resultsSection"
-        ].items():
+        for module_name, section_type in self.supported_sections["resultsSection"].items():
             module_data = results_section.get(module_name, {})
             if module_data:
                 section_content = self._extract_module_content(module_data, module_name)
@@ -105,9 +99,7 @@ class DocumentIngestor(Loggable):
 
         return sections
 
-    def _extract_module_content(
-        self, module_data: Dict[str, Any], module_name: str
-    ) -> str:
+    def _extract_module_content(self, module_data: Dict[str, Any], module_name: str) -> str:
         """
         Extract textual content from a module based on its structure
 
@@ -259,9 +251,7 @@ class DocumentIngestor(Loggable):
             "text_fragment": text_fragment,
             "position_range": {"start": start_pos, "end": end_pos},
             "extraction_context": {
-                "module_type": (
-                    section.metadata.get("module_type") if section.metadata else None
-                ),
+                "module_type": (section.metadata.get("module_type") if section.metadata else None),
                 "source_system": "ClinicalTrials.gov",
             },
             "provenance_chain": [

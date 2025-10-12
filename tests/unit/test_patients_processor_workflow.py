@@ -2,14 +2,15 @@
 Unit tests for PatientsProcessorWorkflow.
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
-from src.workflows.patients_processor import PatientsProcessorWorkflow
+import pytest
+
+from src.services.clinical_note_generator import ClinicalNoteGenerator
 from src.services.demographics_extractor import DemographicsExtractor
 from src.services.fhir_extractors import FHIRResourceExtractors
-from src.services.clinical_note_generator import ClinicalNoteGenerator
 from src.utils.config import Config
+from src.workflows.patients_processor import PatientsProcessorWorkflow
 
 
 class TestPatientsProcessorWorkflow:
@@ -92,9 +93,7 @@ class TestPatientsProcessorWorkflow:
         assert "No patient data provided" in result.error_message
 
     @patch("src.workflows.patients_processor.TaskQueue")
-    def test_execute_with_task_failures(
-        self, mock_task_queue, workflow, mock_patient_data
-    ):
+    def test_execute_with_task_failures(self, mock_task_queue, workflow, mock_patient_data):
         """Test execute handles task failures gracefully."""
         # Mock task queue
         mock_queue_instance = Mock()
@@ -153,9 +152,7 @@ class TestPatientsProcessorWorkflow:
         assert "filtered_mcode_elements" in result
         assert "mcode_processing_metadata" in result
 
-    def test_process_single_patient_with_memory_storage(
-        self, workflow, mock_patient_data
-    ):
+    def test_process_single_patient_with_memory_storage(self, workflow, mock_patient_data):
         """Test single patient processing with memory storage."""
         # Mock memory storage
         workflow.memory_storage = Mock()
@@ -171,9 +168,7 @@ class TestPatientsProcessorWorkflow:
         assert isinstance(result, dict)
         workflow.memory_storage.store_patient_mcode_summary.assert_called_once()
 
-    def test_process_single_patient_memory_storage_failure(
-        self, workflow, mock_patient_data
-    ):
+    def test_process_single_patient_memory_storage_failure(self, workflow, mock_patient_data):
         """Test single patient processing when memory storage fails."""
         # Mock memory storage
         workflow.memory_storage = Mock()
@@ -189,9 +184,7 @@ class TestPatientsProcessorWorkflow:
         assert isinstance(result, dict)
         workflow.memory_storage.store_patient_mcode_summary.assert_called_once()
 
-    def test_process_single_patient_with_trials_criteria(
-        self, workflow, mock_patient_data
-    ):
+    def test_process_single_patient_with_trials_criteria(self, workflow, mock_patient_data):
         """Test single patient processing with trial criteria filtering."""
         trials_criteria = {"CancerCondition": True}
 
@@ -343,9 +336,7 @@ class TestPatientsProcessorWorkflow:
         extractor = FHIRResourceExtractors()
         observation = {
             "code": {"coding": [{"display": "Estrogen receptor status"}]},
-            "valueCodeableConcept": {
-                "coding": [{"code": "positive", "display": "Positive"}]
-            },
+            "valueCodeableConcept": {"coding": [{"code": "positive", "display": "Positive"}]},
         }
 
         elements = extractor.extract_observation_mcode(observation)
@@ -358,9 +349,7 @@ class TestPatientsProcessorWorkflow:
         extractor = FHIRResourceExtractors()
         observation = {
             "code": {"coding": [{"display": "TNM Stage"}]},
-            "valueCodeableConcept": {
-                "coding": [{"code": "IIA", "display": "Stage IIA"}]
-            },
+            "valueCodeableConcept": {"coding": [{"code": "IIA", "display": "Stage IIA"}]},
         }
 
         elements = extractor.extract_observation_mcode(observation)
@@ -373,9 +362,7 @@ class TestPatientsProcessorWorkflow:
         extractor = FHIRResourceExtractors()
         observation = {
             "valueCodeableConcept": {
-                "coding": [
-                    {"system": "SNOMED", "code": "positive", "display": "Positive"}
-                ]
+                "coding": [{"system": "SNOMED", "code": "positive", "display": "Positive"}]
             }
         }
 
@@ -404,11 +391,7 @@ class TestPatientsProcessorWorkflow:
         """Test extracting surgical procedure mCODE."""
         extractor = FHIRResourceExtractors()
         procedure = {
-            "code": {
-                "coding": [
-                    {"system": "SNOMED", "code": "12345", "display": "Mastectomy"}
-                ]
-            },
+            "code": {"coding": [{"system": "SNOMED", "code": "12345", "display": "Mastectomy"}]},
             "performedDateTime": "2023-01-01",
         }
 
@@ -422,11 +405,7 @@ class TestPatientsProcessorWorkflow:
         """Test extracting non-surgical procedure mCODE."""
         extractor = FHIRResourceExtractors()
         procedure = {
-            "code": {
-                "coding": [
-                    {"system": "SNOMED", "code": "12345", "display": "Blood test"}
-                ]
-            }
+            "code": {"coding": [{"system": "SNOMED", "code": "12345", "display": "Blood test"}]}
         }
 
         result = extractor.extract_procedure_mcode(procedure)
@@ -462,9 +441,7 @@ class TestPatientsProcessorWorkflow:
         extractor = FHIRResourceExtractors()
         immunization = {
             "vaccineCode": {
-                "coding": [
-                    {"system": "CVX", "code": "123", "display": "COVID-19 vaccine"}
-                ]
+                "coding": [{"system": "CVX", "code": "123", "display": "COVID-19 vaccine"}]
             },
             "occurrenceDateTime": "2023-01-01",
             "status": "completed",
@@ -658,9 +635,7 @@ class TestPatientsProcessorWorkflow:
 
     def test_extract_patient_id_from_resource_id(self, workflow):
         """Test extracting patient ID from resource ID."""
-        patient = {
-            "entry": [{"resource": {"resourceType": "Patient", "id": "patient_456"}}]
-        }
+        patient = {"entry": [{"resource": {"resourceType": "Patient", "id": "patient_456"}}]}
 
         patient_id = workflow._extract_patient_id(patient)
 

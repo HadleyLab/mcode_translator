@@ -18,4 +18,4 @@ class TestTrialsOptimizerWorkflow:
         """Test benchmark validation summarization."""
         workflow = TrialsOptimizerWorkflow()
         # Test that the method exists
-        assert hasattr(workflow, 'summarize_benchmark_validations')
+        assert hasattr(workflow, "summarize_benchmark_validations")

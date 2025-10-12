@@ -2,8 +2,10 @@
 Unit tests for ClinicalTrialsProcessorWorkflow.
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
+
 from src.workflows.trials_processor import TrialsProcessor
 
 
@@ -58,7 +60,7 @@ class TestTrialsProcessor:
         trial = {
             "protocolSection": {
                 "identificationModule": {"nctId": "NCT123"},
-                "eligibilityModule": {"eligibilityCriteria": "Test criteria"}
+                "eligibilityModule": {"eligibilityCriteria": "Test criteria"},
             }
         }
 
@@ -113,11 +115,9 @@ class TestTrialsProcessor:
                 "armsInterventionsModule": {
                     "interventions": [{"description": "Detailed intervention"}]
                 },
-                "outcomesModule": {
-                    "primaryOutcomes": [{"title": "Primary Outcome"}]
-                }
+                "outcomesModule": {"primaryOutcomes": [{"title": "Primary Outcome"}]},
             },
-            "derivedSection": {}
+            "derivedSection": {},
         }
         assert workflow._check_trial_has_full_data(trial) is True
 
@@ -142,30 +142,26 @@ class TestTrialsProcessor:
                 "identificationModule": {
                     "nctId": "NCT123456",
                     "briefTitle": "Test Trial",
-                    "officialTitle": "Official Test Trial"
+                    "officialTitle": "Official Test Trial",
                 },
                 "statusModule": {
                     "overallStatus": "Recruiting",
                     "startDateStruct": {"date": "2023-01-01"},
-                    "completionDateStruct": {"date": "2024-01-01"}
+                    "completionDateStruct": {"date": "2024-01-01"},
                 },
                 "designModule": {
                     "studyType": "Interventional",
                     "phases": ["Phase 2"],
-                    "primaryPurpose": "Treatment"
+                    "primaryPurpose": "Treatment",
                 },
                 "eligibilityModule": {
                     "minimumAge": "18 Years",
                     "maximumAge": "65 Years",
                     "sex": "All",
-                    "healthyVolunteers": False
+                    "healthyVolunteers": False,
                 },
-                "conditionsModule": {
-                    "conditions": [{"name": "Breast Cancer"}]
-                },
-                "armsInterventionsModule": {
-                    "interventions": [{"name": "Drug A"}]
-                }
+                "conditionsModule": {"conditions": [{"name": "Breast Cancer"}]},
+                "armsInterventionsModule": {"interventions": [{"name": "Drug A"}]},
             }
         }
 
@@ -199,9 +195,7 @@ class TestTrialsProcessor:
     def test_convert_trial_mcode_to_mappings_format_list(self, workflow):
         """Test converting mCODE elements list to mappings format."""
         mcode_elements = {
-            "conditions": [
-                {"display": "Breast Cancer", "system": "SNOMED", "code": "123"}
-            ]
+            "conditions": [{"display": "Breast Cancer", "system": "SNOMED", "code": "123"}]
         }
 
         mappings = workflow._convert_trial_mcode_to_mappings_format(mcode_elements)
@@ -215,11 +209,7 @@ class TestTrialsProcessor:
     def test_convert_trial_mcode_to_mappings_format_dict(self, workflow):
         """Test converting mCODE elements dict to mappings format."""
         mcode_elements = {
-            "primaryOutcome": {
-                "display": "Overall Survival",
-                "system": "SNOMED",
-                "code": "456"
-            }
+            "primaryOutcome": {"display": "Overall Survival", "system": "SNOMED", "code": "456"}
         }
 
         mappings = workflow._convert_trial_mcode_to_mappings_format(mcode_elements)

@@ -7,10 +7,10 @@ work together correctly.
 
 import pytest
 
-from src.utils.config import Config
 from src.pipeline import McodePipeline
 from src.pipeline.document_ingestor import DocumentIngestor
 from src.services.llm.service import LLMService
+from src.utils.config import Config
 
 
 class TestArchitecture:

@@ -21,7 +21,7 @@ class TestTrialSummarizer:
         """Test generating trial summary."""
         summarizer = TrialSummarizer()
         # Test that the method exists
-        assert hasattr(summarizer, 'generate_trial_natural_language_summary')
+        assert hasattr(summarizer, "generate_trial_natural_language_summary")
 
     def test_main_successful_summarization_without_ingest(self):
         """Test successful trial summarization without CORE Memory ingestion."""

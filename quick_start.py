@@ -141,6 +141,7 @@ space_name = "MCODE Translator Demo"
 space_description = "Created by MCODE Translator quick start notebook"
 
 import json
+
 # Use CLI to create space
 import subprocess
 
@@ -276,9 +277,9 @@ for query in search_queries:
     try:
         # For demo purposes, show what search would return
         print(f"   💡 Searching for: {query}")
-        print(f"   ✅ Search functionality available")
-        print(f"   📊 Would return relevant results from ingested data")
-        print(f"   📋 Sample matches would include patient and trial data")
+        print("   ✅ Search functionality available")
+        print("   📊 Would return relevant results from ingested data")
+        print("   📋 Sample matches would include patient and trial data")
 
     except Exception as e:
         print(f"   ❌ Search failed: {e}")

@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from src.utils.concurrency import TaskQueue, create_task
+from src.utils.concurrency import AsyncTaskQueue, create_task
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
 
@@ -69,18 +69,14 @@ def search_trials(
             params["pageToken"] = page_token
 
         # Make the API request
-        response = requests.get(
-            base_url, params=params, timeout=config.get_request_timeout()
-        )
+        response = requests.get(base_url, params=params, timeout=config.get_request_timeout())
         response.raise_for_status()
         result: Dict[str, Any] = response.json()
 
         # Add pagination metadata to the result
         if isinstance(result, dict):
             studies_count = len(result.get("studies", []))
-            logger.info(
-                f"API returned {studies_count} studies for search '{search_expr}'"
-            )
+            logger.info(f"API returned {studies_count} studies for search '{search_expr}'")
             result["pagination"] = {"max_results": max_results}
 
             # Add nextPageToken if it exists in the response
@@ -106,45 +102,48 @@ def get_full_studies_batch(nct_ids: List[str], max_workers: int = 4) -> Dict[str
     Raises:
         ClinicalTrialsAPIError: If there's a critical error with batch processing
     """
-    if not nct_ids:
-        return {}
+    import asyncio
 
-    logger.info(
-        f"🔄 Batch fetching {len(nct_ids)} studies with {max_workers} concurrent workers"
-    )
+    async def _async_batch_fetch() -> Dict[str, Any]:
+        if not nct_ids:
+            return {}
 
-    # Create tasks for concurrent processing
-    tasks = []
-    for nct_id in nct_ids:
-        task = create_task(
-            task_id=f"fetch_{nct_id}",
-            func=_fetch_single_study_with_error_handling,
-            nct_id=nct_id,
-        )
-        tasks.append(task)
+        logger.info(f"🔄 Batch fetching {len(nct_ids)} studies with {max_workers} concurrent workers")
 
-    # Execute tasks concurrently
-    task_queue = TaskQueue(max_workers=max_workers, name="ClinicalTrialsFetcher")
-    task_results = task_queue.execute_tasks(tasks)
+        # Create tasks for concurrent processing
+        tasks = []
+        for nct_id in nct_ids:
+            task = create_task(
+                task_id=f"fetch_{nct_id}",
+                func=_fetch_single_study_with_error_handling,
+                nct_id=nct_id,
+            )
+            tasks.append(task)
 
-    # Process results
-    results = {}
-    successful = 0
-    failed = 0
+        # Execute tasks concurrently
+        task_queue = AsyncTaskQueue(max_concurrent=max_workers, name="ClinicalTrialsFetcher")
+        task_results = await task_queue.execute_tasks(tasks)
 
-    for result in task_results:
-        nct_id = result.task_id.replace("fetch_", "")
+        # Process results
+        results = {}
+        successful = 0
+        failed = 0
 
-        if result.success:
-            results[nct_id] = result.result
-            successful += 1
-        else:
-            logger.warning(f"Failed to fetch {nct_id}: {result.error}")
-            results[nct_id] = {"error": str(result.error)}
-            failed += 1
+        for result in task_results:
+            nct_id = result.task_id.replace("fetch_", "")
 
-    logger.info(f"📊 Batch fetch complete: {successful} successful, {failed} failed")
-    return results
+            if result.success:
+                results[nct_id] = result.result
+                successful += 1
+            else:
+                logger.warning(f"Failed to fetch {nct_id}: {result.error}")
+                results[nct_id] = {"error": str(result.error)}
+                failed += 1
+
+        logger.info(f"📊 Batch fetch complete: {successful} successful, {failed} failed")
+        return results
+
+    return asyncio.run(_async_batch_fetch())
 
 
 def _fetch_single_study_with_error_handling(nct_id: str) -> Dict[str, Any]:
@@ -187,81 +186,86 @@ def search_trials_parallel(
     Returns:
         Dictionary containing all search results with pagination metadata
     """
-    Config()
+    import asyncio
 
-    # First, get total count to determine pagination needs
-    try:
-        total_info = calculate_total_studies(search_expr, fields, page_size)
-        total_studies = total_info["total_studies"]
+    async def _async_parallel_search() -> Dict[str, Any]:
+        Config()
 
-        if total_studies == 0:
-            return {"studies": [], "totalCount": 0, "pagination": {"total_pages": 0}}
+        # First, get total count to determine pagination needs
+        try:
+            total_info = calculate_total_studies(search_expr, fields, page_size)
+            total_studies = total_info["total_studies"]
 
-        # Limit max_results to total available
-        actual_max_results = min(max_results, total_studies)
-        total_pages = (actual_max_results + page_size - 1) // page_size
+            if total_studies == 0:
+                return {"studies": [], "totalCount": 0, "pagination": {"total_pages": 0}}
 
-        logger.info(
-            f"🔄 Parallel search: {total_studies} total studies, fetching {actual_max_results} with {total_pages} pages"
-        )
+            # Limit max_results to total available
+            actual_max_results = min(max_results, total_studies)
+            total_pages = (actual_max_results + page_size - 1) // page_size
 
-        # Create tasks for concurrent pagination
-        tasks = []
-        for page in range(total_pages):
-            start_index = page * page_size
-            current_page_size = min(page_size, actual_max_results - start_index)
-
-            task = create_task(
-                task_id=f"page_{page}",
-                func=_search_single_page,
-                search_expr=search_expr,
-                fields=fields,
-                max_results=current_page_size,
-                page_token=None,  # We'll handle pagination differently
+            logger.info(
+                f"🔄 Parallel search: {total_studies} total studies, fetching {actual_max_results} with {total_pages} pages"
             )
-            tasks.append(task)
 
-        # Execute pagination tasks concurrently
-        task_queue = TaskQueue(max_workers=max_workers, name="ClinicalTrialsPagination")
-        task_results = task_queue.execute_tasks(tasks)
+            # Create tasks for concurrent pagination
+            tasks = []
+            for page in range(total_pages):
+                start_index = page * page_size
+                current_page_size = min(page_size, actual_max_results - start_index)
 
-        # Aggregate results
-        all_studies = []
-        successful_pages = 0
-        failed_pages = 0
+                task = create_task(
+                    task_id=f"page_{page}",
+                    func=_search_single_page,
+                    search_expr=search_expr,
+                    fields=fields,
+                    max_results=current_page_size,
+                    page_token=None,  # We'll handle pagination differently
+                )
+                tasks.append(task)
 
-        for task_result in task_results:
-            if task_result.success:
-                page_data = task_result.result
-                studies = page_data.get("studies", [])
-                all_studies.extend(studies)
-                successful_pages += 1
-            else:
-                logger.warning(f"Page fetch failed: {task_result.error}")
-                failed_pages += 1
+            # Execute pagination tasks concurrently
+            task_queue = AsyncTaskQueue(max_concurrent=max_workers, name="ClinicalTrialsPagination")
+            task_results = await task_queue.execute_tasks(tasks)
 
-        # Create final result
-        result = {
-            "studies": all_studies,
-            "totalCount": len(all_studies),
-            "pagination": {
-                "total_pages": total_pages,
-                "successful_pages": successful_pages,
-                "failed_pages": failed_pages,
-                "page_size": page_size,
-                "max_results_requested": max_results,
-                "actual_results": len(all_studies),
-            },
-        }
+            # Aggregate results
+            all_studies = []
+            successful_pages = 0
+            failed_pages = 0
 
-        logger.info(
-            f"📊 Parallel search complete: {len(all_studies)} studies from {successful_pages}/{total_pages} pages"
-        )
-        return result
+            for task_result in task_results:
+                if task_result.success:
+                    page_data = task_result.result
+                    studies = page_data.get("studies", [])
+                    all_studies.extend(studies)
+                    successful_pages += 1
+                else:
+                    logger.warning(f"Page fetch failed: {task_result.error}")
+                    failed_pages += 1
 
-    except Exception as e:
-        logger.error(f"Parallel search failed: {e}")
-        raise ClinicalTrialsAPIError(f"Parallel search failed: {str(e)}")
+            # Create final result
+            result = {
+                "studies": all_studies,
+                "totalCount": len(all_studies),
+                "pagination": {
+                    "total_pages": total_pages,
+                    "successful_pages": successful_pages,
+                    "failed_pages": failed_pages,
+                    "page_size": page_size,
+                    "max_results_requested": max_results,
+                    "actual_results": len(all_studies),
+                },
+            }
+
+            logger.info(
+                f"📊 Parallel search complete: {len(all_studies)} studies from {successful_pages}/{total_pages} pages"
+            )
+            return result
+
+        except Exception as e:
+            logger.error(f"Parallel search failed: {e}")
+            raise ClinicalTrialsAPIError(f"Parallel search failed: {str(e)}")
+
+    return asyncio.run(_async_parallel_search())
 
 
 def _search_single_page(
@@ -303,49 +307,52 @@ def search_multiple_queries(
     Returns:
         Dictionary mapping search queries to their results
     """
-    if not search_queries:
-        return {}
+    import asyncio
 
-    logger.info(f"🔄 Executing {len(search_queries)} concurrent search queries")
+    async def _async_multi_query_search() -> Dict[str, Dict[str, Any]]:
+        if not search_queries:
+            return {}
 
-    # Create tasks for concurrent queries
-    tasks = []
-    for query in search_queries:
-        import hashlib
+        logger.info(f"🔄 Executing {len(search_queries)} concurrent search queries")
 
-        task = create_task(
-            task_id=f"query_{hashlib.md5(query.encode('utf-8')).hexdigest()[:8]}",
-            func=search_trials,
-            search_expr=query,
-            fields=fields,
-            max_results=max_results_per_query,
-        )
-        tasks.append(task)
+        # Create tasks for concurrent queries
+        tasks = []
+        for query in search_queries:
+            import hashlib
 
-    # Execute query tasks concurrently
-    task_queue = TaskQueue(max_workers=max_workers, name="ClinicalTrialsMultiQuery")
-    task_results = task_queue.execute_tasks(tasks)
+            task = create_task(
+                task_id=f"query_{hashlib.md5(query.encode('utf-8')).hexdigest()[:8]}",
+                func=search_trials,
+                search_expr=query,
+                fields=fields,
+                max_results=max_results_per_query,
+            )
+            tasks.append(task)
 
-    # Process results
-    results = {}
-    successful = 0
-    failed = 0
+        # Execute query tasks concurrently
+        task_queue = AsyncTaskQueue(max_concurrent=max_workers, name="ClinicalTrialsMultiQuery")
+        task_results = await task_queue.execute_tasks(tasks)
 
-    for i, result in enumerate(task_results):
-        query = search_queries[i]
+        # Process results
+        results = {}
+        successful = 0
+        failed = 0
 
-        if result.success:
-            results[query] = result.result
-            successful += 1
-        else:
-            logger.warning(f"Query failed '{query}': {result.error}")
-            results[query] = {"error": str(result.error)}
-            failed += 1
+        for i, result in enumerate(task_results):
+            query = search_queries[i]
 
-    logger.info(
-        f"📊 Multi-query search complete: {successful} successful, {failed} failed"
-    )
-    return results
+            if result.success:
+                results[query] = result.result
+                successful += 1
+            else:
+                logger.warning(f"Query failed '{query}': {result.error}")
+                results[query] = {"error": str(result.error)}
+                failed += 1
+
+        logger.info(f"📊 Multi-query search complete: {successful} successful, {failed} failed")
+        return results
+
+    return asyncio.run(_async_multi_query_search())
 
 
 def get_full_study(nct_id: str) -> Dict[str, Any]:
@@ -376,9 +383,7 @@ def get_full_study(nct_id: str) -> Dict[str, Any]:
         params = {"format": "json"}
 
         # Make the API request
-        response = requests.get(
-            study_url, params=params, timeout=config.get_request_timeout()
-        )
+        response = requests.get(study_url, params=params, timeout=config.get_request_timeout())
         response.raise_for_status()
         result: Dict[str, Any] = response.json()
 
@@ -395,9 +400,7 @@ def get_full_study(nct_id: str) -> Dict[str, Any]:
 
         return result
     except Exception as e:
-        raise ClinicalTrialsAPIError(
-            f"API request failed for NCT ID {nct_id}: {str(e)}"
-        )
+        raise ClinicalTrialsAPIError(f"API request failed for NCT ID {nct_id}: {str(e)}")
 
 
 def calculate_total_studies(
@@ -430,9 +433,7 @@ def calculate_total_studies(
         }
 
         # Make the API request
-        response = requests.get(
-            base_url, params=params, timeout=config.get_request_timeout()
-        )
+        response = requests.get(base_url, params=params, timeout=config.get_request_timeout())
         response.raise_for_status()
         result: Dict[str, Any] = response.json()
 
@@ -440,9 +441,7 @@ def calculate_total_studies(
         total_studies = result.get("totalCount", 0)
 
         # Calculate pages
-        total_pages = (
-            (total_studies + page_size - 1) // page_size if total_studies > 0 else 0
-        )
+        total_pages = (total_studies + page_size - 1) // page_size if total_studies > 0 else 0
 
         result = {
             "total_studies": total_studies,

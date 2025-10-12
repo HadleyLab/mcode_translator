@@ -18,20 +18,14 @@ class IdentificationModule(BaseModel):
     nctId: str = Field(..., description="ClinicalTrials.gov identifier")
     briefTitle: Optional[str] = Field(None, description="Brief trial title")
     officialTitle: Optional[str] = Field(None, description="Official trial title")
-    organization: Optional[Dict[str, Any]] = Field(
-        None, description="Organization details"
-    )
+    organization: Optional[Dict[str, Any]] = Field(None, description="Organization details")
 
 
 class EligibilityModule(BaseModel):
     """Trial eligibility criteria and patient information."""
 
-    eligibilityCriteria: Optional[str] = Field(
-        None, description="Eligibility criteria text"
-    )
-    healthyVolunteers: Optional[bool] = Field(
-        None, description="Accepts healthy volunteers"
-    )
+    eligibilityCriteria: Optional[str] = Field(None, description="Eligibility criteria text")
+    healthyVolunteers: Optional[bool] = Field(None, description="Accepts healthy volunteers")
     sex: Optional[str] = Field(None, description="Patient sex requirements")
     minimumAge: Optional[str] = Field(None, description="Minimum age")
     maximumAge: Optional[str] = Field(None, description="Maximum age")
@@ -60,9 +54,7 @@ class ArmGroup(BaseModel):
     label: Optional[str] = Field(None, description="Arm group label")
     type: Optional[str] = Field(None, description="Arm group type")
     description: Optional[str] = Field(None, description="Arm group description")
-    interventionNames: Optional[List[str]] = Field(
-        None, description="Intervention names"
-    )
+    interventionNames: Optional[List[str]] = Field(None, description="Intervention names")
 
 
 class Intervention(BaseModel):
@@ -86,23 +78,13 @@ class ProtocolSection(BaseModel):
     armsInterventionsModule: Optional[Dict[str, Any]] = Field(
         None, description="Trial interventions - flexible structure"
     )
-    statusModule: Optional[Dict[str, Any]] = Field(
-        None, description="Status information"
-    )
-    sponsorCollaboratorsModule: Optional[Dict[str, Any]] = Field(
-        None, description="Sponsor info"
-    )
-    oversightModule: Optional[Dict[str, Any]] = Field(
-        None, description="Oversight info"
-    )
-    descriptionModule: Optional[Dict[str, Any]] = Field(
-        None, description="Description info"
-    )
+    statusModule: Optional[Dict[str, Any]] = Field(None, description="Status information")
+    sponsorCollaboratorsModule: Optional[Dict[str, Any]] = Field(None, description="Sponsor info")
+    oversightModule: Optional[Dict[str, Any]] = Field(None, description="Oversight info")
+    descriptionModule: Optional[Dict[str, Any]] = Field(None, description="Description info")
     designModule: Optional[Dict[str, Any]] = Field(None, description="Design info")
     outcomesModule: Optional[Dict[str, Any]] = Field(None, description="Outcomes info")
-    contactsLocationsModule: Optional[Dict[str, Any]] = Field(
-        None, description="Contacts info"
-    )
+    contactsLocationsModule: Optional[Dict[str, Any]] = Field(None, description="Contacts info")
 
 
 class ClinicalTrialData(BaseModel):
@@ -113,9 +95,7 @@ class ClinicalTrialData(BaseModel):
     studyType: Optional[str] = Field(None, description="Study type")
     overallStatus: Optional[str] = Field(None, description="Trial status")
     phase: Optional[str] = Field(None, description="Trial phase")
-    resultsSection: Optional[Dict[str, Any]] = Field(
-        None, description="Results section"
-    )
+    resultsSection: Optional[Dict[str, Any]] = Field(None, description="Results section")
 
     # Allow extra fields to match API response
     model_config = {"extra": "allow"}
@@ -162,9 +142,7 @@ class SourceReference(BaseModel):
 class ValidationResult(BaseModel):
     """Results of mCODE mapping validation."""
 
-    compliance_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Overall compliance score"
-    )
+    compliance_score: float = Field(..., ge=0.0, le=1.0, description="Overall compliance score")
     validation_errors: List[str] = Field(
         default_factory=list, description="List of validation errors"
     )
@@ -204,14 +182,10 @@ class ProcessingMetadata(BaseModel):
     engine_type: str = Field(..., description="Processing engine used")
     entities_count: int = Field(0, description="Number of entities extracted")
     mapped_count: int = Field(0, description="Number of elements mapped")
-    processing_time_seconds: Optional[float] = Field(
-        None, description="Time taken for processing"
-    )
+    processing_time_seconds: Optional[float] = Field(None, description="Time taken for processing")
     model_used: Optional[str] = Field(None, description="LLM model used")
     prompt_used: Optional[str] = Field(None, description="Prompt template used")
-    token_usage: Optional[TokenUsage] = Field(
-        None, description="Token usage statistics"
-    )
+    token_usage: Optional[TokenUsage] = Field(None, description="Token usage statistics")
 
 
 class PipelineResult(BaseModel):
@@ -264,9 +238,7 @@ class WorkflowResult(BaseModel):
         default_factory=dict, description="Result data (dict or list)"
     )
     error_message: Optional[str] = Field(None, description="Error message if failed")
-    metadata: Dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata"
-    )
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
     processing_timestamp: datetime = Field(
         default_factory=datetime.utcnow, description="When processing occurred"
     )
@@ -315,26 +287,18 @@ class FHIRPatient(BaseModel):
 
     resourceType: str = Field(..., description="Resource type", pattern="^Patient$")
     id: Optional[str] = Field(None, description="Patient ID")
-    identifier: Optional[List[FHIRIdentifier]] = Field(
-        None, description="Patient identifiers"
-    )
+    identifier: Optional[List[FHIRIdentifier]] = Field(None, description="Patient identifiers")
     active: Optional[bool] = Field(None, description="Whether patient is active")
     name: Optional[List[FHIRHumanName]] = Field(None, description="Patient names")
-    telecom: Optional[List[FHIRContactPoint]] = Field(
-        None, description="Contact information"
-    )
+    telecom: Optional[List[FHIRContactPoint]] = Field(None, description="Contact information")
     gender: Optional[str] = Field(None, description="Patient gender")
     birthDate: Optional[str] = Field(None, description="Birth date")
     deceasedBoolean: Optional[bool] = Field(None, description="Deceased status")
     deceasedDateTime: Optional[str] = Field(None, description="Deceased date/time")
     address: Optional[List[FHIRAddress]] = Field(None, description="Patient addresses")
     maritalStatus: Optional[Dict[str, Any]] = Field(None, description="Marital status")
-    multipleBirthBoolean: Optional[bool] = Field(
-        None, description="Multiple birth status"
-    )
-    multipleBirthInteger: Optional[int] = Field(
-        None, description="Multiple birth integer"
-    )
+    multipleBirthBoolean: Optional[bool] = Field(None, description="Multiple birth status")
+    multipleBirthInteger: Optional[int] = Field(None, description="Multiple birth integer")
     communication: Optional[List[Dict[str, Any]]] = Field(
         None, description="Communication preferences"
     )
@@ -410,39 +374,27 @@ class BenchmarkResult(BaseModel):
 
     task_id: str = Field(..., description="Unique task identifier")
     trial_id: str = Field(..., description="Clinical trial identifier")
-    pipeline_result: PipelineResult = Field(
-        ..., description="Pipeline processing result"
-    )
+    pipeline_result: PipelineResult = Field(..., description="Pipeline processing result")
     execution_time_seconds: float = Field(..., description="Time taken to execute")
     memory_usage_mb: Optional[float] = Field(None, description="Memory usage in MB")
     status: str = Field(..., description="Task execution status")
 
     # Performance metrics
-    entities_extracted: Optional[int] = Field(
-        None, description="Number of entities extracted"
-    )
-    entities_mapped: Optional[int] = Field(
-        None, description="Number of entities mapped"
-    )
+    entities_extracted: Optional[int] = Field(None, description="Number of entities extracted")
+    entities_mapped: Optional[int] = Field(None, description="Number of entities mapped")
     extraction_completeness: Optional[float] = Field(
         None, ge=0.0, le=1.0, description="Extraction completeness score"
     )
     mapping_accuracy: Optional[float] = Field(
         None, ge=0.0, le=1.0, description="Mapping accuracy score"
     )
-    precision: Optional[float] = Field(
-        None, ge=0.0, le=1.0, description="Precision metric"
-    )
+    precision: Optional[float] = Field(None, ge=0.0, le=1.0, description="Precision metric")
     recall: Optional[float] = Field(None, ge=0.0, le=1.0, description="Recall metric")
     f1_score: Optional[float] = Field(None, ge=0.0, le=1.0, description="F1 score")
-    compliance_score: Optional[float] = Field(
-        None, ge=0.0, le=1.0, description="Compliance score"
-    )
+    compliance_score: Optional[float] = Field(None, ge=0.0, le=1.0, description="Compliance score")
 
     # Additional metadata
-    prompt_variant_id: Optional[str] = Field(
-        None, description="Prompt variant identifier"
-    )
+    prompt_variant_id: Optional[str] = Field(None, description="Prompt variant identifier")
     api_config_name: Optional[str] = Field(None, description="API configuration name")
     test_case_id: Optional[str] = Field(None, description="Test case identifier")
     pipeline_type: Optional[str] = Field(None, description="Pipeline type used")
@@ -459,9 +411,7 @@ class WorkflowInput(BaseModel):
     model: Optional[str] = Field(None, description="LLM model to use")
     prompt: Optional[str] = Field(None, description="Prompt template to use")
     workers: int = Field(1, ge=1, description="Number of concurrent workers")
-    store_in_memory: bool = Field(
-        False, description="Whether to store results in CORE memory"
-    )
+    store_in_memory: bool = Field(False, description="Whether to store results in CORE memory")
 
     model_config = {"extra": "allow"}
 
@@ -469,9 +419,7 @@ class WorkflowInput(BaseModel):
 class TrialsProcessorInput(WorkflowInput):
     """Input validation for trials processor workflow."""
 
-    trials_data: List[Dict[str, Any]] = Field(
-        ..., description="List of trial data to process"
-    )
+    trials_data: List[Dict[str, Any]] = Field(..., description="List of trial data to process")
     trials_criteria: Optional[Dict[str, Any]] = Field(
         None, description="Trial eligibility criteria"
     )
@@ -480,9 +428,7 @@ class TrialsProcessorInput(WorkflowInput):
 class PatientsProcessorInput(WorkflowInput):
     """Input validation for patients processor workflow."""
 
-    patients_data: List[Dict[str, Any]] = Field(
-        ..., description="List of patient data to process"
-    )
+    patients_data: List[Dict[str, Any]] = Field(..., description="List of patient data to process")
     trials_criteria: Optional[Dict[str, Any]] = Field(
         None, description="Trial eligibility criteria"
     )
@@ -491,9 +437,7 @@ class PatientsProcessorInput(WorkflowInput):
 class TrialsSummarizerInput(WorkflowInput):
     """Input validation for trials summarizer workflow."""
 
-    trials_data: List[Dict[str, Any]] = Field(
-        ..., description="List of trial data to summarize"
-    )
+    trials_data: List[Dict[str, Any]] = Field(..., description="List of trial data to summarize")
 
 
 class PatientsSummarizerInput(WorkflowInput):
@@ -523,9 +467,7 @@ def create_mcode_results_structure(pipeline_result: Any) -> Dict[str, Any]:
         "source_references": pipeline_result.source_references,
         "validation_results": pipeline_result.validation_results,
         "metadata": pipeline_result.metadata,
-        "token_usage": (
-            pipeline_result.metadata.token_usage if pipeline_result.metadata else None
-        ),
+        "token_usage": (pipeline_result.metadata.token_usage if pipeline_result.metadata else None),
         "error": pipeline_result.error,
     }
 
@@ -535,12 +477,8 @@ class McodeSummary(BaseModel):
 
     id: str = Field(..., description="Unique identifier for the entity")
     summary: str = Field(..., description="Natural language summary")
-    mcode_elements: List[str] = Field(
-        default_factory=list, description="mCODE elements"
-    )
-    metadata: Dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata"
-    )
+    mcode_elements: List[str] = Field(default_factory=list, description="mCODE elements")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 
 
 class SearchResult(BaseModel):

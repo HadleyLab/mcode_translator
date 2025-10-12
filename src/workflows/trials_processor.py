@@ -11,8 +11,10 @@ from typing import Any, Dict, List, Optional
 from src.pipeline import McodePipeline
 from src.shared.models import enhance_trial_with_mcode_results
 from src.storage.mcode_memory_storage import OncoCoreMemory
+from src.utils.concurrency import AsyncTaskQueue, create_task
 
-from .base_workflow import TrialsProcessorWorkflow as BaseTrialsProcessorWorkflow, WorkflowResult
+from .base_workflow import TrialsProcessorWorkflow as BaseTrialsProcessorWorkflow
+from .base_workflow import WorkflowResult
 from .trial_extractor import TrialExtractor
 from .trial_summarizer import TrialSummarizer
 
@@ -24,9 +26,7 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
     Processes trial data and stores mCODE summaries to CORE Memory.
     """
 
-    def __init__(
-        self, config: Any, memory_storage: Optional[OncoCoreMemory] = None
-    ):
+    def __init__(self, config: Any, memory_storage: Optional[OncoCoreMemory] = None):
         """
         Initialize the trials processor workflow.
 
@@ -41,20 +41,20 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
         self.extractor = TrialExtractor()
         self.summarizer = TrialSummarizer()
 
-    def execute(self, **kwargs: Any) -> WorkflowResult:
+    async def execute_async(self, **kwargs: Any) -> WorkflowResult:
         """
-        Execute the trials processing workflow.
+        Execute the trials processing workflow asynchronously.
 
         By default, does NOT store results to CORE memory. Use store_in_memory=True to enable.
 
         Args:
             **kwargs: Workflow parameters including:
-                - trials_data: List of trial data to process
-                - engine: Processing engine ('regex' or 'llm')
-                - model: LLM model to use (for llm engine)
-                - prompt: Prompt template to use (for llm engine)
-                - workers: Number of concurrent workers
-                - store_in_memory: Whether to store results in CORE memory (default: False)
+                 - trials_data: List of trial data to process
+                 - engine: Processing engine ('regex' or 'llm')
+                 - model: LLM model to use (for llm engine)
+                 - prompt: Prompt template to use (for llm engine)
+                 - workers: Number of concurrent workers
+                 - store_in_memory: Whether to store results in CORE memory (default: False)
 
         Returns:
             WorkflowResult: Processing results
@@ -93,9 +93,7 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
                 )
                 try:
                     self.pipeline = McodePipeline(
-                        prompt_name=prompt,
-                        model_name=model,
-                        engine=engine
+                        prompt_name=prompt, model_name=model, engine=engine
                     )
                     self.logger.info("McodePipeline initialized successfully")
                 except Exception as e:
@@ -109,64 +107,59 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
             successful_count = 0
             failed_count = 0
 
-            self.logger.info(
-                f"🔬 Processing {len(trials_data)} trials with {engine} engine"
-            )
+            self.logger.info(f"🔬 Processing {len(trials_data)} trials with {engine} engine")
 
-            # Use fully async processing with controlled concurrency
+            # Use AsyncTaskQueue for controlled concurrency
             effective_workers = max(1, workers)  # Ensure at least 1 worker
 
             self.logger.info(
-                f"⚡ Using fully async processing with {effective_workers} concurrent task{'s' if effective_workers > 1 else ''}"
+                f"⚡ Using AsyncTaskQueue with {effective_workers} concurrent task{'s' if effective_workers > 1 else ''}"
             )
 
-            async def process_async() -> tuple[list[Any], int, int]:
-                # Create semaphore for concurrency control
-                semaphore = asyncio.Semaphore(effective_workers)
+            # Create tasks for AsyncTaskQueue
+            tasks = []
+            for i, trial in enumerate(trials_data):
+                task = create_task(
+                    task_id=f"process_trial_{i+1}",
+                    func=self._process_single_trial_async,
+                    trial=trial,
+                    model=model,
+                    prompt=prompt,
+                    index=i + 1,
+                    store_in_memory=store_in_memory,
+                )
+                tasks.append(task)
 
-                async def process_trial_async(
-                    trial: Dict[str, Any], index: int
-                ) -> tuple[Any, bool]:
-                    async with semaphore:
-                        # Use unified pipeline for both engines
-                        return await self._process_single_trial_async(
-                            trial, model, prompt, index, store_in_memory
-                        )
+            # Create and execute AsyncTaskQueue
+            task_queue = AsyncTaskQueue(max_concurrent=effective_workers, name="TrialsProcessorQueue")
 
-                # Create async tasks for concurrent processing
-                tasks = [
-                    process_trial_async(trial, i + 1)
-                    for i, trial in enumerate(trials_data)
-                ]
+            def progress_callback(completed: int, total: int, result: Any) -> None:
+                if result.success:
+                    self.logger.debug(f"✅ Completed trial {completed}/{total}")
+                else:
+                    self.logger.warning(f"❌ Failed trial {completed}/{total}: {result.error}")
 
-                # Wait for all tasks to complete
-                results = await asyncio.gather(*tasks, return_exceptions=True)
+            task_results = await task_queue.execute_tasks(tasks, progress_callback=progress_callback)
 
-                # Process results
-                processed_trials = []
-                successful_count = 0
-                failed_count = 0
+            # Process results
+            processed_trials = []
+            successful_count = 0
+            failed_count = 0
 
-                for i, result in enumerate(results):
-                    if isinstance(result, BaseException):
-                        self.logger.error(f"Task {i+1} failed with exception: {result}")
-                        failed_count += 1
-                        # Add error trial
-                        error_trial = {"McodeProcessingError": str(result)}
-                        processed_trials.append(error_trial)
+            for task_result in task_results:
+                if task_result.success and task_result.result:
+                    trial_result, success = task_result.result
+                    processed_trials.append(trial_result)
+                    if success:
+                        successful_count += 1
                     else:
-                        trial_result, success = result
-                        processed_trials.append(trial_result)
-                        if success:
-                            successful_count += 1
-                        else:
-                            failed_count += 1
-
-                return processed_trials, successful_count, failed_count
-
-            processed_trials, successful_count, failed_count = asyncio.run(
-                process_async()
-            )
+                        failed_count += 1
+                else:
+                    self.logger.error(f"Task failed: {task_result.error}")
+                    failed_count += 1
+                    # Add error trial
+                    error_trial = {"McodeProcessingError": str(task_result.error)}
+                    processed_trials.append(error_trial)
 
             # Calculate success rate
             total_count = len(trials_data)
@@ -193,21 +186,38 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
                     "engine_used": engine,
                     "model_used": model if engine == "llm" else None,
                     "prompt_used": prompt if engine == "llm" else None,
-                    "stored_in_memory": store_in_memory
-                    and self.memory_storage is not None,
+                    "stored_in_memory": store_in_memory and self.memory_storage is not None,
                 },
             )
 
         except Exception as e:
             return self._handle_error(e, "trials processing")
 
+    def execute(self, **kwargs: Any) -> WorkflowResult:
+        """
+        Execute the trials processing workflow.
+
+        By default, does NOT store results to CORE memory. Use store_in_memory=True to enable.
+
+        Args:
+            **kwargs: Workflow parameters including:
+                 - trials_data: List of trial data to process
+                 - engine: Processing engine ('regex' or 'llm')
+                 - model: LLM model to use (for llm engine)
+                 - prompt: Prompt template to use (for llm engine)
+                 - workers: Number of concurrent workers
+                 - store_in_memory: Whether to store results in CORE memory (default: False)
+
+        Returns:
+            WorkflowResult: Processing results
+        """
+        return asyncio.run(self.execute_async(**kwargs))
+
     # Removed caching methods - only API calls should be cached
 
     # Removed _make_trial_serializable - now in TrialCacheManager
 
-    def _extract_trial_mcode_elements_cached(
-        self, trial: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _extract_trial_mcode_elements_cached(self, trial: Dict[str, Any]) -> Dict[str, Any]:
         """Extract trial mCODE elements (no caching - pure computation)."""
         # mCODE extraction is pure computation, not API calls, so no caching
         return self.extractor.extract_trial_mcode_elements(trial)
@@ -234,9 +244,7 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
         try:
             # Ensure trial is a dict
             if not isinstance(trial, dict):
-                self.logger.error(
-                    f"Trial data is not a dict in metadata extraction: {type(trial)}"
-                )
+                self.logger.error(f"Trial data is not a dict in metadata extraction: {type(trial)}")
                 return metadata
 
             protocol_section = trial.get("protocolSection", {})
@@ -324,7 +332,9 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
             if "TrialCancerConditions" in mcode_elements:
                 cancer_conditions = mcode_elements["TrialCancerConditions"]
                 if isinstance(cancer_conditions, list):
-                    conditions = [c.get("display", str(c)) for c in cancer_conditions if isinstance(c, dict)]
+                    conditions = [
+                        c.get("display", str(c)) for c in cancer_conditions if isinstance(c, dict)
+                    ]
                 elif isinstance(cancer_conditions, dict):
                     conditions = [cancer_conditions.get("display", str(cancer_conditions))]
 
@@ -402,17 +412,13 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
                         }
                     mappings.append(mapping)
         except Exception as e:
-            self.logger.error(
-                f"Error converting trial mCODE elements to mappings format: {e}"
-            )
+            self.logger.error(f"Error converting trial mCODE elements to mappings format: {e}")
             self.logger.debug(f"mcode_elements: {mcode_elements}")
             raise
 
         return mappings
 
-    def _format_trial_mcode_element(
-        self, element_name: str, system: str, code: str
-    ) -> str:
+    def _format_trial_mcode_element(self, element_name: str, system: str, code: str) -> str:
         """Centralized function to format trial mCODE elements consistently."""
         # Clean up system URLs to standard names
         if "snomed" in system.lower():
@@ -531,10 +537,7 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
             error_trial["ProcessingError"] = str(e)
             return error_trial, False
 
-
-    def process_single_trial(
-        self, trial: Dict[str, Any], **kwargs: Any
-    ) -> WorkflowResult:
+    def process_single_trial(self, trial: Dict[str, Any], **kwargs: Any) -> WorkflowResult:
         """
         Process a single clinical trial.
 
@@ -641,8 +644,7 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
             if interventions and len(interventions) > 0:
                 # Check if interventions have detailed descriptions
                 detailed_interventions = any(
-                    isinstance(i, dict) and i.get("description", "")
-                    for i in interventions
+                    isinstance(i, dict) and i.get("description", "") for i in interventions
                 )
                 if detailed_interventions:
                     indicators.append(True)
