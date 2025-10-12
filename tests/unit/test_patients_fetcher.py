@@ -1,279 +1,154 @@
 #!/usr/bin/env python3
 """
-Unit tests for patients_fetcher CLI module.
+Unit tests for PatientsFetcherWorkflow class.
 
-Tests the command-line interface for fetching synthetic patient data,
-including argument parsing, workflow execution, data validation, and error handling.
+Tests the workflow for fetching synthetic patient data,
+including execution, data validation, and error handling.
 """
 
-import argparse
 from unittest.mock import MagicMock, patch
+from src.workflows.patients_fetcher import PatientsFetcherWorkflow
 
 
-from src.cli.patients_fetcher import (
-    create_parser,
-    main,
-)
+class TestPatientsFetcherWorkflow:
+    """Test the PatientsFetcherWorkflow class."""
 
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
+    def test_execute_single_patient_success(self, mock_create_generator):
+        """Test successful single patient fetching."""
+        # Mock patient generator
+        mock_generator = MagicMock()
+        mock_generator.get_patient_by_id.return_value = {"id": "P001", "name": "Test Patient"}
+        mock_create_generator.return_value = mock_generator
 
-class TestPatientsFetcherCLI:
-    """Test the patients_fetcher CLI module."""
+        # Create workflow
+        workflow = PatientsFetcherWorkflow()
 
-    def test_create_parser_basic_structure(self):
-        """Test that the argument parser is created with expected structure."""
-        parser = create_parser()
+        # Execute workflow
+        result = workflow.execute(archive_path="test_archive", patient_id="P001")
 
-        assert isinstance(parser, argparse.ArgumentParser)
-        assert "Fetch synthetic patient data" in parser.description
+        # Verify result
+        assert result.success is True
+        assert len(result.data) == 1
+        assert result.data[0]["id"] == "P001"
+        assert result.metadata["fetch_type"] == "single_patient"
+        assert result.metadata["archive_path"] == "test_archive"
 
-        # Check that required arguments are present
-        actions = {action.dest for action in parser._actions}
-        assert "archive" in actions
-        assert "output_file" in actions
-        assert "limit" in actions
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
+    def test_execute_single_patient_not_found(self, mock_create_generator):
+        """Test single patient fetching when patient not found."""
+        # Mock patient generator
+        mock_generator = MagicMock()
+        mock_generator.get_patient_by_id.return_value = None
+        mock_create_generator.return_value = mock_generator
 
-    def test_create_parser_archive_argument(self):
-        """Test the archive argument configuration."""
-        parser = create_parser()
+        # Create workflow
+        workflow = PatientsFetcherWorkflow()
 
-        # Find the archive action
-        archive_action = None
-        for action in parser._actions:
-            if action.dest == "archive":
-                archive_action = action
-                break
+        # Execute workflow
+        result = workflow.execute(archive_path="test_archive", patient_id="P999")
 
-        assert archive_action is not None
-        assert "Patient archive identifier" in archive_action.help
+        # Verify result
+        assert result.success is False
+        assert result.error_message == "Patient P999 not found in archive"
+        assert len(result.data) == 0
 
-    def test_create_parser_output_file_argument(self):
-        """Test the output file argument configuration."""
-        parser = create_parser()
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
+    def test_execute_multiple_patients_success(self, mock_create_generator):
+        """Test successful multiple patients fetching."""
+        # Mock patient generator
+        mock_generator = MagicMock()
+        mock_patients = [
+            {"id": "P001", "name": "Patient 1"},
+            {"id": "P002", "name": "Patient 2"},
+            {"id": "P003", "name": "Patient 3"},
+        ]
+        mock_generator.__iter__.return_value = iter(mock_patients)
+        mock_generator.__len__.return_value = 3
+        mock_create_generator.return_value = mock_generator
 
-        # Find the output_file action
-        output_action = None
-        for action in parser._actions:
-            if action.dest == "output_file":
-                output_action = action
-                break
+        # Create workflow
+        workflow = PatientsFetcherWorkflow()
 
-        assert output_action is not None
-        assert "Output file for patient data" in output_action.help
+        # Execute workflow
+        result = workflow.execute(archive_path="test_archive", limit=2)
 
-    def test_create_parser_limit_argument(self):
-        """Test the limit argument configuration."""
-        parser = create_parser()
+        # Verify result
+        assert result.success is True
+        assert len(result.data) == 2  # Limited to 2
+        assert result.metadata["fetch_type"] == "multiple_patients"
+        assert result.metadata["archive_path"] == "test_archive"
 
-        # Find the limit action
-        limit_action = None
-        for action in parser._actions:
-            if action.dest == "limit":
-                limit_action = action
-                break
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
+    def test_execute_multiple_patients_no_patients(self, mock_create_generator):
+        """Test multiple patients fetching when no patients found."""
+        # Mock patient generator
+        mock_generator = MagicMock()
+        mock_generator.__iter__.return_value = iter([])
+        mock_generator.__len__.return_value = 0
+        mock_create_generator.return_value = mock_generator
 
-        assert limit_action is not None
-        assert limit_action.type == int
-        assert limit_action.default == 10
+        # Create workflow
+        workflow = PatientsFetcherWorkflow()
 
-    @patch("src.cli.patients_fetcher.PatientsFetcherWorkflow")
-    @patch("src.cli.patients_fetcher.McodeCLI.create_config")
-    @patch("src.cli.patients_fetcher.McodeCLI.setup_logging")
-    def test_main_successful_fetch(
-        self, mock_setup_logging, mock_create_config, mock_workflow_class
-    ):
-        """Test successful patient data fetching."""
-        # Mock configuration and logging
-        mock_config = MagicMock()
-        mock_create_config.return_value = mock_config
+        # Execute workflow
+        result = workflow.execute(archive_path="empty_archive", limit=10)
 
-        # Create mock args
-        args = argparse.Namespace(
-            archive="breast_cancer_10_years",
-            output_file="patients.ndjson",
-            patient_id=None,
-            limit=5,
-            list_archives=False,
-            verbose=False,
-            log_level="INFO",
-            config=None,
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            batch_size=10,
-            workers=0,
-            worker_pool="custom",
-            max_queue_size=1000,
-            task_timeout=None,
-            memory_source="mcode_translator",
-        )
+        # Verify result
+        assert result.success is False
+        assert result.error_message == "No patients found in archive: empty_archive"
+        assert len(result.data) == 0
 
-        # Mock workflow and result
-        mock_workflow = MagicMock()
-        mock_result = MagicMock()
-        mock_result.success = True
-        mock_result.metadata = {
-            "total_fetched": 5,
-            "fetch_type": "archive",
-            "archive_path": "breast_cancer_10_years",
-        }
-        mock_workflow.execute.return_value = mock_result
-        mock_workflow_class.return_value = mock_workflow
+    def test_execute_missing_archive_path(self):
+        """Test execution with missing archive path."""
+        workflow = PatientsFetcherWorkflow()
 
-        # Call main
-        main(args)
+        result = workflow.execute()
 
-        # Verify workflow was created and executed
-        mock_workflow_class.assert_called_once_with(mock_config, memory_storage=False)
-        mock_workflow.execute.assert_called_once_with(
-            archive_path="breast_cancer_10_years",
-            limit=5,
-            output_path="patients.ndjson",
-        )
+        assert result.success is False
+        assert result.error_message == "Archive path is required for patient fetching."
 
-        # Verify logging was set up
-        mock_setup_logging.assert_called_once_with(args)
-        mock_create_config.assert_called_once_with(args)
+    def test_list_available_archives(self):
+        """Test listing available archives."""
+        workflow = PatientsFetcherWorkflow()
 
-    @patch("src.cli.patients_fetcher.PatientsFetcherWorkflow")
-    @patch("src.cli.patients_fetcher.McodeCLI.create_config")
-    @patch("src.cli.patients_fetcher.McodeCLI.setup_logging")
-    def test_main_list_archives_flag(
-        self, mock_setup_logging, mock_create_config, mock_workflow_class
-    ):
-        """Test the list archives functionality."""
-        # Mock configuration and logging
-        mock_config = MagicMock()
-        mock_create_config.return_value = mock_config
+        archives = workflow.list_available_archives()
 
-        # Create mock args with list_archives=True
-        args = argparse.Namespace(
-            archive=None,
-            output_file=None,
-            patient_id=None,
-            limit=10,
-            list_archives=True,
-            verbose=False,
-            log_level="INFO",
-            config=None,
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            batch_size=10,
-            workers=0,
-            worker_pool="custom",
-            max_queue_size=1000,
-            task_timeout=None,
-            memory_source="mcode_translator",
-        )
-
-        # Mock workflow for list_archives
-        mock_workflow = MagicMock()
-        mock_workflow.list_available_archives.return_value = [
+        # Verify returns expected archive types
+        expected_archives = [
             "breast_cancer_10_years",
+            "breast_cancer_lifetime",
+            "mixed_cancer_10_years",
             "mixed_cancer_lifetime",
         ]
-        mock_workflow_class.return_value = mock_workflow
+        assert archives == expected_archives
 
-        # Call main
-        main(args)
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
+    def test_get_archive_info_success(self, mock_create_generator):
+        """Test getting archive information successfully."""
+        # Mock patient generator
+        mock_generator = MagicMock()
+        mock_generator.__len__.return_value = 150
+        mock_create_generator.return_value = mock_generator
 
-        # Verify workflow was created and list_archives was called
-        mock_workflow_class.assert_called_once_with(mock_config)
-        mock_workflow.list_available_archives.assert_called_once()
+        workflow = PatientsFetcherWorkflow()
 
-    @patch("src.cli.patients_fetcher.PatientsFetcherWorkflow")
-    @patch("src.cli.patients_fetcher.McodeCLI.create_config")
-    @patch("src.cli.patients_fetcher.McodeCLI.setup_logging")
-    def test_main_workflow_failure(
-        self, mock_setup_logging, mock_create_config, mock_workflow_class
-    ):
-        """Test handling of workflow execution failure."""
-        # Mock configuration and logging
-        mock_config = MagicMock()
-        mock_create_config.return_value = mock_config
+        info = workflow.get_archive_info("test_archive")
 
-        # Create mock args
-        args = argparse.Namespace(
-            archive="breast_cancer_10_years",
-            output_file="patients.ndjson",
-            patient_id=None,
-            limit=5,
-            list_archives=False,
-            verbose=False,
-            log_level="INFO",
-            config=None,
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            batch_size=10,
-            workers=0,
-            worker_pool="custom",
-            max_queue_size=1000,
-            task_timeout=None,
-            memory_source="mcode_translator",
-        )
+        assert info["archive_path"] == "test_archive"
+        assert info["total_patients"] == 150
+        assert "patient_generator_type" in info
 
-        # Mock workflow and failed result
-        mock_workflow = MagicMock()
-        mock_result = MagicMock()
-        mock_result.success = False
-        mock_result.error_message = "Archive not found"
-        mock_workflow.execute.return_value = mock_result
-        mock_workflow_class.return_value = mock_workflow
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
+    def test_get_archive_info_error(self, mock_create_generator):
+        """Test getting archive information with error."""
+        # Mock patient generator to raise exception
+        mock_create_generator.side_effect = Exception("Archive not found")
 
-        # Mock sys.exit to prevent actual exit
-        with patch("sys.exit") as mock_exit:
-            # Call main - should exit with error
-            try:
-                main(args)
-            except SystemExit:
-                pass  # Expected when workflow fails
+        workflow = PatientsFetcherWorkflow()
 
-            # Verify sys.exit was called
-            assert mock_exit.call_count >= 1
-            mock_exit.assert_any_call(1)
+        info = workflow.get_archive_info("invalid_archive")
 
-    @patch("src.cli.patients_fetcher.PatientsFetcherWorkflow")
-    @patch("src.cli.patients_fetcher.McodeCLI.create_config")
-    @patch("src.cli.patients_fetcher.McodeCLI.setup_logging")
-    def test_main_keyboard_interrupt_handling(
-        self, mock_setup_logging, mock_create_config, mock_workflow_class
-    ):
-        """Test handling of keyboard interrupt during execution."""
-        # Mock configuration and logging
-        mock_config = MagicMock()
-        mock_create_config.return_value = mock_config
-
-        # Create mock args
-        args = argparse.Namespace(
-            archive="breast_cancer_10_years",
-            output_file="patients.ndjson",
-            patient_id=None,
-            limit=5,
-            list_archives=False,
-            verbose=False,
-            log_level="INFO",
-            config=None,
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            batch_size=10,
-            workers=0,
-            worker_pool="custom",
-            max_queue_size=1000,
-            task_timeout=None,
-            memory_source="mcode_translator",
-        )
-
-        # Mock workflow to raise KeyboardInterrupt
-        mock_workflow = MagicMock()
-        mock_workflow.execute.side_effect = KeyboardInterrupt()
-        mock_workflow_class.return_value = mock_workflow
-
-        # Mock sys.exit to prevent actual exit
-        with patch("sys.exit") as mock_exit:
-            # Call main - should handle KeyboardInterrupt gracefully
-            try:
-                main(args)
-            except SystemExit:
-                pass  # Expected when KeyboardInterrupt occurs
-
-            # Verify sys.exit was called with code 130 (standard for SIGINT)
-            assert mock_exit.call_count >= 1
-            mock_exit.assert_any_call(130)
+        assert info["archive_path"] == "invalid_archive"
+        assert "error" in info
+        assert info["error"] == "Archive not found"

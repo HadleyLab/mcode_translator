@@ -2,10 +2,11 @@
 Unit tests for pairwise_cross_validation module.
 """
 
+import asyncio
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 from src.optimization.pairwise_cross_validation import (
@@ -344,7 +345,7 @@ class TestPairwiseCrossValidatorMethods:
         mock_pipeline_result = Mock()
         mock_pipeline_result.mcode_mappings = []
         mock_pipeline_result.validation_results.compliance_score = 0.8
-        mock_pipeline.process.return_value = mock_pipeline_result
+        mock_pipeline.process = AsyncMock(return_value=mock_pipeline_result)
 
         # Mock benchmark result
         mock_benchmark = Mock()
@@ -362,7 +363,7 @@ class TestPairwiseCrossValidatorMethods:
         )
 
         # Process task
-        validator._process_pairwise_task(task)
+        asyncio.run(validator._process_pairwise_task(task))
 
         # Verify pipeline was created and called
         assert mock_pipeline_class.call_count == 2  # Gold and comp pipelines

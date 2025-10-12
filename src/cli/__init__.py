@@ -25,7 +25,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Subcommand imports - import after path setup
-from .commands import mcode, memory, config, data
+from .commands import patients, trials, memory, config
 
 app = typer.Typer(
     name="mcode-translator",
@@ -127,14 +127,14 @@ def cli_callback(
 
 
 # Add command groups with detailed descriptions
-if mcode and hasattr(mcode, 'app'):
-    app.add_typer(mcode.app, name="mcode", help="mCODE translation and processing operations")
+if patients and hasattr(patients, 'app'):
+    app.add_typer(patients.app, name="patients", help="Patient data processing operations")
+if trials and hasattr(trials, 'app'):
+    app.add_typer(trials.app, name="trials", help="Clinical trial data processing operations")
 if memory and hasattr(memory, 'app'):
     app.add_typer(memory.app, name="memory", help="CORE Memory operations and management")
 if config and hasattr(config, 'app'):
     app.add_typer(config.app, name="config", help="Configuration management and validation")
-if data and hasattr(data, 'app'):
-    app.add_typer(data.app, name="data", help="Data ingestion and management operations")
 
 
 @app.command("version")

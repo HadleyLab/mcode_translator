@@ -59,35 +59,35 @@ class TestStorageIntegration:
             "metadata": {"processing_timestamp": "2024-01-01T00:00:00Z"},
         }
 
-    def test_store_trial_mcode_summary(
+    def test_store_trial_summary(
         self, mock_onco_core_memory, sample_trial_data
     ):
-        """Test storing trial mCODE summary."""
+        """Test storing trial summary."""
         with patch(
             "src.storage.mcode_memory_storage.OncoCoreClient",
             return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
-            success = storage.store_trial_mcode_summary("NCT123456", sample_trial_data)
+            success = storage.store_trial_summary("NCT123456", str(sample_trial_data))
             assert success
             mock_onco_core_memory.ingest.assert_called_once()
 
-    def test_store_patient_mcode_summary(
+    def test_store_patient_summary(
         self, mock_onco_core_memory, sample_patient_data
     ):
-        """Test storing patient mCODE summary."""
+        """Test storing patient summary."""
         with patch(
             "src.storage.mcode_memory_storage.OncoCoreClient",
             return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
-            success = storage.store_patient_mcode_summary(
-                "patient_123", sample_patient_data
+            success = storage.store_patient_summary(
+                "patient_123", str(sample_patient_data)
             )
             assert success
             mock_onco_core_memory.ingest.assert_called_once()
 
-    def test_search_similar_trials(self, mock_onco_core_memory):
+    def test_search_trials(self, mock_onco_core_memory):
         """Test searching for similar trials."""
         with patch(
             "src.storage.mcode_memory_storage.OncoCoreClient",
@@ -97,24 +97,24 @@ class TestStorageIntegration:
             mock_onco_core_memory.search.return_value = [
                 {"id": "test_id", "data": "test_data"}
             ]
-            results = storage.search_similar_trials("breast cancer")
+            results = storage.search_trials("breast cancer")
             assert results is not None
             assert len(results) == 1
             assert results[0]["id"] == "test_id"
             mock_onco_core_memory.search.assert_called_once()
 
-    def test_store_trial_mcode_summary_with_empty_data(self, mock_onco_core_memory):
+    def test_store_trial_summary_with_empty_data(self, mock_onco_core_memory):
         """Test storing trial with empty data."""
         with patch(
             "src.storage.mcode_memory_storage.OncoCoreClient",
             return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
-            success = storage.store_trial_mcode_summary("NCT123456", {})
+            success = storage.store_trial_summary("NCT123456", "{}")
             assert success
             mock_onco_core_memory.ingest.assert_called_once()
 
-    def test_store_patient_mcode_summary_with_minimal_data(
+    def test_store_patient_summary_with_minimal_data(
         self, mock_onco_core_memory
     ):
         """Test storing patient with minimal required data."""
@@ -129,11 +129,11 @@ class TestStorageIntegration:
                 "demographics": {},
                 "metadata": {},
             }
-            success = storage.store_patient_mcode_summary("patient_123", minimal_data)
+            success = storage.store_patient_summary("patient_123", str(minimal_data))
             assert success
             mock_onco_core_memory.ingest.assert_called_once()
 
-    def test_search_similar_trials_empty_results(self, mock_onco_core_memory):
+    def test_search_trials_empty_results(self, mock_onco_core_memory):
         """Test searching with no results."""
         with patch(
             "src.storage.mcode_memory_storage.OncoCoreClient",
@@ -141,7 +141,7 @@ class TestStorageIntegration:
         ):
             storage = McodeMemoryStorage()
             mock_onco_core_memory.search.return_value = []
-            results = storage.search_similar_trials("nonexistent condition")
+            results = storage.search_trials("nonexistent condition")
             assert results == []
             mock_onco_core_memory.search.assert_called_once()
 
@@ -154,7 +154,7 @@ class TestStorageIntegration:
             return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
-            success = storage.store_trial_mcode_summary("NCT123456", {"data": "test"})
+            success = storage.store_trial_summary("NCT123456", {"data": "test"})
             assert not success  # Should handle error gracefully
 
     def test_storage_error_handling_search_failure(self, mock_onco_core_memory):
@@ -168,7 +168,7 @@ class TestStorageIntegration:
             return_value=mock_onco_core_memory,
         ):
             storage = McodeMemoryStorage()
-            results = storage.search_similar_trials("breast cancer")
+            results = storage.search_trials("breast cancer")
             assert results == {
                 "episodes": [],
                 "facts": [],
@@ -187,7 +187,7 @@ class TestStorageIntegration:
             # Store multiple trials
             trials = [sample_trial_data, {**sample_trial_data, "nct_id": "NCT789012"}]
             for trial in trials:
-                success = storage.store_trial_mcode_summary(trial["nct_id"], trial)
+                success = storage.store_trial_summary(trial["nct_id"], trial)
                 assert success
 
             # Store multiple patients
@@ -208,7 +208,7 @@ class TestStorageIntegration:
                 },
             ]
             for patient in patients:
-                success = storage.store_patient_mcode_summary(
+                success = storage.store_patient_summary(
                     patient["original_patient_data"]["entry"][0]["resource"]["id"],
                     patient,
                 )
@@ -226,11 +226,11 @@ class TestStorageIntegration:
             storage = McodeMemoryStorage()
 
             # Test with None data
-            success = storage.store_trial_mcode_summary("NCT123456", None)
+            success = storage.store_trial_summary("NCT123456", None)
             assert not success
 
             # Test with invalid patient data structure
-            success = storage.store_patient_mcode_summary(
+            success = storage.store_patient_summary(
                 "patient_123", {"invalid": "structure"}
             )
             assert not success
@@ -249,7 +249,7 @@ class TestStorageIntegration:
             operations = []
             for i in range(5):
                 trial_data = {**sample_trial_data, "nct_id": f"NCT{i}"}
-                success = storage.store_trial_mcode_summary(
+                success = storage.store_trial_summary(
                     trial_data["nct_id"], trial_data
                 )
                 operations.append(success)
@@ -273,6 +273,6 @@ class TestStorageIntegration:
                 "metadata": {"processing_timestamp": "2024-01-01T00:00:00Z"},
             }
 
-            success = storage.store_trial_mcode_summary("NCT123456", large_trial_data)
+            success = storage.store_trial_summary("NCT123456", large_trial_data)
             assert success
             mock_onco_core_memory.ingest.assert_called_once()

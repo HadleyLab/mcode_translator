@@ -5,7 +5,7 @@ Tests the streamlined LLM service interface with focus on core functionality.
 
 import pytest
 from unittest.mock import Mock, patch, AsyncMock
-from src.pipeline.llm_service import LLMService
+from src.services.llm.service import LLMService
 from src.utils.config import Config
 from src.shared.models import McodeElement
 
@@ -36,8 +36,8 @@ class TestLLMServiceCore:
     async def test_map_to_mcode_successful(self, llm_service, mock_config):
         """Test successful mCODE mapping."""
         # Mock the LLM loader and prompt loader
-        with patch("src.pipeline.llm_service.llm_loader") as mock_llm_loader, patch(
-            "src.pipeline.llm_service.prompt_loader"
+        with patch("src.utils.llm_loader.llm_loader") as mock_llm_loader, patch(
+            "src.utils.prompt_loader.prompt_loader"
         ) as mock_prompt_loader, patch.object(
             llm_service, "_call_llm_api_async"
         ) as mock_call_api:
@@ -195,7 +195,7 @@ class TestLLMServiceCore:
     async def test_map_to_mcode_missing_config(self, llm_service):
         """Test mCODE mapping with missing LLM config - should make actual API call."""
         with patch(
-            "src.pipeline.llm_service.llm_loader"
+            "src.utils.llm_loader.llm_loader"
         ) as mock_llm_loader, patch.object(
             llm_service.api_manager, "get_cache"
         ) as mock_get_cache:

@@ -4,7 +4,7 @@ Unit tests for LLMAPICaller class.
 
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
-from src.pipeline.llm_api_caller import LLMAPICaller
+from src.services.llm.api_caller import LLMAPICaller
 
 
 class TestLLMAPICaller:
@@ -41,8 +41,8 @@ class TestLLMAPICaller:
         assert hasattr(caller, 'logger')
 
     @pytest.mark.asyncio
-    @patch('src.pipeline.llm_api_caller.extract_token_usage_from_response')
-    @patch('src.pipeline.llm_api_caller.global_token_tracker')
+    @patch('src.utils.token_tracker.extract_token_usage_from_response')
+    @patch('src.utils.token_tracker.global_token_tracker')
     @patch('openai.AsyncOpenAI')
     async def test_call_llm_api_async_success(self, mock_openai_class, mock_token_tracker, mock_extract_tokens, api_caller, mock_llm_config):
         """Test successful async LLM API call."""
@@ -204,7 +204,7 @@ class TestLLMAPICaller:
         assert result == {"key": "value"}
 
     @pytest.mark.asyncio
-    @patch('src.pipeline.llm_api_caller.LLMAPICaller._parse_and_clean_response')
+    @patch('src.services.llm.api_caller.LLMAPICaller._parse_and_clean_response')
     async def test_call_llm_api_async_unexpected_config_exception(self, mock_parse, api_caller, mock_llm_config):
         """Test API call with unexpected config exception."""
         # Mock the config to raise an unexpected exception

@@ -83,7 +83,7 @@ class TestWorkflowIntegration:
         """Create dependency container."""
         return DependencyContainer()
 
-    @patch("src.workflows.trials_fetcher_workflow.get_full_studies_batch")
+    @patch("src.workflows.trials_fetcher.get_full_studies_batch")
     def test_end_to_end_trial_processing_workflow(
         self,
         mock_get_full_studies_batch,
@@ -123,7 +123,7 @@ class TestWorkflowIntegration:
             # Verify mocks were called
             mock_get_full_studies_batch.assert_called()
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_end_to_end_patient_processing_workflow(
         self,
         mock_create_generator,
@@ -163,8 +163,8 @@ class TestWorkflowIntegration:
             # Verify mocks were called
             mock_create_generator.assert_called()
 
-    @patch("src.workflows.trials_fetcher_workflow.get_full_studies_batch")
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
+    @patch("src.workflows.trials_fetcher.get_full_studies_batch")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
     def test_cross_workflow_data_flow(
         self,
         mock_create_generator,
@@ -185,7 +185,7 @@ class TestWorkflowIntegration:
 
         # Create workflows
         trial_fetcher = TrialsFetcherWorkflow()
-        trial_processor = ClinicalTrialsProcessorWorkflow(container.config)
+        trial_processor = TrialsProcessor(container.config)
         patient_fetcher = PatientsFetcherWorkflow()
         patient_processor = PatientsProcessorWorkflow(container.config)
 
@@ -216,7 +216,7 @@ class TestWorkflowIntegration:
             mock_get_full_studies_batch.assert_called()
             mock_create_generator.assert_called()
 
-    @patch("src.workflows.trials_fetcher_workflow.get_full_studies_batch")
+    @patch("src.workflows.trials_fetcher.get_full_studies_batch")
     def test_workflow_error_handling_and_recovery(
         self,
         mock_get_full_studies_batch,
@@ -232,7 +232,7 @@ class TestWorkflowIntegration:
         ]
 
         fetcher = TrialsFetcherWorkflow()
-        processor = ClinicalTrialsProcessorWorkflow(container.config)
+        processor = TrialsProcessor(container.config)
 
         # First attempt should fail
         result = fetcher.execute(nct_ids=["NCT123456"])
@@ -246,8 +246,8 @@ class TestWorkflowIntegration:
             process_result = processor.execute(trials_data=fetch_result.data)
             assert process_result.success
 
-    @patch("src.workflows.patients_fetcher_workflow.create_patient_generator")
-    @patch("src.workflows.trials_fetcher_workflow.get_full_studies_batch")
+    @patch("src.workflows.patients_fetcher.create_patient_generator")
+    @patch("src.workflows.trials_fetcher.get_full_studies_batch")
     def test_concurrent_workflow_execution(
         self,
         mock_get_full_studies_batch,
@@ -268,7 +268,7 @@ class TestWorkflowIntegration:
         # Create multiple workflow instances
         workflows = [
             TrialsFetcherWorkflow(),
-            ClinicalTrialsProcessorWorkflow(container.config),
+            TrialsProcessor(container.config),
             PatientsFetcherWorkflow(),
             PatientsProcessorWorkflow(container.config),
         ]

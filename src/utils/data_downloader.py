@@ -43,7 +43,6 @@ def download_synthetic_patient_archives(
         for duration, url in durations.items():
             # Create the duration subdirectory
             duration_dir = os.path.join(base_dir, cancer_type, duration)
-            os.makedirs(duration_dir, exist_ok=True)
 
             archive_name = f"{cancer_type}_{duration}.zip"
             archive_path = os.path.join(duration_dir, archive_name)
@@ -52,6 +51,9 @@ def download_synthetic_patient_archives(
                 print(f"Archive already exists: {archive_path}")
                 downloaded_archives[archive_name] = archive_path
                 continue
+
+            # Only create directories when we need to download
+            os.makedirs(duration_dir, exist_ok=True)
 
             print(f"Downloading {archive_name} from {url}...")
             try:
@@ -131,7 +133,6 @@ def download_synthetic_patient_archives_concurrent(
         for duration, url in durations.items():
             # Create the duration subdirectory
             duration_dir = os.path.join(base_dir, cancer_type, duration)
-            os.makedirs(duration_dir, exist_ok=True)
 
             archive_name = f"{cancer_type}_{duration}.zip"
             archive_path = os.path.join(duration_dir, archive_name)
@@ -140,6 +141,9 @@ def download_synthetic_patient_archives_concurrent(
                 logger.debug(f"Archive already exists: {archive_path}")
                 archive_paths[archive_name] = archive_path
                 continue
+
+            # Only create directories when we need to download
+            os.makedirs(duration_dir, exist_ok=True)
 
             # Create download task
             task = create_task(

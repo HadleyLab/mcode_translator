@@ -6,6 +6,7 @@ including clinical trials, patient data, and bulk operations.
 """
 
 import time
+from typing import Optional
 import typer
 from rich.console import Console
 
@@ -37,6 +38,7 @@ def ingest_clinical_trials(
     engine: str = typer.Option("llm", help="Processing engine: 'regex' (fast, deterministic) or 'llm' (flexible, intelligent)"),
     llm_model: str = typer.Option("deepseek-coder", help="LLM model to use for llm engine"),
     llm_prompt: str = typer.Option("direct_mcode_evidence_based_concise", help="Prompt template for llm engine"),
+    user: str = typer.Option(None, help="User email for session identification"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
 ):
     """
@@ -82,7 +84,7 @@ def ingest_clinical_trials(
         memory = OncoCoreMemory()
 
         # Check if space exists, create if not
-        spaces = memory.api_client.get_spaces()
+        spaces = memory.client.get_spaces()
         space_id = None
         for space in spaces:
             if space.get("name") == space_name:
@@ -92,7 +94,7 @@ def ingest_clinical_trials(
                 break
 
         if not space_id:
-            space_id = memory.api_client.create_space(space_name, "Live clinical trials database")
+            space_id = memory.client.create_space(space_name, "Live clinical trials database")
             if not space_id:
                 console.print(f"[red]❌ Failed to create space: {space_name}[/red]")
                 raise typer.Exit(1)
@@ -154,7 +156,7 @@ def ingest_clinical_trials(
         existing_trials = set()
         try:
             # Search for existing trial summaries
-            existing_search = memory.search_similar_trials("NCT", limit=1000)
+            existing_search = memory.search_trials("NCT", limit=1000)
 
             # Handle both dictionary and string episode formats
             episodes = existing_search.episodes if hasattr(existing_search, 'episodes') else []
@@ -280,7 +282,8 @@ def ingest_clinical_trials(
                             "processed_trial": processed_trial
                         }
 
-                        success = memory.store_trial_summary(nct_id, summary)
+                        summary = processed_trial.get("McodeResults", {}).get("natural_language_summary", "")
+                        success = memory.store_trial_summary(nct_id, summary, space_id, user)
 
                         if success:
                             console.print(f"[green]   ✅ Ingested: {nct_id}[/green]")
@@ -319,5 +322,278 @@ def ingest_clinical_trials(
     except Exception as e:
         console.print(f"[red]❌ Ingestion failed: {e}[/red]")
         logger.exception("Clinical trials ingestion error")
+        raise typer.Exit(1)
+
+
+@app.command("fetch-patients")
+def fetch_patients(
+    archive_path: str = typer.Argument(..., help="Path or identifier for patient data archive"),
+    patient_id: Optional[str] = typer.Option(None, help="Specific patient ID to fetch"),
+    limit: int = typer.Option(10, help="Maximum number of patients to fetch"),
+    output_file: Optional[str] = typer.Option(None, help="Path to save fetched data (NDJSON format)"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
+):
+    """
+    Fetch synthetic patient data from archives.
+
+    Retrieves patient data from synthetic data archives without processing.
+    Supports fetching specific patients or batches of patients.
+    """
+    console.print(f"[bold blue]📥 Fetching patients from archive: {archive_path}[/bold blue]")
+
+    try:
+        # Import required components
+        from config.heysol_config import get_config
+        from workflows.patients_fetcher import PatientsFetcherWorkflow
+
+        # Get configuration
+        config = get_config()
+
+        if verbose:
+            console.print(f"[blue]🎯 Patient ID: {patient_id or 'all'}[/blue]")
+            console.print(f"[blue]📊 Limit: {limit}[/blue]")
+            console.print(f"[blue]💾 Output file: {output_file or 'stdout'}[/blue]")
+
+        # Initialize workflow
+        fetcher = PatientsFetcherWorkflow(config)
+
+        # Execute fetch
+        result = fetcher.execute(
+            archive_path=archive_path,
+            patient_id=patient_id,
+            limit=limit,
+            output_path=output_file
+        )
+
+        if result.success:
+            console.print("[green]✅ Patient data fetched successfully[/green]")
+
+            if result.metadata:
+                total_fetched = result.metadata.get("total_fetched", 0)
+                fetch_type = result.metadata.get("fetch_type", "unknown")
+                console.print(f"[green]📊 Fetched {total_fetched} patients ({fetch_type})[/green]")
+
+            if output_file:
+                console.print(f"[green]💾 Data saved to: {output_file}[/green]")
+            else:
+                console.print("[blue]📤 Data written to stdout (NDJSON format)[/blue]")
+        else:
+            console.print(f"[red]❌ Fetch failed: {result.error_message}[/red]")
+            raise typer.Exit(1)
+
+    except ImportError as e:
+        console.print(f"[red]❌ Import error: {e}[/red]")
+        console.print("[yellow]💡 Ensure all dependencies are installed[/yellow]")
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]❌ Fetch failed: {e}[/red]")
+        logger.exception("Patient fetch error")
+        raise typer.Exit(1)
+
+
+@app.command("process-patients")
+def process_patients(
+    input_file: str = typer.Argument(..., help="Path to patient data file (NDJSON format)"),
+    trials_criteria: Optional[str] = typer.Option(None, help="JSON string of trial eligibility criteria"),
+    store_in_memory: bool = typer.Option(False, "--store", help="Store processed data in CORE Memory"),
+    output_file: Optional[str] = typer.Option(None, help="Path to save processed data"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
+):
+    """
+    Process patient data with mCODE mapping.
+
+    Extracts mCODE elements from FHIR patient bundles and optionally
+    stores results in CORE Memory.
+    """
+    console.print(f"[bold blue]🔬 Processing patients from: {input_file}[/bold blue]")
+
+    try:
+        # Import required components
+        from config.heysol_config import get_config
+        from workflows.patients_processor import PatientsProcessorWorkflow
+        import json
+
+        # Get configuration
+        config = get_config()
+
+        if verbose:
+            console.print(f"[blue]🎯 Trials criteria: {trials_criteria or 'none'}[/blue]")
+            console.print(f"[blue]💾 Store in memory: {store_in_memory}[/blue]")
+            console.print(f"[blue]📁 Output file: {output_file or 'none'}[/blue]")
+
+        # Parse trials criteria if provided
+        trials_criteria_dict = None
+        if trials_criteria:
+            try:
+                trials_criteria_dict = json.loads(trials_criteria)
+                console.print("[blue]📋 Trials criteria parsed successfully[/blue]")
+            except json.JSONDecodeError as e:
+                console.print(f"[red]❌ Invalid trials criteria JSON: {e}[/red]")
+                raise typer.Exit(1)
+
+        # Load patient data
+        console.print("[blue]📖 Loading patient data...[/blue]")
+        patients_data = []
+        with open(input_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        patient = json.loads(line)
+                        patients_data.append(patient)
+                    except json.JSONDecodeError as e:
+                        console.print(f"[yellow]⚠️ Skipping invalid JSON line: {e}[/yellow]")
+
+        if not patients_data:
+            console.print("[red]❌ No valid patient data found in file[/red]")
+            raise typer.Exit(1)
+
+        console.print(f"[green]✅ Loaded {len(patients_data)} patients[/green]")
+
+        # Initialize workflow
+        processor = PatientsProcessorWorkflow(config)
+
+        # Execute processing
+        result = processor.execute(
+            patients_data=patients_data,
+            trials_criteria=trials_criteria_dict,
+            store_in_memory=store_in_memory
+        )
+
+        if result.success:
+            console.print("[green]✅ Patient processing completed[/green]")
+
+            if result.metadata:
+                total = result.metadata.get("total_patients", 0)
+                successful = result.metadata.get("successful", 0)
+                failed = result.metadata.get("failed", 0)
+                success_rate = result.metadata.get("success_rate", 0)
+
+                console.print(f"[green]📊 Processed {successful}/{total} patients successfully ({success_rate:.1%})[/green]")
+                if failed > 0:
+                    console.print(f"[yellow]⚠️ {failed} patients failed processing[/yellow]")
+
+                if result.metadata.get("stored_in_memory"):
+                    console.print("[green]💾 Results stored in CORE Memory[/green]")
+
+            # Save processed data if output file specified
+            if output_file and result.data:
+                console.print(f"[blue]💾 Saving processed data to: {output_file}[/blue]")
+                with open(output_file, 'w') as f:
+                    for patient in result.data:
+                        json.dump(patient, f, ensure_ascii=False)
+                        f.write('\n')
+                console.print("[green]✅ Processed data saved[/green]")
+        else:
+            console.print(f"[red]❌ Processing failed: {result.error_message}[/red]")
+            raise typer.Exit(1)
+
+    except ImportError as e:
+        console.print(f"[red]❌ Import error: {e}[/red]")
+        console.print("[yellow]💡 Ensure all dependencies are installed[/yellow]")
+        raise typer.Exit(1)
+    except FileNotFoundError:
+        console.print(f"[red]❌ Input file not found: {input_file}[/red]")
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]❌ Processing failed: {e}[/red]")
+        logger.exception("Patient processing error")
+        raise typer.Exit(1)
+
+
+@app.command("summarize-patients")
+def summarize_patients(
+    input_file: str = typer.Argument(..., help="Path to processed patient data file"),
+    store_in_memory: bool = typer.Option(False, "--store", help="Store summaries in CORE Memory"),
+    output_file: Optional[str] = typer.Option(None, help="Path to save summarized data"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
+):
+    """
+    Generate natural language summaries from processed patient data.
+
+    Creates comprehensive summaries from mCODE patient data and optionally
+    stores them in CORE Memory.
+    """
+    console.print(f"[bold blue]📝 Summarizing patients from: {input_file}[/bold blue]")
+
+    try:
+        # Import required components
+        from config.heysol_config import get_config
+        from workflows.patients_summarizer import PatientsSummarizerWorkflow
+        import json
+
+        # Get configuration
+        config = get_config()
+
+        if verbose:
+            console.print(f"[blue]💾 Store in memory: {store_in_memory}[/blue]")
+            console.print(f"[blue]📁 Output file: {output_file or 'none'}[/blue]")
+
+        # Load patient data
+        console.print("[blue]📖 Loading processed patient data...[/blue]")
+        patients_data = []
+        with open(input_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        patient = json.loads(line)
+                        patients_data.append(patient)
+                    except json.JSONDecodeError as e:
+                        console.print(f"[yellow]⚠️ Skipping invalid JSON line: {e}[/yellow]")
+
+        if not patients_data:
+            console.print("[red]❌ No valid patient data found in file[/red]")
+            raise typer.Exit(1)
+
+        console.print(f"[green]✅ Loaded {len(patients_data)} patients[/green]")
+
+        # Initialize workflow
+        summarizer = PatientsSummarizerWorkflow(config)
+
+        # Execute summarization
+        result = summarizer.execute(
+            patients_data=patients_data,
+            store_in_memory=store_in_memory
+        )
+
+        if result.success:
+            console.print("[green]✅ Patient summarization completed[/green]")
+
+            if result.metadata:
+                total = result.metadata.get("total_patients", 0)
+                successful = result.metadata.get("successful", 0)
+                failed = result.metadata.get("failed", 0)
+                success_rate = result.metadata.get("success_rate", 0)
+
+                console.print(f"[green]📊 Summarized {successful}/{total} patients successfully ({success_rate:.1%})[/green]")
+                if failed > 0:
+                    console.print(f"[yellow]⚠️ {failed} patients failed summarization[/yellow]")
+
+                if result.metadata.get("stored_in_memory"):
+                    console.print("[green]💾 Summaries stored in CORE Memory[/green]")
+
+            # Save summarized data if output file specified
+            if output_file and result.data:
+                console.print(f"[blue]💾 Saving summarized data to: {output_file}[/blue]")
+                with open(output_file, 'w') as f:
+                    for patient in result.data:
+                        json.dump(patient, f, ensure_ascii=False)
+                        f.write('\n')
+                console.print("[green]✅ Summarized data saved[/green]")
+        else:
+            console.print(f"[red]❌ Summarization failed: {result.error_message}[/red]")
+            raise typer.Exit(1)
+
+    except ImportError as e:
+        console.print(f"[red]❌ Import error: {e}[/red]")
+        console.print("[yellow]💡 Ensure all dependencies are installed[/yellow]")
+        raise typer.Exit(1)
+    except FileNotFoundError:
+        console.print(f"[red]❌ Input file not found: {input_file}[/red]")
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]❌ Summarization failed: {e}[/red]")
+        logger.exception("Patient summarization error")
         raise typer.Exit(1)
 

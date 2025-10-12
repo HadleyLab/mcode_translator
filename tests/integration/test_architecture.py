@@ -10,7 +10,7 @@ import pytest
 from src.utils.config import Config
 from src.pipeline import McodePipeline
 from src.pipeline.document_ingestor import DocumentIngestor
-from src.pipeline.llm_service import LLMService
+from src.services.llm.service import LLMService
 
 
 class TestArchitecture:

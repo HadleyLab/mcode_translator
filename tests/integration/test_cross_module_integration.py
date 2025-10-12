@@ -6,7 +6,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from src.core.data_flow_coordinator import DataFlowCoordinator
 from src.core.dependency_container import DependencyContainer
-from src.workflows.patients_fetcher_workflow import PatientsFetcherWorkflow
+from src.workflows.patients_fetcher import PatientsFetcherWorkflow
 
 
 @pytest.mark.integration

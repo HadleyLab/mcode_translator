@@ -181,3 +181,243 @@ def summarize_trial(
         console.print(f"[red]❌ Summary generation failed: {e}[/red]")
         logger.exception("Trial summary error")
         raise typer.Exit(1)
+
+
+@app.command("extract-trial")
+def extract_trial(
+    trial_id: str = typer.Argument(..., help="Clinical trial NCT ID"),
+    output_file: Optional[str] = typer.Option(None, help="Path to save extracted mCODE elements"),
+    format: str = typer.Option("json", help="Output format (json, text)"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
+):
+    """
+    Extract mCODE elements from clinical trial data.
+
+    Uses the TrialExtractor to identify and extract mCODE-relevant
+    information from clinical trial protocol sections.
+    """
+    console.print(f"[bold blue]🔬 Extracting mCODE elements from trial: {trial_id}[/bold blue]")
+
+    try:
+        # Import required components
+        from workflows.trial_extractor import TrialExtractor
+
+        if verbose:
+            console.print(f"[blue]📋 Output format: {format}[/blue]")
+            console.print(f"[blue]💾 Output file: {output_file or 'none'}[/blue]")
+
+        # Fetch trial data
+        console.print("[blue]🔍 Fetching trial data...[/blue]")
+        from workflows.trials_fetcher import TrialsFetcherWorkflow
+        from config.heysol_config import get_config
+        config = get_config()
+        fetcher = TrialsFetcherWorkflow(config)
+        fetch_result = fetcher.execute(nct_ids=[trial_id], output_path=None)
+
+        if not fetch_result.success:
+            console.print(f"[red]❌ Failed to fetch trial {trial_id}: {fetch_result.error_message}[/red]")
+            raise typer.Exit(1)
+
+        trials = fetch_result.data
+        if not trials:
+            console.print(f"[red]❌ Trial {trial_id} not found[/red]")
+            raise typer.Exit(1)
+
+        trial_data = trials[0]  # Should be only one trial
+        console.print(f"[green]✅ Fetched trial data for {trial_id}[/green]")
+
+        # Extract mCODE elements
+        console.print("[blue]🔬 Extracting mCODE elements...[/blue]")
+        extractor = TrialExtractor()
+        mcode_elements = extractor.extract_trial_mcode_elements(trial_data)
+
+        console.print(f"[green]✅ Extracted {len(mcode_elements)} mCODE element categories[/green]")
+
+        # Display results based on format
+        if format == "json":
+            import json
+            output_data = {
+                "trial_id": trial_id,
+                "mcode_elements": mcode_elements,
+                "extraction_metadata": {
+                    "total_categories": len(mcode_elements),
+                    "categories": list(mcode_elements.keys())
+                }
+            }
+
+            if output_file:
+                with open(output_file, 'w') as f:
+                    json.dump(output_data, f, indent=2)
+                console.print(f"[green]💾 mCODE elements saved to: {output_file}[/green]")
+            else:
+                console.print(json.dumps(output_data, indent=2))
+
+        elif format == "text":
+            console.print(f"\n[bold cyan]📋 mCODE Elements for Trial {trial_id}:[/bold cyan]")
+            for category, elements in mcode_elements.items():
+                console.print(f"\n[cyan]{category}:[/cyan]")
+                if isinstance(elements, list):
+                    for i, element in enumerate(elements, 1):
+                        if isinstance(element, dict):
+                            display = element.get('display', str(element))
+                            console.print(f"  {i}. {display}")
+                        else:
+                            console.print(f"  {i}. {element}")
+                elif isinstance(elements, dict):
+                    display = elements.get('display', str(elements))
+                    console.print(f"  {display}")
+                else:
+                    console.print(f"  {elements}")
+
+            if output_file:
+                with open(output_file, 'w') as f:
+                    f.write(f"mCODE Elements for Trial {trial_id}:\n\n")
+                    for category, elements in mcode_elements.items():
+                        f.write(f"{category}:\n")
+                        if isinstance(elements, list):
+                            for i, element in enumerate(elements, 1):
+                                if isinstance(element, dict):
+                                    display = element.get('display', str(element))
+                                    f.write(f"  {i}. {display}\n")
+                                else:
+                                    f.write(f"  {i}. {element}\n")
+                        elif isinstance(elements, dict):
+                            display = elements.get('display', str(elements))
+                            f.write(f"  {display}\n")
+                        else:
+                            f.write(f"  {elements}\n")
+                        f.write("\n")
+                console.print(f"[green]💾 mCODE elements saved to: {output_file}[/green]")
+
+        if verbose:
+            console.print(f"\n[blue]📊 Extraction details: {len(mcode_elements)} categories extracted[/blue]")
+
+    except ImportError as e:
+        console.print(f"[red]❌ Import error: {e}[/red]")
+        console.print("[yellow]💡 Ensure all dependencies are installed[/yellow]")
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]❌ Extraction failed: {e}[/red]")
+        logger.exception("Trial extraction error")
+        raise typer.Exit(1)
+
+
+@app.command("optimize-trials")
+def optimize_trials(
+    input_file: str = typer.Argument(..., help="Path to trial data file (NDJSON format)"),
+    prompts: Optional[str] = typer.Option(None, help="Comma-separated list of prompts to test"),
+    models: Optional[str] = typer.Option(None, help="Comma-separated list of models to test"),
+    max_combinations: int = typer.Option(5, help="Maximum combinations to test"),
+    cv_folds: int = typer.Option(3, help="Number of cross-validation folds"),
+    output_config: Optional[str] = typer.Option(None, help="Path to save optimal configuration"),
+    inter_rater: bool = typer.Option(False, help="Run inter-rater reliability analysis"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
+):
+    """
+    Optimize mCODE translation parameters.
+
+    Tests different combinations of prompts and models to find optimal
+    settings for mCODE translation using cross-validation.
+    """
+    console.print("[bold blue]🔬 Optimizing mCODE translation parameters[/bold blue]")
+
+    try:
+        # Import required components
+        from workflows.trials_optimizer import TrialsOptimizerWorkflow
+        from config.heysol_config import get_config
+        import json
+
+        # Get configuration
+        config = get_config()
+
+        if verbose:
+            console.print(f"[blue]📁 Input file: {input_file}[/blue]")
+            console.print(f"[blue]📊 CV folds: {cv_folds}[/blue]")
+            console.print(f"[blue]🎯 Max combinations: {max_combinations}[/blue]")
+            console.print(f"[blue]🤝 Inter-rater analysis: {inter_rater}[/blue]")
+
+        # Parse prompts and models
+        prompts_list = prompts.split(",") if prompts else ["direct_mcode_evidence_based_concise"]
+        models_list = models.split(",") if models else ["deepseek-coder"]
+
+        if verbose:
+            console.print(f"[blue]📝 Prompts: {', '.join(prompts_list)}[/blue]")
+            console.print(f"[blue]🤖 Models: {', '.join(models_list)}[/blue]")
+
+        # Load trial data
+        console.print("[blue]📖 Loading trial data...[/blue]")
+        trials_data = []
+        with open(input_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        trial = json.loads(line)
+                        trials_data.append(trial)
+                    except json.JSONDecodeError as e:
+                        console.print(f"[yellow]⚠️ Skipping invalid JSON line: {e}[/yellow]")
+
+        if not trials_data:
+            console.print("[red]❌ No valid trial data found in file[/red]")
+            raise typer.Exit(1)
+
+        console.print(f"[green]✅ Loaded {len(trials_data)} trials[/green]")
+
+        # Initialize optimizer
+        optimizer = TrialsOptimizerWorkflow(config)
+
+        # Execute optimization
+        result = optimizer.execute(
+            trials_data=trials_data,
+            prompts=prompts_list,
+            models=models_list,
+            max_combinations=max_combinations,
+            cv_folds=cv_folds,
+            output_config=output_config,
+            run_inter_rater_reliability=inter_rater
+        )
+
+        if result.success:
+            console.print("[green]✅ Optimization completed[/green]")
+
+            if result.metadata:
+                total_combinations = result.metadata.get("total_combinations_tested", 0)
+                successful_tests = result.metadata.get("successful_tests", 0)
+                best_score = result.metadata.get("best_score", 0)
+                best_combination = result.metadata.get("best_combination")
+
+                console.print(f"[green]📊 Combinations tested: {successful_tests}/{total_combinations}[/green]")
+                if best_combination:
+                    console.print(f"[green]🏆 Best combination: {best_combination['model']} + {best_combination['prompt']}[/green]")
+                    console.print(f"[green]📈 Best CV score: {best_score:.3f}[/green]")
+
+                if result.metadata.get("config_saved"):
+                    console.print("[green]💾 Optimal configuration saved[/green]")
+
+                if result.metadata.get("inter_rater_reliability"):
+                    console.print("[green]🤝 Inter-rater reliability analysis completed[/green]")
+
+            # Display results summary
+            if result.data and verbose:
+                console.print(f"\n[blue]📋 Detailed results: {len(result.data)} combinations[/blue]")
+                for i, combo_result in enumerate(result.data, 1):
+                    if combo_result.get("success"):
+                        combo = combo_result.get("combination", {})
+                        avg_score = combo_result.get("cv_average_score", 0)
+                        console.print(f"  {i}. {combo.get('model')} + {combo.get('prompt')}: {avg_score:.3f}")
+
+        else:
+            console.print(f"[red]❌ Optimization failed: {result.error_message}[/red]")
+            raise typer.Exit(1)
+
+    except ImportError as e:
+        console.print(f"[red]❌ Import error: {e}[/red]")
+        console.print("[yellow]💡 Ensure all dependencies are installed[/yellow]")
+        raise typer.Exit(1)
+    except FileNotFoundError:
+        console.print(f"[red]❌ Input file not found: {input_file}[/red]")
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]❌ Optimization failed: {e}[/red]")
+        logger.exception("Trials optimization error")
+        raise typer.Exit(1)

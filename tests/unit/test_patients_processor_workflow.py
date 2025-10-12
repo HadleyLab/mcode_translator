@@ -5,7 +5,7 @@ Unit tests for PatientsProcessorWorkflow.
 import pytest
 from unittest.mock import Mock, patch
 
-from src.workflows.patients_processor_workflow import PatientsProcessorWorkflow
+from src.workflows.patients_processor import PatientsProcessorWorkflow
 from src.services.demographics_extractor import DemographicsExtractor
 from src.services.fhir_extractors import FHIRResourceExtractors
 from src.services.clinical_note_generator import ClinicalNoteGenerator
@@ -63,7 +63,7 @@ class TestPatientsProcessorWorkflow:
         assert hasattr(workflow, "execute")
         assert hasattr(workflow, "summarizer")
 
-    @patch("src.workflows.patients_processor_workflow.TaskQueue")
+    @patch("src.workflows.patients_processor.TaskQueue")
     def test_execute_success(self, mock_task_queue, workflow, mock_patient_data):
         """Test successful patient processing execution."""
         # Mock task queue
@@ -91,7 +91,7 @@ class TestPatientsProcessorWorkflow:
         assert result.success is False
         assert "No patient data provided" in result.error_message
 
-    @patch("src.workflows.patients_processor_workflow.TaskQueue")
+    @patch("src.workflows.patients_processor.TaskQueue")
     def test_execute_with_task_failures(
         self, mock_task_queue, workflow, mock_patient_data
     ):
@@ -113,7 +113,7 @@ class TestPatientsProcessorWorkflow:
         assert len(result.data) == 1
         assert "McodeProcessingError" in result.data[0]
 
-    @patch("src.workflows.patients_processor_workflow.TaskQueue")
+    @patch("src.workflows.patients_processor.TaskQueue")
     def test_execute_all_tasks_fail(self, mock_task_queue, workflow, mock_patient_data):
         """Test execute when all tasks fail."""
         # Mock task queue

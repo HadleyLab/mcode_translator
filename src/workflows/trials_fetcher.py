@@ -468,3 +468,55 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
     def _set_cli_args(self, args: Any) -> None:
         """Set CLI arguments for concurrency configuration."""
         self._cli_args = args
+
+def main(args):
+    """
+    CLI main function for trials fetcher.
+
+    Args:
+        args: Parsed command line arguments
+    """
+    import sys
+    from pathlib import Path
+
+    # Add src to path for imports
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+
+    from config.heysol_config import get_config
+
+    try:
+        config = get_config()
+
+        # Create workflow instance
+        workflow = TrialsFetcherWorkflow()
+
+        # Extract parameters from args
+        kwargs = {}
+        if hasattr(args, 'condition') and args.condition:
+            kwargs['condition'] = args.condition
+        if hasattr(args, 'nct_id') and args.nct_id:
+            kwargs['nct_ids'] = [args.nct_id]
+        if hasattr(args, 'nct_ids') and args.nct_ids:
+            kwargs['nct_ids'] = args.nct_ids
+        if hasattr(args, 'limit') and args.limit:
+            kwargs['limit'] = args.limit
+        if hasattr(args, 'output_path') and args.output_path:
+            kwargs['output_path'] = args.output_path
+
+        # Execute workflow
+        result = workflow.execute(**kwargs)
+
+        if result.success:
+            print("✅ Trials fetch completed successfully!")
+            if result.data:
+                print(f"Total trials fetched: {len(result.data)}")
+            if result.metadata:
+                print(f"Metadata: {result.metadata}")
+            sys.exit(0)
+        else:
+            print(f"❌ Trials fetch failed: {result.error_message}")
+            sys.exit(1)
+
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        sys.exit(1)

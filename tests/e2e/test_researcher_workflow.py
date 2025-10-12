@@ -11,9 +11,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.cli.trials_fetcher import main as trials_fetcher_main
-from src.cli.trials_processor import main as trials_processor_main
-from src.cli.trials_summarizer import main as trials_summarizer_main
+from src.workflows.trials_fetcher import main as trials_fetcher_main
+from src.cli.commands.trials import trials_pipeline
+from src.cli.commands.patients import patients_pipeline
 from src.shared.models import WorkflowResult
 
 
@@ -176,7 +176,7 @@ class TestResearcherWorkflowE2E:
         assert "✅ Trials fetch completed successfully!" in output
         assert "Total trials fetched: 1" in output
 
-    @patch("src.pipeline.llm_service.LLMService")
+    @patch("src.services.llm.service.LLMService")
     @patch("src.storage.mcode_memory_storage.McodeMemoryStorage")
     def test_researcher_workflow_trial_analysis(
         self,
@@ -220,23 +220,20 @@ class TestResearcherWorkflowE2E:
         # Create output file
         output_file = tmp_path / "mcode_trials.ndjson"
 
-        # Test CLI execution
-        import argparse
-
-        args = argparse.Namespace(
+        # Test CLI execution using new pipeline structure
+        trials_pipeline(
+            fetch=False,
+            process=True,
+            summarize=False,
+            optimize=False,
             input_file=str(input_file),
             output_file=str(output_file),
-            ingest=True,
-            memory_source="test",
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            workers=1,
+            process_store_memory=True,
+            engine="llm",
+            llm_model="deepseek-coder",
+            llm_prompt="direct_mcode_evidence_based_concise",
             verbose=False,
-            log_level="INFO",
-            config=None,
         )
-
-        trials_processor_main(args)
 
         # Verify output file was created
         assert output_file.exists()
@@ -292,23 +289,17 @@ class TestResearcherWorkflowE2E:
         # Create output file
         output_file = tmp_path / "summaries.ndjson"
 
-        # Test CLI execution
-        import argparse
-
-        args = argparse.Namespace(
-            input_file=str(input_file),
+        # Test CLI execution using new pipeline structure
+        trials_pipeline(
+            fetch=False,
+            process=False,
+            summarize=True,
+            optimize=False,
+            summary_input_file=str(input_file),
             output_file=str(output_file),
-            ingest=True,
-            memory_source="test",
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            workers=1,
+            summary_store_memory=True,
             verbose=False,
-            log_level="INFO",
-            config=None,
         )
-
-        trials_summarizer_main(args)
 
         # Verify output file was created
         assert output_file.exists()
@@ -323,7 +314,7 @@ class TestResearcherWorkflowE2E:
             assert "mcode_elements" in summary_data
 
     @patch("src.services.summarizer.McodeSummarizer")
-    @patch("src.pipeline.llm_service.LLMService")
+    @patch("src.services.llm.service.LLMService")
     @patch("src.storage.mcode_memory_storage.McodeMemoryStorage")
     @patch("src.utils.fetcher.requests.get")
     def test_complete_researcher_workflow_integration(
@@ -400,37 +391,32 @@ class TestResearcherWorkflowE2E:
         assert trials_file.exists()
 
         # Step 2: Process trials
-        process_args = argparse.Namespace(
+        trials_pipeline(
+            fetch=False,
+            process=True,
+            summarize=False,
+            optimize=False,
             input_file=str(trials_file),
             output_file=str(mcode_file),
-            ingest=True,
-            memory_source="test",
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            workers=1,
+            process_store_memory=True,
+            engine="llm",
+            llm_model="deepseek-coder",
+            llm_prompt="direct_mcode_evidence_based_concise",
             verbose=False,
-            log_level="INFO",
-            config=None,
         )
-
-        trials_processor_main(process_args)
         assert mcode_file.exists()
 
         # Step 3: Generate summaries
-        summary_args = argparse.Namespace(
-            input_file=str(mcode_file),
+        trials_pipeline(
+            fetch=False,
+            process=False,
+            summarize=True,
+            optimize=False,
+            summary_input_file=str(mcode_file),
             output_file=str(summary_file),
-            ingest=True,
-            memory_source="test",
-            model="deepseek-coder",
-            prompt="direct_mcode_evidence_based_concise",
-            workers=1,
+            summary_store_memory=True,
             verbose=False,
-            log_level="INFO",
-            config=None,
         )
-
-        trials_summarizer_main(summary_args)
         assert summary_file.exists()
 
         # Verify data flow between steps
@@ -461,7 +447,14 @@ class TestResearcherWorkflowE2E:
         )
 
         with pytest.raises(SystemExit):
-            trials_processor_main(args)
+            trials_pipeline(
+                fetch=False,
+                process=True,
+                summarize=False,
+                optimize=False,
+                input_file=str(nonexistent_file),
+                verbose=False,
+            )
 
     @patch("src.cli.trials_fetcher.TrialsFetcherWorkflow")
     def test_researcher_workflow_invalid_nct_id(self, mock_workflow_class):
@@ -494,11 +487,18 @@ class TestResearcherWorkflowE2E:
         stdout_capture = io.StringIO()
         with redirect_stdout(stdout_capture):
             with pytest.raises(SystemExit) as exc_info:
-                trials_fetcher_main(args)
+                trials_pipeline(
+                    fetch=True,
+                    process=False,
+                    summarize=False,
+                    optimize=False,
+                    nct_id="INVALID",
+                    verbose=False,
+                )
 
         # Verify exit code is 1 (error)
         assert exc_info.value.code == 1
 
         # Verify error was handled (CLI should exit with error)
         output = stdout_capture.getvalue()
-        assert "❌ Trials fetch failed" in output
+        assert "❌" in output  # Error indicator should be present

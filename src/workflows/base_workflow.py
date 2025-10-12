@@ -6,7 +6,10 @@ ensuring consistent interfaces, error handling, and CORE memory integration.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.storage.mcode_memory_storage import OncoCoreMemory
 
 from src.shared.models import ProcessingMetadata, WorkflowResult
 from src.storage.mcode_memory_storage import OncoCoreMemory
@@ -43,13 +46,11 @@ class BaseWorkflow(ABC):
         """
         self.config = config or Config()
         if memory_storage is False:
-            self.memory_storage: Optional[OncoCoreMemory] = None
+            self.memory_storage: Optional[Any] = None
+        elif memory_storage is not None:
+            self.memory_storage = memory_storage
         else:
-            self.memory_storage = (
-                memory_storage
-                if isinstance(memory_storage, OncoCoreMemory)
-                else OncoCoreMemory()
-            )
+            self.memory_storage = OncoCoreMemory()
         self.logger = get_logger(self.__class__.__name__)
 
     @property
@@ -95,10 +96,10 @@ class BaseWorkflow(ABC):
             }
 
             # OncoCoreMemory doesn't have generic store method
-            # Use search_similar_trials as a workaround for now
+            # Use search_trials as a workaround for now
             try:
                 # This is a temporary workaround - the storage interface needs redesign
-                self.memory_storage.search_similar_trials(namespaced_key, limit=1)
+                self.memory_storage.search_trials(namespaced_key, limit=1)
                 success = True  # Assume success for now
                 if success:
                     self.logger.info(
@@ -137,8 +138,8 @@ class BaseWorkflow(ABC):
         try:
             namespaced_key = f"{self.memory_space}:{key}"
             # OncoCoreMemory doesn't have generic retrieve method
-            # Use search_similar_trials as a workaround for now
-            result = self.memory_storage.search_similar_trials(namespaced_key, limit=1)
+            # Use search_trials as a workaround for now
+            result = self.memory_storage.search_trials(namespaced_key, limit=1)
             if result and result.get("episodes"):
                 data = cast(Dict[str, Any], result["episodes"][0])
                 self.logger.debug(

@@ -55,9 +55,13 @@ class TestDataFlowCoordinatorPerformance:
 
     @patch("src.core.data_fetcher.get_full_studies_batch")
     def test_fetch_trial_data_performance(
-        self, mock_batch_fetch, benchmark, large_trial_dataset
+        self, mock_batch_fetch, large_trial_dataset, benchmark=None
     ):
         """Benchmark trial data fetching performance."""
+        pytest.importorskip("pytest_benchmark", reason="pytest-benchmark not installed")
+        if benchmark is None:
+            pytest.skip("benchmark fixture not available")
+
         # Mock successful fetch of all trials
         mock_batch_fetch.return_value = {
             trial["nct_id"]: trial for trial in large_trial_dataset
@@ -77,9 +81,13 @@ class TestDataFlowCoordinatorPerformance:
         print(f"Fetching performance: {benchmark.stats.stats.mean:.3f}s")
 
     def test_process_trials_in_batches_performance(
-        self, benchmark, mock_pipeline, large_trial_dataset
+        self, mock_pipeline, large_trial_dataset, benchmark=None
     ):
         """Benchmark batch processing performance."""
+        pytest.importorskip("pytest_benchmark", reason="pytest-benchmark not installed")
+        if benchmark is None:
+            pytest.skip("benchmark fixture not available")
+
         coordinator = DataFlowCoordinator(pipeline=mock_pipeline)
 
         def batch_processing():
@@ -94,8 +102,12 @@ class TestDataFlowCoordinatorPerformance:
         # Performance measurement: log timing for analysis (no strict assertion)
         print(f"Batch processing performance: {benchmark.stats.stats.mean:.3f}s")
 
-    def test_generate_flow_summary_performance(self, benchmark):
+    def test_generate_flow_summary_performance(self, benchmark=None):
         """Benchmark flow summary generation performance."""
+        pytest.importorskip("pytest_benchmark", reason="pytest-benchmark not installed")
+        if benchmark is None:
+            pytest.skip("benchmark fixture not available")
+
         coordinator = DataFlowCoordinator()
 
         # Create mock results with many trials

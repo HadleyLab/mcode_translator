@@ -4,14 +4,17 @@ Ultra-Lean McodePipeline
 Zero redundancy, maximum performance. Leverages existing infrastructure.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from src.pipeline.document_ingestor import DocumentIngestor
 from src.services.llm.service import LLMService
 from src.shared.models import (ClinicalTrialData, McodeElement, PipelineResult,
-                               ProcessingMetadata, ValidationResult)
+                                ProcessingMetadata, ValidationResult)
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
+
+# Sentinel for default values
+_PROMPT_DEFAULT = object()
 
 
 class McodePipeline:
@@ -24,7 +27,7 @@ class McodePipeline:
     def __init__(
         self,
         model_name: Optional[str] = None,
-        prompt_name: Optional[str] = None,
+        prompt_name: Any = _PROMPT_DEFAULT,
         config: Optional[Config] = None,
         engine: str = "llm",
     ):
@@ -45,8 +48,17 @@ class McodePipeline:
 
         self.config = config or Config()
         self.engine = engine
+
+        # Validate model_name
+        if model_name is not None and (not isinstance(model_name, str) or model_name.strip() == ""):
+            raise ValueError("model_name cannot be empty or None if provided")
         self.model_name = model_name or ("regex" if engine == "regex" else "deepseek-coder")
-        self.prompt_name = prompt_name or "direct_mcode_evidence_based_concise"
+
+        # Handle prompt_name
+        if prompt_name is _PROMPT_DEFAULT:
+            self.prompt_name = "direct_mcode_evidence_based_concise"
+        else:
+            self.prompt_name = prompt_name  # Could be None if explicitly passed
 
         # Leverage existing components
         self.document_ingestor = DocumentIngestor()

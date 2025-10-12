@@ -5,7 +5,7 @@ Tests for TrialsOptimizerWorkflow.
 import pytest
 from unittest.mock import Mock, patch
 
-from src.workflows.trials_optimizer_workflow import TrialsOptimizerWorkflow
+from src.workflows.trials_optimizer import TrialsOptimizerWorkflow
 from src.utils.config import Config
 
 

@@ -10,18 +10,22 @@ from typing import Any, Dict, List, Optional
 from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import OncoCoreMemory
 
-from .base_workflow import \
-    PatientsProcessorWorkflow as BasePatientsProcessorWorkflow
+from .base_summarizer import BaseSummarizerWorkflow
 from .base_workflow import WorkflowResult
 
 
-class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
+class PatientsSummarizerWorkflow(BaseSummarizerWorkflow):
     """
     Workflow for generating natural language summaries from mCODE patient data.
 
     Takes processed mCODE patient data and generates comprehensive summaries
     for storage in CORE Memory.
     """
+
+    @property
+    def memory_space(self) -> str:
+        """Patients summarizers use 'patients_summaries' space."""
+        return "patients_summaries"
 
     def __init__(
         self, config: Any, memory_storage: Optional[OncoCoreMemory] = None
@@ -206,6 +210,7 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
 
                     # Store in CORE Memory if requested
                     if store_in_memory and self.memory_storage:
+                        self.logger.info(f"Attempting to store patient {patient_id} in memory, memory_storage type: {type(self.memory_storage)}")
                         # Handle storage for both existing and newly generated summaries
                         if "mcode_elements" in patient:
                             # Use existing mCODE data
@@ -234,9 +239,11 @@ class PatientsSummarizerWorkflow(BasePatientsProcessorWorkflow):
                             "metadata": metadata,
                         }
 
-                        success = self.memory_storage.store_patient_mcode_summary(
-                            patient_id, mcode_data
+                        self.logger.info(f"Calling store_patient_summary with patient_id: {patient_id}, summary length: {len(summary)}")
+                        success = self.memory_storage.store_patient_summary(
+                            patient_id, summary
                         )
+                        self.logger.info(f"Storage result: {success}")
                         if success:
                             self.logger.info(f"✅ Stored patient {patient_id} summary")
                         else:

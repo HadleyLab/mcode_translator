@@ -10,16 +10,22 @@ from typing import Any, Dict, Optional, cast
 from src.services.summarizer import McodeSummarizer
 from src.storage.mcode_memory_storage import OncoCoreMemory
 
-from .base_workflow import TrialsProcessorWorkflow, WorkflowResult
+from .base_summarizer import BaseSummarizerWorkflow
+from .base_workflow import WorkflowResult
 
 
-class TrialsSummarizerWorkflow(TrialsProcessorWorkflow):
+class TrialsSummarizerWorkflow(BaseSummarizerWorkflow):
     """
     Workflow for generating natural language summaries from mCODE trial data.
 
     Takes processed mCODE trial data and generates comprehensive summaries
     for storage in CORE Memory.
     """
+
+    @property
+    def memory_space(self) -> str:
+        """Trials summarizers use 'trials_summaries' space."""
+        return "trials_summaries"
 
     def __init__(
         self, config: Any, memory_storage: Optional[OncoCoreMemory] = None

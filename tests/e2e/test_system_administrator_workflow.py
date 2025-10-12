@@ -9,7 +9,7 @@ Tests the complete system administrator workflow from configuration to maintenan
 import json
 
 
-from mcode_translate import main as mcode_translate_main
+from src.cli import main as mcode_translate_main
 
 
 class TestSystemAdministratorWorkflowE2E:

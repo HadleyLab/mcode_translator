@@ -10,7 +10,7 @@ Tests for LLM service optimizations:
 
 import time
 
-from src.pipeline.llm_service import LLMService
+from src.services.llm.service import LLMService
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
 

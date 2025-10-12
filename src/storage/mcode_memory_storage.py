@@ -30,13 +30,15 @@ class OncoCoreService:
         self.client = OncoCoreClient.from_env()
         self.source = source or "mcode-translator"
 
-    def store_trial_summary(self, trial_id: str, summary: str) -> bool:
+    def store_trial_summary(self, trial_id: str, summary: str, space_id: Optional[str] = None, session_id: Optional[str] = None) -> bool:
         """
         Store a trial summary in the trials space.
 
         Args:
             trial_id: Clinical trial NCT ID
             summary: Natural language summary to store
+            space_id: Optional space ID to use instead of default
+            session_id: Optional session identifier
 
         Returns:
             bool: True if successful
@@ -45,7 +47,8 @@ class OncoCoreService:
             result = self.client.ingest(
                 message=summary,
                 source=self.source,
-                space_id=self.TRIALS_SPACE
+                space_id=space_id or self.TRIALS_SPACE,
+                session_id=session_id
             )
             return result.get("success", False)
         except Exception:
