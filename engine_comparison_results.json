@@ -1,0 +1,165 @@
+{
+  "metadata": {
+    "evaluation_timestamp": "2025-10-13T04:51:00.000Z",
+    "total_pairs_evaluated": 475,
+    "ground_truth_positives": 389,
+    "ground_truth_positives_percentage": 0.8189473684210526,
+    "evaluation_scope": "first_475_gold_standard_records",
+    "limitations": [
+      "Evaluation based on subset of gold standard data",
+      "LLM engine shows no positive predictions in evaluated sample",
+      "Cache key mapping required for full evaluation",
+      "Statistical tests performed manually"
+    ]
+  },
+  "engine_metrics": {
+    "regex_engine": {
+      "name": "RegexRulesEngine",
+      "predictions_positive": 380,
+      "predictions_negative": 95,
+      "metrics": {
+        "tp": 314,
+        "fp": 66,
+        "fn": 75,
+        "tn": 20,
+        "precision": 0.8263157894736842,
+        "recall": 0.8071979434447301,
+        "f1": 0.8166449934980494,
+        "accuracy": 0.7031578947368421
+      }
+    },
+    "llm_engine": {
+      "name": "LLMMatchingEngine",
+      "predictions_positive": 0,
+      "predictions_negative": 475,
+      "metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 389,
+        "tn": 86,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0,
+        "accuracy": 0.18105263157894738
+      }
+    }
+  },
+  "performance_comparison": {
+    "absolute_differences": {
+      "precision": 0.8263157894736842,
+      "recall": 0.8071979434447301,
+      "f1": 0.8166449934980494,
+      "accuracy": 0.5221052631578947
+    },
+    "relative_performance": {
+      "accuracy_ratio": 3.883720930232558,
+      "f1_improvement_percentage": Infinity
+    }
+  },
+  "statistical_analysis": {
+    "chi_square_test": {
+      "contingency_table": [
+        [
+          380,
+          95
+        ],
+        [
+          0,
+          475
+        ]
+      ],
+      "significant_difference": true,
+      "p_value_approximation": "< 0.001"
+    },
+    "conclusion": "Highly significant performance difference between engines"
+  },
+  "subgroup_analysis": {
+    "by_relevance_score": {
+      "0": {
+        "sample_size": 86,
+        "regex_metrics": {
+          "tp": 0,
+          "fp": 66,
+          "fn": 0,
+          "tn": 20,
+          "precision": 0.0,
+          "recall": 0,
+          "f1": 0,
+          "accuracy": 0.23255813953488372
+        },
+        "llm_metrics": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 86,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "accuracy": 1.0
+        }
+      },
+      "4": {
+        "sample_size": 17,
+        "regex_metrics": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 5,
+          "tn": 0,
+          "precision": 1.0,
+          "recall": 0.7058823529411765,
+          "f1": 0.8275862068965517,
+          "accuracy": 0.7058823529411765
+        },
+        "llm_metrics": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 17,
+          "tn": 0,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0,
+          "accuracy": 0.0
+        }
+      },
+      "5": {
+        "sample_size": 372,
+        "regex_metrics": {
+          "tp": 302,
+          "fp": 0,
+          "fn": 70,
+          "tn": 0,
+          "precision": 1.0,
+          "recall": 0.8118279569892473,
+          "f1": 0.8961424332344213,
+          "accuracy": 0.8118279569892473
+        },
+        "llm_metrics": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 372,
+          "tn": 0,
+          "precision": 0,
+          "recall": 0.0,
+          "f1": 0,
+          "accuracy": 0.0
+        }
+      }
+    },
+    "notes": "Full clinical subgroup analysis requires patient/trial data mapping"
+  },
+  "conclusions": {
+    "winner": "RegexRulesEngine",
+    "performance_summary": "Regex engine significantly outperforms LLM engine across all metrics",
+    "key_findings": [
+      "Regex: 70.3% accuracy, 0.817 F1-score",
+      "LLM: 18.1% accuracy, 0.000 F1-score",
+      "Regex has 3.88x higher accuracy",
+      "Performance difference is statistically significant"
+    ],
+    "recommendations": [
+      "Use RegexRulesEngine for production matching",
+      "Investigate LLM engine configuration and training",
+      "Consider hybrid approach combining both engines"
+    ]
+  }
+}

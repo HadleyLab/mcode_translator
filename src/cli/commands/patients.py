@@ -31,6 +31,8 @@ app = typer.Typer(
 
 @app.command("pipeline")
 def patients_pipeline(
+    # Download flags
+    download_archive: bool = typer.Option(False, "--download-archive", help="Download synthetic patient data archives"),
     # Fetch flags
     fetch: bool = typer.Option(False, "--fetch", help="Fetch patient data from archives"),
     archive_path: Optional[str] = typer.Option(
@@ -84,6 +86,7 @@ def patients_pipeline(
 
         # Import required components
         from src.utils.config import Config
+        from src.utils.data_downloader import download_synthetic_patient_archives
 
         config = Config()
 
@@ -96,6 +99,14 @@ def patients_pipeline(
             if not archive_path:
                 console.print("[red]❌ --archive-path required for --fetch[/red]")
                 raise typer.Exit(1)
+            
+            if download_archive:
+                console.print("[bold blue]📥 Checking for and downloading synthetic patient archives...[/bold blue]")
+                downloaded_archives = download_synthetic_patient_archives(force_download=False)
+                if downloaded_archives:
+                    console.print("[green]✅ Archives are ready.[/green]")
+                else:
+                    console.print("[yellow]⚠️ No new archives were downloaded.[/yellow]")
 
             from workflows.patients_fetcher import PatientsFetcherWorkflow
 
@@ -109,9 +120,18 @@ def patients_pipeline(
             )
 
             if fetch_result.success:
+                num_fetched = len(fetch_result.data) if fetch_result.data else 0
                 console.print(
-                    f"[green]✅ Fetched {len(fetch_result.data) if fetch_result.data else 0} patients[/green]"
+                    f"[green]✅ Fetched {num_fetched} patients[/green]"
                 )
+                if num_fetched > 0 and output_file and not process and not summarize:
+                    console.print(f"[blue]💾 Saving fetched patient data to: {output_file}[/blue]")
+                    with open(output_file, "w") as f:
+                        for patient in fetch_result.data:
+                            import json
+                            json.dump(patient, f, ensure_ascii=False)
+                            f.write("\n")
+                    console.print(f"[green]✅ Fetched data saved to {output_file}[/green]")
                 pipeline_results["fetch"] = fetch_result
             else:
                 console.print(f"[red]❌ Fetch failed: {fetch_result.error_message}[/red]")
@@ -191,7 +211,7 @@ def patients_pipeline(
 
                             json.dump(patient, f, ensure_ascii=False)
                             f.write("\n")
-                    console.print("[green]✅ Processed data saved[/green]")
+                    console.print(f"[green]✅ Processed data saved to {output_file}[/green]")
             else:
                 console.print(f"[red]❌ Processing failed: {process_result.error_message}[/red]")
                 raise typer.Exit(1)

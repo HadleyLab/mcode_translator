@@ -1,0 +1,10 @@
+{
+  "total_pairs": 10000,
+  "successful_matches": 10000,
+  "error_matches": 0,
+  "success_rate": 1.0,
+  "average_confidence_score": 0,
+  "average_elements_per_match": 0.0,
+  "total_matched_elements": 0,
+  "engine_name": "LLMMatchingEngine"
+}

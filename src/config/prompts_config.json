@@ -41,6 +41,15 @@
         "category": "structured",
         "complexity": "medium",
         "expected_quality": 0.8
+      },
+      "patient_matcher": {
+        "name": "Patient-Trial Matcher",
+        "description": "Specialized prompt for matching patients to clinical trial eligibility criteria using mCODE standards",
+        "prompt_file": "patient_matcher.txt",
+        "prompt_type": "PATIENT_MATCHER",
+        "category": "matching",
+        "complexity": "medium",
+        "expected_quality": 0.85
       }
     },
     "categories": {
@@ -59,6 +68,10 @@
       "structured": {
         "description": "Structured prompts with clear output format",
         "use_case": "Automated processing and integration"
+      },
+      "matching": {
+        "description": "Specialized prompts for patient-trial matching operations",
+        "use_case": "Clinical trial eligibility matching and patient-trial compatibility analysis"
       }
     },
     "optimization": {

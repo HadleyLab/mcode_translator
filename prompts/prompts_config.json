@@ -9,6 +9,16 @@
     }
   },
   "prompts": {
+    "patient_matcher": [
+      {
+        "name": "patient_matcher",
+        "prompt_type": "PATIENT_MATCHER",
+        "prompt_file": "patient_matcher.txt",
+        "default": true,
+        "description": "Patient-trial matching using LLM",
+        "compatible_pipelines": ["PatientTrialMatching"]
+      }
+    ],
     "direct_mcode": [
       {
         "name": "direct_mcode",

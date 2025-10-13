@@ -21,29 +21,35 @@ class PromptLoader:
 
     # Strict placeholder requirements by prompt type
     PROMPT_REQUIREMENTS = {
-        "NLP_EXTRACTION": ["{clinical_text}"],
-        "MCODE_MAPPING": ["{entities_json}", "{trial_context}"],
-        "DIRECT_MCODE": ["{clinical_text}"],
-    }
+         "NLP_EXTRACTION": ["{clinical_text}"],
+         "MCODE_MAPPING": ["{entities_json}", "{trial_context}"],
+         "DIRECT_MCODE": ["{clinical_text}"],
+         "PATIENT_MATCHER": ["{patient_data}", "{trial_criteria}"],
+     }
 
     # Expected JSON response structures by prompt type
     RESPONSE_STRUCTURE_REQUIREMENTS = {
-        "NLP_EXTRACTION": {
-            "required_fields": ["entities"],
-            "field_types": {"entities": "array"},
-            "error_message": "NLP extraction prompts must produce JSON with 'entities' array field",
-        },
-        "MCODE_MAPPING": {
-            "required_fields": ["mcode_mappings"],
-            "field_types": {"mcode_mappings": "array"},
-            "error_message": "mCODE mapping prompts must produce JSON with 'mcode_mappings' array field",
-        },
-        "DIRECT_MCODE": {
-            "required_fields": ["mcode_mappings"],
-            "field_types": {"mcode_mappings": "array"},
-            "error_message": "Direct mCODE mapping prompts must produce JSON with 'mcode_mappings' array field",
-        },
-    }
+         "NLP_EXTRACTION": {
+             "required_fields": ["entities"],
+             "field_types": {"entities": "array"},
+             "error_message": "NLP extraction prompts must produce JSON with 'entities' array field",
+         },
+         "MCODE_MAPPING": {
+             "required_fields": ["mcode_mappings"],
+             "field_types": {"mcode_mappings": "array"},
+             "error_message": "mCODE mapping prompts must produce JSON with 'mcode_mappings' array field",
+         },
+         "DIRECT_MCODE": {
+             "required_fields": ["mcode_mappings"],
+             "field_types": {"mcode_mappings": "array"},
+             "error_message": "Direct mCODE mapping prompts must produce JSON with 'mcode_mappings' array field",
+         },
+         "PATIENT_MATCHER": {
+             "required_fields": ["is_match"],
+             "field_types": {"is_match": "boolean"},
+             "error_message": "Patient matching prompts must produce JSON with 'is_match' boolean field",
+         },
+     }
 
     def __init__(self, prompts_config_path: str = "prompts/prompts_config.json"):
         self.prompts_config_path = Path(prompts_config_path)

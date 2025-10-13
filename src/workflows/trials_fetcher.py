@@ -352,10 +352,11 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
             self.logger.error(f"Unexpected error in batch fetch: {e}")
             return {"success": False, "error": f"Batch fetch error: {e}", "data": []}
 
-    def _fetch_single_trial_data(self, nct_id: str) -> Optional[Dict[str, Any]]:
+    async def _fetch_single_trial_data(self, nct_id: str) -> Optional[Dict[str, Any]]:
         """Fetch a single trial's data (used by concurrent fetcher)."""
+        import asyncio
         try:
-            trial = get_full_study(nct_id)
+            trial = await asyncio.to_thread(get_full_study, nct_id)
             return trial
         except Exception as e:
             self.logger.debug(f"Failed to fetch {nct_id}: {e}")

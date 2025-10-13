@@ -5,7 +5,9 @@ This module provides a unified interface for interacting with OncoCore
 through the HeySol API client for oncology-specific memory storage and retrieval.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
+
+from src.shared.models import SearchResult
 
 # Import the HeySol client components
 from heysol.clients import HeySolAPIClient, HeySolMCPClient
@@ -203,15 +205,22 @@ class OncoCoreClient:
         space_ids: Optional[List[str]] = None,
         limit: int = 10,
         include_invalidated: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> SearchResult:
         """Search for memories in CORE Memory."""
         method = self.get_preferred_access_method("search", "memory_search")
         if method == "mcp" and self.mcp_client:
-            result = self.mcp_client.search_via_mcp(query=query, space_ids=space_ids, limit=limit)
-            return result if isinstance(result, dict) else {}
+            result_data = self.mcp_client.search_via_mcp(
+                query=query, space_ids=space_ids, limit=limit
+            )
         else:
-            result = self.api_client.search(query, space_ids, limit, include_invalidated)
-            return result if isinstance(result, dict) else {}
+            result_data = self.api_client.search(
+                query, space_ids, limit, include_invalidated
+            )
+
+        if isinstance(result_data, dict):
+            return SearchResult(**result_data)
+        # Assuming the other possible type is SearchResult, as per the underlying client
+        return result_data
 
     def get_spaces(self) -> List[Dict[str, Any]]:
         """Get available memory spaces."""
@@ -275,6 +284,9 @@ class OncoCoreClient:
     ) -> List[Dict[str, Any]]:
         """Get episode facts from CORE Memory."""
         facts = self.api_client.get_episode_facts(episode_id, limit, offset, include_metadata)
+        facts = self.api_client.get_episode_facts(
+            episode_id, limit, offset, include_metadata
+        )
         return facts if isinstance(facts, list) else []
 
     def get_ingestion_logs(

@@ -1,0 +1,134 @@
+{
+  "stage": {
+    "Stage I": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 20
+    },
+    "Stage II": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 10
+    },
+    "Stage III": {
+      "precision": 1.0,
+      "recall": 0.9,
+      "f1": 0.9473684210526315,
+      "accuracy": 0.9,
+      "count": 10
+    },
+    "Stage IV": {
+      "precision": 1.0,
+      "recall": 0.7,
+      "f1": 0.8235294117647058,
+      "accuracy": 0.7,
+      "count": 20
+    },
+    "Stage IIA": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 10
+    },
+    "Stage IIB": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 10
+    },
+    "Stage IIIA": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 10
+    },
+    "Stage IIIB": {
+      "precision": 1.0,
+      "recall": 0.9,
+      "f1": 0.9473684210526315,
+      "accuracy": 0.9,
+      "count": 10
+    }
+  },
+  "biomarker": {
+    "unknown": {
+      "precision": 1.0,
+      "recall": 0.8142857142857143,
+      "f1": 0.8976377952755905,
+      "accuracy": 0.8142857142857143,
+      "count": 70
+    },
+    "triple_negative": {
+      "precision": 1.0,
+      "recall": 0.7,
+      "f1": 0.8235294117647058,
+      "accuracy": 0.7,
+      "count": 10
+    },
+    "her2_positive": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 10
+    },
+    "er_positive": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 10
+    }
+  },
+  "trial_phase": {
+    "PHASE1": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 20
+    },
+    "PHASE2": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 30
+    },
+    "NA": {
+      "precision": 1.0,
+      "recall": 0.9,
+      "f1": 0.9473684210526315,
+      "accuracy": 0.9,
+      "count": 20
+    },
+    "PHASE3": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 10
+    },
+    "PHASE4": {
+      "precision": 1.0,
+      "recall": 0.6,
+      "f1": 0.75,
+      "accuracy": 0.6,
+      "count": 10
+    },
+    "EARLY_PHASE1": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8888888888888888,
+      "accuracy": 0.8,
+      "count": 10
+    }
+  }
+}

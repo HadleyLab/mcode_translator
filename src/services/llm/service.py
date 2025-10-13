@@ -9,7 +9,13 @@ import logging
 import time
 from typing import Any, Dict, List
 
-from src.shared.models import McodeElement
+from src.shared.models import (
+    ParsedLLMResponse,
+    McodeElement,
+    McodeMappingResponse,
+    PatientTrialMatchResponse,
+    ProcessingMetadata,
+)
 from src.utils.api_manager import APIManager
 from src.utils.config import Config
 from src.utils.llm_loader import llm_loader
@@ -48,63 +54,333 @@ class LLMService:
         self.api_manager = APIManager()
         self.token_tracker = global_token_tracker
 
-    async def map_to_mcode(self, clinical_text: str) -> List[McodeElement]:
+    async def map_to_mcode(self, clinical_text: str) -> McodeMappingResponse:
         """
-        Map clinical text to mCODE elements using async infrastructure.
+        Map clinical text to mCODE elements using async infrastructure with comprehensive validation.
 
         Args:
             clinical_text: Clinical trial text to process
 
         Returns:
-            List of McodeElement instances
+            McodeMappingResponse with validated results and metadata
         """
+        start_time = time.time()
         self.logger.info(
             f"🚀 LLM SERVICE: map_to_mcode called for {self.model_name} with text length {len(clinical_text)}"
         )
 
-        # Check if API key is available - STRICT: No fallback, fail fast
-        api_key = self.config.get_api_key(self.model_name)
-        if not api_key:
-            raise ValueError(f"No API key available for {self.model_name}")
-        self.logger.info(f"✅ API key found for {self.model_name}")
+        try:
+            # Check if API key is available - STRICT: No fallback, fail fast
+            api_key = self.config.get_api_key(self.model_name)
+            if not api_key:
+                raise ValueError(f"No API key available for {self.model_name}")
+            self.logger.info(f"✅ API key found for {self.model_name}")
 
-        # Get LLM config from existing file-based system - STRICT: No fallback, fail fast
-        llm_config = self.llm_loader.get_llm(self.model_name)
+            # Get LLM config from existing file-based system - STRICT: No fallback, fail fast
+            llm_config = self.llm_loader.get_llm(self.model_name)
 
-        # Get prompt from existing file-based system - STRICT: No fallback, fail fast
-        prompt = self.prompt_loader.get_prompt(self.prompt_name, clinical_text=clinical_text)
+            # Get prompt from existing file-based system - STRICT: No fallback, fail fast
+            prompt = self.prompt_loader.get_prompt(self.prompt_name, clinical_text=clinical_text)
 
-        # Use enhanced caching for better performance
-        cache_key = self._enhanced_cache_key(clinical_text)
+            # Use enhanced caching for better performance
+            cache_key = self._enhanced_cache_key(clinical_text)
 
-        llm_cache = self.api_manager.get_cache("llm")
-        cached_result = llm_cache.get_by_key(cache_key)
+            llm_cache = self.api_manager.get_cache("llm")
+            cached_result = llm_cache.get_by_key(cache_key)
 
-        if cached_result is not None:
-            self.logger.info(f"💾 CACHE HIT: {self.model_name}")
-            return [McodeElement(**elem) for elem in cached_result.get("mcode_elements", [])]
+            if cached_result is not None:
+                self.logger.info(f"💾 CACHE HIT: {self.model_name}")
+                mcode_elements = [McodeElement(**elem) for elem in cached_result.get("mcode_elements", [])]
+                parsed_response = ParsedLLMResponse(
+                    raw_content=cached_result.get("raw_content", ""),
+                    parsed_json=cached_result.get("response_json"),
+                    is_valid_json=True
+                )
+            else:
+                # Make async LLM call using existing infrastructure - STRICT: No fallback, fail fast
+                self.logger.debug(f"🔍 CACHE MISS → 🚀 ASYNC API CALL: {self.model_name}")
+                parsed_response = await self._call_llm_api_async(prompt, llm_config)
 
-        # Make async LLM call using existing infrastructure - STRICT: No fallback, fail fast
-        self.logger.debug(f"🔍 CACHE MISS → 🚀 ASYNC API CALL: {self.model_name}")
-        response_json = await self._call_llm_api_async(prompt, llm_config)
+                # Parse response using existing models - STRICT: No fallback, fail fast
+                if parsed_response.parsed_json is None:
+                    raise ValueError("Parsed JSON is None - cannot parse LLM response")
+                mcode_elements = self._parse_llm_response(parsed_response.parsed_json)
 
-        # Parse response using existing models - STRICT: No fallback, fail fast
-        mcode_elements = self._parse_llm_response(response_json)
+                # Cache result using existing API manager
+                cache_data = {
+                    "mcode_elements": [elem.model_dump() for elem in mcode_elements],
+                    "response_json": parsed_response.parsed_json,
+                    "raw_content": parsed_response.raw_content,
+                }
+                llm_cache.set_by_key(cache_data, cache_key)
+                self.logger.debug(f"💾 CACHE SAVED: {self.model_name}")
 
-        # Cache result using existing API manager
-        cache_data = {
-            "mcode_elements": [elem.model_dump() for elem in mcode_elements],
-            "response_json": response_json,
+            # Create processing metadata
+            processing_time = time.time() - start_time
+            metadata = ProcessingMetadata(
+                engine_type="llm",
+                entities_count=len(mcode_elements),
+                mapped_count=len(mcode_elements),
+                processing_time_seconds=processing_time,
+                model_used=self.model_name,
+                prompt_used=self.prompt_name
+            )
+
+            return McodeMappingResponse(
+                mcode_elements=mcode_elements,
+                raw_response=parsed_response,
+                processing_metadata=metadata,
+                success=True
+            )
+
+        except Exception as e:
+            self.logger.error(f"❌ LLM SERVICE: map_to_mcode failed: {e}")
+            processing_time = time.time() - start_time
+            metadata = ProcessingMetadata(
+                engine_type="llm",
+                entities_count=0,
+                mapped_count=0,
+                processing_time_seconds=processing_time,
+                model_used=self.model_name,
+                prompt_used=self.prompt_name
+            )
+            return McodeMappingResponse(
+                mcode_elements=[],
+                raw_response=ParsedLLMResponse(
+                    raw_content="",
+                    parsed_json=None,
+                    is_valid_json=False,
+                    validation_errors=[str(e)]
+                ),
+                processing_metadata=metadata,
+                success=False,
+                error_message=str(e)
+            )
+
+    async def match_patient_to_trial(
+        self, patient_data: Dict[str, Any], trial_criteria: Dict[str, Any]
+    ) -> PatientTrialMatchResponse:
+        """
+        Match patient data against trial eligibility criteria using LLM with comprehensive validation.
+
+        Args:
+            patient_data: Patient information dictionary
+            trial_criteria: Trial eligibility criteria dictionary
+
+        Returns:
+            PatientTrialMatchResponse with validated match results and metadata
+        """
+        start_time = time.time()
+        self.logger.info(
+            f"🚀 LLM SERVICE: match_patient_to_trial called for {self.model_name}"
+        )
+
+        # DEBUG: Log input data for debugging
+        self.logger.debug(f"🔍 PATIENT DATA: {json.dumps(patient_data, indent=2)}")
+        self.logger.debug(f"🔍 TRIAL CRITERIA: {json.dumps(trial_criteria, indent=2)}")
+
+        try:
+            # Check if API key is available - STRICT: No fallback, fail fast
+            api_key = self.config.get_api_key(self.model_name)
+            if not api_key:
+                raise ValueError(f"No API key available for {self.model_name}")
+            self.logger.info(f"✅ API key found for {self.model_name}")
+
+            # Get LLM config from existing file-based system - STRICT: No fallback, fail fast
+            llm_config = self.llm_loader.get_llm(self.model_name)
+
+            # Create matching prompt using the new prompt file
+            prompt = self.prompt_loader.get_prompt("patient_matcher", patient_data=patient_data, trial_criteria=trial_criteria)
+
+            # DEBUG: Log the prompt being sent to DeepSeek
+            self.logger.info(f"📤 PROMPT SENT TO {self.model_name}:")
+            self.logger.info(f"--- PROMPT START ---")
+            self.logger.info(prompt)
+            self.logger.info(f"--- PROMPT END ---")
+
+            # Use enhanced caching for better performance
+            cache_key = self._enhanced_cache_key(f"match_{patient_data.get('id', 'unknown')}_{trial_criteria.get('trial_id', 'unknown')}")
+
+            llm_cache = self.api_manager.get_cache("llm")
+            cached_result = llm_cache.get_by_key(cache_key)
+
+            if cached_result is not None:
+                self.logger.info(f"💾 CACHE HIT: {self.model_name}")
+                # Reconstruct response from cached data
+                match_result = cached_result
+                parsed_response = ParsedLLMResponse(
+                    raw_content=cached_result.get("raw_content", ""),
+                    parsed_json=cached_result.get("response_json"),
+                    is_valid_json=True
+                )
+            else:
+                # Make async LLM call using existing infrastructure - STRICT: No fallback, fail fast
+                self.logger.debug(f"🔍 CACHE MISS → 🚀 ASYNC API CALL: {self.model_name}")
+                parsed_response = await self._call_llm_api_async(prompt, llm_config)
+
+                # Parse matching response
+                if parsed_response.parsed_json is None:
+                    raise ValueError("Parsed JSON is None - cannot parse matching response")
+                match_result = self._parse_matching_response(parsed_response.parsed_json)
+
+                # DEBUG: Log the parsed result
+                self.logger.info(f"📊 PARSED MATCH RESULT: {json.dumps(match_result, indent=2)}")
+
+                # Cache result using existing API manager
+                cache_data = match_result.copy()
+                cache_data.update({
+                    "raw_content": parsed_response.raw_content,
+                    "response_json": parsed_response.parsed_json
+                })
+                llm_cache.set_by_key(cache_data, cache_key)
+                self.logger.debug(f"💾 CACHE SAVED: {self.model_name}")
+
+            # Create processing metadata
+            processing_time = time.time() - start_time
+            metadata = ProcessingMetadata(
+                engine_type="llm",
+                entities_count=0,  # Not applicable for matching
+                mapped_count=0,    # Not applicable for matching
+                processing_time_seconds=processing_time,
+                model_used=self.model_name,
+                prompt_used="patient_matcher"
+            )
+
+            return PatientTrialMatchResponse(
+                is_match=match_result.get("is_match", False),
+                confidence_score=match_result.get("confidence_score", 0.0),
+                reasoning=match_result.get("reasoning", ""),
+                matched_criteria=match_result.get("matched_criteria", []),
+                unmatched_criteria=match_result.get("unmatched_criteria", []),
+                clinical_notes=match_result.get("clinical_notes", ""),
+                matched_elements=match_result.get("matched_elements", []),
+                raw_response=parsed_response,
+                processing_metadata=metadata,
+                success=True
+            )
+
+        except Exception as e:
+            self.logger.error(f"❌ LLM SERVICE: match_patient_to_trial failed: {e}")
+            processing_time = time.time() - start_time
+            metadata = ProcessingMetadata(
+                engine_type="llm",
+                entities_count=0,
+                mapped_count=0,
+                processing_time_seconds=processing_time,
+                model_used=self.model_name,
+                prompt_used="patient_matcher"
+            )
+            return PatientTrialMatchResponse(
+                is_match=False,
+                confidence_score=0.0,
+                reasoning=f"Matching failed: {str(e)}",
+                matched_criteria=[],
+                unmatched_criteria=[],
+                clinical_notes="",
+                matched_elements=[],
+                raw_response=ParsedLLMResponse(
+                    raw_content="",
+                    parsed_json=None,
+                    is_valid_json=False,
+                    validation_errors=[str(e)]
+                ),
+                processing_metadata=metadata,
+                success=False,
+                error_message=str(e)
+            )
+
+    def _create_matching_prompt(self, patient_data: Dict[str, Any], trial_criteria: Dict[str, Any]) -> str:
+        """
+        Create a prompt for patient-trial matching.
+
+        Args:
+            patient_data: Patient information
+            trial_criteria: Trial eligibility criteria
+
+        Returns:
+            Formatted prompt string
+        """
+        # This method is now deprecated - using prompt_loader instead
+        # Keeping for backward compatibility
+        patient_summary = patient_data.get("conditions", "No patient conditions specified")
+        trial_criteria_text = trial_criteria.get("eligibilityCriteria", "No eligibility criteria specified")
+
+        prompt = f"""You are a clinical trial matching expert specializing in oncology trials. Your task is to determine if a patient meets the eligibility criteria for a clinical trial.
+
+PATIENT INFORMATION:
+{patient_summary}
+
+TRIAL ELIGIBILITY CRITERIA:
+{trial_criteria_text}
+
+INSTRUCTIONS:
+1. Carefully analyze if the patient meets ALL inclusion criteria and NONE of the exclusion criteria
+2. Focus on clinical relevance, safety, and appropriateness for the trial
+3. Be conservative - if there's any uncertainty or missing information, err on the side of caution
+4. Consider the patient's specific condition, stage, and characteristics against trial requirements
+5. Look for explicit matches in diagnosis, age, gender, performance status, prior treatments, etc.
+
+RESPONSE FORMAT (JSON):
+{{
+  "is_match": true,
+  "confidence_score": 0.9,
+  "reasoning": "Patient has breast cancer diagnosis matching trial inclusion criteria for breast cancer patients. Age and gender requirements are met. No exclusion criteria appear to apply.",
+  "matched_criteria": ["breast cancer diagnosis", "female gender", "age within range"],
+  "unmatched_criteria": [],
+  "clinical_notes": "Strong clinical match for this breast cancer trial"
+}}
+
+Now analyze this patient-trial pair and respond with JSON:"""
+
+        return prompt
+
+    def _parse_matching_response(self, response_json: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Parse LLM response for patient-trial matching. STRICT parsing. Fail fast.
+
+        Args:
+            response_json: Raw LLM response, expected to be a JSON object.
+
+        Returns:
+            Parsed match result dictionary.
+        """
+        self.logger.debug(f"Attempting to parse LLM matching response: {response_json}")
+
+        if not isinstance(response_json, dict):
+            self.logger.error(f"Response is not a JSON object: {type(response_json)}")
+            return {
+                "is_match": False,
+                "reasoning": "Invalid response format: not a JSON object.",
+                "confidence_score": 0.0,
+                "matched_criteria": [],
+                "unmatched_criteria": [],
+                "clinical_notes": "",
+                "matched_elements": [],
+            }
+
+        is_match = response_json.get("is_match")
+
+        # STRICT: is_match must be a boolean. No complex parsing or fallbacks.
+        if not isinstance(is_match, bool):
+            self.logger.warning(
+                f"'is_match' field is not a boolean ({type(is_match)}). Defaulting to False."
+            )
+            is_match = False
+
+        result = {
+            "is_match": is_match,
+            "confidence_score": response_json.get("confidence_score", 0.0),
+            "reasoning": response_json.get("reasoning", ""),
+            "matched_criteria": response_json.get("matched_criteria", []),
+            "unmatched_criteria": response_json.get("unmatched_criteria", []),
+            "clinical_notes": response_json.get("clinical_notes", ""),
+            "matched_elements": response_json.get("matched_elements", []),
         }
-        llm_cache.set_by_key(cache_data, cache_key)
-        self.logger.debug(f"💾 CACHE SAVED: {self.model_name}")
 
-        # Skip cleanup for now to avoid async issues
-        pass
+        self.logger.debug(f"Successfully parsed matching response: {result}")
+        return result
 
-        return mcode_elements
-
-    async def _call_llm_api_async(self, prompt: str, llm_config: Any) -> Dict[str, Any]:
+    async def _call_llm_api_async(self, prompt: str, llm_config: Any) -> ParsedLLMResponse:
         """
         Make optimized async LLM API call with connection reuse and performance monitoring.
 
@@ -113,7 +389,7 @@ class LLMService:
             llm_config: LLM configuration from existing loader
 
         Returns:
-            Parsed JSON response
+            ParsedLLMResponse with validated and cleaned response data
         """
         import openai
 
@@ -168,9 +444,21 @@ class LLMService:
             if not response_content:
                 raise ValueError("Empty LLM response")
 
-            self.logger.debug(f"Raw LLM response: {response_content}")
+            # DEBUG: Log raw API response from DeepSeek
+            self.logger.info(f"📥 RAW API RESPONSE FROM {self.model_name}:")
+            self.logger.info(f"--- RESPONSE START ---")
+            self.logger.info(response_content)
+            self.logger.info(f"--- RESPONSE END ---")
 
             try:
+                # Create ParsedLLMResponse to track validation process
+                parsed_response = ParsedLLMResponse(
+                    raw_content=response_content,
+                    parsed_json=None,
+                    is_valid_json=False,
+                    validation_errors=[]
+                )
+
                 # Handle markdown-wrapped JSON responses (```json ... ```)
                 cleaned_content = response_content.strip()
 
@@ -184,31 +472,31 @@ class LLMService:
                         if json_start != -1 and json_end != -1:
                             cleaned_content = cleaned_content[json_start : json_end + 1]
                         else:
-                            raise ValueError(
-                                f"DeepSeek response contains malformed markdown JSON block: {cleaned_content[:200]}..."
-                            )
+                            error_msg = f"DeepSeek response contains malformed markdown JSON block: {cleaned_content[:200]}..."
+                            parsed_response.validation_errors.append(error_msg)
+                            raise ValueError(error_msg)
 
                     # STRICT: Fail fast on truncated or incomplete JSON - no fallback processing
                     if cleaned_content.startswith("{") and not cleaned_content.endswith("}"):
-                        raise ValueError(
-                            f"DeepSeek response contains truncated JSON (missing closing brace): {cleaned_content[:200]}..."
-                        )
+                        error_msg = f"DeepSeek response contains truncated JSON (missing closing brace): {cleaned_content[:200]}..."
+                        parsed_response.validation_errors.append(error_msg)
+                        raise ValueError(error_msg)
 
                     if cleaned_content.startswith("[") and not cleaned_content.endswith("]"):
-                        raise ValueError(
-                            f"DeepSeek response contains truncated JSON (missing closing bracket): {cleaned_content[:200]}..."
-                        )
+                        error_msg = f"DeepSeek response contains truncated JSON (missing closing bracket): {cleaned_content[:200]}..."
+                        parsed_response.validation_errors.append(error_msg)
+                        raise ValueError(error_msg)
 
                     # Check for obvious JSON structure issues
                     if cleaned_content.count("{") != cleaned_content.count("}"):
-                        raise ValueError(
-                            f"DeepSeek response has mismatched braces: {cleaned_content.count('{')} opening vs {cleaned_content.count('}')} closing"
-                        )
+                        error_msg = f"DeepSeek response has mismatched braces: {cleaned_content.count('{')} opening vs {cleaned_content.count('}')} closing"
+                        parsed_response.validation_errors.append(error_msg)
+                        raise ValueError(error_msg)
 
                     if cleaned_content.count("[") != cleaned_content.count("]"):
-                        raise ValueError(
-                            f"DeepSeek response has mismatched brackets: {cleaned_content.count('[')} opening vs {cleaned_content.count(']')} closing"
-                        )
+                        error_msg = f"DeepSeek response has mismatched brackets: {cleaned_content.count('[')} opening vs {cleaned_content.count(']')} closing"
+                        parsed_response.validation_errors.append(error_msg)
+                        raise ValueError(error_msg)
 
                     # Remove trailing commas only if they appear to be formatting errors
                     # But fail if the JSON structure looks fundamentally broken
@@ -257,7 +545,19 @@ class LLMService:
                     if len(lines) > 2:
                         cleaned_content = "\n".join(lines[1:-1])
 
-                return json.loads(cleaned_content)  # type: ignore[no-any-return]
+                # Store cleaned content
+                parsed_response.cleaned_content = cleaned_content
+
+                # Parse JSON and validate
+                try:
+                    parsed_json = json.loads(cleaned_content)
+                    parsed_response.parsed_json = parsed_json
+                    parsed_response.is_valid_json = True
+                    self.logger.debug(f"✅ Successfully parsed JSON response from {self.model_name}")
+                    return parsed_response
+                except json.JSONDecodeError as json_error:
+                    parsed_response.validation_errors.append(f"JSON decode error: {str(json_error)}")
+                    raise ValueError(f"Invalid JSON from {self.model_name}: {str(json_error)} | Content: {cleaned_content[:300]}...") from json_error
             except json.JSONDecodeError as e:
                 # Provide detailed error information for debugging
                 self.logger.error(f"❌ JSON parsing error for {self.model_name}: {str(e)}")
@@ -338,7 +638,6 @@ class LLMService:
         if (
             "gpt-4o" in llm_config.model_identifier.lower()
             or "gpt-4-turbo" in llm_config.model_identifier.lower()
-            or "deepseek" in llm_config.model_identifier.lower()
         ):
             call_params["response_format"] = {"type": "json_object"}
             self.logger.debug(f"Using response_format for model: {llm_config.model_identifier}")

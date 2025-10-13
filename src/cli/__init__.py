@@ -26,7 +26,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Subcommand imports - import after path setup
-from .commands import config, memory, patients, trials
+from .commands import config, memory, patients, trials, matching
 
 app = typer.Typer(
     name="mcode-translator",
@@ -132,6 +132,8 @@ if patients and hasattr(patients, "app"):
     app.add_typer(patients.app, name="patients", help="Patient data processing operations")
 if trials and hasattr(trials, "app"):
     app.add_typer(trials.app, name="trials", help="Clinical trial data processing operations")
+if matching and hasattr(matching, "app"):
+    app.add_typer(matching.app, name="matching", help="Patient-trial matching operations")
 if memory and hasattr(memory, "app"):
     app.add_typer(memory.app, name="memory", help="CORE Memory operations and management")
 if config and hasattr(config, "app"):

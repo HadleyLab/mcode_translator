@@ -39,6 +39,7 @@ def trials_pipeline(
     phase: str = typer.Option("all", help="Trial phase filter"),
     status: str = typer.Option("all", help="Trial status filter"),
     fetch_limit: int = typer.Option(50, help="Maximum number of trials to fetch"),
+    fetch_output_file: Optional[str] = typer.Option(None, help="Path to save fetched trial data"),
     # Process flags
     process: bool = typer.Option(
         False, "--process", help="Process trial data with mCODE extraction"
@@ -119,7 +120,7 @@ def trials_pipeline(
             fetch_result = fetcher.execute(
                 condition=cancer_type if cancer_type != "all" else None,
                 limit=fetch_limit,
-                output_path=None,  # We'll pass data to next stage
+                output_path=fetch_output_file,
             )
 
             if fetch_result.success:

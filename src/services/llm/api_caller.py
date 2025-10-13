@@ -10,6 +10,7 @@ import random
 import time
 from typing import Any, Dict
 
+from src.shared.models import LLMRequest, LLMResponse, LLMAPIError, ParsedLLMResponse
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
 from src.utils.token_tracker import extract_token_usage_from_response, global_token_tracker
@@ -34,7 +35,7 @@ class LLMAPICaller:
         self.model_name = model_name
         self.logger = get_logger(__name__)
 
-    async def call_llm_api_async(self, prompt: str, llm_config: Any) -> Dict[str, Any]:
+    async def call_llm_api_async(self, prompt: str, llm_config: Any) -> ParsedLLMResponse:
         """
         Make optimized async LLM API call with connection reuse and performance monitoring.
 
@@ -43,7 +44,7 @@ class LLMAPICaller:
             llm_config: LLM configuration from existing loader
 
         Returns:
-            Parsed JSON response
+            ParsedLLMResponse with validated and cleaned response data
         """
         import openai
 
@@ -103,19 +104,27 @@ class LLMAPICaller:
             self.logger.error(f"💥 LLM API call failed for {self.model_name}: {str(e)}")
             raise
 
-    def _parse_and_clean_response(self, response_content: str) -> Dict[str, Any]:
+    def _parse_and_clean_response(self, response_content: str) -> ParsedLLMResponse:
         """
-        Parse and clean LLM response content.
+        Parse and clean LLM response content with comprehensive validation.
 
         Args:
             response_content: Raw response content from LLM
 
         Returns:
-            Parsed JSON response
+            ParsedLLMResponse with validated and cleaned response data
         """
         import json
 
         try:
+            # Create ParsedLLMResponse to track validation process
+            parsed_response = ParsedLLMResponse(
+                raw_content=response_content,
+                parsed_json=None,
+                is_valid_json=False,
+                validation_errors=[]
+            )
+
             # Handle markdown-wrapped JSON responses (```json ... ```)
             cleaned_content = response_content.strip()
 
@@ -129,31 +138,31 @@ class LLMAPICaller:
                     if json_start != -1 and json_end != -1:
                         cleaned_content = cleaned_content[json_start : json_end + 1]
                     else:
-                        raise ValueError(
-                            f"DeepSeek response contains malformed markdown JSON block: {cleaned_content[:200]}..."
-                        )
+                        error_msg = f"DeepSeek response contains malformed markdown JSON block: {cleaned_content[:200]}..."
+                        parsed_response.validation_errors.append(error_msg)
+                        raise ValueError(error_msg)
 
                 # STRICT: Fail fast on truncated or incomplete JSON - no fallback processing
                 if cleaned_content.startswith("{") and not cleaned_content.endswith("}"):
-                    raise ValueError(
-                        f"DeepSeek response contains truncated JSON (missing closing brace): {cleaned_content[:200]}..."
-                    )
+                    error_msg = f"DeepSeek response contains truncated JSON (missing closing brace): {cleaned_content[:200]}..."
+                    parsed_response.validation_errors.append(error_msg)
+                    raise ValueError(error_msg)
 
                 if cleaned_content.startswith("[") and not cleaned_content.endswith("]"):
-                    raise ValueError(
-                        f"DeepSeek response contains truncated JSON (missing closing bracket): {cleaned_content[:200]}..."
-                    )
+                    error_msg = f"DeepSeek response contains truncated JSON (missing closing bracket): {cleaned_content[:200]}..."
+                    parsed_response.validation_errors.append(error_msg)
+                    raise ValueError(error_msg)
 
                 # Check for obvious JSON structure issues
                 if cleaned_content.count("{") != cleaned_content.count("}"):
-                    raise ValueError(
-                        f"DeepSeek response has mismatched braces: {cleaned_content.count('{')} opening vs {cleaned_content.count('}')} closing"
-                    )
+                    error_msg = f"DeepSeek response has mismatched braces: {cleaned_content.count('{')} opening vs {cleaned_content.count('}')} closing"
+                    parsed_response.validation_errors.append(error_msg)
+                    raise ValueError(error_msg)
 
                 if cleaned_content.count("[") != cleaned_content.count("]"):
-                    raise ValueError(
-                        f"DeepSeek response has mismatched brackets: {cleaned_content.count('[')} opening vs {cleaned_content.count(']')} closing"
-                    )
+                    error_msg = f"DeepSeek response has mismatched brackets: {cleaned_content.count('[')} opening vs {cleaned_content.count(']')} closing"
+                    parsed_response.validation_errors.append(error_msg)
+                    raise ValueError(error_msg)
 
                 # Remove trailing commas only if they appear to be formatting errors
                 # But fail if the JSON structure looks fundamentally broken
@@ -202,32 +211,19 @@ class LLMAPICaller:
                 if len(lines) > 2:
                     cleaned_content = "\n".join(lines[1:-1])
 
-            return json.loads(cleaned_content)  # type: ignore[no-any-return]
-        except json.JSONDecodeError as e:
-            # Provide detailed error information for debugging
-            self.logger.error(f"❌ JSON parsing error for {self.model_name}: {str(e)}")
-            self.logger.error(f"  Response preview: {response_content[:500]}...")
+            # Store cleaned content
+            parsed_response.cleaned_content = cleaned_content
 
-            # Check for common issues
-            if "Expecting ',' delimiter" in str(e):
-                self.logger.error("  Issue: Missing comma or malformed JSON structure")
-            elif "Expecting ':' delimiter" in str(e):
-                self.logger.error("  Issue: Missing colon in key-value pair")
-            elif "Expecting value" in str(e):
-                self.logger.error("  Issue: Unexpected token or missing value")
-            elif "Unterminated string" in str(e):
-                self.logger.error("  Issue: Unterminated string literal")
-            else:
-                self.logger.error("  Issue: General JSON syntax error")
-
-            # Check if response looks like plain text instead of JSON
-            if not cleaned_content.strip().startswith(("{", "[")):
-                self.logger.error(f"  Model {self.model_name} returned plain text instead of JSON")
-                self.logger.error("  This model may not support structured JSON output properly")
-
-            raise ValueError(
-                f"Model {self.model_name} returned invalid JSON: {str(e)} | Response: {response_content[:300]}..."
-            ) from e
+            # Parse JSON and validate
+            try:
+                parsed_json = json.loads(cleaned_content)
+                parsed_response.parsed_json = parsed_json
+                parsed_response.is_valid_json = True
+                self.logger.debug(f"✅ Successfully parsed JSON response from {self.model_name}")
+                return parsed_response
+            except json.JSONDecodeError as json_error:
+                parsed_response.validation_errors.append(f"JSON decode error: {str(json_error)}")
+                raise ValueError(f"Invalid JSON from {self.model_name}: {str(json_error)} | Content: {cleaned_content[:300]}...") from json_error
 
     async def _make_async_api_call_with_rate_limiting(
         self,

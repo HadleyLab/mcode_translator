@@ -498,6 +498,115 @@ class MemoryStats(BaseModel):
     trials_space: Dict[str, Any] = Field(default_factory=dict)
 
 
+# LLM API Request/Response Models
+class LLMMessage(BaseModel):
+    """LLM API message structure."""
+
+    role: str = Field(..., description="Message role (user, assistant, system)")
+    content: str = Field(..., description="Message content")
+
+
+class LLMRequest(BaseModel):
+    """LLM API request structure."""
+
+    model: str = Field(..., description="LLM model identifier")
+    messages: List[LLMMessage] = Field(..., description="Conversation messages")
+    temperature: Optional[float] = Field(None, description="Sampling temperature")
+    max_tokens: Optional[int] = Field(None, description="Maximum tokens to generate")
+    response_format: Optional[Dict[str, Any]] = Field(None, description="Response format specification")
+
+
+class LLMResponseChoice(BaseModel):
+    """LLM API response choice structure."""
+
+    index: int = Field(..., description="Choice index")
+    message: LLMMessage = Field(..., description="Response message")
+    finish_reason: Optional[str] = Field(None, description="Reason for completion")
+
+
+class LLMResponseUsage(BaseModel):
+    """LLM API token usage structure."""
+
+    prompt_tokens: int = Field(..., description="Tokens used in prompt")
+    completion_tokens: int = Field(..., description="Tokens used in completion")
+    total_tokens: int = Field(..., description="Total tokens used")
+
+
+class LLMResponse(BaseModel):
+    """LLM API response structure."""
+
+    id: str = Field(..., description="Response identifier")
+    object: str = Field(..., description="Response object type")
+    created: int = Field(..., description="Response creation timestamp")
+    model: str = Field(..., description="Model used for response")
+    choices: List[LLMResponseChoice] = Field(..., description="Response choices")
+    usage: LLMResponseUsage = Field(..., description="Token usage statistics")
+
+
+class LLMAPIError(BaseModel):
+    """LLM API error structure."""
+
+    error: Dict[str, Any] = Field(..., description="Error details")
+    type: Optional[str] = Field(None, description="Error type")
+    message: Optional[str] = Field(None, description="Error message")
+    code: Optional[str] = Field(None, description="Error code")
+
+
+class ParsedLLMResponse(BaseModel):
+    """Parsed and validated LLM response content."""
+
+    raw_content: str = Field(..., description="Raw response content from LLM")
+    parsed_json: Optional[Dict[str, Any]] = Field(None, description="Parsed JSON content")
+    is_valid_json: bool = Field(False, description="Whether content is valid JSON")
+    validation_errors: List[str] = Field(default_factory=list, description="Validation error messages")
+    cleaned_content: Optional[str] = Field(None, description="Cleaned content after processing")
+
+
+class McodeMappingRequest(BaseModel):
+    """Request structure for mCODE mapping operations."""
+
+    clinical_text: str = Field(..., description="Clinical text to process")
+    model_name: str = Field(..., description="LLM model to use")
+    prompt_name: str = Field(..., description="Prompt template to use")
+    temperature: Optional[float] = Field(None, description="Sampling temperature")
+    max_tokens: Optional[int] = Field(None, description="Maximum tokens to generate")
+
+
+class McodeMappingResponse(BaseModel):
+    """Response structure for mCODE mapping operations."""
+
+    mcode_elements: List[McodeElement] = Field(default_factory=list, description="Extracted mCODE elements")
+    raw_response: ParsedLLMResponse = Field(..., description="Raw LLM response details")
+    processing_metadata: ProcessingMetadata = Field(..., description="Processing metadata")
+    success: bool = Field(True, description="Whether mapping was successful")
+    error_message: Optional[str] = Field(None, description="Error message if failed")
+
+
+class PatientTrialMatchRequest(BaseModel):
+    """Request structure for patient-trial matching operations."""
+
+    patient_data: Dict[str, Any] = Field(..., description="Patient data dictionary")
+    trial_criteria: Dict[str, Any] = Field(..., description="Trial eligibility criteria")
+    model_name: str = Field(..., description="LLM model to use")
+    prompt_name: str = Field(..., description="Prompt template to use")
+
+
+class PatientTrialMatchResponse(BaseModel):
+    """Response structure for patient-trial matching operations."""
+
+    is_match: bool = Field(..., description="Whether patient matches trial criteria")
+    confidence_score: float = Field(..., ge=0.0, le=1.0, description="Confidence in the match decision")
+    reasoning: str = Field(..., description="Explanation for the match decision")
+    matched_criteria: List[str] = Field(default_factory=list, description="Criteria that were matched")
+    unmatched_criteria: List[str] = Field(default_factory=list, description="Criteria that were not matched")
+    clinical_notes: str = Field("", description="Additional clinical notes")
+    matched_elements: List[McodeElement] = Field(default_factory=list, description="mCODE elements found in match")
+    raw_response: ParsedLLMResponse = Field(..., description="Raw LLM response details")
+    processing_metadata: ProcessingMetadata = Field(..., description="Processing metadata")
+    success: bool = Field(True, description="Whether matching was successful")
+    error_message: Optional[str] = Field(None, description="Error message if failed")
+
+
 def enhance_trial_with_mcode_results(
     trial_data: Dict[str, Any], pipeline_result: Any
 ) -> Dict[str, Any]:

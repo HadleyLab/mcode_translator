@@ -13,66 +13,57 @@ def download_synthetic_patient_archives(
     base_dir: str = "data/synthetic_patients",
     archives_config: Optional[Dict[str, Dict[str, str]]] = None,
     force_download: bool = False,
+    max_workers: int = 4,
 ) -> Dict[str, str]:
     """
     Download synthetic patient ZIP archives from MITRE/Synthea mCODE test data sources.
+    Uses concurrent downloads for performance.
 
     Args:
         base_dir: Base directory to store archives.
         archives_config: Configuration dict with cancer_type -> {duration: url} mappings.
         force_download: If True, download even if files exist.
+        max_workers: Number of concurrent download workers.
 
     Returns:
         Dict of archive paths: {archive_name: full_path}
     """
-    if archives_config is None:
-        archives_config = {
-            "mixed_cancer": {
-                "10_years": "https://mitre.box.com/shared/static/7k7lk7wmza4m17916xnvc2uszidyv6vm.zip",
-                "lifetime": "https://mitre.box.com/shared/static/mn6kpk56zvvk2o0lvjv55n7rnyajbnm4.zip",
-            },
-            "breast_cancer": {
-                "10_years": "https://mitre.box.com/shared/static/c6ca6y2jfumrhw4nu20kztktxdlhhzo8.zip",
-                "lifetime": "https://mitre.box.com/shared/static/59n7mcm8si0qk3p36ud0vmrcdv7pr0s7.zip",
-            },
-        }
+    import asyncio
 
-    downloaded_archives = {}
+    # This is a synchronous wrapper around the async implementation
+    # It's useful for calling from synchronous code like the CLI
+    try:
+        # Check if an event loop is running
+        loop = asyncio.get_running_loop()
+        if loop.is_running():
+            # If a loop is running, we can't create a new one.
+            # This can happen in environments like Jupyter notebooks.
+            # We'll run the async function in a new thread to avoid blocking.
+            import threading
+            result = {}
+            def run_in_thread():
+                nonlocal result
+                result = asyncio.run(download_synthetic_patient_archives_concurrent(
+                    base_dir=base_dir,
+                    archives_config=archives_config,
+                    force_download=force_download,
+                    max_workers=max_workers,
+                ))
+            
+            thread = threading.Thread(target=run_in_thread)
+            thread.start()
+            thread.join()
+            return result
 
-    for cancer_type, durations in archives_config.items():
-        for duration, url in durations.items():
-            # Create the duration subdirectory
-            duration_dir = os.path.join(base_dir, cancer_type, duration)
+    except RuntimeError:  # No running loop
+        pass
 
-            archive_name = f"{cancer_type}_{duration}.zip"
-            archive_path = os.path.join(duration_dir, archive_name)
-
-            if os.path.exists(archive_path) and not force_download:
-                print(f"Archive already exists: {archive_path}")
-                downloaded_archives[archive_name] = archive_path
-                continue
-
-            # Only create directories when we need to download
-            os.makedirs(duration_dir, exist_ok=True)
-
-            print(f"Downloading {archive_name} from {url}...")
-            try:
-                response = requests.get(url, stream=True)
-                response.raise_for_status()
-
-                with open(archive_path, "wb") as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
-
-                print(f"Downloaded: {archive_path}")
-                downloaded_archives[archive_name] = archive_path
-
-            except requests.RequestException as e:
-                print(f"Failed to download {archive_name}: {e}")
-                if os.path.exists(archive_path):
-                    os.remove(archive_path)
-
-    return downloaded_archives
+    return asyncio.run(download_synthetic_patient_archives_concurrent(
+        base_dir=base_dir,
+        archives_config=archives_config,
+        force_download=force_download,
+        max_workers=max_workers,
+    ))
 
 
 def get_archive_paths(base_dir: str = "data/synthetic_patients") -> Dict[str, str]:
@@ -91,7 +82,7 @@ def get_archive_paths(base_dir: str = "data/synthetic_patients") -> Dict[str, st
     return archives
 
 
-def download_synthetic_patient_archives_concurrent(
+async def download_synthetic_patient_archives_concurrent(
     base_dir: str = "data/synthetic_patients",
     archives_config: Optional[Dict[str, Dict[str, str]]] = None,
     force_download: bool = False,
@@ -194,7 +185,7 @@ def download_synthetic_patient_archives_concurrent(
     return archive_paths
 
 
-def _download_single_archive(url: str, dest_path: str, archive_name: str) -> str:
+async def _download_single_archive(url: str, dest_path: str, archive_name: str) -> str:
     """
     Download a single archive file with streaming and error handling.
 
@@ -245,7 +236,7 @@ def _download_single_archive(url: str, dest_path: str, archive_name: str) -> str
         raise
 
 
-def download_multiple_files(
+async def download_multiple_files(
     file_urls: Dict[str, str],
     dest_dir: str = ".",
     max_workers: int = 4,
@@ -325,7 +316,7 @@ def download_multiple_files(
     return downloaded_paths
 
 
-def _download_single_file(url: str, dest_path: str, filename: str) -> str:
+async def _download_single_file(url: str, dest_path: str, filename: str) -> str:
     """
     Download a single file with streaming.
 
