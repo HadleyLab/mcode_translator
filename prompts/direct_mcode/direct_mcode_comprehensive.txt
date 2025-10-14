@@ -29,32 +29,49 @@ Clinical Text:
 }}
 ```
 
-**mCODE ELEMENTS TO IDENTIFY:**
-- CancerCondition: Primary cancer diagnoses, cancer types
-- CancerDiseaseStatus: Disease status (active, remission, progression)
-- TNMClinicalStageGroup: Cancer staging (I, II, III, IV)
-- GenomicVariant: Genetic mutations, biomarkers
-- CancerRelatedMedication: Chemotherapy, targeted therapies
-- CancerRelatedProcedure: Surgical procedures, biopsies
-- ECOGPerformanceStatus: Performance status scores
-- KarnofskyPerformanceStatus: Karnofsky scores
+**mCODE ELEMENTS TO IDENTIFY (mCODE STU4 Ontology):**
+- Patient Demographics: Birth sex, race, ethnicity, administrative gender
+- CancerCondition: Primary cancer diagnoses, cancer types, histology, morphology
+- CancerStaging: TNM categories (T, N, M), stage groups (I, II, III, IV, IA, IB, etc.)
+- TumorMarkerTest: Biomarker status (ER/PR/HER2 for breast cancer, KRAS/BRAF for colorectal, etc.)
+- ECOGPerformanceStatus: ECOG performance status scores (0-5)
+- KarnofskyPerformanceStatus: Karnofsky performance status scores (0-100)
+- CancerRelatedMedicationStatement: Medication details including dosages, administration routes, frequencies
+- CancerRelatedSurgicalProcedure: Surgical procedures with laterality and procedure types
+- CancerRelatedRadiationProcedure: Radiation therapy procedures and dosages
+- Laboratory Results: Vital signs, blood counts, chemistry panels, tumor markers
+- ComorbidCondition: Comorbidities and medical history
+- FamilyMemberHistory: Family history of cancer and related conditions
+- GenomicVariant: Genetic mutations, variants, and genomic findings
+- CancerDiseaseStatus: Disease status (active, remission, progression, recurrence)
 
 **EXTRACTION RULES:**
 1. Extract EVERY piece of relevant information mentioned in the clinical text
-2. Map to the most specific mCODE element possible
-3. Use official mCODE value sets and coding systems when available
-4. Include mapping confidence based on clarity of match
+2. Map to the most specific mCODE STU4 profile possible using the ontology models
+3. Use official mCODE value sets and coding systems (SNOMED CT, LOINC, ICD-10-CM, HGNC)
+4. Include mapping confidence based on clarity of match (1.0 = explicit, 0.8 = clear, 0.6 = inferred)
 5. Provide exact source text fragments for traceability
-6. Create structured mCODE element mappings
+6. Create structured mCODE element mappings following FHIR resource patterns
+7. For demographics: Extract birth sex, race, ethnicity from patient information
+8. For staging: Capture complete TNM categories and stage groups
+9. For biomarkers: Extract receptor status (ER/PR/HER2) with specific values
+10. For treatments: Include medication dosages, administration details, procedure types
+11. For labs/vitals: Extract specific values with units and reference ranges
+12. For comorbidities/family history: Map to appropriate condition codes
 
 **CRITICAL INSTRUCTIONS:**
-1. Map to the most specific mCODE element available
+1. Map to the most specific mCODE STU4 profile available using ontology models
 2. Use official mCODE value sets and coding systems (SNOMED CT, LOINC, ICD-10-CM, HGNC)
-3. Include confidence scores for mapping decisions
-4. Provide exact source text fragments
+3. Include confidence scores for mapping decisions (1.0=explicit, 0.8=clear, 0.6=inferred)
+4. Provide exact source text fragments for traceability
 5. Return ONLY valid JSON, no additional text
 6. If no mappings possible, return empty arrays but preserve JSON structure
-7. Use exact mCODE element names: CancerCondition, GenomicVariant, CancerDiseaseStatus, TNMClinicalStageGroup, CancerRelatedMedication, CancerRelatedProcedure, ECOGPerformanceStatus, KarnofskyPerformanceStatus
-8. Properly escape any special characters within string values
-9. Ensure all JSON is valid and parseable
-10. Do not include any text outside of the JSON structure
+7. Use exact mCODE STU4 element names: McodePatient, CancerCondition, CancerStaging, TumorMarkerTest, ECOGPerformanceStatusObservation, CancerRelatedMedicationStatement, CancerRelatedSurgicalProcedure, CancerRelatedRadiationProcedure, ComorbidCondition, FamilyMemberHistory, GenomicVariant, CancerDiseaseStatus
+8. For structured extraction: Follow FHIR resource patterns with proper coding
+9. For demographics: Use BirthSex, USCoreRace, USCoreEthnicity extensions
+10. For staging: Extract TNM categories and map to TNMStageGroup enum values
+11. For biomarkers: Map to ReceptorStatus enum and specific LOINC codes
+12. For treatments: Include dosage, frequency, route, and duration details
+13. Properly escape any special characters within string values
+14. Ensure all JSON is valid and parseable
+15. Do not include any text outside of the JSON structure

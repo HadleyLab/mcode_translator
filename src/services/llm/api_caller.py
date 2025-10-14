@@ -155,14 +155,40 @@ class LLMAPICaller:
 
                 # Check for obvious JSON structure issues
                 if cleaned_content.count("{") != cleaned_content.count("}"):
-                    error_msg = f"DeepSeek response has mismatched braces: {cleaned_content.count('{')} opening vs {cleaned_content.count('}')} closing"
-                    parsed_response.validation_errors.append(error_msg)
-                    raise ValueError(error_msg)
+                    opening_braces = cleaned_content.count("{")
+                    closing_braces = cleaned_content.count("}")
+                    if opening_braces > closing_braces:
+                        # Add missing closing braces
+                        missing_braces = opening_braces - closing_braces
+                        cleaned_content += "}" * missing_braces
+                        self.logger.warning(
+                            f"DeepSeek response had {missing_braces} missing closing braces, added them"
+                        )
+                    elif closing_braces > opening_braces:
+                        # Remove extra closing braces
+                        extra_braces = closing_braces - opening_braces
+                        cleaned_content = cleaned_content.rstrip("}")[:-extra_braces] + cleaned_content.rstrip("}")[extra_braces:]
+                        self.logger.warning(
+                            f"DeepSeek response had {extra_braces} extra closing braces, removed them"
+                        )
 
                 if cleaned_content.count("[") != cleaned_content.count("]"):
-                    error_msg = f"DeepSeek response has mismatched brackets: {cleaned_content.count('[')} opening vs {cleaned_content.count(']')} closing"
-                    parsed_response.validation_errors.append(error_msg)
-                    raise ValueError(error_msg)
+                    opening_brackets = cleaned_content.count("[")
+                    closing_brackets = cleaned_content.count("]")
+                    if opening_brackets > closing_brackets:
+                        # Add missing closing brackets
+                        missing_brackets = opening_brackets - closing_brackets
+                        cleaned_content += "]" * missing_brackets
+                        self.logger.warning(
+                            f"DeepSeek response had {missing_brackets} missing closing brackets, added them"
+                        )
+                    elif closing_brackets > opening_brackets:
+                        # Remove extra closing brackets
+                        extra_brackets = closing_brackets - opening_brackets
+                        cleaned_content = cleaned_content.rstrip("]")[:-extra_brackets] + cleaned_content.rstrip("]")[extra_brackets:]
+                        self.logger.warning(
+                            f"DeepSeek response had {extra_brackets} extra closing brackets, removed them"
+                        )
 
                 # Remove trailing commas only if they appear to be formatting errors
                 # But fail if the JSON structure looks fundamentally broken

@@ -100,8 +100,10 @@ def trials_pipeline(
 
         # Import required components
         from src.utils.config import Config
+        from src.storage.mcode_memory_storage import OncoCoreMemory
 
         config = Config()
+        memory_storage = OncoCoreMemory()
 
         # Track pipeline results
         pipeline_results = {"fetch": None, "process": None, "summarize": None, "optimize": None}
@@ -109,19 +111,25 @@ def trials_pipeline(
         # Execute fetch stage
         if fetch:
             console.print("[bold blue]📥 Fetching clinical trial data...[/bold blue]")
-            console.print(
-                f"[blue]🎯 Cancer type: {cancer_type}, Phase: {phase}, Status: {status}[/blue]"
-            )
+            if trial_id:
+                console.print(f"[blue]🔍 Fetching specific trial: {trial_id}[/blue]")
+            else:
+                console.print(
+                    f"[blue]🎯 Cancer type: {cancer_type}, Phase: {phase}, Status: {status}[/blue]"
+                )
 
             from workflows.trials_fetcher import TrialsFetcherWorkflow
 
-            fetcher = TrialsFetcherWorkflow(config)
+            fetcher = TrialsFetcherWorkflow(config, memory_storage)
 
-            fetch_result = fetcher.execute(
-                condition=cancer_type if cancer_type != "all" else None,
-                limit=fetch_limit,
-                output_path=fetch_output_file,
-            )
+            if trial_id:
+                fetch_result = fetcher.execute(nct_ids=[trial_id], output_path=fetch_output_file)
+            else:
+                fetch_result = fetcher.execute(
+                    condition=cancer_type,
+                    limit=fetch_limit,
+                    output_path=fetch_output_file,
+                )
 
             if fetch_result.success:
                 console.print(
@@ -137,7 +145,7 @@ def trials_pipeline(
             console.print("[bold blue]🔬 Processing trial data...[/bold blue]")
             console.print(f"[blue]🤖 Engine: {engine}[/blue]")
 
-            # Get input data - either from fetch stage or specified file
+            # Get input data - either from fetch stage, specified file, or trial_id
             if fetch and pipeline_results["fetch"]:
                 # Use data from fetch stage
                 trials_data = pipeline_results["fetch"].data
@@ -158,8 +166,24 @@ def trials_pipeline(
                             except json.JSONDecodeError as e:
                                 console.print(f"[yellow]⚠️ Skipping invalid JSON line: {e}[/yellow]")
                 console.print(f"[green]✅ Loaded {len(trials_data)} trials[/green]")
+            elif trial_id:
+                # Fetch single trial for processing
+                console.print(f"[blue]🔍 Fetching single trial: {trial_id}[/blue]")
+                from utils.fetcher import get_full_study
+
+                try:
+                    trial_data = get_full_study(trial_id)
+                    if trial_data:
+                        trials_data = [trial_data]
+                        console.print(f"[green]✅ Fetched trial {trial_id}[/green]")
+                    else:
+                        console.print(f"[red]❌ Failed to fetch trial {trial_id}[/red]")
+                        raise typer.Exit(1)
+                except Exception as e:
+                    console.print(f"[red]❌ Failed to fetch trial {trial_id}: {e}[/red]")
+                    raise typer.Exit(1)
             else:
-                console.print("[red]❌ Either --fetch or --input-file required for --process[/red]")
+                console.print("[red]❌ Either --fetch, --input-file, or --trial-id required for --process[/red]")
                 raise typer.Exit(1)
 
             if not trials_data:
@@ -222,7 +246,7 @@ def trials_pipeline(
                 console.print(f"[blue]🔍 Fetching single trial: {trial_id}[/blue]")
                 from workflows.trials_fetcher import TrialsFetcherWorkflow
 
-                fetcher = TrialsFetcherWorkflow(config)
+                fetcher = TrialsFetcherWorkflow(config, memory_storage)
                 fetch_result = fetcher.execute(nct_ids=[trial_id], output_path=None)
                 if fetch_result.success and fetch_result.data:
                     trials_data = fetch_result.data
@@ -242,7 +266,7 @@ def trials_pipeline(
 
             from workflows.trials_summarizer import TrialsSummarizerWorkflow
 
-            summarizer = TrialsSummarizerWorkflow(config)
+            summarizer = TrialsSummarizerWorkflow(config, memory_storage)
 
             summarize_result = summarizer.execute(
                 trials_data=trials_data, store_in_memory=summary_store_memory
@@ -335,7 +359,9 @@ def trials_pipeline(
                 for trial in pipeline_results["summarize"].data:
                     import json
 
-                    json.dump(trial, f, ensure_ascii=False)
+                    # Convert McodeElement objects to dictionaries for JSON serialization
+                    serializable_trial = _make_trial_json_serializable(trial)
+                    json.dump(serializable_trial, f, ensure_ascii=False)
                     f.write("\n")
             console.print("[green]✅ Results saved[/green]")
 
@@ -351,3 +377,46 @@ def trials_pipeline(
         console.print(f"[red]❌ Pipeline execution failed: {e}[/red]")
         logger.exception("Trial pipeline error")
         raise typer.Exit(1)
+
+
+def _make_trial_json_serializable(trial):
+    """
+    Convert Pydantic model objects in trial data to dictionaries for JSON serialization.
+
+    Args:
+        trial: Trial data dictionary that may contain Pydantic model objects
+
+    Returns:
+        Trial data with Pydantic model objects converted to dictionaries
+    """
+    import copy
+    from src.shared.models import McodeElement, ValidationResult, ProcessingMetadata, TokenUsage
+
+    # Deep copy to avoid modifying the original
+    serializable_trial = copy.deepcopy(trial)
+
+    # Convert objects in McodeResults
+    if "McodeResults" in serializable_trial:
+        mcode_results = serializable_trial["McodeResults"]
+
+        # Convert McodeElement objects in mcode_mappings
+        if "mcode_mappings" in mcode_results:
+            mappings = mcode_results["mcode_mappings"]
+            if mappings and isinstance(mappings[0], McodeElement):
+                mcode_results["mcode_mappings"] = [
+                    elem.model_dump() for elem in mappings
+                ]
+
+        # Convert ValidationResult object
+        if "validation_results" in mcode_results and isinstance(mcode_results["validation_results"], ValidationResult):
+            mcode_results["validation_results"] = mcode_results["validation_results"].model_dump()
+
+        # Convert ProcessingMetadata object
+        if "metadata" in mcode_results and isinstance(mcode_results["metadata"], ProcessingMetadata):
+            mcode_results["metadata"] = mcode_results["metadata"].model_dump()
+
+        # Convert TokenUsage object in metadata
+        if "metadata" in mcode_results and "token_usage" in mcode_results["metadata"] and isinstance(mcode_results["metadata"]["token_usage"], TokenUsage):
+            mcode_results["metadata"]["token_usage"] = mcode_results["metadata"]["token_usage"].model_dump()
+
+    return serializable_trial

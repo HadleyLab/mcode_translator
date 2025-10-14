@@ -130,7 +130,7 @@ def search_memory(
         # Perform search
         results = client.search(query=query, space_ids=space_list, limit=limit)
 
-        episodes = results.get("episodes", [])
+        episodes = results.episodes
 
         console.print(f"[green]✅ Search completed - found {len(episodes)} results[/green]")
 

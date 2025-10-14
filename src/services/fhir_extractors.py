@@ -2,12 +2,32 @@
 FHIR Resource Extractors - Extract mCODE elements from FHIR resources.
 
 This module provides specialized extractors for different FHIR resource types
-to convert them into mCODE elements.
+to convert them into mCODE elements using the new Pydantic mCODE models.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List, Union
 
 from src.utils.logging_config import get_logger
+from src.shared.models import (
+    # mCODE profile models
+    CancerCondition,
+    TumorMarkerTest,
+    ECOGPerformanceStatusObservation,
+    CancerRelatedMedicationStatement,
+    CancerRelatedSurgicalProcedure,
+    CancerRelatedRadiationProcedure,
+    # Base FHIR models
+    FHIRCodeableConcept,
+    FHIRReference,
+    # Value sets
+    CancerConditionCode,
+    ECOGPerformanceStatus,
+    ReceptorStatus,
+    HistologyMorphologyBehavior,
+    # Extensions
+    HistologyMorphologyBehaviorExtension,
+    LateralityExtension,
+)
 
 
 class FHIRResourceExtractors:
@@ -21,29 +41,51 @@ class FHIRResourceExtractors:
     def __init__(self) -> None:
         self.logger = get_logger(__name__)
 
-    def extract_condition_mcode(self, condition: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Extract mCODE elements from Condition resource."""
+    def extract_condition_mcode(self, condition: Dict[str, Any]) -> Optional[CancerCondition]:
+        """Extract mCODE CancerCondition from Condition resource."""
         try:
-            # Simplified condition extraction
+            # Use the new CancerCondition model for structured extraction
             code = condition.get("code", {})
             coding = code.get("coding", [])
 
+            # Find cancer-related coding
+            cancer_coding = None
             for c in coding:
-                if isinstance(c, dict) and (
-                    "breast" in (c.get("display", "")).lower()
-                    or "cancer" in (c.get("display", "")).lower()
-                ):
-                    return {
-                        "system": c.get("system"),
-                        "code": c.get("code"),
-                        "display": c.get("display"),
-                        "interpretation": "Confirmed",
-                    }
+                if isinstance(c, dict):
+                    display = (c.get("display", "")).lower()
+                    if "breast" in display or "cancer" in display or "carcinoma" in display:
+                        cancer_coding = c
+                        break
+
+            if not cancer_coding:
+                return None
+
+            # Create CancerCondition with proper profile
+            cancer_condition = CancerCondition(
+                resourceType="Condition",
+                subject=FHIRReference(reference="Patient/unknown"),  # Will be set by caller
+                clinicalStatus=FHIRCodeableConcept(
+                    coding=[{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+                ),
+                category=[FHIRCodeableConcept(
+                    coding=[{"system": "http://terminology.hl7.org/CodeSystem/condition-category", "code": "problem-list-item"}]
+                )],
+                code=FHIRCodeableConcept(
+                    coding=[{
+                        "system": cancer_coding.get("system"),
+                        "code": cancer_coding.get("code"),
+                        "display": cancer_coding.get("display")
+                    }]
+                ),
+                meta={"profile": ["http://hl7.org/fhir/us/mcode/StructureDefinition/mcode-cancer-condition"]}
+            )
+
+            return cancer_condition
+
         except Exception as e:
             self.logger.error(f"Error extracting condition mCODE: {e}")
             self.logger.debug(f"Condition resource: {condition}")
-
-        return None
+            return None
 
     def extract_observation_mcode(self, observation: Dict[str, Any]) -> Dict[str, Any]:
         """Extract mCODE elements from Observation resource."""

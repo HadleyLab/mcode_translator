@@ -75,10 +75,10 @@ Issues = "https://github.com/HadleyLab/mcode-translator/issues"
 Changelog = "https://github.com/HadleyLab/mcode-translator/blob/main/CHANGELOG.md"
 
 [project.scripts]
-mcode-cli = "src.cli.main:main"
+mcode-cli = "cli:main"
 
 [tool.setuptools]
-packages = ["src.cli", "src.config", "src.core", "src.matching", "src.optimization", "src.pipeline", "src.services", "src.shared", "src.storage", "src.utils", "src.workflows"]
+packages = ["cli", "config", "core", "matching", "optimization", "pipeline", "services", "shared", "storage", "utils", "workflows"]
 package-dir = {"" = "src"}
 include-package-data = true
 

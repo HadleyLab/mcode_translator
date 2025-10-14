@@ -88,7 +88,7 @@ def search_trials(
         raise ClinicalTrialsAPIError(f"API request failed: {str(e)}")
 
 
-def get_full_studies_batch(nct_ids: List[str], max_workers: int = 4) -> Dict[str, Any]:
+async def get_full_studies_batch(nct_ids: List[str], max_workers: int = 4) -> Dict[str, Any]:
     """
     Fetch multiple clinical trial studies concurrently using batch processing.
 
@@ -102,51 +102,46 @@ def get_full_studies_batch(nct_ids: List[str], max_workers: int = 4) -> Dict[str
     Raises:
         ClinicalTrialsAPIError: If there's a critical error with batch processing
     """
-    import asyncio
+    if not nct_ids:
+        return {}
 
-    async def _async_batch_fetch() -> Dict[str, Any]:
-        if not nct_ids:
-            return {}
+    logger.info(f"🔄 Batch fetching {len(nct_ids)} studies with {max_workers} concurrent workers")
 
-        logger.info(f"🔄 Batch fetching {len(nct_ids)} studies with {max_workers} concurrent workers")
+    # Create tasks for concurrent processing
+    tasks = []
+    for nct_id in nct_ids:
+        task = create_task(
+            task_id=f"fetch_{nct_id}",
+            func=_fetch_single_study_with_error_handling,
+            nct_id=nct_id,
+        )
+        tasks.append(task)
 
-        # Create tasks for concurrent processing
-        tasks = []
-        for nct_id in nct_ids:
-            task = create_task(
-                task_id=f"fetch_{nct_id}",
-                func=_fetch_single_study_with_error_handling,
-                nct_id=nct_id,
-            )
-            tasks.append(task)
+    # Execute tasks concurrently
+    task_queue = AsyncTaskQueue(max_concurrent=max_workers, name="ClinicalTrialsFetcher")
+    task_results = await task_queue.execute_tasks(tasks)
 
-        # Execute tasks concurrently
-        task_queue = AsyncTaskQueue(max_concurrent=max_workers, name="ClinicalTrialsFetcher")
-        task_results = await task_queue.execute_tasks(tasks)
+    # Process results
+    results = {}
+    successful = 0
+    failed = 0
 
-        # Process results
-        results = {}
-        successful = 0
-        failed = 0
+    for result in task_results:
+        nct_id = result.task_id.replace("fetch_", "")
 
-        for result in task_results:
-            nct_id = result.task_id.replace("fetch_", "")
+        if result.success:
+            results[nct_id] = result.result
+            successful += 1
+        else:
+            logger.warning(f"Failed to fetch {nct_id}: {result.error}")
+            results[nct_id] = {"error": str(result.error)}
+            failed += 1
 
-            if result.success:
-                results[nct_id] = result.result
-                successful += 1
-            else:
-                logger.warning(f"Failed to fetch {nct_id}: {result.error}")
-                results[nct_id] = {"error": str(result.error)}
-                failed += 1
-
-        logger.info(f"📊 Batch fetch complete: {successful} successful, {failed} failed")
-        return results
-
-    return asyncio.run(_async_batch_fetch())
+    logger.info(f"📊 Batch fetch complete: {successful} successful, {failed} failed")
+    return results
 
 
-def _fetch_single_study_with_error_handling(nct_id: str) -> Dict[str, Any]:
+async def _fetch_single_study_with_error_handling(nct_id: str) -> Dict[str, Any]:
     """
     Fetch a single study with proper error handling for concurrent processing.
 
@@ -160,7 +155,8 @@ def _fetch_single_study_with_error_handling(nct_id: str) -> Dict[str, Any]:
         Exception: If the fetch fails
     """
     try:
-        return get_full_study(nct_id)
+        import asyncio
+        return await asyncio.to_thread(get_full_study, nct_id)
     except Exception as e:
         logger.debug(f"Error fetching {nct_id}: {e}")
         raise

@@ -34,7 +34,7 @@ typing-extensions>=4.5.0
 typer>=0.9.0
 
 # HeySol API client for CORE Memory integration
-heysol-api-client @ file://../heysol_api_client
+# heysol-api-client @ file://../heysol_api_client  # Installed separately
 
 # Removed Click dependency - using Typer only
 

@@ -1,5 +1,5 @@
 ````plaintext
-You are an expert clinical informaticist specializing in mCODE (minimal Common Oncology Data Elements) standard implementation. Your task is to extract EVIDENCE-BASED mCODE-compliant FHIR resources from clinical trial text with strict fidelity to source content.
+You are an expert clinical informaticist specializing in mCODE STU4 (4.0.0) ontology implementation. Your task is to extract EVIDENCE-BASED mCODE-compliant FHIR resources from clinical trial text with strict fidelity to source content using the structured ontology models.
 
 Clinical Text:
 ```
@@ -22,20 +22,37 @@ Clinical Text:
 - 0.2: Weak inference or assumption
 - 0.0: Use only for uncertain/placeholder mappings
 
-**MAPPING PRIORITIES:**
-1. **Primary cancer conditions** (diagnosis, stage, subtype)
-2. **Biomarkers and genomic variants** (HER2, ER, PR, etc.)
-3. **Treatment information** (medications, procedures)
-4. **Research study design** (for clinical trials)
-5. **Patient demographics** (only if explicitly stated)
-6. **Laboratory values** (only specific values mentioned)
+**MAPPING PRIORITIES (mCODE STU4 Ontology):**
+1. **Patient Demographics** (birth sex, race, ethnicity - only if explicitly stated)
+2. **Primary cancer conditions** (diagnosis, histology, morphology, laterality)
+3. **Cancer staging** (TNM categories, stage groups - complete staging information)
+4. **Biomarkers and tumor markers** (ER/PR/HER2 status, receptor status, specific values)
+5. **Performance status** (ECOG 0-5, Karnofsky 0-100 scores)
+6. **Treatment information** (medications with dosages, procedures with types, radiation details)
+7. **Laboratory results and vital signs** (specific values with units, reference ranges)
+8. **Comorbidities and medical history** (comorbid conditions, family history)
+9. **Genomic variants** (mutations, variants, genomic findings)
+10. **Disease status** (active, remission, progression, recurrence)
+11. **Research study design** (for clinical trials)
 
 **WHAT NOT TO MAP:**
 - Eligibility criteria as patient characteristics unless specified as actual status
 - Specific drug names when only drug classes are mentioned
-- Demographics not explicitly stated (e.g., assuming gender)
+- Demographics not explicitly stated (e.g., assuming gender from cancer type)
 - Multiple variations of the same information
 - Information requiring significant inference
+- Generic categories when specific values aren't mentioned
+- Assumed values not present in text (e.g., assuming ECOG 0 when not stated)
+
+**STRUCTURED EXTRACTION GUIDANCE:**
+- **Demographics**: Extract birth sex (M/F/UNK), race, ethnicity using US Core extensions
+- **Staging**: Map TNM categories to TNMStageGroup enum values (STAGE_I, STAGE_II, etc.)
+- **Biomarkers**: Use ReceptorStatus enum (POSITIVE/NEGATIVE/UNKNOWN/NOT_PERFORMED)
+- **Performance Status**: Map to ECOGPerformanceStatus enum values (FULLY_ACTIVE, etc.)
+- **Treatments**: Include dosage (value + unit), frequency, route, duration
+- **Labs/Vitals**: Extract specific values with units and reference ranges
+- **Comorbidities**: Map to SNOMED CT condition codes
+- **Family History**: Extract relationship and condition details
 
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
 ```json
@@ -65,25 +82,45 @@ Clinical Text:
 4. **Maintain high standards** for evidence requirements
 5. **Focus on quality over quantity** of mappings
 
-**EXAMPLES OF PROPER EVIDENCE-BASED MAPPING:**
+**EXAMPLES OF PROPER EVIDENCE-BASED MAPPING (mCODE STU4):**
 
-✅ GOOD: 
-- Text: "Stage IV HER2 positive breast cancer"
-- Mapping: TNMClinicalStageGroup = "IV" (confidence: 1.0)
-- source_text_fragment: "Stage IV HER2 positive breast cancer"
+✅ GOOD Demographics:
+- Text: "45-year-old female patient, White race, Hispanic ethnicity"
+- Mapping: McodePatient with BirthSexExtension(valueCode="F"), USCoreRaceExtension, USCoreEthnicityExtension (confidence: 1.0)
+- evidence_text: "45-year-old female patient, White race, Hispanic ethnicity"
 
-❌ BAD:
-- Text: "breast cancer patients"  
-- Mapping: Patient.gender = "female" (confidence: 0.8)
-- Reason: Gender not explicitly stated, just assumed
+✅ GOOD Staging:
+- Text: "Stage IV HER2 positive breast cancer, T4N2M1"
+- Mapping: TNMStageGroup = "STAGE_IV", TNM Primary Tumor = "T4", Regional Nodes = "N2", Distant Metastases = "M1" (confidence: 1.0)
+- evidence_text: "Stage IV HER2 positive breast cancer, T4N2M1"
 
-✅ GOOD:
-- Text: "White blood cell (WBC) >= 3000/mm^3"
-- Mapping: LaboratoryResult = "WBC >= 3000/mm^3" (confidence: 1.0)
-- source_text_fragment: "White blood cell (WBC) >= 3000/mm^3"
+❌ BAD Demographics:
+- Text: "breast cancer patients"
+- Mapping: McodePatient.gender = "female" (confidence: 0.8)
+- Reason: Gender not explicitly stated, just assumed from cancer type
 
-❌ BAD:
+✅ GOOD Biomarkers:
+- Text: "ER positive, PR negative, HER2 positive"
+- Mapping: TumorMarkerTest with ER=POSITIVE, PR=NEGATIVE, HER2=POSITIVE (confidence: 1.0)
+- evidence_text: "ER positive, PR negative, HER2 positive"
+
+✅ GOOD Performance Status:
+- Text: "ECOG performance status 1"
+- Mapping: ECOGPerformanceStatusObservation = "RESTRICTED_ACTIVITY" (confidence: 1.0)
+- evidence_text: "ECOG performance status 1"
+
+✅ GOOD Treatments:
+- Text: "trastuzumab 6mg/kg IV every 3 weeks"
+- Mapping: CancerRelatedMedicationStatement with dosage="6mg/kg", route="IV", frequency="every 3 weeks" (confidence: 1.0)
+- evidence_text: "trastuzumab 6mg/kg IV every 3 weeks"
+
+✅ GOOD Labs:
+- Text: "White blood cell (WBC) count 4500/mm³, hemoglobin 12.5 g/dL"
+- Mapping: Laboratory observations with specific values and units (confidence: 1.0)
+- evidence_text: "White blood cell (WBC) count 4500/mm³, hemoglobin 12.5 g/dL"
+
+❌ BAD Treatments:
 - Text: "HER2-targeted therapy"
-- Mapping: CancerRelatedMedication = "trastuzumab" (confidence: 0.6)
+- Mapping: CancerRelatedMedicationStatement = "trastuzumab" (confidence: 0.6)
 - Reason: Specific drug not mentioned, only category
 ````

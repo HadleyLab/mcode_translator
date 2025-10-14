@@ -1,4 +1,4 @@
-You are an expert clinical data analyst specializing in mCODE (minimal Common Oncology Data Elements) extraction from clinical trial documents. Your task is to identify and map mCODE-relevant information from clinical trial protocols and descriptions.
+You are an expert clinical data analyst specializing in mCODE STU4 (4.0.0) ontology extraction from clinical trial documents. Your task is to identify and map mCODE-relevant information from clinical trial protocols and descriptions using the structured ontology models.
 
 Clinical Text:
 ```
@@ -18,8 +18,8 @@ Clinical Text:
 - Map cancer conditions, treatments, biomarkers, and patient characteristics
 
 ### 3. CONFIDENCE SCORING
-- 1.0: Direct statement (e.g., "Stage IV breast cancer", "HER2 positive")
-- 0.8: Clear clinical terminology (e.g., "metastatic breast cancer", "chemotherapy")
+- 1.0: Direct statement (e.g., "Stage IV breast cancer", "HER2 positive", "ECOG 1", "Karnofsky 80")
+- 0.8: Clear clinical terminology (e.g., "metastatic breast cancer", "chemotherapy", "performance status")
 - 0.6: Standard medical inference (e.g., "breast cancer patients" implies female gender)
 - 0.4: Reasonable interpretation from context
 - 0.2: Weak inference requiring significant interpretation
@@ -34,32 +34,35 @@ Clinical Text:
 - Focus on core cancer-related elements
 - Avoid redundant mappings
 
-## REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON):
+**REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON):**
 
 ```json
 {{
   "mcode_mappings": [
     {{
-      "element_type": "CancerCondition|CancerTreatment|TNMStage|etc",
-      "code": "SNOMED_CODE or appropriate code",
+      "element_type": "McodePatient|CancerCondition|CancerStaging|TumorMarkerTest|ECOGPerformanceStatusObservation|CancerRelatedMedicationStatement|CancerRelatedSurgicalProcedure|etc",
+      "code": "SNOMED_CODE|LOINC_CODE|etc or mCODE enum value",
       "display": "Human readable name",
-      "system": "http://snomed.info/sct or appropriate system",
+      "system": "http://snomed.info/sct|http://loinc.org|etc",
       "confidence_score": 0.0,
       "evidence_text": "Supporting text from clinical trial"
     }}
   ],
   "metadata": {{
-    "extraction_method": "clinical_trial_llm",
+    "extraction_method": "clinical_trial_mcode_stu4_llm",
+    "mcode_version": "4.0.0",
     "text_length": 123,
     "resource_count": 10
   }}
 }}
 ```
 
-## CRITICAL REQUIREMENTS:
+**CRITICAL REQUIREMENTS:**
 1. Return ONLY valid JSON
 2. Include element_type, code, display, system, confidence_score, evidence_text for each mapping
-3. confidence_score must be 0.0-1.0
-4. evidence_text must be non-empty
-5. Focus on clinical trial-specific content
-6. Map cancer conditions, treatments, biomarkers, and patient demographics
+3. confidence_score must be 0.0-1.0 (1.0=explicit, 0.8=clear, 0.6=inferred)
+4. evidence_text must be non-empty and from clinical trial content
+5. Focus on clinical trial-specific content using mCODE STU4 ontology
+6. Map to mCODE STU4 elements: McodePatient, CancerCondition, CancerStaging, TumorMarkerTest, ECOGPerformanceStatusObservation, CancerRelatedMedicationStatement, CancerRelatedSurgicalProcedure, CancerRelatedRadiationProcedure, ComorbidCondition, FamilyMemberHistory, GenomicVariant, CancerDiseaseStatus
+7. Use appropriate coding systems and enum values from mCODE models
+8. Extract complete information including demographics, staging, biomarkers, treatments, labs, comorbidities

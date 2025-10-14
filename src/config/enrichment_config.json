@@ -1,0 +1,57 @@
+{
+  "enrichment": {
+    "enable_llm_enrichment": true,
+    "enable_rule_based_enrichment": true,
+    "enable_lab_reference_ranges": true,
+    "enable_default_values": true,
+    "llm_model": "deepseek-coder",
+    "llm_prompt": "direct_mcode_evidence_based_concise",
+    "max_enrichment_attempts": 3,
+    "confidence_threshold": 0.7
+  },
+  "lab_reference_ranges": {
+    "hemoglobin": {
+      "male": {"low": 13.5, "high": 17.5, "unit": "g/dL"},
+      "female": {"low": 12.0, "high": 15.5, "unit": "g/dL"}
+    },
+    "wbc": {"low": 4.0, "high": 11.0, "unit": "10^9/L"},
+    "platelet_count": {"low": 150, "high": 450, "unit": "10^9/L"},
+    "creatinine": {
+      "male": {"low": 0.7, "high": 1.3, "unit": "mg/dL"},
+      "female": {"low": 0.6, "high": 1.1, "unit": "mg/dL"}
+    },
+    "bilirubin_total": {"low": 0.3, "high": 1.2, "unit": "mg/dL"},
+    "alt": {"low": 7, "high": 56, "unit": "U/L"},
+    "ast": {"low": 10, "high": 40, "unit": "U/L"},
+    "alkaline_phosphatase": {"low": 44, "high": 147, "unit": "U/L"},
+    "albumin": {"low": 3.5, "high": 5.0, "unit": "g/dL"}
+  },
+  "default_values": {
+    "ecog_performance_status": "0",
+    "birth_sex": "UNK",
+    "receptor_status_er": "unknown",
+    "receptor_status_pr": "unknown",
+    "receptor_status_her2": "unknown",
+    "histology_behavior": "3"
+  },
+  "enrichment_rules": {
+    "performance_status_from_treatment": {
+      "chemotherapy_tolerance": {
+        "good": "0",
+        "moderate": "1",
+        "poor": "2"
+      }
+    },
+    "stage_from_diagnosis": {
+      "early_diagnosis": "I",
+      "advanced_diagnosis": "IV"
+    },
+    "receptor_status_from_histology": {
+      "invasive_ductal": {
+        "er_positive_rate": 0.7,
+        "pr_positive_rate": 0.6,
+        "her2_positive_rate": 0.2
+      }
+    }
+  }
+}

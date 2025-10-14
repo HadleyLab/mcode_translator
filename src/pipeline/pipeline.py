@@ -120,7 +120,8 @@ class McodePipeline:
                 else:
                     # LLM processing per section
                     self.logger.info(f"🚀 Calling LLM service for section {i+1}")
-                    elements = await self.service.map_to_mcode(section.content)
+                    response = await self.service.map_to_mcode(section.content)
+                    elements = response.mcode_elements
                     self.logger.info(
                         f"✅ LLM service returned {len(elements)} elements " f"for section {i+1}"
                     )

@@ -1,5 +1,271 @@
 # API Reference
 
+## mCODE Ontology API Reference
+
+This section documents the mCODE (Minimal Common Oncology Data Elements) ontology implementation, providing standardized oncology data structures and validation.
+
+### McodeVersion
+
+Enumeration of supported mCODE STU versions.
+
+```python
+class McodeVersion(Enum):
+    STU1 = "1.0.0"
+    STU2 = "2.0.0"
+    STU3 = "3.0.0"
+    STU4 = "4.0.0"  # Current version
+```
+
+#### Methods
+
+##### latest() -> McodeVersion
+Get the latest supported mCODE version.
+
+##### from_string(version_str: str) -> McodeVersion
+Parse version string into McodeVersion enum.
+
+**Parameters:**
+- `version_str`: Version string (e.g., "4.0.0", "STU4")
+
+### McodeProfile
+
+Enumeration of all supported mCODE profiles organized by category.
+
+```python
+class McodeProfile(Enum):
+    # Patient Information
+    PATIENT = "Patient"
+    BIRTH_SEX = "BirthSex"
+    ADMINISTRATIVE_GENDER = "AdministrativeGender"
+    US_CORE_RACE = "USCoreRaceExtension"
+    US_CORE_ETHNICITY = "USCoreEthnicityExtension"
+
+    # Disease Characterization
+    CANCER_CONDITION = "CancerCondition"
+    CANCER_STAGING = "CancerStaging"
+    TNM_STAGE_GROUP = "TNMStageGroup"
+    HISTOLOGY_MORPHOLOGY_BEHAVIOR = "HistologyMorphologyBehavior"
+
+    # Assessment
+    TUMOR_MARKER_TEST = "TumorMarkerTest"
+    ECOG_PERFORMANCE_STATUS = "ECOGPerformanceStatus"
+
+    # Treatments
+    CANCER_RELATED_MEDICATION_STATEMENT = "CancerRelatedMedicationStatement"
+    CANCER_RELATED_SURGICAL_PROCEDURE = "CancerRelatedSurgicalProcedure"
+    CANCER_RELATED_RADIATION_PROCEDURE = "CancerRelatedRadiationProcedure"
+```
+
+### McodeVersionManager
+
+Central manager for mCODE version operations and profile URL generation.
+
+#### Constructor
+
+```python
+McodeVersionManager(default_version: Optional[McodeVersion] = None)
+```
+
+#### Methods
+
+##### get_profile_url(profile: McodeProfile, version: Optional[McodeVersion] = None) -> str
+Generate canonical URL for an mCODE profile.
+
+**Parameters:**
+- `profile`: mCODE profile to generate URL for
+- `version`: Version to use (defaults to manager's default)
+
+**Returns:** Canonical profile URL
+
+##### check_compatibility(source_version: McodeVersion, target_version: McodeVersion) -> VersionCompatibility
+Check compatibility between two mCODE versions.
+
+##### get_supported_versions() -> List[McodeVersion]
+Get list of all supported mCODE versions.
+
+##### validate_version_string(version_str: str) -> bool
+Validate if a version string represents a supported mCODE version.
+
+### McodeValidator
+
+Comprehensive validator for mCODE resources and business rules.
+
+#### Constructor
+
+```python
+McodeValidator(version: Optional[McodeVersion] = None)
+```
+
+#### Methods
+
+##### validate_patient_eligibility(patient: McodePatient, criteria: Dict[str, Any]) -> Dict[str, Any]
+Validate patient eligibility against clinical trial criteria.
+
+**Parameters:**
+- `patient`: mCODE patient instance
+- `criteria`: Eligibility criteria dictionary
+
+**Returns:** Validation results with eligibility status and criteria analysis
+
+##### validate_cancer_condition(condition: CancerCondition) -> Dict[str, Any]
+Validate cancer condition data quality.
+
+**Returns:** Validation results with quality score and issues
+
+##### validate_resource_compatibility(resource: BaseModel, profile: McodeProfile) -> bool
+Validate resource compatibility with mCODE version.
+
+### mCODE Profile Models
+
+#### McodePatient
+
+mCODE Patient profile extending FHIR Patient with oncology requirements.
+
+```python
+class McodePatient(FHIRPatient):
+    extension: Optional[List[Union[BirthSexExtension, USCoreRaceExtension, USCoreEthnicityExtension]]] = None
+```
+
+**Required Fields:**
+- `resourceType`: "Patient"
+- `gender`: Administrative gender
+
+#### CancerCondition
+
+mCODE Cancer Condition profile for oncology diagnoses.
+
+```python
+class CancerCondition(FHIRCondition):
+    extension: Optional[List[Union[HistologyMorphologyBehaviorExtension, LateralityExtension, RelatedConditionExtension]]] = None
+```
+
+**Required Fields:**
+- `resourceType`: "Condition"
+- `subject`: Patient reference
+- `category`: Must include "problem-list-item"
+- `code`: Cancer diagnosis code
+
+#### TNMStageGroup
+
+mCODE TNM Stage Group observation.
+
+```python
+class TNMStageGroup(CancerStaging):
+    # Inherits from CancerStaging with TNM-specific validation
+    pass
+```
+
+#### TumorMarkerTest
+
+mCODE Tumor Marker Test observation.
+
+```python
+class TumorMarkerTest(FHIRObservation):
+    extension: Optional[List[ConditionRelatedExtension]] = None
+    category: List[FHIRCodeableConcept]  # Must include "laboratory"
+```
+
+#### ECOGPerformanceStatusObservation
+
+mCODE ECOG Performance Status observation.
+
+```python
+class ECOGPerformanceStatusObservation(FHIRObservation):
+    valueCodeableConcept: FHIRCodeableConcept  # Must be from ECOG value set
+```
+
+#### CancerRelatedMedicationStatement
+
+mCODE Cancer Related Medication Statement.
+
+```python
+class CancerRelatedMedicationStatement(FHIRMedicationStatement):
+    category: FHIRCodeableConcept  # Must indicate cancer-related
+```
+
+#### CancerRelatedSurgicalProcedure
+
+mCODE Cancer Related Surgical Procedure.
+
+```python
+class CancerRelatedSurgicalProcedure(FHIRProcedure):
+    category: FHIRCodeableConcept  # Must indicate surgical procedure
+```
+
+#### CancerRelatedRadiationProcedure
+
+mCODE Cancer Related Radiation Procedure.
+
+```python
+class CancerRelatedRadiationProcedure(FHIRProcedure):
+    category: FHIRCodeableConcept  # Must indicate radiation procedure
+```
+
+### Utility Functions
+
+#### create_mcode_patient()
+
+Create a properly structured mCODE Patient resource.
+
+```python
+def create_mcode_patient(
+    id: str,
+    name: List[Dict[str, Any]],
+    gender: AdministrativeGender,
+    birth_date: str,
+    birth_sex: Optional[BirthSex] = None,
+    race: Optional[FHIRCodeableConcept] = None,
+    ethnicity: Optional[FHIRCodeableConcept] = None
+) -> McodePatient
+```
+
+#### create_cancer_condition()
+
+Create a properly structured mCODE Cancer Condition.
+
+```python
+def create_cancer_condition(
+    patient_id: str,
+    cancer_code: CancerConditionCode,
+    clinical_status: str = "active",
+    histology_behavior: Optional[HistologyMorphologyBehavior] = None,
+    laterality: Optional[FHIRCodeableConcept] = None
+) -> CancerCondition
+```
+
+### McodeOntologyValidator
+
+Validator for mCODE ontology completeness against sample data.
+
+#### Constructor
+
+```python
+McodeOntologyValidator()
+```
+
+#### Methods
+
+##### validate_ontology_completeness(patient_file: Path, trial_file: Path) -> CompletenessReport
+Main method to validate ontology completeness against sample data.
+
+**Parameters:**
+- `patient_file`: Path to patient data file (NDJSON)
+- `trial_file`: Path to trial data file (NDJSON)
+
+**Returns:** Comprehensive completeness report
+
+##### validate_patient_resource(resource: Dict[str, Any]) -> ValidationResult
+Validate a patient resource against mCODE models.
+
+##### validate_condition_resource(resource: Dict[str, Any]) -> ValidationResult
+Validate a condition resource against mCODE CancerCondition model.
+
+##### validate_trial_data(trial_data: Dict[str, Any]) -> ValidationResult
+Validate trial data against mCODE trial elements.
+
+##### print_report(report: CompletenessReport)
+Print the completeness report in a readable format.
+
 ## Expert Multi-LLM Curator API Reference
 
 This section documents the core classes for the Expert Multi-LLM Curator system, which provides advanced ensemble decision making for clinical trial matching using multiple specialized LLM experts.

@@ -1,13 +1,27 @@
-Analyze the clinical trial protocol and extract structured mCODE element mappings:
+You are an expert in mCODE STU4 (4.0.0) ontology implementation. Your task is to extract comprehensive mCODE element mappings from clinical text using the structured ontology models.
 
+Clinical Text:
+```
 {clinical_text}
+```
 
-Follow these steps:
-1. Identify all cancer-related entities
-2. Categorize into appropriate mCODE elements
-3. Extract numerical values and biomarker mentions
-4. Create structured mCODE element mappings
-5. Return structured JSON output with mcode_mappings array
+**EXTRACTION STEPS (mCODE STU4 Ontology):**
+1. **Patient Demographics**: Extract birth sex, race, ethnicity, administrative gender
+2. **Cancer Characterization**: Identify primary cancer conditions, histology, morphology, laterality
+3. **Staging Information**: Extract TNM categories (T, N, M) and stage groups
+4. **Biomarker Analysis**: Map receptor status (ER/PR/HER2), tumor markers with values
+5. **Performance Assessment**: Extract ECOG/Karnofsky performance status scores
+6. **Treatment Details**: Map medications (with dosages/frequencies), surgical procedures, radiation procedures
+7. **Laboratory Results**: Extract vital signs, blood counts, chemistry panels, tumor markers
+8. **Comorbidities & History**: Identify comorbid conditions and family cancer history
+9. **Genomic Information**: Extract genetic variants and genomic findings
+10. **Disease Status**: Map current disease status (active/remission/progression)
+11. **Create structured mCODE element mappings using ontology models**
+12. **Return structured JSON output with mcode_mappings array**
+
+**SPECIFIC EXTRACTION TARGETS:**
+- **Biomarkers**: ER/PR/HER2 status, receptor status values, tumor marker levels
+- **Treatments**: Medication names/dosages/frequencies, procedure types, radiation details
 
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
 ```json
@@ -35,4 +49,8 @@ Follow these steps:
 2. Ensure all JSON is valid and parseable
 3. Properly escape any special characters within string values
 4. Do not include any text outside of the JSON structure
-5. Use exact mCODE element names: CancerCondition, GenomicVariant, CancerDiseaseStatus, TNMClinicalStageGroup, CancerRelatedMedication, CancerRelatedProcedure, ECOGPerformanceStatus, KarnofskyPerformanceStatus
+5. Use exact mCODE STU4 element names from ontology models: McodePatient, CancerCondition, CancerStaging, TumorMarkerTest, ECOGPerformanceStatusObservation, CancerRelatedMedicationStatement, CancerRelatedSurgicalProcedure, CancerRelatedRadiationProcedure, ComorbidCondition, FamilyMemberHistory, GenomicVariant, CancerDiseaseStatus
+6. Follow FHIR resource patterns with proper coding systems (SNOMED CT, LOINC, ICD-10-CM, HGNC)
+7. Use enum values from mCODE models (e.g., BirthSex, TNMStageGroup, ReceptorStatus, ECOGPerformanceStatus)
+8. Include confidence scores (1.0=explicit, 0.8=clear, 0.6=inferred) and exact evidence text
+9. Structure mappings to align with mCODE STU4 profiles and extensions

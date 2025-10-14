@@ -60,6 +60,70 @@ class OncoCoreService:
         except Exception:
             return False
 
+    def store_trial_mcode_summary(
+        self,
+        trial_id: str,
+        mcode_data: Dict[str, Any],
+        space_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+    ) -> bool:
+        """
+        Store a trial's mCODE data and summary in the trials space.
+
+        Args:
+            trial_id: Clinical trial NCT ID
+            mcode_data: Dictionary containing mCODE mappings, summary, and metadata
+            space_id: Optional space ID to use instead of default
+            session_id: Optional session identifier
+
+        Returns:
+            bool: True if successful
+        """
+        try:
+            # Format the message with trial ID and mCODE data
+            message = f"Trial {trial_id} mCODE Summary:\n\n"
+            message += f"Natural Language Summary: {mcode_data.get('natural_language_summary', 'N/A')}\n\n"
+
+            # Add mCODE elements
+            mcode_mappings = mcode_data.get('mcode_mappings', [])
+            if mcode_mappings:
+                message += f"mCODE Elements ({len(mcode_mappings)}):\n"
+                for element in mcode_mappings:
+                    element_type = element.get('element_type', 'Unknown')
+                    display = element.get('display', 'N/A')
+                    system = element.get('system', '')
+                    code = element.get('code', '')
+                    codes = f"{system}:{code}" if system and code else ""
+                    message += f"- {element_type}: {display} {codes}\n"
+                message += "\n"
+
+            # Add trial metadata
+            metadata = mcode_data.get('trial_metadata', {})
+            if metadata:
+                message += "Trial Metadata:\n"
+                for key, value in metadata.items():
+                    if value is not None:
+                        message += f"- {key}: {value}\n"
+                message += "\n"
+
+            # Add pipeline results summary
+            pipeline_results = mcode_data.get('pipeline_results', {})
+            if pipeline_results:
+                message += "Pipeline Results:\n"
+                for key, value in pipeline_results.items():
+                    if key != 'mcode_mappings':  # Already included above
+                        message += f"- {key}: {value}\n"
+
+            result = self.client.ingest(
+                message=message,
+                source=self.source,
+                space_id=space_id or self.TRIALS_SPACE,
+                session_id=session_id,
+            )
+            return result.get("success", False)
+        except Exception:
+            return False
+
     def store_patient_summary(self, patient_id: str, summary: str) -> bool:
         """
         Store a patient summary in the patients space.

@@ -11,6 +11,66 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+# Import new mCODE ontology models
+from .mcode_models import (
+    # Value sets
+    AdministrativeGender,
+    BirthSex,
+    CancerConditionCode,
+    TNMStageGroup,
+    ECOGPerformanceStatus,
+    ReceptorStatus,
+    HistologyMorphologyBehavior,
+
+    # Base FHIR resources
+    FHIRIdentifier,
+    FHIRCodeableConcept,
+    FHIRReference,
+    FHIRQuantity,
+    FHIRRange,
+    FHIRRatio,
+    FHIRPeriod,
+    FHIRHumanName,
+    FHIRContactPoint,
+    FHIRAddress,
+    FHIRPatient,
+    FHIRCondition,
+    FHIRObservation,
+    FHIRProcedure,
+    FHIRMedicationStatement,
+
+    # Extension models
+    McodeExtension,
+    BirthSexExtension,
+    USCoreRaceExtension,
+    USCoreEthnicityExtension,
+    HistologyMorphologyBehaviorExtension,
+    LateralityExtension,
+    RelatedConditionExtension,
+    ConditionRelatedExtension,
+
+    # mCODE profile models
+    McodePatient,
+    CancerCondition,
+    CancerStaging,
+    TNMStageGroup as TNMStageGroupModel,
+    TumorMarkerTest,
+    ECOGPerformanceStatusObservation,
+    CancerRelatedMedicationStatement,
+    CancerRelatedSurgicalProcedure,
+    CancerRelatedRadiationProcedure,
+
+    # Versioning integration
+    VersionedMcodeResource,
+
+    # Validation and business logic
+    McodeValidator,
+
+    # Utility functions
+    create_mcode_patient,
+    create_cancer_condition,
+)
+
 
 class IdentificationModule(BaseModel):
     """Clinical trial identification information."""

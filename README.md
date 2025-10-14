@@ -30,6 +30,7 @@
 - **⚡ High Performance**: Pure async concurrency with controlled parallelism and optimized memory usage
 - **🔒 Type Safety**: Full Pydantic validation for data integrity (legacy code eliminated)
 - **🧠 Smart Storage**: Integrates with Core Memory for persistent, searchable results
+- **🏗️ mCODE Ontology**: Complete implementation of mCODE STU4 (4.0.0) with versioning support
 
 ### 🚀 Use Cases
 
@@ -38,6 +39,44 @@
 - **Drug Development**: Analyze eligibility patterns across trials
 - **Medical AI**: Train models on standardized clinical data
 - **Regulatory Compliance**: Ensure consistent data formatting
+- **Oncology Data Exchange**: Standardized mCODE profiles for cancer data interoperability
+
+### 📋 mCODE Ontology Support
+
+The mCODE Translator implements comprehensive support for the **mCODE (Minimal Common Oncology Data Elements) STU4 (4.0.0)** specification:
+
+#### Patient Information Profiles
+- **Patient Demographics**: Administrative gender, birth sex, race, ethnicity
+- **US Core Extensions**: Race, ethnicity, and birth sex extensions
+- **Administrative Gender**: Male, female, other, unknown
+
+#### Disease Characterization
+- **Cancer Condition**: Primary cancer diagnosis with histology and laterality
+- **Staging Information**: TNM stage groups and components
+- **Histology & Morphology**: Behavior classification and grading
+
+#### Assessment Profiles
+- **Tumor Markers**: ER/PR/HER2 receptor status testing
+- **Performance Status**: ECOG and Karnofsky performance scales
+- **Vital Signs**: Blood pressure, BMI, body measurements
+
+#### Treatment Profiles
+- **Medications**: Cancer-related medication statements with regimens
+- **Surgical Procedures**: Cancer-related surgical interventions
+- **Radiation Therapy**: Radiation procedure documentation
+
+#### Genomics (STU2+)
+- **Genetic Variants**: Cancer genetic variant observations
+- **Genomic Regions**: Studied genomic regions and panels
+
+#### Outcomes (STU3+)
+- **Cause of Death**: Cancer-related mortality documentation
+- **Comorbid Conditions**: Related health conditions
+
+#### Versioning & Compatibility
+- **Multi-Version Support**: STU1 through STU4 compatibility
+- **Migration Utilities**: Automated schema version upgrades
+- **Profile Validation**: Version-specific profile validation
 
 ---
 
@@ -292,11 +331,14 @@ python run_tests.py all
 - [API Reference](docs/api-reference.md)
 - [Configuration Guide](docs/configuration.md)
 - [Testing Strategy](tests/README.md)
+- [mCODE Ontology Guide](docs/mcode_ontology.md)
+- [Validation & Quality Gates](docs/mcode_validation.md)
 
 ### 🎯 Examples
 - [Basic Usage](examples/basic_usage.py)
 - [Advanced Pipeline](examples/advanced_pipeline.py)
 - [Custom Processing](examples/custom_processing.py)
+- [mCODE Ontology Usage](examples/mcode_ontology_demo.py)
 
 ### 🆘 Troubleshooting
 - [Common Issues](docs/troubleshooting.md)

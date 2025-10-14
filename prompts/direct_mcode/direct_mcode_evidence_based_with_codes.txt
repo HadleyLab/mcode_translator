@@ -72,34 +72,44 @@ Clinical Text:
 ### TNM Staging:
 - Stage IV: "399537006", "Stage IV", "http://snomed.info/sct"
 
-### Tumor Markers:
+### Tumor Markers/Biomarkers:
 - HER2 Positive: "371494000", "Human epidermal growth factor 2 positive", "http://snomed.info/sct"
 - HER2 Negative: "371495004", "Human epidermal growth factor 2 negative", "http://snomed.info/sct"
 - ER Positive: "371496003", "Estrogen receptor positive", "http://snomed.info/sct"
 - PR Positive: "371497007", "Progesterone receptor positive", "http://snomed.info/sct"
+- ER Negative: "371498002", "Estrogen receptor negative", "http://snomed.info/sct"
+- PR Negative: "371499005", "Progesterone receptor negative", "http://snomed.info/sct"
 
-## mCODE ELEMENT PRIORITIES:
-1. Primary cancer diagnosis and staging
-2. Tumor morphology and histology
-3. Treatment regimens and medications
-4. Patient demographics (age, sex)
-5. Study design elements (only if explicitly stated)
+## mCODE STU4 ELEMENT PRIORITIES:
+1. **Patient Demographics**: Birth sex, race, ethnicity, administrative gender
+2. **Cancer Characterization**: Primary diagnosis, histology, morphology, laterality
+3. **Staging Information**: TNM categories (T, N, M), stage groups (I-IV, IA-IVB)
+4. **Biomarker Status**: ER/PR/HER2 receptor status, tumor markers with values
+5. **Performance Status**: ECOG (0-5) or Karnofsky (0-100) scores
+6. **Treatment Details**: Medications with dosages/frequencies, surgical procedures, radiation procedures
+7. **Laboratory Results**: Vital signs, blood counts, chemistry panels, tumor markers
+8. **Comorbidities**: Medical history and comorbid conditions
+9. **Family History**: Cancer history in family members
+10. **Genomic Variants**: Genetic mutations and variants
+11. **Disease Status**: Current disease state (active/remission/progression)
+12. Study design elements (only if explicitly stated)
 
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
 ```json
 {{
   "mcode_mappings": [
     {{
-      "element_type": "CancerCondition|CancerTreatment|TNMStage|etc",
-      "code": "EXACT_SNOMED_CODE_FROM_REFERENCE",
+      "element_type": "McodePatient|CancerCondition|CancerStaging|TumorMarkerTest|ECOGPerformanceStatusObservation|CancerRelatedMedicationStatement|etc",
+      "code": "EXACT_CODE_FROM_REFERENCE_OR_MCODE_ENUM",
       "display": "EXACT_DISPLAY_FROM_REFERENCE",
-      "system": "http://snomed.info/sct",
+      "system": "http://snomed.info/sct|http://loinc.org|etc",
       "confidence_score": 0.0,
       "evidence_text": "EXACT quoted text from source supporting this mapping"
     }}
   ],
   "metadata": {{
-    "extraction_method": "evidence_based_with_codes_llm",
+    "extraction_method": "evidence_based_with_codes_mcode_stu4",
+    "mcode_version": "4.0.0",
     "text_length": 123,
     "resource_count": 10
   }}
@@ -107,16 +117,17 @@ Clinical Text:
 ```
 
 **CRITICAL INSTRUCTIONS:**
-1. Read the clinical text carefully
-2. Identify explicit mCODE-relevant information
-3. Map only what is clearly stated using ONLY codes from the reference table
-4. Provide exact source text fragments
-5. Assign realistic confidence scores (0.0-1.0)
-6. Generate concise, accurate mappings with REAL SNOMED codes
-7. **STRICT JSON COMPLIANCE**: Return ONLY valid JSON, no additional text
-8. **REQUIRED FIELDS**: Each mapping MUST include element_type, code, display, system, confidence_score, evidence_text
-9. **VALIDATION RULES**: confidence_score must be 0.0-1.0, evidence_text must be non-empty string, codes must match reference table exactly
-10. **ERROR PREVENTION**: If any required field is missing or code not in reference table, do not create the mapping
-11. Ensure all JSON is valid and parseable
-12. Properly escape any special characters within string values
-13. Do not include any text outside of the JSON structure
+1. Read the clinical text carefully for mCODE STU4 elements
+2. Identify explicit mCODE-relevant information using ontology models
+3. Map only what is clearly stated using codes from reference table or mCODE enums
+4. Provide exact source text fragments in quotation marks
+5. Assign realistic confidence scores (1.0=explicit, 0.8=clear, 0.6=inferred)
+6. Use mCODE STU4 element names: McodePatient, CancerCondition, CancerStaging, TumorMarkerTest, ECOGPerformanceStatusObservation, CancerRelatedMedicationStatement, CancerRelatedSurgicalProcedure, CancerRelatedRadiationProcedure, ComorbidCondition, FamilyMemberHistory, GenomicVariant, CancerDiseaseStatus
+7. Generate concise, accurate mappings with REAL codes from reference table or enum values
+8. **STRICT JSON COMPLIANCE**: Return ONLY valid JSON, no additional text
+9. **REQUIRED FIELDS**: Each mapping MUST include element_type, code, display, system, confidence_score, evidence_text
+10. **VALIDATION RULES**: confidence_score must be 0.0-1.0, evidence_text must be non-empty string, codes must be valid
+11. **ERROR PREVENTION**: If any required field is missing, do not create the mapping
+12. Ensure all JSON is valid and parseable
+13. Properly escape any special characters within string values
+14. Do not include any text outside of the JSON structure

@@ -126,9 +126,21 @@ class McodeSummarizer:
                 "priority": 15,
                 "template": "{subject} is a Clinical Trial (mCODE: Trial).",
             },
+            "TrialIdentifier": {
+                "priority": 15,
+                "template": "{subject} is a Clinical Trial (mCODE: TrialIdentifier).",
+            },
             "TrialTitle": {
                 "priority": 16,
                 "template": "{subject}'s title (mCODE: TrialTitle) is '{value}'.",
+            },
+            "Title": {
+                "priority": 16,
+                "template": "{subject}'s title (mCODE: TrialTitle) is '{value}'.",
+            },
+            "TrialOfficialTitle": {
+                "priority": 16,
+                "template": "{subject}'s official title (mCODE: TrialOfficialTitle) is '{value}'.",
             },
             "TrialStudyType": {
                 "priority": 17,
@@ -139,6 +151,10 @@ class McodeSummarizer:
                 "template": "{subject}'s phase (mCODE: TrialPhase) is {value}{codes}.",
             },
             "TrialStatus": {
+                "priority": 19,
+                "template": "{subject}'s status (mCODE: TrialStatus) is {value}{codes}.",
+            },
+            "Status": {
                 "priority": 19,
                 "template": "{subject}'s status (mCODE: TrialStatus) is {value}{codes}.",
             },
@@ -178,6 +194,10 @@ class McodeSummarizer:
                 "priority": 28,
                 "template": "{subject}'s healthy volunteers criteria (mCODE: TrialHealthyVolunteers) {value}.",
             },
+            "TrialEligibilityCriteria": {
+                "priority": 29,
+                "template": "{subject}'s eligibility criteria (mCODE: TrialEligibilityCriteria) are {value}.",
+            },
             "TrialMedicationInterventions": {
                 "priority": 29,
                 "template": "{subject}'s medication interventions (mCODE: TrialMedicationInterventions) include {value}.",
@@ -197,6 +217,10 @@ class McodeSummarizer:
             "TrialCompletionDate": {
                 "priority": 33,
                 "template": "{subject}'s completion date (mCODE: TrialCompletionDate) is {value}{codes}.",
+            },
+            "TrialPrimaryCompletionDate": {
+                "priority": 34,
+                "template": "{subject}'s primary completion date (mCODE: TrialPrimaryCompletionDate) is {value}{codes}.",
             },
         }
 
@@ -361,24 +385,35 @@ class McodeSummarizer:
         self, elements: List[Dict[str, Any]], subject_type: str = "Patient"
     ) -> List[Dict[str, Any]]:
         """Group and sort mCODE elements by clinical priority for optimal NLP processing, respecting detail level switches.
+        Groups duplicate elements and prioritizes unique clinical information.
 
         Args:
             elements: List of element dictionaries with 'element_name', 'value', 'codes', 'date_qualifier'
             subject_type: Type of subject ("Patient" or "Trial") for priority ordering
 
         Returns:
-            Sorted and filtered list of elements by clinical priority, respecting detail level constraints
+            Sorted and filtered list of unique elements by clinical priority, respecting detail level constraints
         """
-        # Sort elements by their configured priority
-        sorted_elements = []
+        # Group elements by element_name and value to remove duplicates
+        grouped_elements = {}
         for element in elements:
             element_name = element.get("element_name", "")
-            if element_name in self.element_configs:
-                priority = self.element_configs[element_name]["priority"]
-                element["priority"] = priority
-                sorted_elements.append(element)
+            value = element.get("value", "")
+            codes = element.get("codes", "")
+            date_qualifier = element.get("date_qualifier", "")
 
-        # Sort by priority (lower number = higher priority)
+            # Create a unique key for grouping
+            key = (element_name, value, codes, date_qualifier)
+
+            if key not in grouped_elements:
+                grouped_elements[key] = element.copy()
+                if element_name in self.element_configs:
+                    grouped_elements[key]["priority"] = self.element_configs[element_name]["priority"]
+                else:
+                    grouped_elements[key]["priority"] = 999
+
+        # Convert back to list and sort by priority (lower number = higher priority)
+        sorted_elements = list(grouped_elements.values())
         sorted_elements.sort(key=lambda x: x["priority"])
 
         # Apply detail level filters

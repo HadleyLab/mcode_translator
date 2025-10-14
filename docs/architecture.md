@@ -128,6 +128,8 @@ The mCODE Translator follows a modular, layered architecture designed for clinic
 
 **Key Components:**
 - `models.py`: Pydantic data models
+- `mcode_models.py`: Complete mCODE ontology models with STU4 support
+- `mcode_versioning.py`: Multi-version mCODE schema management
 - `OncoCoreMemory`: HeySol integration
 - `APIManager`: Caching and API management
 - `Config`: Configuration management
@@ -137,6 +139,7 @@ The mCODE Translator follows a modular, layered architecture designed for clinic
 - Handle data persistence and retrieval
 - Manage API caching and rate limiting
 - Provide configuration and utilities
+- Implement mCODE ontology with versioning support
 
 ## Data Flow Architecture
 
@@ -633,6 +636,225 @@ CLI Layer → Workflow Layer → Processing Pipeline
 ```
 
 This Expert Multi-LLM Curator architecture provides a sophisticated, scalable solution for clinical trial matching with enhanced accuracy, explainability, and performance through coordinated expert panel assessments.
+
+## mCODE Ontology Architecture
+
+### mCODE Model Architecture
+
+The mCODE implementation follows a layered architecture that integrates deeply with the existing system:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    mCODE Ontology Layer                     │
+│  ┌─────────────────────────────────────────────────────────┐  │
+│  │              Version Management System                 │  │
+│  │  • McodeVersionManager • Profile URL Generation        │  │
+│  │  • Compatibility Checking • Migration Utilities        │  │
+│  └─────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                                  │
+┌─────────────────────────────────────────────────────────────┐
+│                 mCODE Profile Models Layer                  │
+│  ┌─────────────────────────────────────────────────────────┐  │
+│  │            Pydantic FHIR Profile Models                │  │
+│  │  • Base FHIR Resources • mCODE Extensions              │  │
+│  │  • Profile-Specific Models • Validation Rules          │  │
+│  └─────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                                  │
+┌─────────────────────────────────────────────────────────────┐
+│               mCODE Validation & Quality Layer             │
+│  ┌─────────────────────────────────────────────────────────┐  │
+│  │          Validation Framework & Quality Gates          │  │
+│  │  • Profile Validation • Ontology Completeness          │  │
+│  │  • Business Rules • Quality Metrics                    │  │
+│  └─────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                                  │
+┌─────────────────────────────────────────────────────────────┐
+│               Integration & Processing Layer               │
+│  ┌─────────────────────────────────────────────────────────┐  │
+│  │            Pipeline Integration & Utilities            │  │
+│  │  • LLM Processing Integration • FHIR Bundle Generation │  │
+│  │  • Ontology Mapping • Quality Assurance                │  │
+│  └─────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### mCODE Version Management System
+
+#### Version Manager Components
+
+**McodeVersionManager**: Central coordinator for version operations
+- **Profile URL Generation**: Canonical URLs for all mCODE profiles across versions
+- **Compatibility Matrix**: Pre-defined compatibility rules between versions
+- **Migration Path Calculation**: Automated upgrade/downgrade path finding
+- **Version Validation**: Input validation and supported version checking
+
+**McodeVersion Enum**: Supported STU versions with semantic versioning
+```python
+class McodeVersion(Enum):
+    STU1 = "1.0.0"
+    STU2 = "2.0.0"
+    STU3 = "3.0.0"
+    STU4 = "4.0.0"  # Current
+```
+
+**McodeProfile Enum**: All supported mCODE profiles organized by category
+- **Patient Information**: Demographics, administrative data
+- **Disease Characterization**: Cancer conditions, staging
+- **Assessment**: Biomarkers, performance status
+- **Treatments**: Medications, procedures, radiation
+- **Genomics**: Genetic variants, genomic regions
+- **Outcomes**: Cause of death, comorbid conditions
+
+#### Version Compatibility Features
+
+- **Breaking Changes Tracking**: Documented changes between versions
+- **Migration Notes**: Step-by-step upgrade guidance
+- **Feature Flags**: Version-specific capability detection
+- **Profile Availability**: Dynamic profile support checking
+
+### mCODE Profile Models
+
+#### Base FHIR Resources
+
+Complete implementation of core FHIR resources with mCODE extensions:
+
+**Patient Resources**:
+- `FHIRPatient`: Base FHIR Patient with full specification support
+- `McodePatient`: mCODE Patient profile with required extensions
+- Extensions: Birth sex, race, ethnicity
+
+**Condition Resources**:
+- `FHIRCondition`: Base FHIR Condition
+- `CancerCondition`: mCODE Cancer Condition with histology/laterality
+- Extensions: Histology behavior, laterality, related conditions
+
+**Observation Resources**:
+- `FHIRObservation`: Base FHIR Observation
+- Specialized profiles: Tumor markers, performance status, staging
+- Extensions: Condition relationships, laterality
+
+**Procedure Resources**:
+- `FHIRProcedure`: Base FHIR Procedure
+- Cancer-related profiles: Surgery, radiation, biopsy
+- Category validation and coding requirements
+
+**Medication Resources**:
+- `FHIRMedicationStatement`: Base FHIR MedicationStatement
+- `CancerRelatedMedicationStatement`: Oncology-specific medications
+- Regimen and administration tracking
+
+#### Extension Architecture
+
+**mCODE-Specific Extensions**:
+- **Birth Sex**: Administrative vs biological sex distinction
+- **Histology Morphology**: Cancer tissue characteristics
+- **Laterality**: Body side specification
+- **Related Conditions**: Cancer condition relationships
+- **US Core Extensions**: Race and ethnicity classifications
+
+**Validation Rules**:
+- **URL Validation**: Correct extension URLs for each profile
+- **Value Constraints**: Appropriate value sets and coding
+- **Cardinality**: Required vs optional extensions
+- **Profile Context**: Extension validity within specific profiles
+
+### mCODE Validation Framework
+
+#### Profile Validation
+
+**McodeValidator Class**: Comprehensive validation engine
+- **Patient Validation**: Demographics completeness and extension validation
+- **Condition Validation**: Cancer diagnosis requirements and coding
+- **Observation Validation**: Result validity and reference integrity
+- **Eligibility Validation**: Trial-patient matching criteria
+
+**Validation Results**:
+- **Compliance Scoring**: Percentage of requirements met
+- **Error Categorization**: Critical vs warning issues
+- **Missing Elements**: Required components not present
+- **Quality Metrics**: Data completeness and accuracy scores
+
+#### Ontology Completeness Validation
+
+**McodeOntologyValidator**: End-to-end completeness assessment
+- **Element Coverage**: Percentage of mCODE elements present in data
+- **Category Analysis**: Patient, condition, staging, biomarkers coverage
+- **Trial Data Validation**: Clinical trial metadata completeness
+- **Recommendations**: Actionable improvement suggestions
+
+**Coverage Categories**:
+- **Patient Demographics**: Administrative data, extensions
+- **Cancer Conditions**: Diagnosis, histology, staging
+- **Biomarkers**: Receptor status, tumor markers
+- **Treatments**: Medications, procedures, radiation
+- **Trial Information**: Design, eligibility, outcomes
+
+### Integration Architecture
+
+#### Pipeline Integration
+
+**LLM Processing Integration**:
+- **Prompt Engineering**: mCODE-aware prompts for AI processing
+- **Element Mapping**: Clinical text to standardized mCODE elements
+- **Confidence Scoring**: AI confidence in mappings
+- **Validation Integration**: Post-processing quality checks
+
+**FHIR Bundle Generation**:
+- **Resource Assembly**: Combine related mCODE resources
+- **Reference Resolution**: Internal resource references
+- **Bundle Validation**: FHIR bundle structure compliance
+- **Export Formats**: JSON, XML serialization
+
+#### Quality Assurance Integration
+
+**Automated Quality Gates**:
+- **Syntax Validation**: Python compilation checks
+- **Import Testing**: Module loading verification
+- **Type Checking**: MyPy validation
+- **Code Quality**: Ruff linting and formatting
+
+**Performance Monitoring**:
+- **Validation Timing**: Performance impact assessment
+- **Memory Usage**: Resource consumption tracking
+- **Error Rates**: Validation failure analysis
+- **Coverage Trends**: Ontology completeness over time
+
+### Deployment and Scaling
+
+#### Configuration Management
+
+**Version Configuration**:
+```json
+{
+  "mcode_version": "4.0.0",
+  "profile_validation": true,
+  "ontology_completeness_check": true,
+  "migration_warnings": true
+}
+```
+
+**Extension Configuration**:
+- Required vs optional extensions
+- Value set validation settings
+- Profile-specific rules
+
+#### Production Deployment
+
+**Container Integration**:
+- mCODE models in application containers
+- Version-specific configurations
+- Validation service endpoints
+
+**Monitoring and Alerting**:
+- Ontology completeness metrics
+- Validation error tracking
+- Version compatibility warnings
+- Migration status monitoring
+
+This mCODE Ontology Architecture provides a comprehensive, versioned, and validated implementation of oncology data standards integrated seamlessly with the existing mCODE Translator system.
 
 ## Deployment Architecture
 

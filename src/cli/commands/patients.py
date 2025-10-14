@@ -87,8 +87,11 @@ def patients_pipeline(
         # Import required components
         from src.utils.config import Config
         from src.utils.data_downloader import download_synthetic_patient_archives
+        from src.core.dependency_container import get_container
 
         config = Config()
+        container = get_container()
+        memory_storage = container.create_memory_storage()
 
         # Track pipeline results
         pipeline_results = {"fetch": None, "process": None, "summarize": None}
@@ -99,7 +102,7 @@ def patients_pipeline(
             if not archive_path:
                 console.print("[red]❌ --archive-path required for --fetch[/red]")
                 raise typer.Exit(1)
-            
+
             if download_archive:
                 console.print("[bold blue]📥 Checking for and downloading synthetic patient archives...[/bold blue]")
                 downloaded_archives = download_synthetic_patient_archives(force_download=False)
@@ -110,7 +113,7 @@ def patients_pipeline(
 
             from workflows.patients_fetcher import PatientsFetcherWorkflow
 
-            fetcher = PatientsFetcherWorkflow(config)
+            fetcher = PatientsFetcherWorkflow(config, memory_storage)
 
             fetch_result = fetcher.execute(
                 archive_path=archive_path,
@@ -184,7 +187,7 @@ def patients_pipeline(
 
             from workflows.patients_processor import PatientsProcessorWorkflow
 
-            processor = PatientsProcessorWorkflow(config)
+            processor = PatientsProcessorWorkflow(config, memory_storage)
 
             process_result = processor.execute(
                 patients_data=patients_data,
@@ -253,7 +256,7 @@ def patients_pipeline(
 
             from workflows.patients_summarizer import PatientsSummarizerWorkflow
 
-            summarizer = PatientsSummarizerWorkflow(config)
+            summarizer = PatientsSummarizerWorkflow(config, memory_storage)
 
             summarize_result = summarizer.execute(
                 patients_data=patients_data, store_in_memory=summary_store_memory
@@ -272,7 +275,8 @@ def patients_pipeline(
                 console.print(
                     f"[red]❌ Summarization failed: {summarize_result.error_message}[/red]"
                 )
-                raise typer.Exit(1)
+                # Don't raise exit here - allow pipeline to continue
+                console.print("[yellow]⚠️ Continuing with pipeline despite summarization issues[/yellow]")
 
         # Save final results if output file specified
         if output_file and pipeline_results["summarize"] and pipeline_results["summarize"].data:

@@ -34,28 +34,36 @@ Clinical Text:
 - Avoid redundant or overlapping mappings
 - Focus on core cancer-related mCODE elements
 
-## mCODE ELEMENT PRIORITIES:
-1. Primary cancer diagnosis and staging
-2. Tumor morphology and histology
-3. Treatment regimens and medications
-4. Patient demographics (age, sex)
-5. Study design elements (only if explicitly stated)
+## mCODE STU4 ELEMENT PRIORITIES:
+1. **Patient Demographics**: Birth sex, race, ethnicity, administrative gender
+2. **Cancer Characterization**: Primary diagnosis, histology, morphology, laterality
+3. **Staging Information**: TNM categories (T, N, M), stage groups (I-IV, IA-IVB)
+4. **Biomarker Status**: ER/PR/HER2 receptor status, tumor markers with values
+5. **Performance Status**: ECOG (0-5) or Karnofsky (0-100) scores
+6. **Treatment Details**: Medications with dosages/frequencies, surgical procedures, radiation procedures
+7. **Laboratory Results**: Vital signs, blood counts, chemistry panels, tumor markers
+8. **Comorbidities**: Medical history and comorbid conditions
+9. **Family History**: Cancer history in family members
+10. **Genomic Variants**: Genetic mutations and variants
+11. **Disease Status**: Current disease state (active/remission/progression)
+12. **Study design elements** (only if explicitly stated)
 
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
 ```json
 {{
   "mcode_mappings": [
     {{
-      "element_type": "CancerCondition|CancerTreatment|TNMStage|etc",
-      "code": "SNOMED_CODE",
+      "element_type": "McodePatient|CancerCondition|CancerStaging|TumorMarkerTest|ECOGPerformanceStatusObservation|CancerRelatedMedicationStatement|CancerRelatedSurgicalProcedure|etc",
+      "code": "SNOMED_CODE|LOINC_CODE|etc",
       "display": "Human readable name",
-      "system": "http://snomed.info/sct",
+      "system": "http://snomed.info/sct|http://loinc.org|etc",
       "confidence_score": 0.0,
       "evidence_text": "EXACT quoted text from source supporting this mapping"
     }}
   ],
   "metadata": {{
-    "extraction_method": "evidence_based_llm",
+    "extraction_method": "evidence_based_llm_mcode_stu4",
+    "mcode_version": "4.0.0",
     "text_length": 123,
     "resource_count": 10
   }}
@@ -63,16 +71,21 @@ Clinical Text:
 ```
 
 **CRITICAL INSTRUCTIONS:**
-1. Read the clinical text carefully
-2. Identify explicit mCODE-relevant information
-3. Map only what is clearly stated
-4. Provide exact source text fragments
-5. Assign realistic confidence scores (0.0-1.0)
-6. Generate concise, accurate mappings
-7. **STRICT JSON COMPLIANCE**: Return ONLY valid JSON, no additional text
-8. **REQUIRED FIELDS**: Each mapping MUST include element_type, code, display, system, confidence_score, evidence_text
-9. **VALIDATION RULES**: confidence_score must be 0.0-1.0, evidence_text must be non-empty string
-10. **ERROR PREVENTION**: If any required field is missing, do not create the mapping
-11. Ensure all JSON is valid and parseable
-12. Properly escape any special characters within string values
-13. Do not include any text outside of the JSON structure
+1. Read the clinical text carefully for mCODE STU4 elements
+2. Identify explicit mCODE-relevant information using ontology models
+3. Map only what is clearly stated - no inference or assumptions
+4. Provide exact source text fragments in quotation marks
+5. Assign realistic confidence scores (1.0=explicit, 0.8=clear, 0.6=inferred)
+6. Use mCODE STU4 element names: McodePatient, CancerCondition, CancerStaging, TumorMarkerTest, ECOGPerformanceStatusObservation, CancerRelatedMedicationStatement, CancerRelatedSurgicalProcedure, CancerRelatedRadiationProcedure, ComorbidCondition, FamilyMemberHistory, GenomicVariant, CancerDiseaseStatus
+7. Use appropriate coding systems: SNOMED CT, LOINC, ICD-10-CM, HGNC
+8. For demographics: Extract birth sex (M/F/UNK), race, ethnicity explicitly
+9. For staging: Map to TNMStageGroup enum values (STAGE_I, STAGE_II, etc.)
+10. For biomarkers: Use ReceptorStatus enum (POSITIVE/NEGATIVE/UNKNOWN)
+11. For treatments: Include dosage, frequency, route, duration details
+12. **STRICT JSON COMPLIANCE**: Return ONLY valid JSON, no additional text
+13. **REQUIRED FIELDS**: Each mapping MUST include element_type, code, display, system, confidence_score, evidence_text
+14. **VALIDATION RULES**: confidence_score must be 0.0-1.0, evidence_text must be non-empty string
+15. **ERROR PREVENTION**: If any required field is missing, do not create the mapping
+16. Ensure all JSON is valid and parseable
+17. Properly escape any special characters within string values
+18. Do not include any text outside of the JSON structure

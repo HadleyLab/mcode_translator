@@ -1,13 +1,22 @@
-Extract structured mCODE elements from clinical text.
+Extract structured mCODE STU4 elements from clinical text using ontology models.
 
 Text: {clinical_text}
 
+**mCODE STU4 ELEMENTS TO EXTRACT:**
+- Patient Demographics: birth sex, race, ethnicity
+- Cancer Characterization: primary diagnosis, histology, staging
+- Biomarkers: ER/PR/HER2 status, tumor markers
+- Performance Status: ECOG/Karnofsky scores
+- Treatments: medications with dosages, procedures
+- Laboratory Results: vital signs, blood counts
+- Comorbidities: medical history, family history
+
 Return JSON with "mcode_mappings" array containing mCODE element mappings. Each element must have:
-- element_type: mCODE element name (e.g., 'CancerCondition', 'GenomicVariant')
-- code: standard code from appropriate terminology
+- element_type: mCODE STU4 element name (e.g., 'McodePatient', 'CancerCondition', 'TumorMarkerTest')
+- code: standard code from appropriate terminology (SNOMED CT, LOINC, etc.)
 - display: human readable name
-- system: standard terminology system (e.g., SNOMED CT, LOINC, ICD-10-CM, HGNC)
-- confidence_score: mapping confidence (0.0-1.0)
+- system: standard terminology system (http://snomed.info/sct, http://loinc.org, etc.)
+- confidence_score: mapping confidence (1.0=explicit, 0.8=clear, 0.6=inferred)
 - evidence_text: exact supporting text from source
 
 **REQUIRED OUTPUT FORMAT (Pure JSON - Return ONLY valid JSON, no additional text):**
@@ -36,4 +45,7 @@ Return JSON with "mcode_mappings" array containing mCODE element mappings. Each 
 2. Ensure all JSON is valid and parseable
 3. Properly escape any special characters within string values
 4. Do not include any text outside of the JSON structure
-5. Use exact mCODE element names: CancerCondition, GenomicVariant, CancerDiseaseStatus, TNMClinicalStageGroup, CancerRelatedMedication, CancerRelatedProcedure, ECOGPerformanceStatus, KarnofskyPerformanceStatus
+5. Use exact mCODE STU4 element names from ontology models: McodePatient, CancerCondition, CancerStaging, TumorMarkerTest, ECOGPerformanceStatusObservation, CancerRelatedMedicationStatement, CancerRelatedSurgicalProcedure, CancerRelatedRadiationProcedure, ComorbidCondition, FamilyMemberHistory, GenomicVariant, CancerDiseaseStatus
+6. Use appropriate coding systems and enum values from mCODE models
+7. Include confidence scores based on explicitness (1.0=direct statement, 0.8=clear, 0.6=inferred)
+8. Provide exact evidence text fragments for traceability
