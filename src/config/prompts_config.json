@@ -1,49 +1,56 @@
 {
   "prompts": {
-    "default": "direct_mcode_evidence_based_concise",
-    "available": {
-      "direct_mcode_evidence_based_concise": {
-        "name": "Direct mCODE Evidence-Based Concise",
+    "evidence_based": [
+      {
+        "name": "direct_mcode_evidence_based_concise",
         "description": "Concise evidence-based mCODE mapping with direct extraction",
         "file": "direct_mcode_evidence_based_concise.txt",
         "category": "evidence_based",
         "complexity": "medium",
         "expected_quality": 0.85
       },
-      "direct_mcode_evidence_based": {
-        "name": "Direct mCODE Evidence-Based",
+      {
+        "name": "direct_mcode_evidence_based",
         "description": "Comprehensive evidence-based mCODE mapping",
         "file": "direct_mcode_evidence_based.txt",
         "category": "evidence_based",
         "complexity": "high",
         "expected_quality": 0.9
-      },
-      "direct_mcode_minimal": {
-        "name": "Direct mCODE Minimal",
+      }
+    ],
+    "minimal": [
+      {
+        "name": "direct_mcode_minimal",
         "description": "Minimal mCODE mapping for quick processing",
         "file": "direct_mcode_minimal.txt",
         "category": "minimal",
         "complexity": "low",
         "expected_quality": 0.7
-      },
-      "direct_mcode_comprehensive": {
-        "name": "Direct mCODE Comprehensive",
+      }
+    ],
+    "comprehensive": [
+      {
+        "name": "direct_mcode_comprehensive",
         "description": "Comprehensive mCODE mapping with detailed analysis",
         "file": "direct_mcode_comprehensive.txt",
         "category": "comprehensive",
         "complexity": "high",
         "expected_quality": 0.95
-      },
-      "direct_mcode_structured": {
-        "name": "Direct mCODE Structured",
+      }
+    ],
+    "structured": [
+      {
+        "name": "direct_mcode_structured",
         "description": "Structured mCODE mapping with clear sections",
         "file": "direct_mcode_structured.txt",
         "category": "structured",
         "complexity": "medium",
         "expected_quality": 0.8
-      },
-      "patient_matcher": {
-        "name": "Patient-Trial Matcher",
+      }
+    ],
+    "matching": [
+      {
+        "name": "patient_matcher",
         "description": "Specialized prompt for matching patients to clinical trial eligibility criteria using mCODE standards",
         "prompt_file": "patient_matcher.txt",
         "prompt_type": "PATIENT_MATCHER",
@@ -51,46 +58,79 @@
         "complexity": "medium",
         "expected_quality": 0.85
       }
-    },
-    "categories": {
-      "evidence_based": {
-        "description": "Evidence-based prompts with clinical reasoning",
-        "use_case": "High-quality clinical trial processing"
+    ],
+    "expert_panel": [
+      {
+        "name": "clinical_reasoning_specialist",
+        "description": "Expert panel prompt for clinical reasoning and safety assessment",
+        "prompt_file": "expert_panel/clinical_reasoning_specialist.txt",
+        "prompt_type": "PATIENT_MATCHER",
+        "category": "expert_panel",
+        "complexity": "high",
+        "expected_quality": 0.9
       },
-      "minimal": {
-        "description": "Minimal prompts for fast processing",
-        "use_case": "Quick analysis and prototyping"
+      {
+        "name": "pattern_recognition_expert",
+        "description": "Expert panel prompt for pattern matching and eligibility criteria analysis",
+        "prompt_file": "expert_panel/pattern_recognition_expert.txt",
+        "prompt_type": "PATIENT_MATCHER",
+        "category": "expert_panel",
+        "complexity": "high",
+        "expected_quality": 0.9
       },
-      "comprehensive": {
-        "description": "Comprehensive prompts with detailed analysis",
-        "use_case": "Research and detailed clinical analysis"
-      },
-      "structured": {
-        "description": "Structured prompts with clear output format",
-        "use_case": "Automated processing and integration"
-      },
-      "matching": {
-        "description": "Specialized prompts for patient-trial matching operations",
-        "use_case": "Clinical trial eligibility matching and patient-trial compatibility analysis"
+      {
+        "name": "comprehensive_analyst",
+        "description": "Expert panel prompt for comprehensive clinical trial analysis",
+        "prompt_file": "expert_panel/comprehensive_analyst.txt",
+        "prompt_type": "PATIENT_MATCHER",
+        "category": "expert_panel",
+        "complexity": "high",
+        "expected_quality": 0.9
       }
+    ]
+  },
+  "categories": {
+    "evidence_based": {
+      "description": "Evidence-based prompts with clinical reasoning",
+      "use_case": "High-quality clinical trial processing"
     },
-    "optimization": {
-      "test_prompts": [
-        "direct_mcode_evidence_based_concise",
-        "direct_mcode_minimal"
-      ],
-      "quality_metrics": [
-        "completeness",
-        "accuracy",
-        "consistency"
-      ],
-      "performance_metrics": [
-        "speed",
-        "token_usage"
-      ],
-      "optimized_prompt": "direct_mcode_evidence_based_concise",
-      "optimization_score": 0.10000000000000002,
-      "last_optimized": "2025-10-12T11:39:18.372732"
+    "minimal": {
+      "description": "Minimal prompts for fast processing",
+      "use_case": "Quick analysis and prototyping"
+    },
+    "comprehensive": {
+      "description": "Comprehensive prompts with detailed analysis",
+      "use_case": "Research and detailed clinical analysis"
+    },
+    "structured": {
+      "description": "Structured prompts with clear output format",
+      "use_case": "Automated processing and integration"
+    },
+    "matching": {
+      "description": "Specialized prompts for patient-trial matching operations",
+      "use_case": "Clinical trial eligibility matching and patient-trial compatibility analysis"
+    },
+    "expert_panel": {
+      "description": "Expert panel prompts for specialized clinical reasoning and analysis",
+      "use_case": "Advanced clinical trial matching with expert panel assessment"
     }
+  },
+  "optimization": {
+    "test_prompts": [
+      "direct_mcode_evidence_based_concise",
+      "direct_mcode_minimal"
+    ],
+    "quality_metrics": [
+      "completeness",
+      "accuracy",
+      "consistency"
+    ],
+    "performance_metrics": [
+      "speed",
+      "token_usage"
+    ],
+    "optimized_prompt": "direct_mcode_evidence_based_concise",
+    "optimization_score": 0.10000000000000002,
+    "last_optimized": "2025-10-12T11:39:18.372732"
   }
 }

@@ -11,6 +11,7 @@ from .base import MatchingEngineBase
 from .llm_engine import LLMMatchingEngine
 from .memory_engine import CoreMemoryGraphEngine
 from .regex_engine import RegexRulesEngine
+from .ensemble_decision_engine import EnsembleDecisionEngine
 from . import tools
 
 __all__ = [
@@ -18,5 +19,6 @@ __all__ = [
     "RegexRulesEngine",
     "LLMMatchingEngine",
     "CoreMemoryGraphEngine",
+    "EnsembleDecisionEngine",
     "tools",
 ]

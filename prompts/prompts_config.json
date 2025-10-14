@@ -19,6 +19,32 @@
         "compatible_pipelines": ["PatientTrialMatching"]
       }
     ],
+    "expert_panel": [
+      {
+        "name": "clinical_reasoning_specialist",
+        "prompt_type": "PATIENT_MATCHER",
+        "prompt_file": "expert_panel/clinical_reasoning_specialist.txt",
+        "default": true,
+        "description": "Expert panel prompt for clinical reasoning and safety assessment",
+        "compatible_pipelines": ["PatientTrialMatching"]
+      },
+      {
+        "name": "pattern_recognition_expert",
+        "prompt_type": "PATIENT_MATCHER",
+        "prompt_file": "expert_panel/pattern_recognition_expert.txt",
+        "default": false,
+        "description": "Expert panel prompt for pattern matching and eligibility criteria analysis",
+        "compatible_pipelines": ["PatientTrialMatching"]
+      },
+      {
+        "name": "comprehensive_analyst",
+        "prompt_type": "PATIENT_MATCHER",
+        "prompt_file": "expert_panel/comprehensive_analyst.txt",
+        "default": false,
+        "description": "Expert panel prompt for comprehensive clinical trial analysis",
+        "compatible_pipelines": ["PatientTrialMatching"]
+      }
+    ],
     "direct_mcode": [
       {
         "name": "direct_mcode",

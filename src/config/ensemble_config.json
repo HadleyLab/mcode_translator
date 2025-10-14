@@ -1,0 +1,329 @@
+{
+  "ensemble_metadata": {
+    "version": "1.0.0",
+    "description": "Configuration for ensemble decision engine combining LLM experts with rule-based gold standard",
+    "last_updated": "2025-10-13T17:58:52Z",
+    "author": "Kilo-Code Ensemble System"
+  },
+
+  "consensus_methods": {
+    "default_method": "dynamic_weighting",
+    "available_methods": [
+      "weighted_majority_vote",
+      "confidence_weighted",
+      "bayesian_ensemble",
+      "dynamic_weighting"
+    ],
+    "method_descriptions": {
+      "weighted_majority_vote": "Combines expert opinions using weighted majority voting",
+      "confidence_weighted": "Weights experts by their confidence scores",
+      "bayesian_ensemble": "Uses Bayesian inference to combine expert opinions",
+      "dynamic_weighting": "Dynamically adjusts weights based on case complexity and expert performance"
+    }
+  },
+
+  "expert_configuration": {
+    "expert_types": [
+      {
+        "type": "clinical_reasoning",
+        "description": "Specializes in detailed clinical rationale and safety considerations",
+        "base_weight": 1.0,
+        "reliability_score": 0.85,
+        "specialization_bonus": 0.1,
+        "historical_accuracy": 0.82,
+        "expertise_areas": [
+          "clinical_safety",
+          "treatment_history",
+          "comorbidity_assessment",
+          "risk_benefit_analysis"
+        ]
+      },
+      {
+        "type": "pattern_recognition",
+        "description": "Expert in identifying complex patterns in clinical data",
+        "base_weight": 0.9,
+        "reliability_score": 0.80,
+        "specialization_bonus": 0.15,
+        "historical_accuracy": 0.78,
+        "expertise_areas": [
+          "pattern_matching",
+          "edge_case_detection",
+          "complexity_assessment",
+          "nuanced_criteria"
+        ]
+      },
+      {
+        "type": "comprehensive_analyst",
+        "description": "Provides holistic assessment and risk-benefit analysis",
+        "base_weight": 1.1,
+        "reliability_score": 0.90,
+        "specialization_bonus": 0.05,
+        "historical_accuracy": 0.88,
+        "expertise_areas": [
+          "holistic_evaluation",
+          "multi_criteria_analysis",
+          "comprehensive_review",
+          "integrated_assessment"
+        ]
+      }
+    ],
+
+    "expert_selection": {
+      "min_experts": 2,
+      "max_experts": 3,
+      "enable_diversity_selection": true,
+      "diversity_threshold": 0.7,
+      "complexity_thresholds": {
+        "low_complexity": 0.3,
+        "moderate_complexity": 0.7,
+        "high_complexity": 1.0
+      }
+    },
+
+    "performance_tracking": {
+      "enable_performance_tracking": true,
+      "accuracy_update_alpha": 0.3,
+      "reliability_update_alpha": 0.2,
+      "performance_history_length": 1000,
+      "calibration_update_frequency": 100
+    }
+  },
+
+  "consensus_parameters": {
+    "confidence_thresholds": {
+      "high_confidence": 0.8,
+      "moderate_confidence": 0.6,
+      "low_confidence": 0.4,
+      "minimum_acceptable": 0.2
+    },
+
+    "consensus_levels": {
+      "high_consensus": 0.8,
+      "moderate_consensus": 0.6,
+      "low_consensus": 0.4
+    },
+
+    "decision_rules": {
+      "require_majority": true,
+      "allow_tie_breaking": true,
+      "tie_breaker_method": "confidence_weighted",
+      "fallback_to_rule_based": true,
+      "minimum_expert_agreement": 0.5
+    },
+
+    "weighted_scoring": {
+      "expert_weight_range": [0.5, 1.5],
+      "rule_based_weight": 0.3,
+      "confidence_calibration": true,
+      "normalize_weights": true
+    }
+  },
+
+  "rule_based_integration": {
+    "enabled": true,
+    "weight": 0.3,
+    "fallback_on_failure": true,
+    "confidence_mapping": {
+      "match_score_5": 1.0,
+      "match_score_4": 0.9,
+      "match_score_3": 0.7,
+      "match_score_2": 0.5,
+      "match_score_1": 0.3,
+      "match_score_0": 0.1
+    },
+
+    "criteria_weights": {
+      "cancer_type_match": 0.25,
+      "biomarker_match": 0.20,
+      "stage_compatibility": 0.15,
+      "age_compatibility": 0.10,
+      "performance_status": 0.10,
+      "prior_treatment_compatibility": 0.10,
+      "comorbidity_safety": 0.10
+    }
+  },
+
+  "dynamic_weighting": {
+    "enabled": true,
+    "complexity_factors": {
+      "patient_comorbidities": 0.2,
+      "medication_count": 0.15,
+      "age_factor": 0.15,
+      "trial_criteria_length": 0.25,
+      "trial_condition_count": 0.15,
+      "biomarker_complexity": 0.1
+    },
+
+    "expert_adjustments": {
+      "high_complexity_boost": 1.2,
+      "low_complexity_boost": 1.1,
+      "performance_boost_threshold": 0.7,
+      "performance_boost_multiplier": 1.1
+    },
+
+    "contextual_weights": {
+      "biomarker_focused_cases": {
+        "pattern_recognition": 1.2,
+        "clinical_reasoning": 0.9,
+        "comprehensive_analyst": 1.0
+      },
+      "safety_focused_cases": {
+        "clinical_reasoning": 1.3,
+        "comprehensive_analyst": 1.1,
+        "pattern_recognition": 0.8
+      },
+      "complex_eligibility_cases": {
+        "comprehensive_analyst": 1.4,
+        "pattern_recognition": 1.1,
+        "clinical_reasoning": 1.0
+      }
+    }
+  },
+
+  "confidence_calibration": {
+    "enabled": true,
+    "method": "isotonic_regression",
+    "calibration_parameters": {
+      "isotonic_regression": {
+        "out_of_bounds": "clip"
+      },
+      "platt_scaling": {
+        "target_accuracy": 0.8
+      },
+      "histogram_binning": {
+        "num_bins": 10,
+        "strategy": "uniform"
+      }
+    },
+
+    "agreement_adjustment": {
+      "high_agreement_boost": 1.1,
+      "low_agreement_penalty": 0.9,
+      "agreement_threshold": 0.7
+    }
+  },
+
+  "performance_optimization": {
+    "caching": {
+      "enabled": true,
+      "ttl_seconds": 3600,
+      "max_cache_size": 10000,
+      "expert_panel_cache": {
+        "enabled": true,
+        "namespace": "expert_panel",
+        "ttl_seconds": 7200,
+        "enable_semantic_fingerprinting": true,
+        "cache_key_components": [
+          "expert_type",
+          "patient_hash",
+          "trial_hash",
+          "prompt_hash"
+        ],
+        "performance_monitoring": {
+          "track_hit_rates": true,
+          "track_response_times": true,
+          "log_cache_statistics": true,
+          "cache_performance_thresholds": {
+            "min_hit_rate": 0.3,
+            "max_response_time_savings": 0.8
+          }
+        }
+      }
+    },
+
+    "batch_processing": {
+      "default_batch_size": 100,
+      "max_batch_size": 500,
+      "enable_parallel_processing": true,
+      "max_concurrent_experts": 3
+    },
+
+    "resource_management": {
+      "memory_limit_mb": 1024,
+      "timeout_seconds": 300,
+      "retry_attempts": 3,
+      "retry_backoff_factor": 2
+    }
+  },
+
+  "validation_and_monitoring": {
+    "validation": {
+      "enable_consistency_checks": true,
+      "enable_confidence_validation": true,
+      "cross_validation_folds": 5,
+      "bootstrap_samples": 100
+    },
+
+    "monitoring": {
+      "enable_performance_monitoring": true,
+      "metrics_collection_interval": 100,
+      "alert_thresholds": {
+        "accuracy_drop_threshold": 0.05,
+        "confidence_drift_threshold": 0.1,
+        "processing_time_threshold": 60
+      }
+    },
+
+    "quality_assurance": {
+      "require_expert_diversity": true,
+      "minimum_consensus_level": "moderate",
+      "flag_low_confidence_decisions": true,
+      "manual_review_threshold": 0.3
+    }
+  },
+
+  "output_configuration": {
+    "result_format": {
+      "include_individual_expert_assessments": true,
+      "include_confidence_scores": true,
+      "include_reasoning": true,
+      "include_matched_criteria": true,
+      "include_unmatched_criteria": true,
+      "include_clinical_notes": true,
+      "include_processing_metadata": true
+    },
+
+    "verbosity_levels": {
+      "minimal": ["is_match", "confidence_score"],
+      "standard": ["is_match", "confidence_score", "reasoning", "matched_criteria"],
+      "detailed": ["is_match", "confidence_score", "reasoning", "matched_criteria", "unmatched_criteria", "clinical_notes", "expert_assessments"],
+      "comprehensive": ["is_match", "confidence_score", "reasoning", "matched_criteria", "unmatched_criteria", "clinical_notes", "expert_assessments", "processing_metadata", "performance_metrics"]
+    },
+
+    "default_verbosity": "detailed"
+  },
+
+  "experimental_features": {
+    "bayesian_ensemble": {
+      "enabled": false,
+      "prior_strength": 1.0,
+      "evidence_weighting": true
+    },
+
+    "adaptive_weighting": {
+      "enabled": false,
+      "learning_rate": 0.01,
+      "feature_importance_threshold": 0.1
+    },
+
+    "multi_model_ensemble": {
+      "enabled": false,
+      "model_weights": {
+        "deepseek-coder": 1.0,
+        "gpt-4": 0.9,
+        "claude-3": 0.95
+      }
+    }
+  },
+
+  "backward_compatibility": {
+    "legacy_rule_based_mode": true,
+    "legacy_output_format": true,
+    "graceful_degradation": true,
+    "fallback_options": [
+      "rule_based_only",
+      "single_expert_fallback",
+      "conservative_ensemble"
+    ]
+  }
+}

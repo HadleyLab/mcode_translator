@@ -97,6 +97,7 @@ def check_config(
         "src/config/logging_config.json",
         "src/config/patterns_config.json",
         "src/config/validation_config.json",
+        "src/config/ensemble_config.json",
     ]
 
     for config_file in config_files:
@@ -372,6 +373,7 @@ def validate_config(
             "src/config/prompts_config.json",
             "src/config/synthetic_data_config.json",
             "src/config/validation_config.json",
+            "src/config/ensemble_config.json",
         ]
 
         for config_file in config_files:
@@ -510,6 +512,7 @@ def backup_config(
             "src/config/prompts_config.json",
             "src/config/synthetic_data_config.json",
             "src/config/validation_config.json",
+            "src/config/ensemble_config.json",
         ]
 
         backed_up_files = []
