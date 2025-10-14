@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mcode-translator"
 version = "0.1.0"
-description = "A comprehensive tool for translating clinical data to mCODE format with LLM optimization"
+description = "A comprehensive tool for translating clinical data to mCODE format with Expert Multi-LLM Curator ensemble system for superior patient-trial matching"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
@@ -20,6 +20,9 @@ keywords = [
     "clinical-trials",
     "llm",
     "translation",
+    "ensemble",
+    "expert-system",
+    "patient-matching",
     "python",
 ]
 classifiers = [
@@ -75,7 +78,7 @@ Changelog = "https://github.com/HadleyLab/mcode-translator/blob/main/CHANGELOG.m
 mcode-cli = "src.cli.main:main"
 
 [tool.setuptools]
-packages = ["src.cli", "src.config", "src.core", "src.optimization", "src.pipeline", "src.services", "src.shared", "src.storage", "src.utils", "src.workflows"]
+packages = ["src.cli", "src.config", "src.core", "src.matching", "src.optimization", "src.pipeline", "src.services", "src.shared", "src.storage", "src.utils", "src.workflows"]
 package-dir = {"" = "src"}
 include-package-data = true
 
@@ -83,6 +86,7 @@ include-package-data = true
 "src.cli" = ["py.typed"]
 "src.config" = ["py.typed"]
 "src.core" = ["py.typed"]
+"src.matching" = ["py.typed"]
 "src.optimization" = ["py.typed"]
 "src.pipeline" = ["py.typed"]
 "src.services" = ["py.typed"]
