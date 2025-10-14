@@ -342,6 +342,118 @@ rm -rf .pytest_cache/
 pip install -r requirements.txt --force-reinstall
 ```
 
+## Known Limitations
+
+### Expert Multi-LLM Curator Limitations
+
+#### LLM Matching Engine Limitations
+
+**Accuracy Performance Issues:**
+- Current LLM engines show significantly lower accuracy compared to rule-based approaches
+- LLMMatchingEngine achieved only 18.1% accuracy in evaluation (essentially random performance)
+- RegexRulesEngine demonstrated 70.3% accuracy as production baseline
+- LLM engines may produce zero positive matches in evaluation samples
+
+**Semantic Understanding Challenges:**
+- Limited ability to interpret complex clinical trial eligibility criteria
+- Difficulty with nuanced medical terminology and clinical context
+- Poor performance on edge cases involving comorbidities, treatment history, and biomarker interactions
+- Inconsistent handling of temporal relationships in patient data
+
+**Production Readiness:**
+- Not recommended for production clinical trial matching without significant improvements
+- Suitable primarily for research and hybrid approaches combining LLM flexibility with rule-based reliability
+- Requires extensive prompt engineering and model fine-tuning for clinical domain adaptation
+
+#### Expert Panel Failure Modes
+
+**Individual Expert Failures:**
+- Clinical reasoning, pattern recognition, and comprehensive analyst experts can fail independently
+- Failed experts are excluded from ensemble decisions but don't halt the entire panel
+- Panel continues with remaining experts (minimum 2 required for operation)
+
+**Panel-Level Failures:**
+- Complete panel failure occurs when all experts fail or return invalid assessments
+- Automatic fallback to standard LLM service when expert panel fails
+- No expert panel assessment available when initialization fails
+
+**Expert Initialization Issues:**
+- Expert agents may fail to initialize due to missing prompts or configuration errors
+- Panel operates with reduced capacity when some experts cannot be initialized
+- Diversity selection may be compromised with fewer available experts
+
+#### Ensemble Decision Edge Cases
+
+**Consensus Level Variations:**
+- **Low consensus**: Significant disagreement among experts (agreement ratio < 60%)
+- **Moderate consensus**: Partial agreement among experts (agreement ratio 60-80%)
+- **High consensus**: Strong agreement among experts (agreement ratio ≥ 80%)
+
+**Single Expert Scenarios:**
+- Ensemble decisions can be made with minimum 2 experts
+- Reduced diversity and reliability with fewer participating experts
+- Dynamic weighting may not apply effectively with limited expert pool
+
+**Rule-Based Integration Limitations:**
+- Rule-based scoring engine currently disabled in ensemble system
+- Placeholder implementation returns heuristic scores based on basic criteria
+- Full rule-based integration requires separate engine implementation
+
+**Dynamic Weighting Edge Cases:**
+- Weights adjusted based on case complexity (comorbidities, age, treatment history)
+- High complexity cases favor comprehensive analyst expert
+- Low complexity cases favor pattern recognition expert
+- Historical performance data may not be available for new deployments
+
+#### Error Handling and Recovery
+
+**Cache-Related Failures:**
+- Cache misses trigger full expert panel assessments (performance impact)
+- Cache corruption may require manual cache clearing
+- Namespace conflicts possible with multiple concurrent instances
+
+**LLM Service Failures:**
+- Automatic retry logic with exponential backoff
+- Service failures trigger fallback to alternative approaches
+- Rate limiting and quota errors handled with graceful degradation
+
+**Network and Timeout Issues:**
+- WebSocket connection instability in long-running assessments
+- API timeouts may interrupt individual expert evaluations
+- Network failures trigger retry mechanisms with backoff
+
+**Data Validation Limitations:**
+- Limited input validation for patient and trial data structures
+- Malformed FHIR bundles or ClinicalTrials.gov data may cause processing failures
+- Missing required fields handled with default values but may reduce accuracy
+
+**Configuration Errors:**
+- Invalid model names or missing API keys cause initialization failures
+- Prompt loading failures trigger fallback to generic prompts
+- Configuration validation limited to basic structure checks
+
+### Mitigation Strategies
+
+**For LLM Accuracy Issues:**
+- Use hybrid approaches combining LLM insights with rule-based reliability
+- Implement confidence thresholding to filter low-quality matches
+- Consider LLM outputs as supplementary rather than primary matching criteria
+
+**For Expert Panel Robustness:**
+- Monitor expert failure rates and implement health checks
+- Configure minimum expert requirements based on use case criticality
+- Implement expert performance tracking for continuous improvement
+
+**For Ensemble Decision Reliability:**
+- Set appropriate confidence thresholds based on consensus levels
+- Monitor diversity scores and expert participation rates
+- Implement fallback strategies for low-consensus scenarios
+
+**For Error Handling:**
+- Configure appropriate retry limits and timeout values
+- Implement comprehensive logging for failure analysis
+- Use circuit breaker patterns for external service dependencies
+
 ## Getting Help
 
 ### Check Version and Help
