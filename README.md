@@ -1,3 +1,5 @@
+EADME.md</path>
+<content lines="1-400">
 <div align="center">
 
 # 🚀 mCODE Translator
@@ -6,7 +8,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-90%2B%25%20Coverage-success)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-90%2B%20Coverage-success)](tests/)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-orange)](.github/workflows/)
 
 *Extract structured medical data from clinical trials using advanced LLM processing and standardized mCODE mappings*

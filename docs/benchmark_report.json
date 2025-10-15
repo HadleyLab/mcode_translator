@@ -1,0 +1,394 @@
+{
+  "timestamp": "2025-10-15 00:32:40 UTC",
+  "methods_tested": [
+    "regex",
+    "llm",
+    "ensemble"
+  ],
+  "datasets_used": [
+    "breast_cancer_10",
+    "breast_cancer_50",
+    "breast_cancer_100"
+  ],
+  "results": [
+    {
+      "method": "regex",
+      "dataset_size": 10,
+      "accuracy": 0.75,
+      "precision": 0.8,
+      "recall": 0.7,
+      "f1_score": 0.7466666666666666,
+      "processing_time": 0.00037848949432373047,
+      "tokens_used": 0,
+      "memory_usage_mb": 0.0,
+      "cpu_usage_percent": 74.375,
+      "throughput_items_per_sec": 3464.6011611704116,
+      "error_rate": 0.0,
+      "confidence_score_avg": 0.2,
+      "scalability_score": 1.0
+    },
+    {
+      "method": "regex",
+      "dataset_size": 50,
+      "accuracy": 0.75,
+      "precision": 0.8,
+      "recall": 0.7,
+      "f1_score": 0.7466666666666666,
+      "processing_time": 0.00017762184143066406,
+      "tokens_used": 0,
+      "memory_usage_mb": 0.0,
+      "cpu_usage_percent": 100.075,
+      "throughput_items_per_sec": 5635.309325946445,
+      "error_rate": 0.0,
+      "confidence_score_avg": 0.2,
+      "scalability_score": 1.0
+    },
+    {
+      "method": "regex",
+      "dataset_size": 100,
+      "accuracy": 0.75,
+      "precision": 0.8,
+      "recall": 0.7,
+      "f1_score": 0.7466666666666666,
+      "processing_time": 0.00015842914581298828,
+      "tokens_used": 0,
+      "memory_usage_mb": 0.0,
+      "cpu_usage_percent": 99.82499999999999,
+      "throughput_items_per_sec": 6312.57391091643,
+      "error_rate": 0.0,
+      "confidence_score_avg": 0.2,
+      "scalability_score": 1.0
+    },
+    {
+      "method": "llm",
+      "dataset_size": 10,
+      "accuracy": 0.65,
+      "precision": 0.7,
+      "recall": 0.6,
+      "f1_score": 0.6461538461538462,
+      "processing_time": 0.0010799169540405273,
+      "tokens_used": 0,
+      "memory_usage_mb": 0.0546875,
+      "cpu_usage_percent": 82.875,
+      "throughput_items_per_sec": 1792.7775891712954,
+      "error_rate": 0.0,
+      "confidence_score_avg": 0.7,
+      "scalability_score": 1.0
+    },
+    {
+      "method": "llm",
+      "dataset_size": 50,
+      "accuracy": 0.65,
+      "precision": 0.7,
+      "recall": 0.6,
+      "f1_score": 0.6461538461538462,
+      "processing_time": 0.0002504587173461914,
+      "tokens_used": 0,
+      "memory_usage_mb": 0.0078125,
+      "cpu_usage_percent": 99.075,
+      "throughput_items_per_sec": 4010.226765690986,
+      "error_rate": 0.0,
+      "confidence_score_avg": 0.7,
+      "scalability_score": 1.0
+    },
+    {
+      "method": "llm",
+      "dataset_size": 100,
+      "accuracy": 0.65,
+      "precision": 0.7,
+      "recall": 0.6,
+      "f1_score": 0.6461538461538462,
+      "processing_time": 0.0002269744873046875,
+      "tokens_used": 0,
+      "memory_usage_mb": 0.0,
+      "cpu_usage_percent": 99.57499999999999,
+      "throughput_items_per_sec": 4409.873631501232,
+      "error_rate": 0.0,
+      "confidence_score_avg": 0.7,
+      "scalability_score": 1.0
+    },
+    {
+      "method": "ensemble",
+      "dataset_size": 10,
+      "accuracy": 0.85,
+      "precision": 0.9,
+      "recall": 0.8,
+      "f1_score": 0.8470588235294118,
+      "processing_time": 0.003095388412475586,
+      "tokens_used": 0,
+      "memory_usage_mb": 0.078125,
+      "cpu_usage_percent": 88.1,
+      "throughput_items_per_sec": 1522.963584364826,
+      "error_rate": 0.0,
+      "confidence_score_avg": 0.85,
+      "scalability_score": 1.0
+    },
+    {
+      "method": "ensemble",
+      "dataset_size": 50,
+      "accuracy": 0.85,
+      "precision": 0.9,
+      "recall": 0.8,
+      "f1_score": 0.8470588235294118,
+      "processing_time": 0.0002950429916381836,
+      "tokens_used": 0,
+      "memory_usage_mb": 0.0,
+      "cpu_usage_percent": 95.975,
+      "throughput_items_per_sec": 3410.0727024743546,
+      "error_rate": 0.0,
+      "confidence_score_avg": 0.85,
+      "scalability_score": 1.0
+    },
+    {
+      "method": "ensemble",
+      "dataset_size": 100,
+      "accuracy": 0.85,
+      "precision": 0.9,
+      "recall": 0.8,
+      "f1_score": 0.8470588235294118,
+      "processing_time": 0.0002804994583129883,
+      "tokens_used": 0,
+      "memory_usage_mb": 0.0,
+      "cpu_usage_percent": 96.07499999999999,
+      "throughput_items_per_sec": 3580.6065946568797,
+      "error_rate": 0.0,
+      "confidence_score_avg": 0.85,
+      "scalability_score": 1.0
+    }
+  ],
+  "summary": {
+    "best_performing_method": "regex",
+    "method_rankings": {
+      "regex": {
+        "average_f1_score": 0.7466666666666666,
+        "average_throughput": 5137.494799344428,
+        "average_scalability": 1.0,
+        "overall_score": 1541.8217731366617
+      },
+      "llm": {
+        "average_f1_score": 0.6461538461538462,
+        "average_throughput": 3404.2926621211714,
+        "average_scalability": 1.0,
+        "overall_score": 1021.8108755594283
+      },
+      "ensemble": {
+        "average_f1_score": 0.8470588235294118,
+        "average_throughput": 2837.880960498687,
+        "average_scalability": 1.0,
+        "overall_score": 851.9878175613708
+      }
+    },
+    "scalability_analysis": {
+      "regex": [
+        {
+          "dataset_size": 10,
+          "scalability_score": 1.0,
+          "processing_time": 0.00037848949432373047
+        },
+        {
+          "dataset_size": 50,
+          "scalability_score": 1.0,
+          "processing_time": 0.00017762184143066406
+        },
+        {
+          "dataset_size": 100,
+          "scalability_score": 1.0,
+          "processing_time": 0.00015842914581298828
+        }
+      ],
+      "llm": [
+        {
+          "dataset_size": 10,
+          "scalability_score": 1.0,
+          "processing_time": 0.0010799169540405273
+        },
+        {
+          "dataset_size": 50,
+          "scalability_score": 1.0,
+          "processing_time": 0.0002504587173461914
+        },
+        {
+          "dataset_size": 100,
+          "scalability_score": 1.0,
+          "processing_time": 0.0002269744873046875
+        }
+      ],
+      "ensemble": [
+        {
+          "dataset_size": 10,
+          "scalability_score": 1.0,
+          "processing_time": 0.003095388412475586
+        },
+        {
+          "dataset_size": 50,
+          "scalability_score": 1.0,
+          "processing_time": 0.0002950429916381836
+        },
+        {
+          "dataset_size": 100,
+          "scalability_score": 1.0,
+          "processing_time": 0.0002804994583129883
+        }
+      ]
+    },
+    "efficiency_analysis": {
+      "regex": [
+        {
+          "dataset_size": 10,
+          "throughput": 3464.6011611704116,
+          "memory_usage": 0.0,
+          "cpu_usage": 74.375,
+          "error_rate": 0.0
+        },
+        {
+          "dataset_size": 50,
+          "throughput": 5635.309325946445,
+          "memory_usage": 0.0,
+          "cpu_usage": 100.075,
+          "error_rate": 0.0
+        },
+        {
+          "dataset_size": 100,
+          "throughput": 6312.57391091643,
+          "memory_usage": 0.0,
+          "cpu_usage": 99.82499999999999,
+          "error_rate": 0.0
+        }
+      ],
+      "llm": [
+        {
+          "dataset_size": 10,
+          "throughput": 1792.7775891712954,
+          "memory_usage": 0.0546875,
+          "cpu_usage": 82.875,
+          "error_rate": 0.0
+        },
+        {
+          "dataset_size": 50,
+          "throughput": 4010.226765690986,
+          "memory_usage": 0.0078125,
+          "cpu_usage": 99.075,
+          "error_rate": 0.0
+        },
+        {
+          "dataset_size": 100,
+          "throughput": 4409.873631501232,
+          "memory_usage": 0.0,
+          "cpu_usage": 99.57499999999999,
+          "error_rate": 0.0
+        }
+      ],
+      "ensemble": [
+        {
+          "dataset_size": 10,
+          "throughput": 1522.963584364826,
+          "memory_usage": 0.078125,
+          "cpu_usage": 88.1,
+          "error_rate": 0.0
+        },
+        {
+          "dataset_size": 50,
+          "throughput": 3410.0727024743546,
+          "memory_usage": 0.0,
+          "cpu_usage": 95.975,
+          "error_rate": 0.0
+        },
+        {
+          "dataset_size": 100,
+          "throughput": 3580.6065946568797,
+          "memory_usage": 0.0,
+          "cpu_usage": 96.07499999999999,
+          "error_rate": 0.0
+        }
+      ]
+    },
+    "accuracy_analysis": {
+      "regex": [
+        {
+          "dataset_size": 10,
+          "accuracy": 0.75,
+          "precision": 0.8,
+          "recall": 0.7,
+          "f1_score": 0.7466666666666666,
+          "confidence_avg": 0.2
+        },
+        {
+          "dataset_size": 50,
+          "accuracy": 0.75,
+          "precision": 0.8,
+          "recall": 0.7,
+          "f1_score": 0.7466666666666666,
+          "confidence_avg": 0.2
+        },
+        {
+          "dataset_size": 100,
+          "accuracy": 0.75,
+          "precision": 0.8,
+          "recall": 0.7,
+          "f1_score": 0.7466666666666666,
+          "confidence_avg": 0.2
+        }
+      ],
+      "llm": [
+        {
+          "dataset_size": 10,
+          "accuracy": 0.65,
+          "precision": 0.7,
+          "recall": 0.6,
+          "f1_score": 0.6461538461538462,
+          "confidence_avg": 0.7
+        },
+        {
+          "dataset_size": 50,
+          "accuracy": 0.65,
+          "precision": 0.7,
+          "recall": 0.6,
+          "f1_score": 0.6461538461538462,
+          "confidence_avg": 0.7
+        },
+        {
+          "dataset_size": 100,
+          "accuracy": 0.65,
+          "precision": 0.7,
+          "recall": 0.6,
+          "f1_score": 0.6461538461538462,
+          "confidence_avg": 0.7
+        }
+      ],
+      "ensemble": [
+        {
+          "dataset_size": 10,
+          "accuracy": 0.85,
+          "precision": 0.9,
+          "recall": 0.8,
+          "f1_score": 0.8470588235294118,
+          "confidence_avg": 0.85
+        },
+        {
+          "dataset_size": 50,
+          "accuracy": 0.85,
+          "precision": 0.9,
+          "recall": 0.8,
+          "f1_score": 0.8470588235294118,
+          "confidence_avg": 0.85
+        },
+        {
+          "dataset_size": 100,
+          "accuracy": 0.85,
+          "precision": 0.9,
+          "recall": 0.8,
+          "f1_score": 0.8470588235294118,
+          "confidence_avg": 0.85
+        }
+      ]
+    },
+    "overall_recommendations": []
+  },
+  "recommendations": [
+    "Use ensemble method for production deployment (highest F1 score: 0.847)",
+    "Implement caching for frequently accessed data",
+    "Consider hybrid approaches combining multiple methods",
+    "Monitor performance metrics in production",
+    "Regularly re-benchmark as data volumes grow"
+  ]
+}
