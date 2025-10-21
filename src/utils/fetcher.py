@@ -8,9 +8,9 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from src.utils.concurrency import AsyncTaskQueue, create_task
-from src.utils.config import Config
-from src.utils.logging_config import get_logger
+from utils.concurrency import AsyncTaskQueue, create_task
+from utils.config import Config
+from utils.logging_config import get_logger
 
 # Get logger instance
 logger = get_logger(__name__)

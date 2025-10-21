@@ -84,7 +84,7 @@ class AsyncAPICache:
             # Use aiofiles for async file I/O if available, otherwise use asyncio.to_thread
             try:
                 import aiofiles
-                async with aiofiles.open(cache_path, 'r') as f:
+                async with aiofiles.open(cache_path) as f:
                     content = await f.read()
                     cached_data = json.loads(content)
             except ImportError:
@@ -105,7 +105,7 @@ class AsyncAPICache:
 
     def _sync_load_json(self, cache_path: str) -> Dict[str, Any]:
         """Synchronous JSON loading helper"""
-        with open(cache_path, 'r') as f:
+        with open(cache_path) as f:
             return json.load(f)
 
     async def aset(self, result: Any, func_name: str, *args: Any, **kwargs: Any) -> None:

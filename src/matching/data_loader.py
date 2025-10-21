@@ -3,8 +3,7 @@ Data loading utilities for patient-trial matching.
 """
 
 import json
-from typing import Dict, List, Any
-from pathlib import Path
+from typing import Any, Dict, List
 
 
 def load_ndjson_file(file_path: str) -> List[Dict[str, Any]]:
@@ -18,7 +17,7 @@ def load_ndjson_file(file_path: str) -> List[Dict[str, Any]]:
         List of dictionaries, one per line
     """
     data = []
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, encoding='utf-8') as f:
         for line in f:
             line = line.strip()
             if line:

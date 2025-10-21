@@ -7,8 +7,8 @@ to reduce code duplication and ensure consistent summarization behavior.
 
 from typing import Any, Dict, List
 
-from src.services.summarizer import McodeSummarizer
-from src.storage.mcode_memory_storage import OncoCoreMemory
+from services.summarizer import McodeSummarizer
+from storage.mcode_memory_storage import OncoCoreMemory
 
 from .base_workflow import SummarizerWorkflow, WorkflowResult
 

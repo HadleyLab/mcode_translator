@@ -1,7 +1,7 @@
 import json
 import logging
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Optional, Union
 
 import colorlog

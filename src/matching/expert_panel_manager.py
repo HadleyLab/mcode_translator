@@ -9,10 +9,10 @@ import asyncio
 import hashlib
 import json
 import random
-from typing import Any, Dict, List, Optional, Tuple
-from concurrent.futures import ThreadPoolExecutor
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from matching.clinical_expert_agent import ClinicalExpertAgent
 from utils.api_manager import APIManager
@@ -288,7 +288,7 @@ class ExpertPanelManager:
                 total_time = time.time() - start_time
                 self.panel_cache_stats["total_time_saved"] += total_time
 
-                self.logger.info(f"💾 PANEL CACHE HIT - using cached panel result")
+                self.logger.info("💾 PANEL CACHE HIT - using cached panel result")
 
                 # Add cache metadata to result
                 cached_result["cache_info"] = {

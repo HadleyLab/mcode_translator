@@ -2,7 +2,7 @@
 Minimal HeySol API client implementation for mCODE Translator CLI.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 class HeySolAPIClient:

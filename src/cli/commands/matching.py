@@ -5,15 +5,15 @@ Patient-Trial Matching CLI Commands
 import typer
 from rich.console import Console
 
+from config.patterns_config import load_regex_rules
 from matching import (
-    RegexRulesEngine,
-    LLMMatchingEngine,
     CoreMemoryGraphEngine,
     EnsembleDecisionEngine,
+    LLMMatchingEngine,
+    RegexRulesEngine,
 )
 from matching.ensemble_decision_engine import ConsensusMethod
 from services.heysol_client import OncoCoreClient
-from config.patterns_config import load_regex_rules
 
 app = typer.Typer(
     name="matching",
@@ -41,13 +41,13 @@ def run_matching(
     Run patient-trial matching using a specified engine.
     """
     console.print(f"🚀 Running patient-trial matching with '{engine}' engine...")
-    
+
     # Load patient and trial data
     # (In a real implementation, this would be more robust)
     import json
-    with open(patient_file, "r") as f:
+    with open(patient_file) as f:
         patient_data = json.load(f)
-    with open(trial_file, "r") as f:
+    with open(trial_file) as f:
         trial_data = json.load(f)
 
     # Initialize engines with enhanced options
@@ -96,7 +96,7 @@ def run_matching(
             raise typer.Exit(1)
 
     # Print results
-    console.print(f"\n📊 Matching Results:")
+    console.print("\n📊 Matching Results:")
     if results:
         for result in results:
             console.print(f"  - {result.element_type}: {result.display} (Score: {result.confidence_score:.2f})")

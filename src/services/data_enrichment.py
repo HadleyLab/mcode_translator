@@ -19,33 +19,16 @@ Integration:
 """
 
 import json
-import logging
-from typing import Any, Dict, List, Optional, Union, Tuple
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from src.services.llm.service import LLMService
-from src.shared.mcode_models import (
-    McodeValidator,
+from services.llm.service import LLMService
+from shared.mcode_models import (
     CancerCondition,
-    ECOGPerformanceStatus,
-    TNMStageGroup,
-    TumorMarkerTest,
-    CancerRelatedMedicationStatement,
-    CancerRelatedSurgicalProcedure,
-    CancerRelatedRadiationProcedure,
-    McodePatient,
-    AdministrativeGender,
-    BirthSex,
-    ReceptorStatus,
-    HistologyMorphologyBehavior,
+    McodeValidator,
 )
-from src.shared.models import (
-    McodeElement,
-    ProcessingMetadata,
-    ParsedLLMResponse,
-)
-from src.utils.config import Config
-from src.utils.logging_config import get_logger
+from utils.config import Config
+from utils.logging_config import get_logger
 
 
 class DataEnrichmentService:
@@ -556,27 +539,23 @@ class DataEnrichmentService:
             data, existing_elements, missing_elements, data_type
         )
 
-        try:
-            # Use LLM service for enrichment
-            enrichment_response = await self.llm_service.map_to_mcode(enrichment_prompt)
+        # Use LLM service for enrichment
+        enrichment_response = await self.llm_service.map_to_mcode(enrichment_prompt)
 
-            if enrichment_response.success and enrichment_response.raw_response.parsed_json:
-                llm_suggestions = enrichment_response.raw_response.parsed_json
+        if enrichment_response.success and enrichment_response.raw_response.parsed_json:
+            llm_suggestions = enrichment_response.raw_response.parsed_json
 
-                # Process LLM suggestions
-                for suggestion in llm_suggestions.get("enrichment_suggestions", []):
-                    element_name = suggestion.get("element_name")
-                    if element_name in missing_elements:
-                        # Validate confidence threshold
-                        confidence = suggestion.get("confidence", 0.0)
-                        if confidence >= self.enrichment_config["confidence_threshold"]:
-                            enriched[element_name] = {
-                                **suggestion,
-                                "enrichment_method": "llm_inference",
-                            }
-
-        except Exception as e:
-            self.logger.warning(f"LLM enrichment failed: {e}")
+            # Process LLM suggestions
+            for suggestion in llm_suggestions.get("enrichment_suggestions", []):
+                element_name = suggestion.get("element_name")
+                if element_name in missing_elements:
+                    # Validate confidence threshold
+                    confidence = suggestion.get("confidence", 0.0)
+                    if confidence >= self.enrichment_config["confidence_threshold"]:
+                        enriched[element_name] = {
+                            **suggestion,
+                            "enrichment_method": "llm_inference",
+                        }
 
         return enriched
 
@@ -665,17 +644,14 @@ Analyze the data and provide enrichment suggestions:"""
             if "CancerCondition" in combined_elements:
                 condition_data = combined_elements["CancerCondition"]
                 if isinstance(condition_data, dict):
-                    try:
-                        # Create CancerCondition instance for validation
-                        condition = CancerCondition(
-                            resourceType="Condition",
-                            subject={"reference": "Patient/unknown"},
-                            clinicalStatus={"coding": [{"code": "active"}]},
-                            category=[{"coding": [{"code": "problem-list-item"}]}],
-                            code={"coding": [{"code": condition_data.get("code", "unknown")}]}
-                        )
-                    except Exception as e:
-                        issues.append(f"CancerCondition validation failed: {e}")
+                    # Create CancerCondition instance for validation
+                    condition = CancerCondition(
+                        resourceType="Condition",
+                        subject={"reference": "Patient/unknown"},
+                        clinicalStatus={"coding": [{"code": "active"}]},
+                        category=[{"coding": [{"code": "problem-list-item"}]}],
+                        code={"coding": [{"code": condition_data.get("code", "unknown")}]}
+                    )
 
             if "ECOGPerformanceStatus" in combined_elements:
                 ecog_data = combined_elements["ECOGPerformanceStatus"]

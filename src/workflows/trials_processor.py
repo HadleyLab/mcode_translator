@@ -1,13 +1,14 @@
 import asyncio
 from typing import Any, Dict, List, Optional, Union
 
-from src.pipeline import McodePipeline
-from src.services.data_enrichment import DataEnrichmentService
-from src.services.llm.service import LLMService
-from src.shared.models import ClinicalTrialData, IdentificationModule, PipelineResult
-from src.storage.mcode_memory_storage import OncoCoreMemory
-from src.utils.concurrency import AsyncTaskQueue, create_task
-from src.shared.data_quality_validator import DataQualityValidator
+from ensemble.trials_ensemble_engine import TrialsEnsembleEngine
+from pipeline import McodePipeline
+from services.data_enrichment import DataEnrichmentService
+from services.llm.service import LLMService
+from shared.data_quality_validator import DataQualityValidator
+from shared.models import ClinicalTrialData
+from storage.mcode_memory_storage import OncoCoreMemory
+from utils.concurrency import AsyncTaskQueue, create_task
 
 from .base_workflow import TrialsProcessorWorkflow as BaseTrialsProcessorWorkflow
 from .base_workflow import WorkflowResult
@@ -30,6 +31,9 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
         # Initialize logger
         from src.utils.logging_config import get_logger
         self.logger = get_logger(__name__)
+
+        # Initialize ensemble engine for trials processing
+        self.ensemble_engine: Optional[TrialsEnsembleEngine] = None
 
     async def execute_async(self, **kwargs: Any) -> WorkflowResult:
         if "trials_data" not in kwargs:
@@ -62,7 +66,16 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
         workers = kwargs["workers"]
         store_in_memory = kwargs["store_in_memory"]
 
-        if not self.pipeline:
+        # Initialize ensemble engine if needed
+        if engine == "ensemble" and not self.ensemble_engine:
+            self.ensemble_engine = TrialsEnsembleEngine(
+                model_name=model,
+                config=self.config
+            )
+            self.logger.info("✅ Initialized TrialsEnsembleEngine for ensemble processing")
+
+        # Initialize pipeline for LLM engine (existing behavior)
+        if engine == "llm" and not self.pipeline:
             self.pipeline = McodePipeline(prompt_name=prompt, model_name=model, engine=engine)
 
         effective_workers = max(1, workers)
@@ -76,6 +89,7 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
                 prompt=prompt,
                 index=i + 1,
                 store_in_memory=store_in_memory,
+                engine=engine,
             )
             tasks.append(task)
 
@@ -100,20 +114,46 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
 
                 # Validate data quality
                 mcode_elements = trial_result.get("McodeResults", {}).get("mcode_mappings", [])
-                # Convert mcode_elements list to dict for validation
-                mcode_elements_dict = {}
+
+                # Convert dictionaries to McodeElement objects for validation
+                mcode_element_objects = []
                 if isinstance(mcode_elements, list):
                     for elem in mcode_elements:
-                        if isinstance(elem, dict) and "mcode_element" in elem:
-                            mcode_elements_dict[elem["mcode_element"]] = elem
-                else:
-                    mcode_elements_dict = mcode_elements if isinstance(mcode_elements, dict) else {}
+                        if isinstance(elem, dict):
+                            try:
+                                from src.shared.models import McodeElement
+                                mcode_obj = McodeElement(
+                                    element_type=elem.get("mcode_element", ""),
+                                    code=elem.get("code", ""),
+                                    display=elem.get("value", ""),
+                                    system=elem.get("system", ""),
+                                    confidence_score=0.8,  # Default confidence
+                                    evidence_text=elem.get("interpretation", "")
+                                )
+                                mcode_element_objects.append(mcode_obj)
+                            except Exception as e:
+                                self.logger.warning(f"Failed to convert mcode element to object: {e}")
 
                 # Convert enhanced trial to ClinicalTrialData for validation
                 from src.shared.models import ClinicalTrialData
-                clinical_trial_data = ClinicalTrialData(**trial_result)
+
+                # Transform trial data to ClinicalTrialData format
+                clinical_trial_dict = {
+                    "trial_id": self._extract_trial_id(trial_result),
+                    "title": self._extract_trial_title(trial_result),
+                    "eligibility_criteria": self._extract_eligibility_criteria(trial_result),
+                    "conditions": self._extract_conditions(trial_result),
+                    "interventions": self._extract_interventions(trial_result),
+                    "phase": self._extract_phase(trial_result),
+                    "protocol_section": trial_result.get("protocolSection", {}),
+                    "has_results": trial_result.get("hasResults", False),
+                    "study_type": self._extract_study_type(trial_result),
+                    "overall_status": self._extract_overall_status(trial_result),
+                }
+
+                clinical_trial_data = ClinicalTrialData(**clinical_trial_dict)
                 quality_report = self.quality_validator.validate_trial_data(
-                    clinical_trial_data, mcode_elements
+                    clinical_trial_data, mcode_element_objects
                 )
                 quality_reports.append({
                     "trial_id": trial_id,
@@ -164,14 +204,14 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
 
         return self._create_result(
             success=successful_count > 0,
-            data=processed_trials,
+            data=processed_trials if processed_trials else [],
             metadata={
                 "total_trials": total_count,
                 "successful": successful_count,
                 "failed": failed_count,
                 "success_rate": success_rate,
                 "engine_used": engine,
-                "model_used": model if engine == "llm" else None,
+                "model_used": model if engine in ["llm", "ensemble"] else None,
                 "prompt_used": prompt if engine == "llm" else None,
                 "stored_in_memory": store_in_memory and self.memory_storage is not None,
                 "quality_reports": quality_reports,
@@ -293,6 +333,171 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
             raise ValueError("trial must have nctId")
 
         return str(nct_id)
+
+    def _extract_trial_title(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> str:
+        """Extract trial title handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            return trial.title or trial.trial_id
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            return "Unknown Title"
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if not protocol_section:
+            return "Unknown Title"
+
+        # Try new identification_module format first
+        identification = protocol_section.get("identificationModule") or protocol_section.get("identification_module")
+        if identification:
+            title = identification.get("briefTitle") or identification.get("officialTitle")
+            if title:
+                return str(title)
+
+        return "Unknown Title"
+
+    def _extract_eligibility_criteria(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> str:
+        """Extract eligibility criteria handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            return trial.eligibility_criteria or ""
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            return ""
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if protocol_section:
+            eligibility_module = protocol_section.get("eligibilityModule") or protocol_section.get("eligibility_module")
+            if eligibility_module:
+                criteria = eligibility_module.get("eligibilityCriteria")
+                if criteria:
+                    return str(criteria)
+
+        return ""
+
+    def _extract_conditions(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> List[str]:
+        """Extract conditions handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            return trial.conditions or []
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            return []
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if protocol_section:
+            conditions_module = protocol_section.get("conditionsModule") or protocol_section.get("conditions_module")
+            if conditions_module and "conditions" in conditions_module:
+                conditions = conditions_module["conditions"]
+                if isinstance(conditions, list):
+                    result = []
+                    for c in conditions:
+                        if isinstance(c, dict):
+                            name = c.get("name", "")
+                            if name:
+                                result.append(str(name))
+                        elif isinstance(c, str):
+                            result.append(c)
+                    return result
+                else:
+                    return [str(conditions)]
+
+        return []
+
+    def _extract_interventions(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> List[str]:
+        """Extract interventions handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            return trial.interventions or []
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            return []
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if protocol_section:
+            arms_module = protocol_section.get("armsInterventionsModule") or protocol_section.get("arms_interventions_module")
+            if arms_module and "interventions" in arms_module:
+                interventions = arms_module["interventions"]
+                if isinstance(interventions, list):
+                    return [str(i.get("name", "")) for i in interventions if i.get("name")]
+                else:
+                    return [str(interventions)]
+
+        return []
+
+    def _extract_phase(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> str:
+        """Extract phase handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            return trial.phase or ""
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            return ""
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if protocol_section:
+            design_module = protocol_section.get("designModule") or protocol_section.get("design_module")
+            if design_module:
+                phases = design_module.get("phases")
+                if phases:
+                    if isinstance(phases, list):
+                        return ", ".join(str(p) for p in phases)
+                    else:
+                        return str(phases)
+
+        return ""
+
+    def _extract_study_type(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> str:
+        """Extract study type handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            return trial.study_type or ""
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            return ""
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if protocol_section:
+            design_module = protocol_section.get("designModule") or protocol_section.get("design_module")
+            if design_module:
+                study_type = design_module.get("studyType")
+                if study_type:
+                    return str(study_type)
+
+        return ""
+
+    def _extract_overall_status(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> str:
+        """Extract overall status handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            return trial.overall_status or ""
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            return ""
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if protocol_section:
+            status_module = protocol_section.get("statusModule") or protocol_section.get("status_module")
+            if status_module:
+                status = status_module.get("overallStatus")
+                if status:
+                    return str(status)
+
+        return ""
 
     def _extract_trial_metadata(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> Dict[str, Any]:
         """Extract trial metadata handling both old and new model formats."""
@@ -540,12 +745,19 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
         prompt: str,
         index: int,
         store_in_memory: bool = False,
+        engine: str = "llm",
     ) -> tuple[Any, bool]:
         # Validate trial data structure
         if not isinstance(trial, dict):
             raise ValueError(f"Trial data must be a dict, got {type(trial)}")
 
-        if self.pipeline is not None:
+        if engine == "ensemble" and self.ensemble_engine is not None:
+            # Use ensemble processing
+            ensemble_result = await self._process_trial_with_ensemble(trial)
+            enhanced_trial = trial.copy()
+            enhanced_trial["McodeResults"] = self._convert_ensemble_result_to_mcode_format(ensemble_result)
+            mcode_success = ensemble_result.is_match
+        elif engine == "llm" and self.pipeline is not None:
             # Convert dictionary to ClinicalTrialData object for pipeline processing
             from src.shared.models import ClinicalTrialData
             clinical_trial_data = ClinicalTrialData(**trial)
@@ -564,7 +776,10 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
             mcode_success = True
         else:
             enhanced_trial = trial.copy()
-            enhanced_trial["McodeProcessingError"] = "Pipeline not initialized"
+            if engine == "ensemble":
+                enhanced_trial["McodeProcessingError"] = "Ensemble engine not initialized"
+            else:
+                enhanced_trial["McodeProcessingError"] = "Pipeline not initialized"
             mcode_success = False
 
         trial_id = self._extract_trial_id(trial)
@@ -594,6 +809,80 @@ class TrialsProcessor(BaseTrialsProcessorWorkflow):
         enriched_trial_data["McodeResults"]["natural_language_summary"] = summary
 
         return enriched_trial_data, mcode_success
+
+    async def _process_trial_with_ensemble(self, trial: Dict[str, Any]) -> "EnsembleResult":
+        """Process a single trial using the ensemble engine."""
+        if not self.ensemble_engine:
+            raise ValueError("Ensemble engine not initialized")
+
+        # Prepare input data for ensemble processing
+        input_data = {
+            "trial_id": self._extract_trial_id(trial),
+            "eligibility_criteria": trial.get("protocolSection", {}).get("eligibilityModule", {}).get("eligibilityCriteria", ""),
+            "conditions": trial.get("conditions", []),
+            "phase": trial.get("protocolSection", {}).get("designModule", {}).get("phases", ""),
+        }
+
+        # Prepare criteria data for mCODE extraction
+        criteria_data = {
+            "mcode_extraction_rules": "standard",
+            "validation_criteria": "clinical_accuracy",
+        }
+
+        # Process with ensemble engine
+        ensemble_result = await self.ensemble_engine.process_ensemble(input_data, criteria_data)
+
+        return ensemble_result
+
+    def _convert_ensemble_result_to_mcode_format(self, ensemble_result: "EnsembleResult") -> Dict[str, Any]:
+        """Convert EnsembleResult to McodeResults format."""
+        # Convert expert assessments to mcode_mappings format
+        mcode_mappings = []
+
+        for assessment in ensemble_result.expert_assessments:
+            expert_assessment = assessment.get("assessment", {})
+            mcode_elements = expert_assessment.get("mcode_elements", [])
+
+            for element in mcode_elements:
+                if isinstance(element, dict):
+                    # Convert from ensemble format to mcode format
+                    mapping = {
+                        "mcode_element": element.get("element_type", ""),
+                        "value": element.get("display", ""),
+                        "system": element.get("system", ""),
+                        "code": element.get("code", ""),
+                        "interpretation": f"Ensemble confidence: {ensemble_result.confidence_score:.3f}",
+                    }
+                    mcode_mappings.append(mapping)
+
+        # Create McodeResults structure
+        return {
+            "extracted_entities": mcode_mappings,
+            "mcode_mappings": mcode_mappings,
+            "source_references": [
+                {
+                    "source_type": "ensemble_engine",
+                    "source_id": "trials_ensemble",
+                    "section": "expert_assessments"
+                }
+            ],
+            "validation_results": {
+                "compliance_score": ensemble_result.confidence_score,
+                "validation_errors": [],
+                "warnings": [],
+                "required_elements_present": [elem.get("element_type", "") for elem in mcode_mappings],
+                "missing_elements": []
+            },
+            "metadata": {
+                "engine_type": "ensemble",
+                "consensus_method": ensemble_result.consensus_method,
+                "experts_used": len(ensemble_result.expert_assessments),
+                "diversity_score": ensemble_result.diversity_score,
+                "processing_time_seconds": ensemble_result.processing_metadata.get("processing_time_seconds", 0),
+            },
+            "token_usage": None,
+            "error": None,
+        }
 
     def process_single_trial(self, trial: Dict[str, Any], **kwargs: Any) -> WorkflowResult:
         result = self.execute(trials_data=[trial], **kwargs)

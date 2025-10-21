@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List
 
-from src.utils.concurrency import AsyncTaskQueue, create_task
-from src.utils.fetcher import (
+from utils.concurrency import AsyncTaskQueue, create_task
+from utils.fetcher import (
     get_full_studies_batch,
     get_full_study,
     search_trials,
@@ -292,8 +292,8 @@ class TrialsFetcherWorkflow(FetcherWorkflow):
 
 
 def main(args):
-    from pathlib import Path
     import sys
+    from pathlib import Path
 
     sys.path.insert(0, str(Path(__file__).parent.parent))
 

@@ -14,21 +14,14 @@ Key Features:
 - Support for SNOMED CT, LOINC, RxNorm, and other required coding systems
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+import re
 from dataclasses import dataclass
 from enum import Enum
-import re
+from typing import Any, Dict, List, Optional, Tuple
 
 from .mcode_models import McodeValidator
 from .mcode_versioning import McodeVersion
-from .models import (
-    IdentificationModule,
-    StatusModule,
-    EligibilityModule,
-    ClinicalTrialData,
-    McodeElement,
-    PatientData
-)
+from .models import ClinicalTrialData, McodeElement, PatientData
 
 
 class ValidationSeverity(str, Enum):
@@ -539,7 +532,7 @@ class DataQualityValidator:
                 issues.append(ValidationIssue(
                     severity=ValidationSeverity.WARNING,
                     category="mCODE Compliance",
-                    message=f"mCODE element lacks proper coding structure",
+                    message="mCODE element lacks proper coding structure",
                     element_path=f"{element.element_type}",
                     suggested_fix="Ensure element has system, code, and/or display fields"
                 ))
@@ -846,17 +839,17 @@ class DataQualityValidator:
         lines = [
             "# mCODE Data Quality Report",
             "",
-            f"## Summary",
+            "## Summary",
             f"- **Coverage**: {report.valid_elements}/{report.total_elements} elements valid ({report.coverage_percentage:.1f}%)",
             f"- **Completeness Score**: {report.completeness_score:.2f}",
             f"- **Can Proceed**: {'✅ Yes' if report.can_proceed else '❌ No'}",
             "",
-            f"## Issues by Severity",
+            "## Issues by Severity",
             f"- **Critical**: {report.critical_issues} (prevents processing)",
             f"- **Warnings**: {report.warning_issues}",
             f"- **Info**: {report.info_issues}",
             "",
-            f"## Coding System Coverage",
+            "## Coding System Coverage",
         ]
 
         for system, coverage in report.coding_system_coverage.items():

@@ -5,12 +5,10 @@ This module provides specialized functionality for making LLM API calls
 with comprehensive error handling, rate limiting, and retry logic.
 """
 
-import asyncio
-import random
 import time
-from typing import Any, Dict
+from typing import Any
 
-from src.shared.models import LLMRequest, LLMResponse, LLMAPIError, ParsedLLMResponse
+from src.shared.models import ParsedLLMResponse
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
 from src.utils.token_tracker import extract_token_usage_from_response, global_token_tracker
@@ -48,61 +46,45 @@ class LLMAPICaller:
         """
         import openai
 
-        try:
-            # Check API key availability before making any calls
-            try:
-                api_key = self.config.get_api_key(self.model_name)
-                if not api_key:
-                    self.logger.warning(
-                        f"No API key available for {self.model_name} - skipping API call"
-                    )
-                    raise ValueError(f"API key not configured for model {self.model_name}")
-            except Exception as e:
-                if "not found in config" in str(e) or "API key not configured" in str(e):
-                    self.logger.warning(f"API key configuration issue for {self.model_name}: {e}")
-                    raise ValueError(f"API key not configured for model {self.model_name}")
-                else:
-                    raise
+        # Check API key availability before making any calls
+        api_key = self.config.get_api_key(self.model_name)
+        if not api_key:
+            raise ValueError(f"API key not configured for model {self.model_name}")
 
-            # Use existing config for API details
-            temperature = self.config.get_temperature(self.model_name)
-            max_tokens = self.config.get_max_tokens(self.model_name)
+        # Use existing config for API details
+        temperature = self.config.get_temperature(self.model_name)
+        max_tokens = self.config.get_max_tokens(self.model_name)
 
-            # Create fresh async client for each request (simple pattern)
-            api_key = self.config.get_api_key(self.model_name)
-            base_url = self.config.get_base_url(self.model_name)
+        # Create fresh async client for each request (simple pattern)
+        base_url = self.config.get_base_url(self.model_name)
 
-            client = openai.AsyncOpenAI(
-                base_url=base_url,
-                api_key=api_key,
-                max_retries=0,
-                timeout=self.config.get_timeout(self.model_name),
-            )
+        client = openai.AsyncOpenAI(
+            base_url=base_url,
+            api_key=api_key,
+            max_retries=0,
+            timeout=self.config.get_timeout(self.model_name),
+        )
 
-            # Make async API call with aggressive rate limiting handling
-            response = await self._make_async_api_call_with_rate_limiting(
-                client, llm_config, prompt, temperature, max_tokens
-            )
+        # Make async API call
+        response = await self._make_async_api_call(
+            client, llm_config, prompt, temperature, max_tokens
+        )
 
-            # Extract token usage using existing utility
-            token_usage = extract_token_usage_from_response(response, self.model_name, "provider")
+        # Extract token usage using existing utility
+        token_usage = extract_token_usage_from_response(response, self.model_name, "provider")
 
-            # Track tokens using existing global tracker
-            global_token_tracker.add_usage(token_usage, "llm_service")
+        # Track tokens using existing global tracker
+        global_token_tracker.add_usage(token_usage, "llm_service")
 
-            # Parse response
-            response_content = response.choices[0].message.content
-            if not response_content:
-                raise ValueError("Empty LLM response")
+        # Parse response
+        response_content = response.choices[0].message.content
+        if not response_content:
+            raise ValueError("Empty LLM response")
 
-            self.logger.debug(f"Raw LLM response: {response_content}")
+        self.logger.debug(f"Raw LLM response: {response_content}")
 
-            # Parse and clean the response content
-            return self._parse_and_clean_response(response_content)
-
-        except Exception as e:
-            self.logger.error(f"💥 LLM API call failed for {self.model_name}: {str(e)}")
-            raise
+        # Parse and clean the response content
+        return self._parse_and_clean_response(response_content)
 
     def _parse_and_clean_response(self, response_content: str) -> ParsedLLMResponse:
         """
@@ -240,17 +222,13 @@ class LLMAPICaller:
             parsed_response.cleaned_content = cleaned_content
 
             # Parse JSON and validate
-            try:
-                parsed_json = json.loads(cleaned_content)
-                parsed_response.parsed_json = parsed_json
-                parsed_response.is_valid_json = True
-                self.logger.debug(f"✅ Successfully parsed JSON response from {self.model_name}")
-                return parsed_response
-            except json.JSONDecodeError as json_error:
-                parsed_response.validation_errors.append(f"JSON decode error: {str(json_error)}")
-                raise ValueError(f"Invalid JSON from {self.model_name}: {str(json_error)} | Content: {cleaned_content[:300]}...") from json_error
+            parsed_json = json.loads(cleaned_content)
+            parsed_response.parsed_json = parsed_json
+            parsed_response.is_valid_json = True
+            self.logger.debug(f"✅ Successfully parsed JSON response from {self.model_name}")
+            return parsed_response
 
-    async def _make_async_api_call_with_rate_limiting(
+    async def _make_async_api_call(
         self,
         client: Any,
         llm_config: Any,
@@ -259,7 +237,7 @@ class LLMAPICaller:
         max_tokens: int,
     ) -> Any:
         """
-        Make async API call with aggressive rate limiting and exponential backoff retry logic.
+        Make async API call - fail fast on any error.
 
         Args:
             client: AsyncOpenAI client instance
@@ -270,16 +248,8 @@ class LLMAPICaller:
 
         Returns:
             OpenAI API response
-
-        Raises:
-            Exception: If all retry attempts fail
         """
         start_time = time.time()
-        # Aggressive retry configuration for rate limiting
-        max_retries = 10  # Much more aggressive than the default 3
-        base_delay = 1.0  # Base delay in seconds
-        max_delay = 60.0  # Maximum delay between retries
-        backoff_factor = 2.0  # Exponential backoff multiplier
 
         # Make API call - conditionally use response_format for supported models
         call_params = {
@@ -298,136 +268,10 @@ class LLMAPICaller:
             call_params["response_format"] = {"type": "json_object"}
             self.logger.debug(f"Using response_format for model: {llm_config.model_identifier}")
 
-        for attempt in range(max_retries + 1):
-            try:
-                if attempt == 0:
-                    self.logger.info(f"🚀 API CALL: {llm_config.model_identifier}")
-                    # DEBUG: Direct print for immediate visibility
-                    print(
-                        f"DEBUG - API CALL STARTED: {llm_config.model_identifier}",
-                        flush=True,
-                    )
-                else:
-                    self.logger.warning(
-                        f"🔄 RETRY {attempt}/{max_retries}: {llm_config.model_identifier}"
-                    )
-                    print(
-                        f"DEBUG - API RETRY {attempt}: {llm_config.model_identifier}",
-                        flush=True,
-                    )
-
-                response = await client.chat.completions.create(**call_params)
-                api_time = time.time() - start_time
-                self.logger.info(
-                    f"✅ API RESPONSE: {llm_config.model_identifier} ({api_time:.2f}s)"
-                )
-                print(
-                    f"DEBUG - API RESPONSE: {llm_config.model_identifier} ({api_time:.2f}s)",
-                    flush=True,
-                )
-                return response
-
-            except Exception as e:
-                # Check error type by examining the error message/code
-                error_str = str(e).lower()
-
-                # Check for quota errors first (these should be flagged and model skipped)
-                is_quota_error = (
-                    "insufficient_quota" in error_str
-                    or "quota exceeded" in error_str
-                    or "billing" in error_str
-                    or "check your plan" in error_str
-                )
-
-                if is_quota_error:
-                    # Quota errors should be flagged and the model should be skipped
-                    self.logger.error(f"💰 QUOTA ERROR for {llm_config.model_identifier}: {str(e)}")
-                    self.logger.error("  This model has exceeded its quota and will be skipped")
-                    self.logger.error("  Consider upgrading your plan or using a different model")
-                    raise ValueError(
-                        f"Model {llm_config.model_identifier} has exceeded its quota"
-                    ) from e
-
-                # Check for rate limiting errors (these should be retried)
-                is_rate_limit = (
-                    "rate limit" in error_str
-                    or "429" in error_str
-                    or "too many requests" in error_str
-                )
-
-                if is_rate_limit:
-                    # Extract rate limit information from the error
-                    error_data = getattr(e, "body", {})
-                    if isinstance(error_data, dict) and "error" in error_data:
-                        error_info = error_data["error"]
-                        error_type = error_info.get("type", "unknown")
-                        error_message = error_info.get("message", str(e))
-
-                        # Parse retry time from message if available
-                        retry_after = None
-                        if "Please try again in" in error_message:
-                            try:
-                                # Extract milliseconds from message like "Please try again in 524ms"
-                                retry_match = error_message.split("Please try again in")[1].strip()
-                                if retry_match.endswith("ms"):
-                                    retry_after = (
-                                        float(retry_match[:-2]) / 1000.0
-                                    )  # Convert ms to seconds
-                                elif retry_match.endswith("s"):
-                                    retry_after = float(retry_match[:-1])
-                            except (ValueError, IndexError):
-                                pass
-
-                        self.logger.warning(f"🚦 RATE LIMIT hit for {llm_config.model_identifier}")
-                        self.logger.warning(f"  Type: {error_type}")
-                        self.logger.warning(f"  Message: {error_message}")
-                        if retry_after:
-                            self.logger.warning(f"  Suggested retry after: {retry_after:.2f}s")
-                    else:
-                        # Fallback for rate limit detection without structured error data
-                        self.logger.warning(
-                            f"🚦 RATE LIMIT detected for {llm_config.model_identifier}"
-                        )
-                        self.logger.warning(f"  Error: {str(e)}")
-                        retry_after = None
-
-                    # If this is the last attempt, don't retry
-                    if attempt == max_retries:
-                        self.logger.error(
-                            f"💥 RATE LIMIT retry exhausted after {max_retries} attempts for {llm_config.model_identifier}"
-                        )
-                        raise
-
-                    # Calculate delay with exponential backoff and jitter
-                    if retry_after:
-                        # Use the API's suggested retry time if available
-                        delay = retry_after
-                    else:
-                        # Calculate exponential backoff delay
-                        delay = min(base_delay * (backoff_factor**attempt), max_delay)
-
-                    # Add jitter to prevent thundering herd
-                    jitter = random.uniform(0.1, 1.0) * delay * 0.1
-                    total_delay = delay + jitter
-
-                    self.logger.info(
-                        f"⏳ Waiting {total_delay:.2f}s before retry {attempt + 1}/{max_retries}"
-                    )
-                    await asyncio.sleep(total_delay)
-                    continue  # Continue to next retry attempt
-
-                # If not a rate limit error, handle as regular API error
-                if attempt == max_retries:
-                    self.logger.error(
-                        f"💥 API error retry exhausted after {max_retries} attempts: {str(e)}"
-                    )
-                    raise
-                else:
-                    # For non-rate-limit errors, use shorter delay
-                    delay = min(base_delay * (1.5**attempt), 10.0)  # Shorter backoff for API errors
-                    jitter = random.uniform(0.1, 1.0) * delay * 0.1
-                    total_delay = delay + jitter
-
-                    self.logger.warning(f"⚠️ API error on attempt {attempt + 1}: {str(e)}")
-                    self.logger.info(f"⏳ Waiting {total_delay:.2f}s before retry")
-                    await asyncio.sleep(total_delay)
+        # Make single API call - fail fast on any error
+        response = await client.chat.completions.create(**call_params)
+        api_time = time.time() - start_time
+        self.logger.info(
+            f"✅ API RESPONSE: {llm_config.model_identifier} ({api_time:.2f}s)"
+        )
+        return response

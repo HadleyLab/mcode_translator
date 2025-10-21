@@ -5,31 +5,23 @@ This module provides functionality to parse LLM-generated responses into
 validated mCODE ontology models with proper type safety and validation.
 """
 
-from typing import Any, Dict, List, Optional, Union
 import json
 import re
+from typing import Any, Dict, List, Optional
 
-from src.utils.logging_config import get_logger
 from src.shared.models import (
+    # mCODE profile models
+    CancerConditionCode,
+    ECOGPerformanceStatus,
     McodeElement,
     PipelineResult,
     ProcessingMetadata,
-    TokenUsage,
-    ValidationResult,
-    SourceReference,
-    # mCODE profile models
-    CancerCondition,
-    TumorMarkerTest,
-    ECOGPerformanceStatusObservation,
-    CancerRelatedMedicationStatement,
-    CancerRelatedSurgicalProcedure,
-    CancerRelatedRadiationProcedure,
-    # Value sets
-    CancerConditionCode,
-    TNMStageGroup,
-    ECOGPerformanceStatus,
     ReceptorStatus,
+    SourceReference,
+    TNMStageGroup,
+    ValidationResult,
 )
+from src.utils.logging_config import get_logger
 
 
 class LLMResponseParser:
@@ -54,30 +46,20 @@ class LLMResponseParser:
         Returns:
             Parsed and validated response data
         """
-        try:
-            # Clean the response
-            cleaned_response = self._clean_response(raw_response)
+        # Clean the response
+        cleaned_response = self._clean_response(raw_response)
 
-            # Parse JSON
-            parsed_data = self._parse_json(cleaned_response)
+        # Parse JSON
+        parsed_data = self._parse_json(cleaned_response)
 
-            # Validate and structure based on expected format
-            if expected_format == 'mcode_elements':
-                return self._parse_mcode_elements(parsed_data)
-            elif expected_format == 'validation_result':
-                return self._parse_validation_result(parsed_data)
-            else:
-                # Generic parsing
-                return parsed_data
-
-        except Exception as e:
-            self.logger.error(f"Failed to parse LLM response: {e}")
-            self.logger.debug(f"Raw response: {raw_response}")
-            return {
-                "error": str(e),
-                "raw_response": raw_response,
-                "parsed_successfully": False
-            }
+        # Validate and structure based on expected format
+        if expected_format == 'mcode_elements':
+            return self._parse_mcode_elements(parsed_data)
+        elif expected_format == 'validation_result':
+            return self._parse_validation_result(parsed_data)
+        else:
+            # Generic parsing
+            return parsed_data
 
     def _clean_response(self, response: str) -> str:
         """Clean and normalize LLM response."""
@@ -93,26 +75,7 @@ class LLMResponseParser:
 
     def _parse_json(self, response: str) -> Dict[str, Any]:
         """Parse JSON from response string."""
-        try:
-            return json.loads(response)
-        except json.JSONDecodeError as e:
-            # Try to extract JSON from mixed content
-            json_match = re.search(r'\{.*\}', response, re.DOTALL)
-            if json_match:
-                try:
-                    return json.loads(json_match.group())
-                except json.JSONDecodeError:
-                    pass
-
-            # Try to extract array
-            array_match = re.search(r'\[.*\]', response, re.DOTALL)
-            if array_match:
-                try:
-                    return {"items": json.loads(array_match.group())}
-                except json.JSONDecodeError:
-                    pass
-
-            raise ValueError(f"Could not parse JSON from response: {e}")
+        return json.loads(response)
 
     def _parse_mcode_elements(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Parse mCODE elements from LLM response."""
@@ -149,47 +112,38 @@ class LLMResponseParser:
 
     def _create_mcode_element(self, data: Dict[str, Any]) -> Optional[McodeElement]:
         """Create a validated McodeElement from parsed data."""
-        try:
-            # Map common field variations
-            element_type = (
-                data.get('element_type') or
-                data.get('type') or
-                data.get('mcode_element') or
-                data.get('element_name')
-            )
+        # Map common field variations
+        element_type = (
+            data.get('element_type') or
+            data.get('type') or
+            data.get('mcode_element') or
+            data.get('element_name')
+        )
 
-            if not element_type:
-                return None
-
-            # Create McodeElement with validation
-            element = McodeElement(
-                element_type=element_type,
-                code=data.get('code'),
-                display=data.get('display') or data.get('value'),
-                system=data.get('system'),
-                confidence_score=data.get('confidence_score') or data.get('confidence'),
-                evidence_text=data.get('evidence_text') or data.get('evidence')
-            )
-
-            return element
-
-        except Exception as e:
-            self.logger.warning(f"Failed to create McodeElement: {e}")
+        if not element_type:
             return None
+
+        # Create McodeElement with validation
+        element = McodeElement(
+            element_type=element_type,
+            code=data.get('code'),
+            display=data.get('display') or data.get('value'),
+            system=data.get('system'),
+            confidence_score=data.get('confidence_score') or data.get('confidence'),
+            evidence_text=data.get('evidence_text') or data.get('evidence')
+        )
+
+        return element
 
     def _parse_validation_result(self, data: Dict[str, Any]) -> ValidationResult:
         """Parse validation result from LLM response."""
-        try:
-            return ValidationResult(
-                compliance_score=data.get('compliance_score', 0.0),
-                validation_errors=data.get('validation_errors', []),
-                validation_warnings=data.get('validation_warnings', []),
-                required_elements_present=data.get('required_elements_present', []),
-                missing_elements=data.get('missing_elements', [])
-            )
-        except Exception as e:
-            self.logger.error(f"Failed to parse validation result: {e}")
-            return ValidationResult(compliance_score=0.0)
+        return ValidationResult(
+            compliance_score=data.get('compliance_score', 0.0),
+            validation_errors=data.get('validation_errors', []),
+            validation_warnings=data.get('validation_warnings', []),
+            required_elements_present=data.get('required_elements_present', []),
+            missing_elements=data.get('missing_elements', [])
+        )
 
     def create_pipeline_result(
         self,

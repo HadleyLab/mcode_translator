@@ -5,7 +5,8 @@ Tools for interacting with CORE Memory and other matching-related services.
 from typing import Any, Dict, List, Optional
 
 from services.heysol_client import OncoCoreClient
-from shared.models import McodeElement, PatientData, ClinicalTrialData
+from shared.models import ClinicalTrialData, PatientData
+
 
 async def search_memory(
     client: OncoCoreClient, query: str, space_ids: Optional[List[str]] = None

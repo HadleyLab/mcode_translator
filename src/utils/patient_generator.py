@@ -20,25 +20,35 @@ License: MIT
 
 import json
 import os
-from pathlib import Path
 import random
-from datetime import datetime, timedelta
-from typing import Any, Dict, Iterator, List, Optional, Union
-import zipfile
 import uuid
+import zipfile
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, Iterator, List, Optional
+
+from shared.mcode_models import (
+    AdministrativeGender,
+    BirthSex,
+    BirthSexExtension,
+    CancerCondition,
+    CancerConditionCode,
+    ECOGPerformanceStatus,
+    ECOGPerformanceStatusObservation,
+    FHIRCodeableConcept,
+    FHIRReference,
+    HistologyMorphologyBehavior,
+    HistologyMorphologyBehaviorExtension,
+    LateralityExtension,
+    McodePatient,
+    ReceptorStatus,
+    TumorMarkerTest,
+    USCoreEthnicityExtension,
+    USCoreRaceExtension,
+)
 
 from .config import Config
 from .logging_config import get_logger
-from shared.mcode_models import (
-    McodePatient, CancerCondition, TumorMarkerTest,
-    ECOGPerformanceStatusObservation, CancerRelatedMedicationStatement,
-    CancerRelatedSurgicalProcedure, CancerRelatedRadiationProcedure,
-    AdministrativeGender, BirthSex, CancerConditionCode, TNMStageGroup,
-    ECOGPerformanceStatus, ReceptorStatus, HistologyMorphologyBehavior,
-    FHIRCodeableConcept, FHIRReference, FHIRQuantity,
-    BirthSexExtension, USCoreRaceExtension, USCoreEthnicityExtension,
-    HistologyMorphologyBehaviorExtension, LateralityExtension
-)
 
 
 def extract_patient_id(bundle: Dict[str, Any]) -> Optional[str]:

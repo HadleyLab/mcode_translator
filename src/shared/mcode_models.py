@@ -17,14 +17,11 @@ All models follow mCODE STU4 (4.0.0) specification and provide comprehensive val
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union, Literal
-from urllib.parse import urljoin
+from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
-from pydantic_core import PydanticCustomError
+from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 
-from .mcode_versioning import McodeVersion, McodeProfile, get_version_manager
-
+from .mcode_versioning import McodeProfile, McodeVersion, get_version_manager
 
 # =============================================================================
 # VALUE SET ENUMS - Controlled Terminologies

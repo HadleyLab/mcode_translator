@@ -5,14 +5,12 @@ Defines the abstract `MatchingEngineBase` class to ensure a consistent
 interface for all matching engines (Regex, LLM, CoreMemory).
 """
 
-from abc import ABC, abstractmethod
-from typing import Any, AsyncGenerator, Dict, List, Optional
 import asyncio
-import json
 import hashlib
+import json
+from abc import ABC, abstractmethod
 from datetime import datetime
-
-from shared.models import McodeElement
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 
 class MatchingResult:

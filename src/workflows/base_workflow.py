@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 if TYPE_CHECKING:
     from src.storage.mcode_memory_storage import OncoCoreMemory
 
-from src.shared.models import ProcessingMetadata, WorkflowResult
-from src.storage.mcode_memory_storage import OncoCoreMemory
-from src.utils.config import Config
+from shared.models import ProcessingMetadata, WorkflowResult
+from storage.mcode_memory_storage import OncoCoreMemory
+from utils.config import Config
 
 
 class WorkflowError(Exception):
@@ -70,7 +70,7 @@ class BaseWorkflow(ABC):
 
         return WorkflowResult(
             success=success,
-            data=data or {},
+            data=data,
             error_message=error_message,
             metadata=metadata_dict,
         )

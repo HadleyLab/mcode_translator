@@ -5,15 +5,9 @@ This module provides functionality to create comprehensive summaries
 of clinical trials using the McodeSummarizer service.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 
-from src.services.summarizer import McodeSummarizer
-from src.shared.models import (
-    McodeElement,
-    ValidationResult,
-    ProcessingMetadata,
-    PipelineResult,
-)
+from services.summarizer import McodeSummarizer
 
 
 class TrialSummarizer:

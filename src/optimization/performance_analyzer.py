@@ -7,8 +7,8 @@ and ensemble-specific metrics for confidence calibration and expert agreement.
 """
 
 from typing import Any, Dict, List
+
 import numpy as np
-from scipy import stats
 
 from src.utils.logging_config import get_logger
 

@@ -14,57 +14,57 @@ eliminating duplicate model definitions and reducing codebase complexity.
 """
 
 # Import and re-export essential models from mcode_models for backward compatibility
+# Additional models for LLM processing, pipeline results, and workflow management
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import BaseModel, Field
+
 from .mcode_models import (
-    CancerCondition,
-    McodePatient,
-    TumorMarkerTest,
-    ECOGPerformanceStatusObservation,
-    CancerRelatedMedicationStatement,
-    CancerRelatedSurgicalProcedure,
-    CancerRelatedRadiationProcedure,
-    TNMStageGroup,
-    CancerStaging,
-    McodeElement,
-    McodeValidator,
     AdministrativeGender,
     BirthSex,
+    BirthSexExtension,
+    CancerCondition,
     CancerConditionCode,
-    TNMStageGroupEnum,
+    CancerRelatedMedicationStatement,
+    CancerRelatedRadiationProcedure,
+    CancerRelatedSurgicalProcedure,
+    CancerStaging,
+    ConditionRelatedExtension,
     ECOGPerformanceStatus,
-    ReceptorStatus,
-    HistologyMorphologyBehavior,
-    FHIRIdentifier,
+    ECOGPerformanceStatusObservation,
+    FHIRAddress,
     FHIRCodeableConcept,
-    FHIRReference,
+    FHIRCondition,
+    FHIRContactPoint,
+    FHIRHumanName,
+    FHIRIdentifier,
+    FHIRMedicationStatement,
+    FHIRObservation,
+    FHIRPatient,
+    FHIRPeriod,
+    FHIRProcedure,
     FHIRQuantity,
     FHIRRange,
     FHIRRatio,
-    FHIRPeriod,
-    FHIRHumanName,
-    FHIRContactPoint,
-    FHIRAddress,
-    FHIRPatient,
-    FHIRCondition,
-    FHIRObservation,
-    FHIRProcedure,
-    FHIRMedicationStatement,
-    McodeExtension,
-    BirthSexExtension,
-    USCoreRaceExtension,
-    USCoreEthnicityExtension,
+    FHIRReference,
+    HistologyMorphologyBehavior,
     HistologyMorphologyBehaviorExtension,
     LateralityExtension,
+    McodeElement,
+    McodeExtension,
+    McodePatient,
+    McodeValidator,
+    ReceptorStatus,
     RelatedConditionExtension,
-    ConditionRelatedExtension,
+    TNMStageGroup,
+    TNMStageGroupEnum,
+    TumorMarkerTest,
+    USCoreEthnicityExtension,
+    USCoreRaceExtension,
     VersionedMcodeResource,
-    create_mcode_patient,
     create_cancer_condition,
+    create_mcode_patient,
 )
-
-# Additional models for LLM processing, pipeline results, and workflow management
-
-from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, Field
 
 
 class ParsedLLMResponse(BaseModel):
@@ -115,7 +115,7 @@ class ProcessingMetadata(BaseModel):
 class WorkflowResult(BaseModel):
     """Result from workflow execution."""
     success: bool = Field(..., description="Whether workflow succeeded")
-    data: Dict[str, Any] = Field(default_factory=dict, description="Workflow result data")
+    data: Union[Dict[str, Any], List[Any]] = Field(default_factory=list, description="Workflow result data")
     error_message: Optional[str] = Field(None, description="Error message if failed")
     metadata: Optional[Union[Dict[str, Any], ProcessingMetadata]] = Field(None, description="Processing metadata")
 

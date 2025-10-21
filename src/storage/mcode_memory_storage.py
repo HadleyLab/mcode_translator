@@ -6,7 +6,7 @@ Stores patients to the right space and trials to the right space.
 
 from typing import Any, Dict, Optional
 
-from src.services.heysol_client import OncoCoreClient
+from services.heysol_client import OncoCoreClient
 
 
 class OncoCoreService:

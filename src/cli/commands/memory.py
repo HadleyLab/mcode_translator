@@ -5,13 +5,13 @@ Commands for managing HeySol CORE Memory operations including
 ingestion, search, space management, and analytics.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Optional
 
+import typer
 from rich.console import Console
 from rich.table import Table
-import typer
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -46,53 +46,39 @@ def ingest_data(
     """
     console.print("[bold blue]💾 Ingesting data into CORE Memory[/bold blue]")
 
-    try:
-        # Initialize OncoCoreClient
-        client = OncoCoreClient.from_env(prefer_mcp=use_mcp)
+    # Initialize OncoCoreClient
+    client = OncoCoreClient.from_env(prefer_mcp=use_mcp)
 
-        if verbose:
-            console.print(f"[blue]🎯 Target space: {space_id or 'default'}[/blue]")
-            console.print(f"[blue]📧 Source: {source or 'cli'}[/blue]")
-            console.print(f"[blue]🧠 Using MCP: {use_mcp}[/blue]")
+    if verbose:
+        console.print(f"[blue]🎯 Target space: {space_id or 'default'}[/blue]")
+        console.print(f"[blue]📧 Source: {source or 'cli'}[/blue]")
+        console.print(f"[blue]🧠 Using MCP: {use_mcp}[/blue]")
 
-        # Parse metadata if provided
-        parsed_metadata = None
-        if metadata:
-            try:
-                import json
+    # Parse metadata if provided
+    parsed_metadata = None
+    if metadata:
+        import json
 
-                parsed_metadata = json.loads(metadata)
-                console.print("[blue]📋 Metadata parsed successfully[/blue]")
-            except json.JSONDecodeError as e:
-                console.print(f"[red]❌ Invalid metadata JSON: {e}[/red]")
-                raise typer.Exit(1)
+        parsed_metadata = json.loads(metadata)
+        console.print("[blue]📋 Metadata parsed successfully[/blue]")
 
-        console.print("[blue]📤 Sending data to CORE Memory...[/blue]")
+    console.print("[blue]📤 Sending data to CORE Memory...[/blue]")
 
-        # Ingest data
-        result = client.ingest(
-            message=message,
-            space_id=space_id,
-            source=source or "mcode_cli",
-            metadata=parsed_metadata,
-        )
+    # Ingest data
+    result = client.ingest(
+        message=message,
+        space_id=space_id,
+        source=source or "mcode_cli",
+        metadata=parsed_metadata,
+    )
 
-        console.print("[green]✅ Data ingested successfully[/green]")
+    console.print("[green]✅ Data ingested successfully[/green]")
 
-        if verbose and result:
-            console.print(f"[blue]📊 Result: {result}[/blue]")
+    if verbose and result:
+        console.print(f"[blue]📊 Result: {result}[/blue]")
 
-        # Cleanup
-        client.close()
-
-    except ImportError as e:
-        console.print(f"[red]❌ Import error: {e}[/red]")
-        console.print("[yellow]💡 Ensure heysol-api-client is installed[/yellow]")
-        raise typer.Exit(1)
-    except Exception as e:
-        console.print(f"[red]❌ Ingestion failed: {e}[/red]")
-        logger.exception("Memory ingestion error")
-        raise typer.Exit(1)
+    # Cleanup
+    client.close()
 
 
 @app.command("search")

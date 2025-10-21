@@ -49,7 +49,7 @@ def download_synthetic_patient_archives(
                     force_download=force_download,
                     max_workers=max_workers,
                 ))
-            
+
             thread = threading.Thread(target=run_in_thread)
             thread.start()
             thread.join()

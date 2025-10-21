@@ -8,8 +8,8 @@ A comprehensive command-line interface for mCODE translation, processing,
 and memory operations using HeySol API client integration.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Optional
 
 import typer
@@ -26,7 +26,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Subcommand imports - import after path setup
-from .commands import config, memory, patients, trials, matching
+from .commands import config, matching, memory, patients, trials
 
 app = typer.Typer(
     name="mcode-translator",
@@ -162,10 +162,9 @@ def status():
 
     try:
         # Check HeySol API connectivity
-        from heysol import HeySolClient
-
         # Get configuration for authentication
         from config.heysol_config import get_config
+        from heysol import HeySolClient
 
         config = get_config()
 

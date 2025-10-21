@@ -5,23 +5,23 @@ Implements full pairwise comparisons: prompts × models × trials
 Each combination serves as both gold standard and comparator.
 """
 
+import json
+import statistics
+import time
+import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-import json
 from pathlib import Path
-import statistics
-import time
 from typing import Any, Dict, List, Optional
-import uuid
 
-from src.pipeline import McodePipeline
-from src.shared.models import BenchmarkResult, McodeElement
-from src.shared.types import TaskStatus
-from src.utils.concurrency import AsyncTaskQueue
-from src.utils.llm_loader import LLMLoader
-from src.utils.logging_config import get_logger, setup_logging
-from src.utils.prompt_loader import PromptLoader
+from pipeline import McodePipeline
+from shared.models import BenchmarkResult, McodeElement
+from shared.types import TaskStatus
+from utils.concurrency import AsyncTaskQueue
+from utils.llm_loader import LLMLoader
+from utils.logging_config import get_logger, setup_logging
+from utils.prompt_loader import PromptLoader
 
 
 @dataclass
@@ -171,7 +171,7 @@ class PairwiseCrossValidator:
             self.task_queue = AsyncTaskQueue(max_concurrent=max_workers, name="PairwiseValidator")
 
         # Convert tasks to Task objects for TaskQueue
-        from src.utils.concurrency import Task
+        from utils.concurrency import Task
 
         queue_tasks = []
         for task in tasks:

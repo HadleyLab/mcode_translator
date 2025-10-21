@@ -358,28 +358,16 @@ class McodeSummarizer:
             template = template.replace(" (mCODE: Patient)", "")
             template = template.replace("(mCODE: Patient)", "")
 
-        try:
-            sentence = template.format(
-                subject=subject,
-                value=value,
-                codes=codes_part,
-                date_qualifier=formatted_date,
-            )
+        sentence = template.format(
+            subject=subject,
+            value=value,
+            codes=codes_part,
+            date_qualifier=formatted_date,
+        )
 
-            # Clean up any double spaces or formatting issues
-            sentence = " ".join(sentence.split())
-            return sentence
-
-        except KeyError as e:
-            # Handle missing template variables
-            print(f"Warning: Missing template variable {e} for element {element_name}")
-            if include_codes and codes:
-                codes_part = f" ({codes})"
-            else:
-                codes_part = ""
-
-            mcode_part = f" (mCODE: {element_name}{formatted_date})" if include_mcode else ""
-            return f"{subject}'s {element_name.lower()}{mcode_part} is {value}{codes_part}."
+        # Clean up any double spaces or formatting issues
+        sentence = " ".join(sentence.split())
+        return sentence
 
     def _group_elements_by_priority(
         self, elements: List[Dict[str, Any]], subject_type: str = "Patient"

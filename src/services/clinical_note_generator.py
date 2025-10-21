@@ -559,84 +559,79 @@ class ClinicalNoteGenerator:
         demographics: Dict[str, Any],
     ) -> str:
         """Generate clinical note-style natural language summary for CORE knowledge graph entity extraction."""
-        try:
-            clinical_note = []
+        clinical_note = []
 
-            # Patient header with demographics
-            clinical_note.append(self._generate_patient_header(patient_id, demographics))
+        # Patient header with demographics
+        clinical_note.append(self._generate_patient_header(patient_id, demographics))
 
-            # Demographics section
-            demographics_section = self._generate_demographics_section(demographics)
-            if demographics_section:
-                clinical_note.append(demographics_section)
+        # Demographics section
+        demographics_section = self._generate_demographics_section(demographics)
+        if demographics_section:
+            clinical_note.append(demographics_section)
 
-            # Cancer diagnosis section
-            diagnosis_section = self._generate_cancer_diagnosis_section(mcode_elements)
-            if diagnosis_section:
-                clinical_note.append(diagnosis_section)
+        # Cancer diagnosis section
+        diagnosis_section = self._generate_cancer_diagnosis_section(mcode_elements)
+        if diagnosis_section:
+            clinical_note.append(diagnosis_section)
 
-            # Biomarker section
-            biomarker_section = self._generate_biomarker_section(mcode_elements)
-            if biomarker_section:
-                clinical_note.append(biomarker_section)
+        # Biomarker section
+        biomarker_section = self._generate_biomarker_section(mcode_elements)
+        if biomarker_section:
+            clinical_note.append(biomarker_section)
 
-            # Cancer staging section
-            staging_section = self._generate_staging_section(mcode_elements)
-            if staging_section:
-                clinical_note.append(staging_section)
+        # Cancer staging section
+        staging_section = self._generate_staging_section(mcode_elements)
+        if staging_section:
+            clinical_note.append(staging_section)
 
-            # Treatments section
-            treatments_section = self._generate_treatments_section(mcode_elements)
-            if treatments_section:
-                clinical_note.append(treatments_section)
+        # Treatments section
+        treatments_section = self._generate_treatments_section(mcode_elements)
+        if treatments_section:
+            clinical_note.append(treatments_section)
 
-            # Genetic information section
-            genetics_section = self._generate_genetics_section(mcode_elements)
-            if genetics_section:
-                clinical_note.append(genetics_section)
+        # Genetic information section
+        genetics_section = self._generate_genetics_section(mcode_elements)
+        if genetics_section:
+            clinical_note.append(genetics_section)
 
-            # Performance status section
-            performance_section = self._generate_performance_section(mcode_elements)
-            if performance_section:
-                clinical_note.append(performance_section)
+        # Performance status section
+        performance_section = self._generate_performance_section(mcode_elements)
+        if performance_section:
+            clinical_note.append(performance_section)
 
-            # Vital signs section
-            vitals_section = self._generate_vitals_section(mcode_elements)
-            if vitals_section:
-                clinical_note.append(vitals_section)
+        # Vital signs section
+        vitals_section = self._generate_vitals_section(mcode_elements)
+        if vitals_section:
+            clinical_note.append(vitals_section)
 
-            # Laboratory results section
-            lab_section = self._generate_lab_section(mcode_elements)
-            if lab_section:
-                clinical_note.append(lab_section)
+        # Laboratory results section
+        lab_section = self._generate_lab_section(mcode_elements)
+        if lab_section:
+            clinical_note.append(lab_section)
 
-            # Comorbidities section
-            comorbidities_section = self._generate_comorbidities_section(mcode_elements)
-            if comorbidities_section:
-                clinical_note.append(comorbidities_section)
+        # Comorbidities section
+        comorbidities_section = self._generate_comorbidities_section(mcode_elements)
+        if comorbidities_section:
+            clinical_note.append(comorbidities_section)
 
-            # Allergies section
-            allergies_section = self._generate_allergies_section(mcode_elements)
-            if allergies_section:
-                clinical_note.append(allergies_section)
+        # Allergies section
+        allergies_section = self._generate_allergies_section(mcode_elements)
+        if allergies_section:
+            clinical_note.append(allergies_section)
 
-            # Immunization section
-            immunization_section = self._generate_immunization_section(mcode_elements)
-            if immunization_section:
-                clinical_note.append(immunization_section)
+        # Immunization section
+        immunization_section = self._generate_immunization_section(mcode_elements)
+        if immunization_section:
+            clinical_note.append(immunization_section)
 
-            # Family history section
-            family_section = self._generate_family_history_section(mcode_elements)
-            if family_section:
-                clinical_note.append(family_section)
+        # Family history section
+        family_section = self._generate_family_history_section(mcode_elements)
+        if family_section:
+            clinical_note.append(family_section)
 
-            summary = " ".join(clinical_note)
-            self.logger.info(f"Generated clinical note summary for patient {patient_id}: {summary}")
-            return summary
-
-        except Exception as e:
-            self.logger.error(f"Error generating clinical note summary: {e}")
-            return f"Patient {patient_id}: Error generating clinical note - {str(e)}"
+        summary = " ".join(clinical_note)
+        self.logger.info(f"Generated clinical note summary for patient {patient_id}: {summary}")
+        return summary
 
     def _decode_birth_sex(self, code: str) -> str:
         """Decode birth sex code to plain English."""

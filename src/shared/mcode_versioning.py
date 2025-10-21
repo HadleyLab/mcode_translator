@@ -9,9 +9,9 @@ The system supports mCODE STU (Standards for Trial Use) versions and provides ex
 organization for future schema evolution.
 """
 
-from enum import Enum
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
 

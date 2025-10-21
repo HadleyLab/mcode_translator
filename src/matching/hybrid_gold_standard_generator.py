@@ -7,14 +7,19 @@ improved gold standard matches with better accuracy and detailed reasoning.
 
 import json
 import time
-from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-from src.matching.ensemble_decision_engine import EnsembleDecisionEngine, EnsembleResult, ConsensusMethod, ConfidenceCalibration
+from src.matching.ensemble_decision_engine import (
+    ConfidenceCalibration,
+    ConsensusMethod,
+    EnsembleDecisionEngine,
+    EnsembleResult,
+)
+from src.shared.models import McodeElement
 from src.utils.config import Config
 from src.utils.logging_config import get_logger
-from src.shared.models import McodeElement
 
 
 @dataclass
@@ -138,7 +143,7 @@ class HybridGoldStandardGenerator:
         """Load and parse patient data from FHIR bundles."""
         patients = []
         try:
-            with open(filepath, 'r') as f:
+            with open(filepath) as f:
                 for line in f:
                     patient_data = json.loads(line.strip())
                     profile = self._parse_patient_data(patient_data)
@@ -153,7 +158,7 @@ class HybridGoldStandardGenerator:
         """Load and parse trial data from ClinicalTrials.gov format."""
         trials = []
         try:
-            with open(filepath, 'r') as f:
+            with open(filepath) as f:
                 for line in f:
                     trial_data = json.loads(line.strip())
                     profile = self._parse_trial_data(trial_data)

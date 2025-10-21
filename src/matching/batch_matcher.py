@@ -4,11 +4,10 @@ Batch matching functionality for patient-trial matching engines.
 
 import asyncio
 import json
-from typing import Dict, List, Any, Optional
-from pathlib import Path
+from typing import Any, Dict, List
 
 from src.matching.base import MatchingEngineBase, MatchingResult
-from src.matching.data_loader import load_patients, load_trials, create_patient_trial_pairs
+from src.matching.data_loader import create_patient_trial_pairs, load_patients, load_trials
 from src.utils.logging_config import get_logger
 
 
@@ -137,7 +136,7 @@ class BatchMatcher:
                 json_line = json.dumps(result.to_dict(), ensure_ascii=False)
                 f.write(json_line + '\n')
 
-        self.logger.info(f"Results saved successfully")
+        self.logger.info("Results saved successfully")
 
     async def run_complete_matching(
         self,

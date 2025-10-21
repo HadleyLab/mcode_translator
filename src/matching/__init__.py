@@ -7,12 +7,12 @@ This package contains the implementations of the three matching engines:
 - CoreMemoryGraphEngine: For matching based on the CORE Memory knowledge graph.
 """
 
+from . import tools
 from .base import MatchingEngineBase
+from .ensemble_decision_engine import EnsembleDecisionEngine
 from .llm_engine import LLMMatchingEngine
 from .memory_engine import CoreMemoryGraphEngine
 from .regex_engine import RegexRulesEngine
-from .ensemble_decision_engine import EnsembleDecisionEngine
-from . import tools
 
 __all__ = [
     "MatchingEngineBase",

@@ -6,10 +6,10 @@ import asyncio
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.pipeline import McodePipeline
-from src.shared.extractors import DataExtractor
-from src.utils.concurrency import AsyncTaskQueue, create_async_task_queue_from_args
-from src.utils.metrics import PerformanceMetrics
+from pipeline import McodePipeline
+from shared.extractors import DataExtractor
+from utils.concurrency import AsyncTaskQueue, create_async_task_queue_from_args
+from utils.metrics import PerformanceMetrics
 
 
 class OptimizationExecutionManager:
@@ -244,7 +244,7 @@ class OptimizationExecutionManager:
             predicted = [elem.model_dump() for elem in result.mcode_mappings]
             num_elements = len(predicted)
 
-            from src.utils.token_tracker import global_token_tracker
+            from utils.token_tracker import global_token_tracker
 
             token_usage = global_token_tracker.get_total_usage()
             tokens_used = token_usage.total_tokens if token_usage else 0

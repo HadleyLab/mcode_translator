@@ -53,12 +53,7 @@ class LLMEngine:
             f"🤖 LLMEngine processing section content (length: {len(section_content)})"
         )
 
-        try:
-            # Use the sophisticated LLM service for processing
-            elements = await self.llm_service.map_to_mcode(section_content)
-            self.logger.debug(f"✅ LLMEngine extracted {len(elements)} elements from section")
-            return elements
-
-        except Exception as e:
-            self.logger.error(f"❌ LLMEngine failed to process section: {e}")
-            return []
+        # Use the sophisticated LLM service for processing
+        elements = await self.llm_service.map_to_mcode(section_content)
+        self.logger.debug(f"✅ LLMEngine extracted {len(elements)} elements from section")
+        return elements

@@ -1,8 +1,8 @@
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from src.utils.logging_config import Loggable, logging
+from utils.logging_config import Loggable, logging
 
 
 @dataclass

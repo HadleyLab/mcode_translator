@@ -3,8 +3,8 @@ RegexRulesEngine - A deterministic, pattern-based matching engine.
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 from matching.base import MatchingEngineBase
 from utils.logging_config import get_logger
@@ -63,7 +63,7 @@ class RegexRulesEngine(MatchingEngineBase):
         age_match = patient_age is not None and trial_age_min is not None and patient_age >= trial_age_min
         stage_match = patient_stage and trial_stages and patient_stage.upper() in [s.upper() for s in trial_stages]
         cancer_type_match = patient_cancer_type and trial_cancer_types and any(ct.lower() in patient_cancer_type.lower() for ct in trial_cancer_types)
-        
+
         biomarker_match = False
         for pb in patient_biomarkers:
             for tb in trial_biomarkers:
@@ -72,10 +72,10 @@ class RegexRulesEngine(MatchingEngineBase):
                     break
             if biomarker_match:
                 break
-        
+
         # A match is found if at least one criterion is met.
         is_match = any([age_match, stage_match, cancer_type_match, biomarker_match])
-        
+
         self.logger.debug(f"RegexRulesEngine match result: {is_match}")
         return is_match
 

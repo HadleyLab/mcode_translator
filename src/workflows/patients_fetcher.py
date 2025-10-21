@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List
 
-from src.utils.patient_generator import create_patient_generator
+from utils.patient_generator import create_patient_generator
 
 from .base_workflow import FetcherWorkflow, WorkflowResult
 

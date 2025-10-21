@@ -9,8 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
-from src.shared.models import McodeElement
-from src.utils.logging_config import get_logger
+from shared.models import McodeElement
+from utils.logging_config import get_logger
 
 
 class BiologicalAnalyzer:

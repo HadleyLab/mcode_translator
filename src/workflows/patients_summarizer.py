@@ -7,8 +7,8 @@ from processed mCODE patient data and stores them in CORE Memory.
 
 from typing import Any, Dict, List
 
-from src.services.summarizer import McodeSummarizer
-from src.storage.mcode_memory_storage import OncoCoreMemory
+from services.summarizer import McodeSummarizer
+from storage.mcode_memory_storage import OncoCoreMemory
 
 from .base_summarizer import BaseSummarizerWorkflow
 from .base_workflow import WorkflowResult

@@ -7,18 +7,18 @@ configuration files, not to CORE Memory.
 """
 
 import asyncio
-from datetime import datetime
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, cast
 
-from src.optimization.cross_validation import CrossValidator
-from src.optimization.execution_manager import OptimizationExecutionManager
-from src.optimization.result_aggregator import OptimizationResultAggregator
-from src.shared.extractors import DataExtractor
-from src.storage.mcode_memory_storage import OncoCoreMemory
-from src.utils.config import Config
-from src.utils.logging_config import Loggable
+from optimization.cross_validation import CrossValidator
+from optimization.execution_manager import OptimizationExecutionManager
+from optimization.result_aggregator import OptimizationResultAggregator
+from shared.extractors import DataExtractor
+from storage.mcode_memory_storage import OncoCoreMemory
+from utils.config import Config
+from utils.logging_config import Loggable
 
 from .base_workflow import BaseWorkflow, WorkflowResult
 
@@ -254,7 +254,7 @@ class TrialsOptimizerWorkflow(BaseWorkflow, Loggable):
         combinations: List[Dict[str, str]],
         max_concurrent: int = 3,
     ) -> Dict[str, Any]:
-        from src.optimization.inter_rater_reliability import InterRaterReliabilityAnalyzer
+        from optimization.inter_rater_reliability import InterRaterReliabilityAnalyzer
 
         self.logger.info("🤝 Starting inter-rater reliability analysis...")
 

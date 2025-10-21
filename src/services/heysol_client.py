@@ -5,14 +5,13 @@ This module provides a unified interface for interacting with OncoCore
 through the HeySol API client for oncology-specific memory storage and retrieval.
 """
 
-from typing import Any, Dict, List, Optional, Union
-
-from shared.models import SearchResult
+from typing import Any, Dict, List, Optional
 
 # Import the HeySol client components
 from heysol.clients import HeySolAPIClient, HeySolMCPClient
 from heysol.config import HeySolConfig
 from heysol.exceptions import HeySolError, ValidationError
+from shared.models import SearchResult
 
 # Re-export for convenience
 __all__ = [
@@ -79,13 +78,9 @@ class OncoCoreClient:
         # Initialize MCP client (optional)
         self.mcp_client: Optional[HeySolMCPClient] = None
         if not skip_mcp_init:
-            try:
-                self.mcp_client = HeySolMCPClient(
-                    api_key=api_key, mcp_url=config.mcp_url, config=config
-                )
-            except Exception:
-                # MCP initialization failed, continue with API-only mode
-                self.mcp_client = None
+            self.mcp_client = HeySolMCPClient(
+                api_key=api_key, mcp_url=config.mcp_url, config=config
+            )
 
     @classmethod
     def from_env(cls, skip_mcp_init: bool = False, prefer_mcp: bool = False) -> "OncoCoreClient":

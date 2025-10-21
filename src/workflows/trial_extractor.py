@@ -1,6 +1,6 @@
 from typing import Any, Dict, Union
 
-from src.shared.models import ClinicalTrialData
+from shared.models import ClinicalTrialData
 
 
 class TrialExtractor:

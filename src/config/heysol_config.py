@@ -5,10 +5,10 @@ This module provides a typed configuration system that integrates
 heysol_api_client's HeySolConfig with mCODE Translator's specific needs.
 """
 
-from dataclasses import dataclass, field
 import os
-from pathlib import Path
 import sys
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
 
 try:
@@ -173,7 +173,7 @@ class McodeHeySolConfig:
         """Get the underlying HeySol configuration."""
         return self.heysol
 
-    def get_api_key(self) -> Optional[str]:
+    def get_api_key(self, model_name: Optional[str] = None) -> Optional[str]:
         """Get HeySol API key."""
         if self.api_key:
             return self.api_key
@@ -199,19 +199,34 @@ class McodeHeySolConfig:
 
         return None
 
-    def get_base_url(self) -> str:
+    def get_base_url_old(self) -> str:
         """Get HeySol base URL."""
         if self.heysol:
             base_url = self.heysol.base_url
             return base_url if isinstance(base_url, str) else ""
         return "https://core.heysol.ai/api/v1"  # Default fallback
 
-    def get_timeout(self) -> int:
+    def get_timeout(self, model_name: Optional[str] = None) -> int:
         """Get HeySol timeout."""
         if self.heysol and hasattr(self.heysol, "timeout"):
             timeout = self.heysol.timeout
             return timeout if isinstance(timeout, int) else 60
         return 60  # Default fallback
+
+    def get_temperature(self, model_name: Optional[str] = None) -> float:
+        """Get temperature setting."""
+        return 0.7  # Default temperature
+
+    def get_max_tokens(self, model_name: Optional[str] = None) -> int:
+        """Get max tokens setting."""
+        return 1000  # Default max tokens
+
+    def get_base_url(self, model_name: Optional[str] = None) -> str:
+        """Get base URL."""
+        if self.heysol:
+            base_url = self.heysol.base_url
+            return base_url if isinstance(base_url, str) else ""
+        return "https://core.heysol.ai/api/v1"  # Default fallback
 
     def is_cache_enabled(self) -> bool:
         """Check if mCODE caching is enabled."""

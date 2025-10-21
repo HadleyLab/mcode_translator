@@ -5,14 +5,14 @@ Zero redundancy, maximum performance. Leverages existing infrastructure.
 """
 
 import asyncio
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
-from src.pipeline.document_ingestor import DocumentIngestor
+from pipeline.document_ingestor import DocumentIngestor
 
 if TYPE_CHECKING:
-    from src.services.regex.service import RegexService
-from src.services.llm.service import LLMService
-from src.shared.models import (
+    from services.regex.service import RegexService
+from services.llm.service import LLMService
+from shared.models import (
     ClinicalTrialData,
     McodeElement,
     McodeMappingResponse,
@@ -20,8 +20,8 @@ from src.shared.models import (
     ProcessingMetadata,
     ValidationResult,
 )
-from src.utils.config import Config
-from src.utils.logging_config import get_logger
+from utils.config import Config
+from utils.logging_config import get_logger
 
 # Sentinel for default values
 _PROMPT_DEFAULT = object()
@@ -78,7 +78,7 @@ class McodePipeline:
         # Initialize appropriate service based on engine
         if engine == "regex":
             # Lazy import to avoid circular dependency
-            from src.services.regex.service import RegexService
+            from services.regex.service import RegexService
             self.service = RegexService(self.config, self.model_name, self.prompt_name)
         else:
             self.service = LLMService(self.config, self.model_name, self.prompt_name)
@@ -102,7 +102,7 @@ class McodePipeline:
             )
         else:
             self.logger.info(
-                f"🚀 Pipeline.process called with ClinicalTrialData model"
+                "🚀 Pipeline.process called with ClinicalTrialData model"
             )
 
         # Input is already a validated ClinicalTrialData model

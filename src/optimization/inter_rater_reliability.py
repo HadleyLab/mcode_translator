@@ -15,21 +15,21 @@ Key metrics:
 """
 
 import asyncio
+import json
+import statistics
+import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-import json
 from pathlib import Path
-import statistics
-import time
 from typing import Any, Dict, List, Optional
 
 import numpy as np
 from scipy.stats import pearsonr
 
-from src.pipeline import McodePipeline
-from src.shared.models import McodeElement
-from src.utils.logging_config import get_logger, setup_logging
+from pipeline import McodePipeline
+from shared.models import McodeElement
+from utils.logging_config import get_logger, setup_logging
 
 
 @dataclass
@@ -152,7 +152,7 @@ class InterRaterReliabilityAnalyzer:
         max_concurrent: int,
     ) -> None:
         """Collect mCODE extraction results from all raters on all trials."""
-        from src.utils.concurrency import AsyncQueue, create_task
+        from utils.concurrency import AsyncTaskQueue, create_task
 
         self.logger.info("📥 Collecting rater data...")
 
@@ -172,7 +172,7 @@ class InterRaterReliabilityAnalyzer:
                 tasks.append(task)
 
         # Create async queue and execute tasks
-        queue = AsyncQueue(max_concurrent=max_concurrent, name="InterRaterDataCollection")
+        queue = AsyncTaskQueue(max_concurrent=max_concurrent, name="InterRaterDataCollection")
 
         def progress_callback(completed, total, result):  # type: ignore
             if completed % 5 == 0:

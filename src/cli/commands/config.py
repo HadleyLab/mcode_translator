@@ -7,13 +7,13 @@ validation, setup, and environment management.
 
 import json
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Optional
 
+import typer
 from rich.console import Console
 from rich.table import Table
-import typer
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -113,56 +113,42 @@ def check_config(
     # Check API configurations
     console.print("[blue]🔗 Checking API configurations...[/blue]")
 
-    try:
-        from utils.config import Config
+    from utils.config import Config
 
-        config = Config()
+    config = Config()
 
-        # Check LLM configurations
-        llm_configs = config.get_all_llm_configs()
-        config_status["apis"]["llm_configs"] = f"✅ {len(llm_configs)} models"
-        console.print(f"[green]✅ LLM configurations: {len(llm_configs)} models available[/green]")
+    # Check LLM configurations
+    llm_configs = config.get_all_llm_configs()
+    config_status["apis"]["llm_configs"] = f"✅ {len(llm_configs)} models"
+    console.print(f"[green]✅ LLM configurations: {len(llm_configs)} models available[/green]")
 
-        # Test API key retrieval
-        try:
-            api_key = config.get_api_key("gpt-4")
-            if api_key:
-                config_status["apis"]["api_keys"] = "✅"
-                console.print("[green]✅ API keys: configured[/green]")
-            else:
-                config_status["apis"]["api_keys"] = "❌"
-                console.print("[red]❌ API keys: missing[/red]")
-        except Exception as e:
-            config_status["apis"]["api_keys"] = f"❌ {e}"
-            console.print(f"[red]❌ API keys: {e}[/red]")
-
-    except Exception as e:
-        config_status["apis"]["config_loading"] = f"❌ {e}"
-        console.print(f"[red]❌ Configuration loading failed: {e}[/red]")
+    # Test API key retrieval
+    api_key = config.get_api_key("gpt-4")
+    if api_key:
+        config_status["apis"]["api_keys"] = "✅"
+        console.print("[green]✅ API keys: configured[/green]")
+    else:
+        config_status["apis"]["api_keys"] = "❌"
+        console.print("[red]❌ API keys: missing[/red]")
 
     # Check memory configuration
     console.print("[blue]🧠 Checking CORE Memory configuration...[/blue]")
 
-    try:
-        from utils.config import Config
+    from utils.config import Config
 
-        config = Config()
-        core_memory_config = config.get_core_memory_config()
-        config_status["memory"]["core_config"] = "✅"
-        console.print("[green]✅ CORE Memory configuration loaded[/green]")
+    config = Config()
+    core_memory_config = config.get_core_memory_config()
+    config_status["memory"]["core_config"] = "✅"
+    console.print("[green]✅ CORE Memory configuration loaded[/green]")
 
-        api_base_url = core_memory_config.get("core_memory", {}).get("api_base_url")
-        if api_base_url:
-            config_status["memory"]["api_url"] = f"✅ {api_base_url}"
-            if verbose:
-                console.print(f"[blue]📡 API URL: {api_base_url}[/blue]")
-        else:
-            config_status["memory"]["api_url"] = "❌"
-            console.print("[red]❌ CORE Memory API URL not configured[/red]")
-
-    except Exception as e:
-        config_status["memory"]["config"] = f"❌ {e}"
-        console.print(f"[red]❌ CORE Memory configuration failed: {e}[/red]")
+    api_base_url = core_memory_config.get("core_memory", {}).get("api_base_url")
+    if api_base_url:
+        config_status["memory"]["api_url"] = f"✅ {api_base_url}"
+        if verbose:
+            console.print(f"[blue]📡 API URL: {api_base_url}[/blue]")
+    else:
+        config_status["memory"]["api_url"] = "❌"
+        console.print("[red]❌ CORE Memory API URL not configured[/red]")
 
     # Summary
     all_good = all(

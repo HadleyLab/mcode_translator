@@ -2,14 +2,14 @@
 Optimization Result Aggregator - Handles result processing and aggregation.
 """
 
-from datetime import datetime
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
-from src.optimization.biological_analyzer import BiologicalAnalyzer
-from src.optimization.performance_analyzer import PerformanceAnalyzer
-from src.optimization.report_generator import ReportGenerator
+from optimization.biological_analyzer import BiologicalAnalyzer
+from optimization.performance_analyzer import PerformanceAnalyzer
+from optimization.report_generator import ReportGenerator
 
 
 class OptimizationResultAggregator:

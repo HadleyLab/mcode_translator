@@ -24,7 +24,7 @@ class APIManager:
         Args:
             cache_dir: Base directory for all cache files
         """
-        from src.utils.config import Config
+        from utils.config import Config
 
         config = Config()
 

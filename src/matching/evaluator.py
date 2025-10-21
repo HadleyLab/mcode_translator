@@ -2,11 +2,10 @@
 Evaluation and scoring utilities for matching engines.
 """
 
-from typing import Dict, List, Any, Tuple
 from collections import defaultdict
+from typing import Any, Dict, List
 
 from src.matching.base import MatchingResult
-from src.shared.models import McodeElement
 from src.utils.logging_config import get_logger
 
 
@@ -179,7 +178,7 @@ class MatchingEvaluator:
             report += f"- {elem_type}: {stats['count']} matches, avg confidence {stats['avg_confidence']:.3f}\n"
 
         if comparison_results:
-            report += f"""
+            report += """
 ## Engine Comparison
 """
             for key, value in comparison_results.items():
