@@ -1,12 +1,94 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
+
+from src.shared.models import ClinicalTrialData
 
 
 class TrialExtractor:
 
-    def extract_trial_mcode_elements(self, trial: Dict[str, Any]) -> Dict[str, Any]:
-        protocol_section = trial["protocolSection"]
+    def extract_trial_mcode_elements(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> Dict[str, Any]:
+        """Extract mCODE elements handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            mcode_elements: Dict[str, Any] = {}
 
-        mcode_elements: Dict[str, Any] = {}
+            # Extract identification elements
+            identification_data = {
+                "nctId": trial.nct_id,
+                "briefTitle": trial.brief_title,
+                "officialTitle": trial.official_title,
+            }
+            mcode_elements.update(self._extract_trial_identification(identification_data))
+
+            # Extract eligibility elements if available
+            if trial.protocol_section.eligibility_module:
+                eligibility_data = {
+                    "minimumAge": trial.protocol_section.eligibility_module.minimum_age,
+                    "maximumAge": trial.protocol_section.eligibility_module.maximum_age,
+                    "sex": trial.protocol_section.eligibility_module.sex,
+                    "healthyVolunteers": trial.protocol_section.eligibility_module.healthy_volunteers,
+                    "eligibilityCriteria": trial.protocol_section.eligibility_module.eligibility_criteria,
+                }
+                mcode_elements.update(self._extract_trial_eligibility_mcode(eligibility_data))
+
+            # Extract conditions elements if available
+            if trial.conditions:
+                conditions_data = {
+                    "conditions": [{"name": c.name, "code": c.code, "codeSystem": c.code_system} for c in trial.conditions]
+                }
+                mcode_elements.update(self._extract_trial_conditions_mcode(conditions_data))
+
+            # Extract interventions elements if available
+            if trial.interventions:
+                interventions_data = {
+                    "interventions": [{"type": i.type, "name": i.name, "description": i.description,
+                                     "armGroupLabels": i.arm_group_labels, "otherNames": i.other_names}
+                                    for i in trial.interventions]
+                }
+                mcode_elements.update(self._extract_trial_interventions_mcode(interventions_data))
+
+            # Extract arm groups elements if available
+            if trial.arm_groups:
+                arm_groups_data = {
+                    "armGroups": [{"label": ag.label, "type": ag.type, "description": ag.description,
+                                 "interventionNames": ag.intervention_names} for ag in trial.arm_groups]
+                }
+                mcode_elements.update(self._extract_trial_arms_groups_mcode(arm_groups_data))
+
+            # Extract outcomes elements if available
+            if trial.primary_outcomes or trial.secondary_outcomes:
+                outcomes_data = {}
+                if trial.primary_outcomes:
+                    outcomes_data["primaryOutcomes"] = [{"measure": o.measure, "description": o.description,
+                                                       "timeFrame": o.time_frame} for o in trial.primary_outcomes]
+                if trial.secondary_outcomes:
+                    outcomes_data["secondaryOutcomes"] = [{"measure": o.measure, "description": o.description,
+                                                          "timeFrame": o.time_frame} for o in trial.secondary_outcomes]
+                mcode_elements.update(self._extract_trial_outcomes_mcode(outcomes_data))
+
+            # Extract status elements if available
+            if trial.protocol_section.status_module:
+                mcode_elements.update(self._extract_trial_temporal_mcode(trial.protocol_section.status_module))
+
+            # Extract design elements if available
+            if trial.protocol_section.design_module:
+                mcode_elements.update(self._extract_trial_design_mcode(trial.protocol_section.design_module))
+
+            # Extract sponsor elements if available
+            if trial.protocol_section.sponsor_collaborators_module:
+                mcode_elements.update(self._extract_trial_sponsor_mcode(trial.protocol_section.sponsor_collaborators_module))
+
+            return mcode_elements
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            raise ValueError("trial must be a dict or ClinicalTrialData instance")
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if not protocol_section:
+            raise ValueError("trial must have protocolSection")
+
+        extracted_elements: Dict[str, Any] = {}
 
         extractors = [
             ("identificationModule", self._extract_trial_identification),
@@ -23,10 +105,11 @@ class TrialExtractor:
         ]
 
         for module_key, extractor_func in extractors:
-            module_data = protocol_section.get(module_key, {})
-            mcode_elements.update(extractor_func(module_data))
+            # Try new module key format first
+            module_data = protocol_section.get(module_key) or protocol_section.get(module_key.replace("Module", "_module"), {})
+            extracted_elements.update(extractor_func(module_data))
 
-        return mcode_elements
+        return extracted_elements
 
     def _extract_trial_identification(self, identification: Dict[str, Any]) -> Dict[str, Any]:
         elements = {}
@@ -395,80 +478,203 @@ class TrialExtractor:
 
         return elements
 
-    def extract_trial_metadata(self, trial: Dict[str, Any]) -> Dict[str, Any]:
-        metadata: Dict[str, Any] = {}
+    def extract_trial_metadata(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> Dict[str, Any]:
+        """Extract trial metadata handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            metadata: Dict[str, Any] = {}
 
-        protocol_section = trial["protocolSection"]
+            # Extract from identification module
+            identification = trial.protocol_section.identification_module
+            metadata["nct_id"] = identification.nct_id
+            metadata["brief_title"] = identification.brief_title
+            metadata["official_title"] = identification.official_title
 
-        identification = protocol_section.get("identificationModule", {})
-        metadata["nct_id"] = identification.get("nctId")
-        metadata["brief_title"] = identification.get("briefTitle")
-        metadata["official_title"] = identification.get("officialTitle")
+            # Extract from status module if available
+            if trial.protocol_section.status_module:
+                status = trial.protocol_section.status_module
+                metadata["overall_status"] = status.get("overallStatus")
+                if "startDateStruct" in status:
+                    metadata["start_date"] = status["startDateStruct"].get("date")
+                if "completionDateStruct" in status:
+                    metadata["completion_date"] = status["completionDateStruct"].get("date")
 
-        status = protocol_section.get("statusModule", {})
-        metadata["overall_status"] = status.get("overallStatus")
-        start_struct = status.get("startDateStruct", {})
-        metadata["start_date"] = start_struct.get("date")
-        completion_struct = status.get("completionDateStruct", {})
-        metadata["completion_date"] = completion_struct.get("date")
+            # Extract from design module if available
+            if trial.protocol_section.design_module:
+                design = trial.protocol_section.design_module
+                metadata["study_type"] = design.get("studyType")
+                metadata["phase"] = design.get("phases", [])
+                metadata["primary_purpose"] = design.get("primaryPurpose")
 
-        design = protocol_section.get("designModule", {})
-        metadata["study_type"] = design.get("studyType")
-        metadata["phase"] = design.get("phases", [])
-        metadata["primary_purpose"] = design.get("primaryPurpose")
+            # Extract from eligibility module if available
+            if trial.protocol_section.eligibility_module:
+                eligibility = trial.protocol_section.eligibility_module
+                metadata["minimum_age"] = eligibility.minimum_age
+                metadata["maximum_age"] = eligibility.maximum_age
+                metadata["sex"] = eligibility.sex
+                metadata["healthy_volunteers"] = eligibility.healthy_volunteers
 
-        eligibility = protocol_section.get("eligibilityModule", {})
-        metadata["minimum_age"] = eligibility.get("minimumAge")
-        metadata["maximum_age"] = eligibility.get("maximumAge")
-        metadata["sex"] = eligibility.get("sex")
-        metadata["healthy_volunteers"] = eligibility.get("healthyVolunteers")
+            # Extract conditions
+            if trial.conditions:
+                metadata["conditions"] = [c.name for c in trial.conditions if c.name]
 
-        conditions_module = protocol_section.get("conditionsModule", {})
-        conditions = conditions_module.get("conditions", [])
-        metadata["conditions"] = [c.get("name") for c in conditions if isinstance(c, dict)]
+            # Extract interventions
+            if trial.interventions:
+                metadata["interventions"] = [i.name for i in trial.interventions if i.name]
 
-        interventions_module = protocol_section.get("armsInterventionsModule", {})
-        interventions = interventions_module.get("interventions", [])
-        metadata["interventions"] = [i.get("name") for i in interventions if isinstance(i, dict)]
+            return metadata
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            raise ValueError("trial must be a dict or ClinicalTrialData instance")
+
+        # Extract metadata directly from dictionary format
+        metadata = {}
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if not protocol_section:
+            return metadata
+
+        # Try new identification_module format first
+        identification = protocol_section.get("identificationModule") or protocol_section.get("identification_module")
+        if identification:
+            metadata["nct_id"] = identification.get("nctId") or identification.get("nct_id")
+            metadata["brief_title"] = identification.get("briefTitle") or identification.get("brief_title")
+            metadata["official_title"] = identification.get("officialTitle") or identification.get("official_title")
+
+        # Try new status_module format first
+        status_module = protocol_section.get("statusModule") or protocol_section.get("status_module")
+        if status_module:
+            metadata["overall_status"] = status_module.get("overallStatus")
+
+        # Try new design_module format first
+        design_module = protocol_section.get("designModule") or protocol_section.get("design_module")
+        if design_module:
+            metadata["study_type"] = design_module.get("studyType")
+            metadata["phase"] = design_module.get("phases")
+
+        # Try new eligibility_module format first
+        eligibility_module = protocol_section.get("eligibilityModule") or protocol_section.get("eligibility_module")
+        if eligibility_module:
+            metadata["minimum_age"] = eligibility_module.get("minimumAge") or eligibility_module.get("minimum_age")
+            metadata["maximum_age"] = eligibility_module.get("maximumAge") or eligibility_module.get("maximum_age")
+            metadata["sex"] = eligibility_module.get("sex")
+            metadata["healthy_volunteers"] = eligibility_module.get("healthyVolunteers") or eligibility_module.get("healthy_volunteers")
 
         return metadata
 
-    def extract_trial_id(self, trial: Dict[str, Any]) -> str:
-        trial_id = trial["protocolSection"]["identificationModule"]["nctId"]
+    def extract_trial_id(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> str:
+        """Extract trial ID handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            return trial.nct_id
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            raise ValueError("trial must be a dict or ClinicalTrialData instance")
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if not protocol_section:
+            raise ValueError("trial must have protocolSection")
+
+        # Try new identification_module format first
+        identification = protocol_section.get("identificationModule") or protocol_section.get("identification_module")
+        if not identification:
+            raise ValueError("trial must have identificationModule")
+
+        # Try new nct_id format first
+        trial_id = identification.get("nctId") or identification.get("nct_id")
+        if not trial_id:
+            raise ValueError("trial must have nctId")
+
         if isinstance(trial_id, str):
             return trial_id
-        raise ValueError(f"Trial ID must be string, got {type(trial_id)}")
+        return str(trial_id)
 
-    def check_trial_has_full_data(self, trial: Dict[str, Any]) -> bool:
-        protocol_section = trial["protocolSection"]
+    def check_trial_has_full_data(self, trial: Union[Dict[str, Any], ClinicalTrialData]) -> bool:
+        """Check if trial has full data handling both old and new model formats."""
+        # Handle new ClinicalTrialData model format
+        if isinstance(trial, ClinicalTrialData):
+            indicators = []
+
+            # Check eligibility criteria length
+            if trial.protocol_section.eligibility_module and trial.protocol_section.eligibility_module.eligibility_criteria:
+                criteria = trial.protocol_section.eligibility_module.eligibility_criteria
+                if len(criteria) > 100:
+                    indicators.append(True)
+
+            # Check interventions detail
+            if trial.interventions:
+                detailed_interventions = any(
+                    i.description for i in trial.interventions if i.description
+                )
+                if detailed_interventions:
+                    indicators.append(True)
+
+            # Check outcomes
+            if trial.primary_outcomes:
+                indicators.append(True)
+
+            # Check derived section equivalent (we can use conditions as proxy)
+            if trial.conditions:
+                indicators.append(True)
+
+            # Check sponsor collaborators (use sponsor module if available)
+            if trial.protocol_section.sponsor_collaborators_module:
+                sponsor = trial.protocol_section.sponsor_collaborators_module
+                if isinstance(sponsor, dict) and sponsor.get("collaborators"):
+                    collaborators = sponsor["collaborators"]
+                    if collaborators and len(collaborators) > 0:
+                        indicators.append(True)
+
+            return len(indicators) >= 3
+
+        # Handle old dictionary format
+        if not isinstance(trial, dict):
+            raise ValueError("trial must be a dict or ClinicalTrialData instance")
+
+        # Try new protocol_section format first
+        protocol_section = trial.get("protocolSection") or trial.get("protocol_section")
+        if not protocol_section:
+            return False
 
         indicators = []
 
-        eligibility = protocol_section.get("eligibilityModule", {})
-        criteria = eligibility.get("eligibilityCriteria", "")
-        if criteria and len(criteria) > 100:
-            indicators.append(True)
-
-        arms = protocol_section.get("armsInterventionsModule", {})
-        interventions = arms.get("interventions", [])
-        if interventions and len(interventions) > 0:
-            detailed_interventions = any(
-                isinstance(i, dict) and i.get("description", "") for i in interventions
-            )
-            if detailed_interventions:
+        # Try new eligibility_module format first
+        eligibility = protocol_section.get("eligibilityModule") or protocol_section.get("eligibility_module")
+        if eligibility:
+            criteria = eligibility.get("eligibilityCriteria", "")
+            if criteria and len(criteria) > 100:
                 indicators.append(True)
 
-        outcomes = protocol_section.get("outcomesModule", {})
+        # Try new arms_interventions_module format first
+        arms = protocol_section.get("armsInterventionsModule") or protocol_section.get("arms_interventions_module")
+        if arms:
+            interventions = arms.get("interventions", [])
+            if interventions and len(interventions) > 0:
+                detailed_interventions = any(
+                    isinstance(i, dict) and i.get("description", "") for i in interventions
+                )
+                if detailed_interventions:
+                    indicators.append(True)
+
+        # Try new outcomes_module format first
+        outcomes = protocol_section.get("outcomesModule") or protocol_section.get("outcomes_module")
         if isinstance(outcomes, dict) and outcomes.get("primaryOutcomes"):
             indicators.append(True)
 
+        # Check derived section
         derived_section = trial.get("derivedSection")
         if derived_section and isinstance(derived_section, dict):
             indicators.append(True)
 
-        sponsor = protocol_section.get("sponsorCollaboratorsModule", {})
-        collaborators = sponsor.get("collaborators", [])
-        if collaborators and len(collaborators) > 0:
-            indicators.append(True)
+        # Check sponsor collaborators
+        sponsor = protocol_section.get("sponsorCollaboratorsModule")
+        if isinstance(sponsor, dict):
+            collaborators = sponsor.get("collaborators", [])
+            if collaborators and len(collaborators) > 0:
+                indicators.append(True)
 
         return len(indicators) >= 3

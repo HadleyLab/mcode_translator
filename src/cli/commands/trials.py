@@ -99,8 +99,8 @@ def trials_pipeline(
             raise typer.Exit(1)
 
         # Import required components
-        from src.utils.config import Config
-        from src.storage.mcode_memory_storage import OncoCoreMemory
+        from utils.config import Config
+        from storage.mcode_memory_storage import OncoCoreMemory
 
         config = Config()
         memory_storage = OncoCoreMemory()
@@ -390,7 +390,7 @@ def _make_trial_json_serializable(trial):
         Trial data with Pydantic model objects converted to dictionaries
     """
     import copy
-    from src.shared.models import McodeElement, ValidationResult, ProcessingMetadata, TokenUsage
+    from shared.models import McodeElement, ValidationResult, ProcessingMetadata, TokenUsage
 
     # Deep copy to avoid modifying the original
     serializable_trial = copy.deepcopy(trial)

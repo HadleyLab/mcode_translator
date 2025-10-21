@@ -4,10 +4,10 @@ CoreMemoryGraphEngine - A matching engine that leverages the CORE Memory knowled
 
 from typing import Any, Dict, List
 
-from src.matching.base import MatchingEngineBase
-from src.services.heysol_client import OncoCoreClient
-from src.shared.models import McodeElement
-from src.utils.logging_config import get_logger
+from matching.base import MatchingEngineBase
+from services.heysol_client import OncoCoreClient
+from shared.models import McodeElement
+from utils.logging_config import get_logger
 
 
 class CoreMemoryGraphEngine(MatchingEngineBase):

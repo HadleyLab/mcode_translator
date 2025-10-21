@@ -316,14 +316,4 @@
     }
   },
 
-  "backward_compatibility": {
-    "legacy_rule_based_mode": true,
-    "legacy_output_format": true,
-    "graceful_degradation": true,
-    "fallback_options": [
-      "rule_based_only",
-      "single_expert_fallback",
-      "conservative_ensemble"
-    ]
-  }
 }

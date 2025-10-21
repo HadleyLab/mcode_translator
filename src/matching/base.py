@@ -12,7 +12,7 @@ import json
 import hashlib
 from datetime import datetime
 
-from src.shared.models import McodeElement
+from shared.models import McodeElement
 
 
 class MatchingResult:
@@ -58,7 +58,7 @@ class MatchingEngineBase(ABC):
         self.max_retries = max_retries
         self.cache_manager = None
         if cache_enabled:
-            from src.utils.api_manager import APIManager
+            from utils.api_manager import APIManager
             self.cache_manager = APIManager()
 
     def _generate_cache_key(self, patient_data: Dict[str, Any], trial_criteria: Dict[str, Any]) -> str:

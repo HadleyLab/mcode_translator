@@ -7,8 +7,8 @@ to convert them into mCODE elements using the new Pydantic mCODE models.
 
 from typing import Any, Dict, Optional, List, Union
 
-from src.utils.logging_config import get_logger
-from src.shared.models import (
+from utils.logging_config import get_logger
+from shared.models import (
     # mCODE profile models
     CancerCondition,
     TumorMarkerTest,

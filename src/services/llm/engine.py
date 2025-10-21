@@ -7,10 +7,10 @@ Contains only LLM-specific logic - no pipeline orchestration.
 
 from typing import List
 
-from src.services.llm.service import LLMService
-from src.shared.models import McodeElement
-from src.utils.config import Config
-from src.utils.logging_config import get_logger
+from services.llm.service import LLMService
+from shared.mcode_models import McodeElement
+from utils.config import Config
+from utils.logging_config import get_logger
 
 
 class LLMEngine:

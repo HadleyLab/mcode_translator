@@ -7,18 +7,15 @@ confidence scoring and clinical rationale generation.
 
 import hashlib
 import json
-import os
-import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from src.services.llm.service import LLMService
-from src.shared.models import PatientTrialMatchResponse
-from src.utils.api_manager import APIManager
-from src.utils.async_api_cache import AsyncAPICache
-from src.utils.config import Config
-from src.utils.logging_config import get_logger
-from src.utils.prompt_loader import prompt_loader
+from services.llm.service import LLMService
+from shared.models import PatientTrialMatchResponse
+from utils.api_manager import APIManager
+from utils.config import Config
+from utils.logging_config import get_logger
+from utils.prompt_loader import prompt_loader
 
 
 class ClinicalExpertAgent:

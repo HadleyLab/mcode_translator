@@ -5,13 +5,17 @@ Zero redundancy, maximum performance. Leverages existing infrastructure.
 """
 
 import asyncio
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 from src.pipeline.document_ingestor import DocumentIngestor
+
+if TYPE_CHECKING:
+    from src.services.regex.service import RegexService
 from src.services.llm.service import LLMService
 from src.shared.models import (
     ClinicalTrialData,
     McodeElement,
+    McodeMappingResponse,
     PipelineResult,
     ProcessingMetadata,
     ValidationResult,
@@ -29,6 +33,8 @@ class McodePipeline:
 
     Direct data flow: Raw Dict → Existing Models → Existing PipelineResult
     """
+
+    service: Union["RegexService", LLMService]
 
     def __init__(
         self,
@@ -71,15 +77,15 @@ class McodePipeline:
 
         # Initialize appropriate service based on engine
         if engine == "regex":
+            # Lazy import to avoid circular dependency
             from src.services.regex.service import RegexService
-
             self.service = RegexService(self.config, self.model_name, self.prompt_name)
         else:
             self.service = LLMService(self.config, self.model_name, self.prompt_name)
 
         self.logger.info(f"✅ McodePipeline initialized with {engine} engine")
 
-    async def process(self, trial_data: Dict[str, Any]) -> PipelineResult:
+    async def process(self, trial_data: ClinicalTrialData) -> PipelineResult:
         """
         Process clinical trial data with ultra-lean async data flow.
 
@@ -89,20 +95,25 @@ class McodePipeline:
         Returns:
             PipelineResult with existing validated models
         """
-        self.logger.info(
-            f"🚀 Pipeline.process called with trial data keys: " f"{list(trial_data.keys())[:5]}..."
-        )
+        # Log trial data information
+        if isinstance(trial_data, dict):
+            self.logger.info(
+                f"🚀 Pipeline.process called with trial data keys: " f"{list(trial_data.keys())[:5]}..."
+            )
+        else:
+            self.logger.info(
+                f"🚀 Pipeline.process called with ClinicalTrialData model"
+            )
 
-        # Validate input using existing ClinicalTrialData model - STRICT: No fallback, fail fast
-        validated_trial = ClinicalTrialData(**trial_data)
-        self.logger.info(f"Processing trial: {validated_trial.nct_id}")
+        # Input is already a validated ClinicalTrialData model
+        self.logger.info(f"Processing trial: {trial_data.nct_id}")
 
         # Stage 1: Document processing (existing component) - STRICT: No fallback, fail fast
-        sections = self.document_ingestor.ingest_clinical_trial_document(trial_data)
+        sections = self.document_ingestor.ingest_clinical_trial_document(trial_data.model_dump())
         self.logger.info(f"📄 Document ingestor returned {len(sections)} sections")
 
         # Stage 2: Processing using configured service - STRICT: No fallback, fail fast
-        all_elements = []
+        all_elements: List[McodeElement] = []
         for i, section in enumerate(sections):
             self.logger.info(
                 f"🔍 Processing section {i+1}/{len(sections)}: "
@@ -113,7 +124,7 @@ class McodePipeline:
                 if self.engine == "regex":
                     # For regex, we need full trial data, not sections
                     # Use the service's trial mapping method
-                    elements = self.service.map_trial_to_mcode(trial_data)
+                    elements = self.service.map_trial_to_mcode(trial_data.model_dump())  # type: ignore
                     self.logger.info(f"✅ REGEX service returned {len(elements)} elements")
                     all_elements.extend(elements)
                     break  # Regex processes the whole trial at once, not per section
@@ -121,7 +132,7 @@ class McodePipeline:
                     # LLM processing per section
                     self.logger.info(f"🚀 Calling LLM service for section {i+1}")
                     response = await self.service.map_to_mcode(section.content)
-                    elements = response.mcode_elements
+                    elements = response.mcode_elements if isinstance(response, McodeMappingResponse) else []
                     self.logger.info(
                         f"✅ LLM service returned {len(elements)} elements " f"for section {i+1}"
                     )
@@ -146,11 +157,11 @@ class McodePipeline:
                 processing_time_seconds=None,
                 token_usage=None,
             ),
-            original_data=trial_data,
+            original_data=trial_data.model_dump(),
             error=None,
         )
 
-    async def process_batch(self, trials_data: List[Dict[str, Any]]) -> List[PipelineResult]:
+    async def process_batch(self, trials_data: List[ClinicalTrialData]) -> List[PipelineResult]:
         """
         Process multiple trials efficiently using asyncio.gather for concurrent batch processing.
 
@@ -167,9 +178,9 @@ class McodePipeline:
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Handle any exceptions that occurred during processing
-        processed_results = []
+        processed_results: List[PipelineResult] = []
         for i, result in enumerate(results):
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 self.logger.error(f"❌ Batch processing failed for trial {i}: {result}")
                 # Create error result for failed trial
                 error_result = PipelineResult(
@@ -186,7 +197,7 @@ class McodePipeline:
                         processing_time_seconds=None,
                         token_usage=None,
                     ),
-                    original_data=trials_data[i],
+                    original_data={},  # Empty dict for error cases
                     error=str(result),
                 )
                 processed_results.append(error_result)

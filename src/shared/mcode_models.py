@@ -59,7 +59,7 @@ class CancerConditionCode(str, Enum):
     LIVER_CANCER = "363349007"
 
 
-class TNMStageGroup(str, Enum):
+class TNMStageGroupEnum(str, Enum):
     """TNM stage group value set."""
     STAGE_0 = "0"
     STAGE_I = "I"
@@ -921,13 +921,29 @@ def create_cancer_condition(
     )
 
 
+class McodeElement(BaseModel):
+    """Individual mCODE element mapping."""
+
+    element_type: str = Field(
+        ...,
+        description="Type of mCODE element (e.g., 'CancerCondition', 'CancerTreatment')",
+    )
+    code: Optional[str] = Field(None, description="Element code")
+    display: Optional[str] = Field(None, description="Human-readable display name")
+    system: Optional[str] = Field(None, description="Coding system")
+    confidence_score: Optional[float] = Field(
+        None, ge=0.0, le=1.0, description="Confidence score for the mapping"
+    )
+    evidence_text: Optional[str] = Field(None, description="Supporting evidence text")
+
+
 # Export all models
 __all__ = [
     # Value sets
     "AdministrativeGender",
     "BirthSex",
     "CancerConditionCode",
-    "TNMStageGroup",
+    "TNMStageGroupEnum",
     "ECOGPerformanceStatus",
     "ReceptorStatus",
     "HistologyMorphologyBehavior",
@@ -969,6 +985,9 @@ __all__ = [
     "CancerRelatedMedicationStatement",
     "CancerRelatedSurgicalProcedure",
     "CancerRelatedRadiationProcedure",
+
+    # Core mCODE elements
+    "McodeElement",
 
     # Versioning integration
     "VersionedMcodeResource",

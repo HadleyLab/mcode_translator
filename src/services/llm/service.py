@@ -9,19 +9,19 @@ import logging
 import time
 from typing import Any, Dict, List
 
-from src.shared.models import (
+from shared.models import (
     ParsedLLMResponse,
     McodeElement,
     McodeMappingResponse,
     PatientTrialMatchResponse,
     ProcessingMetadata,
 )
-from src.utils.api_manager import APIManager
-from src.utils.config import Config
-from src.utils.llm_loader import llm_loader
-from src.utils.logging_config import get_logger
-from src.utils.prompt_loader import prompt_loader
-from src.utils.token_tracker import global_token_tracker
+from utils.api_manager import APIManager
+from utils.config import Config
+from utils.llm_loader import llm_loader
+from utils.logging_config import get_logger
+from utils.prompt_loader import prompt_loader
+from utils.token_tracker import global_token_tracker
 
 
 class LLMService:
@@ -432,7 +432,7 @@ Now analyze this patient-trial pair and respond with JSON:"""
             )
 
             # Extract token usage using existing utility
-            from src.utils.token_tracker import extract_token_usage_from_response
+            from utils.token_tracker import extract_token_usage_from_response
 
             token_usage = extract_token_usage_from_response(response, self.model_name, "provider")
 

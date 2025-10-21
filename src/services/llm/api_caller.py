@@ -116,126 +116,125 @@ class LLMAPICaller:
         """
         import json
 
-        try:
-            # Create ParsedLLMResponse to track validation process
-            parsed_response = ParsedLLMResponse(
-                raw_content=response_content,
-                parsed_json=None,
-                is_valid_json=False,
-                validation_errors=[]
-            )
+        # Create ParsedLLMResponse to track validation process
+        parsed_response = ParsedLLMResponse(
+            raw_content=response_content,
+            parsed_json=None,
+            is_valid_json=False,
+            validation_errors=[]
+        )
 
-            # Handle markdown-wrapped JSON responses (```json ... ```)
-            cleaned_content = response_content.strip()
+        # Handle markdown-wrapped JSON responses (```json ... ```)
+        cleaned_content = response_content.strip()
 
-            # Handle deepseek-specific response formats
-            if self.model_name in ["deepseek-coder", "deepseek-reasoner"]:
-                # DeepSeek models might return JSON with extra formatting or prefixes
-                if cleaned_content.startswith("```json"):
-                    # Extract JSON from markdown code block
-                    json_start = cleaned_content.find("{")
-                    json_end = cleaned_content.rfind("}")
-                    if json_start != -1 and json_end != -1:
-                        cleaned_content = cleaned_content[json_start : json_end + 1]
-                    else:
-                        error_msg = f"DeepSeek response contains malformed markdown JSON block: {cleaned_content[:200]}..."
-                        parsed_response.validation_errors.append(error_msg)
-                        raise ValueError(error_msg)
-
-                # STRICT: Fail fast on truncated or incomplete JSON - no fallback processing
-                if cleaned_content.startswith("{") and not cleaned_content.endswith("}"):
-                    error_msg = f"DeepSeek response contains truncated JSON (missing closing brace): {cleaned_content[:200]}..."
-                    parsed_response.validation_errors.append(error_msg)
-                    raise ValueError(error_msg)
-
-                if cleaned_content.startswith("[") and not cleaned_content.endswith("]"):
-                    error_msg = f"DeepSeek response contains truncated JSON (missing closing bracket): {cleaned_content[:200]}..."
-                    parsed_response.validation_errors.append(error_msg)
-                    raise ValueError(error_msg)
-
-                # Check for obvious JSON structure issues
-                if cleaned_content.count("{") != cleaned_content.count("}"):
-                    opening_braces = cleaned_content.count("{")
-                    closing_braces = cleaned_content.count("}")
-                    if opening_braces > closing_braces:
-                        # Add missing closing braces
-                        missing_braces = opening_braces - closing_braces
-                        cleaned_content += "}" * missing_braces
-                        self.logger.warning(
-                            f"DeepSeek response had {missing_braces} missing closing braces, added them"
-                        )
-                    elif closing_braces > opening_braces:
-                        # Remove extra closing braces
-                        extra_braces = closing_braces - opening_braces
-                        cleaned_content = cleaned_content.rstrip("}")[:-extra_braces] + cleaned_content.rstrip("}")[extra_braces:]
-                        self.logger.warning(
-                            f"DeepSeek response had {extra_braces} extra closing braces, removed them"
-                        )
-
-                if cleaned_content.count("[") != cleaned_content.count("]"):
-                    opening_brackets = cleaned_content.count("[")
-                    closing_brackets = cleaned_content.count("]")
-                    if opening_brackets > closing_brackets:
-                        # Add missing closing brackets
-                        missing_brackets = opening_brackets - closing_brackets
-                        cleaned_content += "]" * missing_brackets
-                        self.logger.warning(
-                            f"DeepSeek response had {missing_brackets} missing closing brackets, added them"
-                        )
-                    elif closing_brackets > opening_brackets:
-                        # Remove extra closing brackets
-                        extra_brackets = closing_brackets - opening_brackets
-                        cleaned_content = cleaned_content.rstrip("]")[:-extra_brackets] + cleaned_content.rstrip("]")[extra_brackets:]
-                        self.logger.warning(
-                            f"DeepSeek response had {extra_brackets} extra closing brackets, removed them"
-                        )
-
-                # Remove trailing commas only if they appear to be formatting errors
-                # But fail if the JSON structure looks fundamentally broken
-                if ",}" in cleaned_content or ",]" in cleaned_content:
-                    self.logger.warning(
-                        f"DeepSeek response contains trailing commas, attempting cleanup: {cleaned_content[:100]}..."
-                    )
-                    cleaned_content = cleaned_content.replace(",}", "}").replace(",]", "]")
-
-                # Additional cleanup for deepseek-reasoner which may produce more verbose output
-                if self.model_name == "deepseek-reasoner":
-                    # Remove any reasoning/thinking content that might precede JSON
-                    json_start = cleaned_content.find("{")
-                    if json_start > 0:
-                        # Look for common reasoning markers
-                        reasoning_markers = [
-                            "Let me think",
-                            "First,",
-                            "The task is",
-                            "I need to",
-                            "Looking at",
-                        ]
-                        for marker in reasoning_markers:
-                            marker_pos = cleaned_content.find(marker)
-                            if marker_pos != -1 and marker_pos < json_start:
-                                # Remove reasoning content before JSON
-                                cleaned_content = cleaned_content[json_start:]
-                                self.logger.info(
-                                    "Removed reasoning content from deepseek-reasoner response"
-                                )
-                                break
-
-            # Handle general markdown-wrapped JSON responses
-            elif cleaned_content.startswith("```json") and cleaned_content.endswith("```"):
+        # Handle deepseek-specific response formats
+        if self.model_name in ["deepseek-coder", "deepseek-reasoner"]:
+            # DeepSeek models might return JSON with extra formatting or prefixes
+            if cleaned_content.startswith("```json"):
                 # Extract JSON from markdown code block
                 json_start = cleaned_content.find("{")
                 json_end = cleaned_content.rfind("}")
                 if json_start != -1 and json_end != -1:
                     cleaned_content = cleaned_content[json_start : json_end + 1]
+                else:
+                    error_msg = f"DeepSeek response contains malformed markdown JSON block: {cleaned_content[:200]}..."
+                    parsed_response.validation_errors.append(error_msg)
+                    raise ValueError(error_msg)
 
-            # Clean up common JSON formatting issues
-            cleaned_content = cleaned_content.strip()
-            if cleaned_content.startswith("```") and cleaned_content.endswith("```"):
-                # Remove markdown code blocks if still present
-                lines = cleaned_content.split("\n")
-                if len(lines) > 2:
-                    cleaned_content = "\n".join(lines[1:-1])
+            # STRICT: Fail fast on truncated or incomplete JSON - no fallback processing
+            if cleaned_content.startswith("{") and not cleaned_content.endswith("}"):
+                error_msg = f"DeepSeek response contains truncated JSON (missing closing brace): {cleaned_content[:200]}..."
+                parsed_response.validation_errors.append(error_msg)
+                raise ValueError(error_msg)
+
+            if cleaned_content.startswith("[") and not cleaned_content.endswith("]"):
+                error_msg = f"DeepSeek response contains truncated JSON (missing closing bracket): {cleaned_content[:200]}..."
+                parsed_response.validation_errors.append(error_msg)
+                raise ValueError(error_msg)
+
+            # Check for obvious JSON structure issues
+            if cleaned_content.count("{") != cleaned_content.count("}"):
+                opening_braces = cleaned_content.count("{")
+                closing_braces = cleaned_content.count("}")
+                if opening_braces > closing_braces:
+                    # Add missing closing braces
+                    missing_braces = opening_braces - closing_braces
+                    cleaned_content += "}" * missing_braces
+                    self.logger.warning(
+                        f"DeepSeek response had {missing_braces} missing closing braces, added them"
+                    )
+                elif closing_braces > opening_braces:
+                    # Remove extra closing braces
+                    extra_braces = closing_braces - opening_braces
+                    cleaned_content = cleaned_content.rstrip("}")[:-extra_braces] + cleaned_content.rstrip("}")[extra_braces:]
+                    self.logger.warning(
+                        f"DeepSeek response had {extra_braces} extra closing braces, removed them"
+                    )
+
+            if cleaned_content.count("[") != cleaned_content.count("]"):
+                opening_brackets = cleaned_content.count("[")
+                closing_brackets = cleaned_content.count("]")
+                if opening_brackets > closing_brackets:
+                    # Add missing closing brackets
+                    missing_brackets = opening_brackets - closing_brackets
+                    cleaned_content += "]" * missing_brackets
+                    self.logger.warning(
+                        f"DeepSeek response had {missing_brackets} missing closing brackets, added them"
+                    )
+                elif closing_brackets > opening_brackets:
+                    # Remove extra closing brackets
+                    extra_brackets = closing_brackets - opening_brackets
+                    cleaned_content = cleaned_content.rstrip("]")[:-extra_brackets] + cleaned_content.rstrip("]")[extra_brackets:]
+                    self.logger.warning(
+                        f"DeepSeek response had {extra_brackets} extra closing brackets, removed them"
+                    )
+
+            # Remove trailing commas only if they appear to be formatting errors
+            # But fail if the JSON structure looks fundamentally broken
+            if ",}" in cleaned_content or ",]" in cleaned_content:
+                self.logger.warning(
+                    f"DeepSeek response contains trailing commas, attempting cleanup: {cleaned_content[:100]}..."
+                )
+                cleaned_content = cleaned_content.replace(",}", "}").replace(",]", "]")
+
+            # Additional cleanup for deepseek-reasoner which may produce more verbose output
+            if self.model_name == "deepseek-reasoner":
+                # Remove any reasoning/thinking content that might precede JSON
+                json_start = cleaned_content.find("{")
+                if json_start > 0:
+                    # Look for common reasoning markers
+                    reasoning_markers = [
+                        "Let me think",
+                        "First,",
+                        "The task is",
+                        "I need to",
+                        "Looking at",
+                    ]
+                    for marker in reasoning_markers:
+                        marker_pos = cleaned_content.find(marker)
+                        if marker_pos != -1 and marker_pos < json_start:
+                            # Remove reasoning content before JSON
+                            cleaned_content = cleaned_content[json_start:]
+                            self.logger.info(
+                                "Removed reasoning content from deepseek-reasoner response"
+                            )
+                            break
+
+        # Handle general markdown-wrapped JSON responses
+        elif cleaned_content.startswith("```json") and cleaned_content.endswith("```"):
+            # Extract JSON from markdown code block
+            json_start = cleaned_content.find("{")
+            json_end = cleaned_content.rfind("}")
+            if json_start != -1 and json_end != -1:
+                cleaned_content = cleaned_content[json_start : json_end + 1]
+
+        # Clean up common JSON formatting issues
+        cleaned_content = cleaned_content.strip()
+        if cleaned_content.startswith("```") and cleaned_content.endswith("```"):
+            # Remove markdown code blocks if still present
+            lines = cleaned_content.split("\n")
+            if len(lines) > 2:
+                cleaned_content = "\n".join(lines[1:-1])
 
             # Store cleaned content
             parsed_response.cleaned_content = cleaned_content

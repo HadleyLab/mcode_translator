@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 # Import centralized logging configuration
-from src.utils.logging_config import get_logger
+from .logging_config import get_logger
 
 # Use centralized logger
 logger = get_logger(__name__)
@@ -72,7 +72,7 @@ class LLMConfig:
 class LLMLoader:
     """Utility class for loading LLM configurations from the file-based LLM library"""
 
-    def __init__(self, llms_config_path: str | None = None) -> None:
+    def __init__(self, llms_config_path: Optional[str] = None) -> None:
         if llms_config_path is None:
             # Use the correct path relative to this file
             config_path = Path(__file__).parent.parent / "config" / "llms_config.json"

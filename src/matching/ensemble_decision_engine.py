@@ -10,10 +10,10 @@ from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 from enum import Enum
 
-from src.matching.base import MatchingEngineBase
-from src.matching.expert_panel_manager import ExpertPanelManager, ExpertPanelAssessment
-from src.utils.config import Config
-from src.utils.logging_config import get_logger
+from matching.base import MatchingEngineBase
+from matching.expert_panel_manager import ExpertPanelManager, ExpertPanelAssessment
+from utils.config import Config
+from utils.logging_config import get_logger
 
 
 class ConsensusMethod(Enum):

@@ -7,7 +7,7 @@ through the HeySol API client for oncology-specific memory storage and retrieval
 
 from typing import Any, Dict, List, Optional, Union
 
-from src.shared.models import SearchResult
+from shared.models import SearchResult
 
 # Import the HeySol client components
 from heysol.clients import HeySolAPIClient, HeySolMCPClient

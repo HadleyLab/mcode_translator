@@ -75,7 +75,7 @@ Issues = "https://github.com/HadleyLab/mcode-translator/issues"
 Changelog = "https://github.com/HadleyLab/mcode-translator/blob/main/CHANGELOG.md"
 
 [project.scripts]
-mcode-cli = "cli:main"
+mcode-translator = "cli:main"
 
 [tool.setuptools]
 packages = ["cli", "config", "core", "matching", "optimization", "pipeline", "services", "shared", "storage", "utils", "workflows"]

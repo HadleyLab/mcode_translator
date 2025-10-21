@@ -14,13 +14,21 @@ Key Features:
 - Support for SNOMED CT, LOINC, RxNorm, and other required coding systems
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass
 from enum import Enum
 import re
 
 from .mcode_models import McodeValidator
 from .mcode_versioning import McodeVersion
+from .models import (
+    IdentificationModule,
+    StatusModule,
+    EligibilityModule,
+    ClinicalTrialData,
+    McodeElement,
+    PatientData
+)
 
 
 class ValidationSeverity(str, Enum):
@@ -116,8 +124,8 @@ class DataQualityValidator:
 
     def validate_patient_data(
         self,
-        patient_data: Dict[str, Any],
-        mcode_elements: Dict[str, Any]
+        patient_data: "PatientData",
+        mcode_elements: List["McodeElement"]
     ) -> QualityReport:
         """
         Validate patient data quality and generate comprehensive report.
@@ -193,8 +201,8 @@ class DataQualityValidator:
 
     def validate_trial_data(
         self,
-        trial_data: Dict[str, Any],
-        mcode_elements: Dict[str, Any]
+        trial_data: ClinicalTrialData,
+        mcode_elements: List[McodeElement]
     ) -> QualityReport:
         """
         Validate trial data quality and generate comprehensive report.
@@ -330,16 +338,15 @@ class DataQualityValidator:
         return issues, valid_count, total_count
 
     def _validate_cancer_conditions(
-        self, mcode_elements: Dict[str, Any]
+        self, mcode_elements: List[McodeElement]
     ) -> Tuple[List[ValidationIssue], int, int]:
-        """Validate cancer condition elements."""
+        """Validate cancer condition elements using McodeElement instances."""
         issues = []
         valid_count = 0
         total_count = 0
 
-        cancer_conditions = mcode_elements.get("CancerCondition", [])
-        if isinstance(cancer_conditions, dict):
-            cancer_conditions = [cancer_conditions]
+        # Extract cancer conditions from McodeElement list
+        cancer_conditions = [elem for elem in mcode_elements if elem.element_type == "CancerCondition"]
 
         total_count += 1
         if not cancer_conditions:
@@ -359,19 +366,10 @@ class DataQualityValidator:
             total_count += 1
             condition_path = f"CancerCondition[{i}]"
 
-            # Check for required fields
-            if not isinstance(condition, dict):
-                issues.append(ValidationIssue(
-                    severity=ValidationSeverity.CRITICAL,
-                    category="Cancer Conditions",
-                    message=f"Cancer condition {i} is not a valid object",
-                    element_path=condition_path,
-                    suggested_fix="Ensure cancer conditions are properly structured"
-                ))
-                continue
-
-            # Validate code
-            if "code" not in condition:
+            # Validate McodeElement has required fields
+            if condition.code:
+                valid_count += 1
+            else:
                 issues.append(ValidationIssue(
                     severity=ValidationSeverity.CRITICAL,
                     category="Cancer Conditions",
@@ -379,143 +377,110 @@ class DataQualityValidator:
                     element_path=f"{condition_path}.code",
                     suggested_fix="Add cancer diagnosis code"
                 ))
-            else:
-                valid_count += 1
-
-            # Validate clinical status
-            if "clinicalStatus" not in condition:
-                issues.append(ValidationIssue(
-                    severity=ValidationSeverity.WARNING,
-                    category="Cancer Conditions",
-                    message=f"Cancer condition {i} missing clinical status",
-                    element_path=f"{condition_path}.clinicalStatus",
-                    suggested_fix="Add clinical status (active, remission, etc.)"
-                ))
-            else:
-                valid_count += 1
 
         return issues, valid_count, total_count
 
     def _validate_coding_systems(
-        self, mcode_elements: Dict[str, Any]
+        self, mcode_elements: List[McodeElement]
     ) -> Tuple[List[ValidationIssue], int, int]:
-        """Validate coding systems usage."""
+        """Validate coding systems usage in McodeElement instances."""
         issues = []
         valid_count = 0
         total_count = 0
 
+        # Group elements by type for validation
+        elements_by_type: Dict[str, List[McodeElement]] = {}
+        for element in mcode_elements:
+            if element.element_type not in elements_by_type:
+                elements_by_type[element.element_type] = []
+            elements_by_type[element.element_type].append(element)
+
         # Check each element type for proper coding systems
         for element_type, required_systems in self.required_coding_systems.items():
-            elements = mcode_elements.get(element_type, [])
-            if isinstance(elements, dict):
-                elements = [elements]
+            elements = elements_by_type.get(element_type, [])
 
             for i, element in enumerate(elements):
                 total_count += 1
                 element_path = f"{element_type}[{i}]"
 
-                if not isinstance(element, dict):
-                    continue
-
-                # Check coding information
-                coding = element.get("coding", [])
-                if isinstance(coding, dict):
-                    coding = [coding]
-
-                if not coding:
-                    issues.append(ValidationIssue(
-                        severity=ValidationSeverity.WARNING,
-                        category="Coding Systems",
-                        message=f"{element_type} element {i} has no coding information",
-                        element_path=f"{element_path}.coding",
-                        suggested_fix=f"Add coding from required systems: {[s.value for s in required_systems]}"
-                    ))
-                    continue
-
-                # Check if any required system is present
-                has_required_system = False
-                for code_info in coding:
-                    if isinstance(code_info, dict):
-                        system = code_info.get("system")
-                        if system in [s.value for s in required_systems]:
-                            has_required_system = True
-                            break
-
-                if has_required_system:
-                    valid_count += 1
+                # Validate McodeElement has proper coding
+                if element.system and element.code:
+                    system_url = element.system
+                    if system_url in [s.value for s in required_systems]:
+                        valid_count += 1
+                    else:
+                        issues.append(ValidationIssue(
+                            severity=ValidationSeverity.WARNING,
+                            category="Coding Systems",
+                            message=f"{element_type} element {i} uses non-standard coding system: {system_url}",
+                            element_path=f"{element_path}.system",
+                            suggested_fix=f"Use one of: {[s.value for s in required_systems]}"
+                        ))
                 else:
                     issues.append(ValidationIssue(
                         severity=ValidationSeverity.WARNING,
                         category="Coding Systems",
-                        message=f"{element_type} element {i} uses non-standard coding system",
-                        element_path=f"{element_path}.coding[*].system",
-                        suggested_fix=f"Use one of: {[s.value for s in required_systems]}"
+                        message=f"{element_type} element {i} has no coding information",
+                        element_path=f"{element_path}.system",
+                        suggested_fix=f"Add system and code fields with values from: {[s.value for s in required_systems]}"
                     ))
 
         return issues, valid_count, total_count
 
     def _validate_fhir_structure(
-        self, patient_data: Dict[str, Any]
+        self, patient_data: "PatientData"
     ) -> Tuple[List[ValidationIssue], int, int]:
-        """Validate FHIR resource structure."""
+        """Validate FHIR resource structure using PatientData model."""
         issues = []
         valid_count = 0
         total_count = 0
 
         # Check bundle structure
         total_count += 1
-        if not isinstance(patient_data, dict):
+        if not patient_data.bundle:
             issues.append(ValidationIssue(
                 severity=ValidationSeverity.CRITICAL,
                 category="FHIR Structure",
-                message="Patient data is not a valid object",
-                element_path="root",
-                suggested_fix="Ensure patient data is a valid FHIR Bundle object"
+                message="Patient data bundle is missing",
+                element_path="bundle",
+                suggested_fix="Ensure patient data contains a valid FHIR Bundle"
             ))
             return issues, 0, total_count
 
-        if "resourceType" not in patient_data:
+        valid_count += 1
+
+        # Check bundle has resourceType
+        total_count += 1
+        if patient_data.bundle.resourceType != "Bundle":
             issues.append(ValidationIssue(
                 severity=ValidationSeverity.CRITICAL,
                 category="FHIR Structure",
-                message="Missing resourceType - not a valid FHIR resource",
-                element_path="resourceType",
-                suggested_fix="Add resourceType field to FHIR resource"
+                message="Bundle resourceType is not 'Bundle'",
+                element_path="bundle.resourceType",
+                suggested_fix="Ensure bundle has resourceType 'Bundle'"
             ))
         else:
             valid_count += 1
 
         # Check entries
-        entries = patient_data.get("entry", [])
         total_count += 1
-        if not isinstance(entries, list):
+        if not patient_data.bundle.entry:
             issues.append(ValidationIssue(
                 severity=ValidationSeverity.CRITICAL,
                 category="FHIR Structure",
-                message="Bundle entries is not an array",
-                element_path="entry",
-                suggested_fix="Ensure entry field is an array of resources"
+                message="Bundle has no entries",
+                element_path="bundle.entry",
+                suggested_fix="Ensure bundle contains FHIR resources"
             ))
         else:
             valid_count += 1
 
             # Validate each entry
-            for i, entry in enumerate(entries):
+            for i, entry in enumerate(patient_data.bundle.entry):
                 total_count += 1
-                entry_path = f"entry[{i}]"
+                entry_path = f"bundle.entry[{i}]"
 
-                if not isinstance(entry, dict):
-                    issues.append(ValidationIssue(
-                        severity=ValidationSeverity.CRITICAL,
-                        category="FHIR Structure",
-                        message=f"Entry {i} is not a valid object",
-                        element_path=entry_path,
-                        suggested_fix="Ensure all entries are valid objects"
-                    ))
-                    continue
-
-                resource = entry.get("resource")
-                if not resource:
+                if not entry.resource:
                     issues.append(ValidationIssue(
                         severity=ValidationSeverity.CRITICAL,
                         category="FHIR Structure",
@@ -525,7 +490,7 @@ class DataQualityValidator:
                     ))
                     continue
 
-                if "resourceType" not in resource:
+                if "resourceType" not in entry.resource:
                     issues.append(ValidationIssue(
                         severity=ValidationSeverity.CRITICAL,
                         category="FHIR Structure",
@@ -539,18 +504,22 @@ class DataQualityValidator:
         return issues, valid_count, total_count
 
     def _validate_mcode_profile_compliance(
-        self, mcode_elements: Dict[str, Any]
+        self, mcode_elements: List[McodeElement]
     ) -> Tuple[List[ValidationIssue], int, int]:
-        """Validate mCODE profile compliance."""
+        """Validate mCODE profile compliance using McodeElement instances."""
         issues = []
         valid_count = 0
         total_count = 0
 
         # Check for required mCODE elements
         required_elements = ["Patient", "CancerCondition"]
+        element_types = {elem.element_type for elem in mcode_elements}
+
         for element in required_elements:
             total_count += 1
-            if element not in mcode_elements:
+            if element in element_types:
+                valid_count += 1
+            else:
                 issues.append(ValidationIssue(
                     severity=ValidationSeverity.CRITICAL,
                     category="mCODE Compliance",
@@ -558,166 +527,199 @@ class DataQualityValidator:
                     element_path=element,
                     suggested_fix=f"Extract {element} from patient data"
                 ))
-            else:
-                valid_count += 1
 
         # Validate element structure
-        for element_name, element_data in mcode_elements.items():
+        for element in mcode_elements:
             total_count += 1
-
-            # Check if element follows expected structure
-            if isinstance(element_data, dict):
-                # Single element
-                if "system" in element_data and "code" in element_data:
-                    valid_count += 1
-                elif "display" in element_data:
-                    valid_count += 1
-                else:
-                    issues.append(ValidationIssue(
-                        severity=ValidationSeverity.WARNING,
-                        category="mCODE Compliance",
-                        message=f"mCODE element '{element_name}' lacks proper coding structure",
-                        element_path=element_name,
-                        suggested_fix="Ensure element has system, code, and/or display fields"
-                    ))
-            elif isinstance(element_data, list):
-                # Multiple elements
-                for i, item in enumerate(element_data):
-                    if isinstance(item, dict):
-                        if "system" in item and "code" in item:
-                            valid_count += 1
-                        elif "display" in item:
-                            valid_count += 1
-                        else:
-                            issues.append(ValidationIssue(
-                                severity=ValidationSeverity.WARNING,
-                                category="mCODE Compliance",
-                                message=f"mCODE element '{element_name}[{i}]' lacks proper coding structure",
-                                element_path=f"{element_name}[{i}]",
-                                suggested_fix="Ensure element has system, code, and/or display fields"
-                            ))
-                    else:
-                        issues.append(ValidationIssue(
-                            severity=ValidationSeverity.WARNING,
-                            category="mCODE Compliance",
-                            message=f"mCODE element '{element_name}[{i}]' is not a valid object",
-                            element_path=f"{element_name}[{i}]",
-                            suggested_fix="Ensure all elements are properly structured objects"
-                        ))
+            if element.system and element.code:
+                valid_count += 1
+            elif element.display:
+                valid_count += 1
+            else:
+                issues.append(ValidationIssue(
+                    severity=ValidationSeverity.WARNING,
+                    category="mCODE Compliance",
+                    message=f"mCODE element lacks proper coding structure",
+                    element_path=f"{element.element_type}",
+                    suggested_fix="Ensure element has system, code, and/or display fields"
+                ))
 
         return issues, valid_count, total_count
 
     def _validate_trial_metadata(
-        self, trial_data: Dict[str, Any]
+        self, trial_data: ClinicalTrialData
     ) -> Tuple[List[ValidationIssue], int, int]:
-        """Validate trial metadata completeness."""
+        """Validate trial metadata completeness using ClinicalTrialData model."""
         issues = []
         valid_count = 0
         total_count = 0
 
-        protocol_section = trial_data.get("protocolSection", {})
-        identification = protocol_section.get("identificationModule", {})
-        status = protocol_section.get("statusModule", {})
+        # Extract modules from ClinicalTrialData model
+        identification = trial_data.protocol_section.identification_module
+        status_module = trial_data.protocol_section.status_module
 
-        # Check required metadata fields
-        required_fields = [
-            ("nct_id", identification, "identificationModule.nctId"),
-            ("brief_title", identification, "identificationModule.briefTitle"),
-            ("overall_status", status, "statusModule.overallStatus")
+        # Validate identification module
+        if not identification:
+            issues.append(ValidationIssue(
+                severity=ValidationSeverity.CRITICAL,
+                category="Trial Metadata",
+                message="Identification module is missing",
+                element_path="protocolSection.identificationModule",
+                suggested_fix="Ensure trial has identification module with NCT ID and title"
+            ))
+            return issues, 0, 1
+
+        total_count += 1
+        valid_count += 1  # We have an identification module
+
+        # Check required identification fields
+        required_id_fields = [
+            ("nct_id", "nctId", "ClinicalTrials.gov identifier"),
+            ("brief_title", "briefTitle", "Brief trial title")
         ]
 
-        for field_name, section, path in required_fields:
+        for field_name, alias, description in required_id_fields:
             total_count += 1
-            if field_name not in section or not section[field_name]:
+            field_value = getattr(identification, field_name, None)
+            if not field_value:
                 issues.append(ValidationIssue(
                     severity=ValidationSeverity.CRITICAL,
                     category="Trial Metadata",
-                    message=f"Required field '{field_name}' is missing",
-                    element_path=path,
-                    suggested_fix=f"Add {field_name} to trial metadata"
+                    message=f"Required field '{description}' is missing",
+                    element_path=f"identificationModule.{alias}",
+                    suggested_fix=f"Add {field_name} to trial identification module"
                 ))
             else:
                 valid_count += 1
 
         # Validate NCT ID format
-        nct_id = identification.get("nctId")
-        if nct_id:
+        if identification.nct_id:
             total_count += 1
-            if not re.match(r"^NCT\d{8}$", nct_id):
+            if not re.match(r"^NCT\d{8}$", identification.nct_id):
                 issues.append(ValidationIssue(
                     severity=ValidationSeverity.WARNING,
                     category="Trial Metadata",
-                    message=f"NCT ID '{nct_id}' does not match expected format",
+                    message=f"NCT ID '{identification.nct_id}' does not match expected format",
                     element_path="identificationModule.nctId",
                     suggested_fix="Ensure NCT ID follows format NCT########"
                 ))
             else:
                 valid_count += 1
 
+        # Validate status module if available
+        if status_module and isinstance(status_module, dict) and "overallStatus" in status_module:
+            total_count += 1
+            if status_module["overallStatus"]:
+                valid_count += 1
+            else:
+                issues.append(ValidationIssue(
+                    severity=ValidationSeverity.WARNING,
+                    category="Trial Metadata",
+                    message="Overall status is missing from status module",
+                    element_path="statusModule.overallStatus",
+                    suggested_fix="Add overall status to trial status module"
+                ))
+
         return issues, valid_count, total_count
 
     def _validate_eligibility_criteria(
-        self, trial_data: Dict[str, Any]
+        self, trial_data: ClinicalTrialData
     ) -> Tuple[List[ValidationIssue], int, int]:
-        """Validate trial eligibility criteria."""
+        """Validate trial eligibility criteria using ClinicalTrialData model."""
         issues = []
         valid_count = 0
         total_count = 0
 
-        protocol_section = trial_data.get("protocolSection", {})
-        eligibility = protocol_section.get("eligibilityModule", {})
+        # Extract eligibility module from ClinicalTrialData model
+        eligibility_module = trial_data.protocol_section.eligibility_module
 
-        # Check eligibility criteria text
-        total_count += 1
-        criteria_text = eligibility.get("eligibilityCriteria")
-        if not criteria_text or len(criteria_text.strip()) < 50:
+        # Check if eligibility module exists
+        if not eligibility_module:
             issues.append(ValidationIssue(
                 severity=ValidationSeverity.WARNING,
                 category="Eligibility Criteria",
-                message="Eligibility criteria text is too short or missing",
-                element_path="eligibilityModule.eligibilityCriteria",
-                suggested_fix="Provide detailed eligibility criteria text"
+                message="Eligibility module is missing",
+                element_path="protocolSection.eligibilityModule",
+                suggested_fix="Ensure trial has eligibility module with criteria"
             ))
-        else:
-            valid_count += 1
+            return issues, 0, 1
 
-        # Check age criteria
-        age_fields = ["minimumAge", "maximumAge"]
-        for field in age_fields:
-            total_count += 1
-            if field in eligibility:
-                age_value = eligibility[field]
-                if isinstance(age_value, (int, float)) and age_value >= 0:
-                    valid_count += 1
-                else:
-                    issues.append(ValidationIssue(
-                        severity=ValidationSeverity.WARNING,
-                        category="Eligibility Criteria",
-                        message=f"Invalid {field}: {age_value}",
-                        element_path=f"eligibilityModule.{field}",
-                        suggested_fix=f"Provide valid numeric age for {field}"
-                    ))
-            else:
-                issues.append(ValidationIssue(
-                    severity=ValidationSeverity.INFO,
-                    category="Eligibility Criteria",
-                    message=f"{field} not specified",
-                    element_path=f"eligibilityModule.{field}",
-                    suggested_fix=f"Consider specifying {field}"
-                ))
-
-        # Check sex criteria
         total_count += 1
-        sex = eligibility.get("sex")
-        if sex:
-            valid_sexes = ["ALL", "FEMALE", "MALE"]
-            if sex.upper() in valid_sexes:
+        valid_count += 1  # We have an eligibility module
+
+        # Check eligibility criteria text
+        total_count += 1
+        if eligibility_module.eligibility_criteria:
+            if len(eligibility_module.eligibility_criteria.strip()) >= 50:
                 valid_count += 1
             else:
                 issues.append(ValidationIssue(
                     severity=ValidationSeverity.WARNING,
                     category="Eligibility Criteria",
-                    message=f"Invalid sex criteria: {sex}",
+                    message="Eligibility criteria text is too short",
+                    element_path="eligibilityModule.eligibilityCriteria",
+                    suggested_fix="Provide detailed eligibility criteria text (at least 50 characters)"
+                ))
+        else:
+            issues.append(ValidationIssue(
+                severity=ValidationSeverity.WARNING,
+                category="Eligibility Criteria",
+                message="Eligibility criteria text is missing",
+                element_path="eligibilityModule.eligibilityCriteria",
+                suggested_fix="Provide detailed eligibility criteria text"
+            ))
+
+        # Check age criteria
+        age_fields = [
+            ("minimum_age", "minimumAge", "Minimum age"),
+            ("maximum_age", "maximumAge", "Maximum age")
+        ]
+
+        for field_name, alias, description in age_fields:
+            total_count += 1
+            age_value = getattr(eligibility_module, field_name, None)
+            if age_value:
+                # Try to parse as number for validation
+                try:
+                    numeric_age = float(str(age_value).strip())
+                    if numeric_age >= 0:
+                        valid_count += 1
+                    else:
+                        issues.append(ValidationIssue(
+                            severity=ValidationSeverity.WARNING,
+                            category="Eligibility Criteria",
+                            message=f"Invalid {description}: {age_value}",
+                            element_path=f"eligibilityModule.{alias}",
+                            suggested_fix=f"Provide valid non-negative age for {field_name}"
+                        ))
+                except (ValueError, TypeError):
+                    issues.append(ValidationIssue(
+                        severity=ValidationSeverity.WARNING,
+                        category="Eligibility Criteria",
+                        message=f"Invalid {description} format: {age_value}",
+                        element_path=f"eligibilityModule.{alias}",
+                        suggested_fix=f"Provide valid numeric age for {field_name}"
+                    ))
+            else:
+                issues.append(ValidationIssue(
+                    severity=ValidationSeverity.INFO,
+                    category="Eligibility Criteria",
+                    message=f"{description} not specified",
+                    element_path=f"eligibilityModule.{alias}",
+                    suggested_fix=f"Consider specifying {field_name}"
+                ))
+
+        # Check sex criteria
+        total_count += 1
+        if eligibility_module.sex:
+            valid_sexes = ["ALL", "FEMALE", "MALE"]
+            if eligibility_module.sex.upper() in valid_sexes:
+                valid_count += 1
+            else:
+                issues.append(ValidationIssue(
+                    severity=ValidationSeverity.WARNING,
+                    category="Eligibility Criteria",
+                    message=f"Invalid sex criteria: {eligibility_module.sex}",
                     element_path="eligibilityModule.sex",
                     suggested_fix=f"Use one of: {', '.join(valid_sexes)}"
                 ))
@@ -733,9 +735,9 @@ class DataQualityValidator:
         return issues, valid_count, total_count
 
     def _validate_trial_coding_systems(
-        self, mcode_elements: Dict[str, Any]
+        self, mcode_elements: List[McodeElement]
     ) -> Tuple[List[ValidationIssue], int, int]:
-        """Validate coding systems in trial mCODE elements."""
+        """Validate coding systems in trial mCODE elements using McodeElement instances."""
         issues = []
         valid_count = 0
         total_count = 0
@@ -746,66 +748,62 @@ class DataQualityValidator:
             "TrialInterventions": [CodingSystem.RXNORM, CodingSystem.SNOMED_CT]
         }
 
+        # Group elements by type for validation
+        elements_by_type: Dict[str, List[McodeElement]] = {}
+        for element in mcode_elements:
+            element_type = element.element_type
+            if element_type not in elements_by_type:
+                elements_by_type[element_type] = []
+            elements_by_type[element_type].append(element)
+
         for element_type, required_systems in trial_coding_systems.items():
-            elements = mcode_elements.get(element_type, [])
-            if isinstance(elements, dict):
-                elements = [elements]
+            elements = elements_by_type.get(element_type, [])
 
             for i, element in enumerate(elements):
                 total_count += 1
                 element_path = f"{element_type}[{i}]"
 
-                if not isinstance(element, dict):
-                    continue
-
-                coding = element.get("coding", [])
-                if isinstance(coding, dict):
-                    coding = [coding]
-
-                if not coding:
-                    issues.append(ValidationIssue(
-                        severity=ValidationSeverity.WARNING,
-                        category="Trial Coding Systems",
-                        message=f"{element_type} element {i} has no coding information",
-                        element_path=f"{element_path}.coding",
-                        suggested_fix=f"Add coding from required systems: {[s.value for s in required_systems]}"
-                    ))
-                    continue
-
-                has_required_system = False
-                for code_info in coding:
-                    if isinstance(code_info, dict):
-                        system = code_info.get("system")
-                        if system in [s.value for s in required_systems]:
-                            has_required_system = True
-                            break
-
-                if has_required_system:
-                    valid_count += 1
+                # Validate McodeElement has proper coding
+                if element.system and element.code:
+                    system_url = element.system
+                    if system_url in [s.value for s in required_systems]:
+                        valid_count += 1
+                    else:
+                        issues.append(ValidationIssue(
+                            severity=ValidationSeverity.WARNING,
+                            category="Trial Coding Systems",
+                            message=f"{element_type} element {i} uses non-standard coding system: {system_url}",
+                            element_path=f"{element_path}.system",
+                            suggested_fix=f"Use one of: {[s.value for s in required_systems]}"
+                        ))
                 else:
                     issues.append(ValidationIssue(
                         severity=ValidationSeverity.WARNING,
                         category="Trial Coding Systems",
-                        message=f"{element_type} element {i} uses non-standard coding system",
-                        element_path=f"{element_path}.coding[*].system",
-                        suggested_fix=f"Use one of: {[s.value for s in required_systems]}"
+                        message=f"{element_type} element {i} missing coding information",
+                        element_path=f"{element_path}.system",
+                        suggested_fix=f"Add system and code fields with values from: {[s.value for s in required_systems]}"
                     ))
 
         return issues, valid_count, total_count
 
     def _validate_trial_mcode_compliance(
-        self, mcode_elements: Dict[str, Any]
+        self, mcode_elements: List[McodeElement]
     ) -> Tuple[List[ValidationIssue], int, int]:
-        """Validate trial mCODE compliance."""
+        """Validate trial mCODE compliance using McodeElement instances."""
         issues = []
         valid_count = 0
         total_count = 0
 
         # Check for trial-specific required elements
+        element_types = {elem.element_type for elem in mcode_elements}
+
         required_trial_elements = ["TrialMetadata", "TrialCancerConditions"]
         for element in required_trial_elements:
             total_count += 1
-            if element not in mcode_elements:
+            if element in element_types:
+                valid_count += 1
+            else:
                 severity = ValidationSeverity.CRITICAL if element == "TrialMetadata" else ValidationSeverity.WARNING
                 issues.append(ValidationIssue(
                     severity=severity,
@@ -814,60 +812,27 @@ class DataQualityValidator:
                     element_path=element,
                     suggested_fix=f"Extract {element} from trial data"
                 ))
-            else:
-                valid_count += 1
 
         # Validate trial metadata structure
-        metadata = mcode_elements.get("TrialMetadata")
-        if metadata:
+        metadata_elements = [elem for elem in mcode_elements if elem.element_type == "TrialMetadata"]
+        if metadata_elements:
             total_count += 1
-            if isinstance(metadata, dict):
-                required_meta_fields = ["nct_id", "brief_title", "overall_status"]
-                meta_valid = all(field in metadata and metadata[field] for field in required_meta_fields)
-                if meta_valid:
-                    valid_count += 1
-                else:
-                    issues.append(ValidationIssue(
-                        severity=ValidationSeverity.WARNING,
-                        category="Trial mCODE Compliance",
-                        message="Trial metadata missing required fields",
-                        element_path="TrialMetadata",
-                        suggested_fix="Ensure TrialMetadata contains nct_id, brief_title, and overall_status"
-                    ))
-            else:
-                issues.append(ValidationIssue(
-                    severity=ValidationSeverity.WARNING,
-                    category="Trial mCODE Compliance",
-                    message="TrialMetadata is not a valid object",
-                    element_path="TrialMetadata",
-                    suggested_fix="Ensure TrialMetadata is a properly structured object"
-                ))
+            # For now, assume metadata is valid if present (could add more detailed validation)
+            valid_count += 1
 
         return issues, valid_count, total_count
 
     def _calculate_coding_system_coverage(
-        self, mcode_elements: Dict[str, Any]
+        self, mcode_elements: List[McodeElement]
     ) -> Dict[str, float]:
-        """Calculate coverage percentage for each coding system."""
+        """Calculate coverage percentage for each coding system using McodeElement instances."""
         coverage = {}
 
         # Collect all coding systems used
         used_systems = set()
-        total_codings = 0
-
-        def collect_systems(obj):
-            nonlocal total_codings
-            if isinstance(obj, dict):
-                if "system" in obj and "code" in obj:
-                    total_codings += 1
-                    used_systems.add(obj["system"])
-                for value in obj.values():
-                    collect_systems(value)
-            elif isinstance(obj, list):
-                for item in obj:
-                    collect_systems(item)
-
-        collect_systems(mcode_elements)
+        for element in mcode_elements:
+            if element.system and element.code:
+                used_systems.add(element.system)
 
         # Calculate coverage for each required system
         for system in CodingSystem:

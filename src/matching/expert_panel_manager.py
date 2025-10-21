@@ -14,10 +14,10 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 from pathlib import Path
 
-from src.matching.clinical_expert_agent import ClinicalExpertAgent
-from src.utils.api_manager import APIManager
-from src.utils.config import Config
-from src.utils.logging_config import get_logger
+from matching.clinical_expert_agent import ClinicalExpertAgent
+from utils.api_manager import APIManager
+from utils.config import Config
+from utils.logging_config import get_logger
 
 
 class ExpertPanelAssessment:

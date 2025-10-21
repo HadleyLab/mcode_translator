@@ -29,7 +29,7 @@ import uuid
 
 from .config import Config
 from .logging_config import get_logger
-from ..shared.mcode_models import (
+from shared.mcode_models import (
     McodePatient, CancerCondition, TumorMarkerTest,
     ECOGPerformanceStatusObservation, CancerRelatedMedicationStatement,
     CancerRelatedSurgicalProcedure, CancerRelatedRadiationProcedure,

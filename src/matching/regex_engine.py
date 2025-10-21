@@ -6,8 +6,8 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime
 
-from src.matching.base import MatchingEngineBase
-from src.utils.logging_config import get_logger
+from matching.base import MatchingEngineBase
+from utils.logging_config import get_logger
 
 
 class RegexRulesEngine(MatchingEngineBase):

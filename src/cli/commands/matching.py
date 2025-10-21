@@ -5,15 +5,15 @@ Patient-Trial Matching CLI Commands
 import typer
 from rich.console import Console
 
-from src.matching import (
+from matching import (
     RegexRulesEngine,
     LLMMatchingEngine,
     CoreMemoryGraphEngine,
     EnsembleDecisionEngine,
 )
-from src.matching.ensemble_decision_engine import ConsensusMethod
-from src.services.heysol_client import OncoCoreClient
-from src.config.patterns_config import load_regex_rules
+from matching.ensemble_decision_engine import ConsensusMethod
+from services.heysol_client import OncoCoreClient
+from config.patterns_config import load_regex_rules
 
 app = typer.Typer(
     name="matching",

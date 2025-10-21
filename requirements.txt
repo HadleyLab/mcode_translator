@@ -7,12 +7,7 @@ requests>=2.31.0
 # Environment configuration
 python-dotenv>=1.0.0
 
-# Natural Language Processing (core NLP components only)
-# spacy>=3.7.0,<3.8.0
-# scispacy>=0.5.4
-
-# Scientific NLP models (install via: python -m spacy download en_core_sci_md)
-# Alternative download: pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_core_sci_md-0.5.4.tar.gz
+# Natural Language Processing dependencies removed for minimal footprint
 
 # LLM API clients
 openai>=1.12.0
@@ -38,13 +33,6 @@ typer>=0.9.0
 
 # Removed Click dependency - using Typer only
 
-# Development and testing (optional, comment out for production)
-# pytest>=7.0.0
-# pytest-cov>=4.0.0
-# black>=23.0.0
-# flake8>=6.0.0
-# isort>=5.12.0
-# ruff>=0.1.0
-# mypy>=1.7.0
+# Development and testing dependencies moved to pyproject.toml dev dependencies
 ijson
 pytest-asyncio

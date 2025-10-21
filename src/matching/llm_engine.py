@@ -5,13 +5,13 @@ Enhanced with expert panel support for ensemble decision making and
 comprehensive clinical trial matching analysis.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from src.matching.base import MatchingEngineBase
-from src.matching.expert_panel_manager import ExpertPanelManager
-from src.services.llm.service import LLMService
-from src.utils.config import Config
-from src.utils.logging_config import get_logger
+from matching.base import MatchingEngineBase
+from matching.expert_panel_manager import ExpertPanelManager
+from services.llm.service import LLMService
+from utils.config import Config
+from utils.logging_config import get_logger
 
 
 class LLMMatchingEngine(MatchingEngineBase):
@@ -81,13 +81,12 @@ class LLMMatchingEngine(MatchingEngineBase):
             A boolean indicating if a match was found.
         """
         try:
-            if self.enable_expert_panel and self.expert_panel is not None:
+            if self.enable_expert_panel and self.expert_panel:
                 # Use expert panel for comprehensive assessment
-                assert self.expert_panel is not None  # Type assertion for mypy
                 panel_result = await self.expert_panel.assess_with_expert_panel(
                     patient_data, trial_criteria
                 )
-                return panel_result.get("is_match", False) is True
+                return panel_result.get("is_match", False)
             else:
                 # Use standard LLM service
                 return await self._match_with_llm_service(patient_data, trial_criteria)
@@ -118,37 +117,12 @@ class LLMMatchingEngine(MatchingEngineBase):
     async def _match_with_expert_panel(
         self, patient_data: Dict[str, Any], trial_criteria: Dict[str, Any]
     ) -> bool:
-        """Match using expert panel for ensemble decision.
-
-        Args:
-            patient_data: Patient data dictionary
-            trial_criteria: Trial criteria dictionary
-
-        Returns:
-            Boolean match result from ensemble decision
-        """
-        try:
-            # Get expert panel assessment
-            panel_result = await self.expert_panel.assess_with_expert_panel(
-                patient_data, trial_criteria
-            )
-
-            # Extract ensemble decision
-            is_match = panel_result.get("is_match", False)
-            confidence = panel_result.get("confidence_score", 0.0)
-
-            self.logger.debug(
-                f"Expert panel result: match={is_match}, confidence={confidence:.3f}, "
-                f"consensus={panel_result.get('consensus_level', 'unknown')}"
-            )
-
-            return is_match
-
-        except Exception as e:
-            self.logger.error(f"❌ Expert panel matching failed: {e}")
-            # Fallback to standard LLM service
-            self.logger.info("🔄 Falling back to standard LLM service")
-            return await self._match_with_llm_service(patient_data, trial_criteria)
+        """Match using expert panel for ensemble decision."""
+        # Get expert panel assessment
+        panel_result = await self.expert_panel.assess_with_expert_panel(
+            patient_data, trial_criteria
+        )
+        return panel_result.get("is_match", False)
 
     async def get_detailed_assessment(
         self, patient_data: Dict[str, Any], trial_criteria: Dict[str, Any]
